@@ -1,37 +1,65 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { useEffect, useState } from 'react';
+import SplashScreen from '../components/SplashScreen';
+import { Amplify } from 'aws-amplify';
+import amplifyconfig from '../src/amplifyconfiguration.json';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from '@aws-amplify/ui-react-native';
+import Loader from '@/components/Loader';
+import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+Amplify.configure(amplifyconfig);
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
-
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
+function RootLayout() {
+  const [fontsLoaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    er: require('../assets/fonts/Epilogue/static/Epilogue-Regular.ttf'),
+    em: require('../assets/fonts/Epilogue/static/Epilogue-Medium.ttf'),
+    eb: require('../assets/fonts/Epilogue/static/Epilogue-Bold.ttf'),
+    esb: require('../assets/fonts/Epilogue/static/Epilogue-SemiBold.ttf'),
+    ir: require('../assets/fonts/Inter/static/Inter-Regular.ttf'),
+    im: require('../assets/fonts/Inter/static/Inter-Medium.ttf'),
+    ib: require('../assets/fonts/Inter/static/Inter-Bold.ttf'),
+    isb: require('../assets/fonts/Inter/static/Inter-SemiBold.ttf'),
   });
+  // const { isLoading } = useGlobalContext();
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    const timer = setTimeout(() => {
+      setIsSplashVisible(false);
+    }, 2000);
 
-  if (!loaded) {
-    return null;
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!fontsLoaded || isSplashVisible) {
+    return <SplashScreen />;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <StoreProvider>
+      <SafeAreaProvider>
+        <RootContent />
+      </SafeAreaProvider>
+    </StoreProvider>
+  );
+}
+
+export default RootLayout;
+
+function RootContent() {
+  const { isLoading } = useGlobalContext();
+
+  return (
+    <>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="email_verify" options={{ headerShown: false }} />
+        <Stack.Screen name="protected" options={{ headerShown: false }} />
       </Stack>
-    </ThemeProvider>
+      <Loader isLoading={isLoading} />
+    </>
   );
 }

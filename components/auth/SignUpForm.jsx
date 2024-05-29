@@ -1,0 +1,211 @@
+import {
+  Alert,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, { useState } from 'react';
+import { Link, router } from 'expo-router';
+import { Feather } from '@expo/vector-icons';
+import Container from '../Container';
+import { confirmSignUp, signUp } from 'aws-amplify/auth';
+import Checkbox from 'expo-checkbox';
+import { Colors } from '../../constants/Colors';
+import { useGlobalContext } from '@/store/StoreContext';
+
+const SignUp = (props) => {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const { handleSubmit, toSignIn } = props;
+  const [isChecked, setChecked] = useState(false);
+  const { setIsLoading, isLoading, setUsernameVeri } = useGlobalContext();
+
+  const handleSignUp = async () => {
+    if (!isChecked) {
+      Alert.alert('Hi', 'You must agree to the terms and conditions');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await signUp({
+        username,
+        password,
+        options: {
+          userAttributes: {
+            email,
+          },
+        },
+      });
+
+      console.log(res);
+      setUsernameVeri(username);
+      router.push('/email_verify');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+      console.error('Error signing up:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Container>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View style={{ marginBottom: 50 }}>
+          <Text style={styles.title}>Register</Text>
+          <Text style={{ textAlign: 'center' }}>Create your account</Text>
+        </View>
+        <View>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your username"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+        </View>
+        <View>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+          />
+        </View>
+        <View
+          style={[
+            styles.input,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            },
+          ]}
+        >
+          <TextInput
+            style={{ flex: 1, height: '100%' }}
+            placeholder="Enter your password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPass}
+          />
+          <Pressable onPress={() => setShowPass(!showPass)}>
+            <Feather
+              name={showPass ? 'eye-off' : 'eye'}
+              size={24}
+              color="black"
+            />
+          </Pressable>
+        </View>
+        <View style={{ flexDirection: 'row', columnGap: 5 }}>
+          <Checkbox
+            style={styles.checkbox}
+            value={isChecked}
+            onValueChange={setChecked}
+            color={isChecked ? Colors.pri : undefined}
+          />
+          <View
+            style={[
+              styles.termsText,
+              {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                columnGap: 4,
+              },
+            ]}
+          >
+            <Text style={{}}>I agree with</Text>
+            <Link href={'/termsandconditions'}>
+              <Text style={styles.signUp}>Terms & Conditions</Text>
+            </Link>
+          </View>
+        </View>
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#006EBD',
+            height: 51,
+            borderRadius: 8,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 40,
+          }}
+          onPress={handleSignUp}
+          disabled={isLoading}
+        >
+          <Text style={{ fontSize: 18, color: 'white', fontFamily: 'ir' }}>
+            {isLoading ? 'Loading...' : 'Sign Up'}
+          </Text>
+        </TouchableOpacity>
+        <View
+          style={[
+            styles.footerText,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              columnGap: 4,
+            },
+          ]}
+        >
+          <Text style={{}}>Already have an account?</Text>
+          <Pressable onPress={toSignIn}>
+            <Text style={styles.signUp}>Log In</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Container>
+    // </SafeAreaView>
+  );
+};
+
+export default SignUp;
+
+const styles = StyleSheet.create({
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontFamily: 'esb',
+  },
+  input: {
+    width: '100%',
+    height: 51,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#9095A1',
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  label: {
+    fontFamily: 'isb',
+    fontSize: 18,
+    marginBottom: 5,
+    color: '#424856',
+  },
+  footerText: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#666',
+  },
+  signUp: {
+    color: '#007aff',
+    fontWeight: 'bold',
+  },
+  termsText: {
+    textAlign: 'center',
+    color: '#666',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontFamily: 'esb',
+  },
+});

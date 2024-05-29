@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "paths": {
+    "/post": {
+      "name": "/post",
+      "lambdaFunction": "mimonief71364a4",
+      "permissions": {
+        "setting": "private",
+        "auth": [
+          "create",
+          "read",
+          "update",
+          "delete"
+        ]
+      }
+    }
+  }
+}
