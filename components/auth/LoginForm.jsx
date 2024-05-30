@@ -86,8 +86,8 @@ const LoginForm = (props) => {
             <Pressable onPress={() => setShowPass(!showPass)}>
               <Feather
                 name={showPass ? 'eye-off' : 'eye'}
-                size={24}
-                color="black"
+                size={20}
+                color="gray"
               />
             </Pressable>
           </View>

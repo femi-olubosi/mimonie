@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { Link, router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, Fontisto } from '@expo/vector-icons';
 import Container from '../Container';
 import { confirmSignUp, signUp } from 'aws-amplify/auth';
 import Checkbox from 'expo-checkbox';
@@ -61,18 +61,38 @@ const SignUp = (props) => {
           <Text style={styles.title}>Register</Text>
           <Text style={{ textAlign: 'center' }}>Create your account</Text>
         </View>
-        <View>
+        <View
+          style={[
+            styles.input,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            },
+          ]}
+        >
+          <AntDesign name="user" size={20} color="gray" />
           <TextInput
-            style={styles.input}
+            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
             placeholder="Enter your username"
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
           />
         </View>
-        <View>
+        <View
+          style={[
+            styles.input,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            },
+          ]}
+        >
+          <Fontisto name="email" size={20} color="gray" />
           <TextInput
-            style={styles.input}
+            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
             placeholder="Enter your email"
             value={email}
             onChangeText={setEmail}
@@ -89,8 +109,9 @@ const SignUp = (props) => {
             },
           ]}
         >
+          <Feather name="lock" size={20} color="gray" />
           <TextInput
-            style={{ flex: 1, height: '100%' }}
+            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
@@ -99,8 +120,8 @@ const SignUp = (props) => {
           <Pressable onPress={() => setShowPass(!showPass)}>
             <Feather
               name={showPass ? 'eye-off' : 'eye'}
-              size={24}
-              color="black"
+              size={20}
+              color="gray"
             />
           </Pressable>
         </View>

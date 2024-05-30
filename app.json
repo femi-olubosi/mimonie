@@ -42,6 +42,12 @@
         "projectId": "39c78bcd-192c-4415-93f2-7f24376ad86d"
       }
     },
-    "owner": "femi-olubosi"
+    "owner": "femi-olubosi",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/39c78bcd-192c-4415-93f2-7f24376ad86d"
+    }
   }
 }
