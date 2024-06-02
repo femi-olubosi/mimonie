@@ -2,8 +2,9 @@ import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
-const ProfileView = ({ user_details }) => {
+const ProfileView = ({ username }) => {
   return (
     <View
       style={{
@@ -30,9 +31,14 @@ const ProfileView = ({ user_details }) => {
             borderRadius: 100,
           }}
         >
-          <FontAwesome name="user-o" size={16} color="white" />
+          <FontAwesome
+            name="user-o"
+            size={16}
+            color="white"
+            onPress={() => router.navigate('/protected/account')}
+          />
         </View>
-        <Text style={{ fontSize: 20 }}>ProfileView</Text>
+        <Text style={{ fontSize: 20 }}>{username}</Text>
       </View>
       <Ionicons name="notifications-outline" size={24} color="black" />
     </View>

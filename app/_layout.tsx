@@ -5,7 +5,6 @@ import SplashScreen from '../components/SplashScreen';
 import { Amplify } from 'aws-amplify';
 import amplifyconfig from '../src/amplifyconfiguration.json';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ThemeProvider } from '@aws-amplify/ui-react-native';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
 
@@ -23,7 +22,7 @@ function RootLayout() {
     ib: require('../assets/fonts/Inter/static/Inter-Bold.ttf'),
     isb: require('../assets/fonts/Inter/static/Inter-SemiBold.ttf'),
   });
-  // const { isLoading } = useGlobalContext();
+
   const [isSplashVisible, setIsSplashVisible] = useState(true);
 
   useEffect(() => {
@@ -57,6 +56,7 @@ function RootContent() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="email_verify" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="personal_info" options={{ headerShown: false }} /> */}
         <Stack.Screen name="protected" options={{ headerShown: false }} />
       </Stack>
       <Loader isLoading={isLoading} />

@@ -18,20 +18,23 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 
 const LoginForm = (props) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const { toSignUp, toForgotPassword } = props;
-  const { isLoading, setIsLoading, setUsernameVeri } = useGlobalContext();
+  const { isLoading, setIsLoading, setEmailVeri } = useGlobalContext();
 
   const handleSignIn = async () => {
     setIsLoading(true);
     try {
-      const { isSignedIn, nextStep } = await signIn({ username, password });
-      console.log(isSignedIn);
+      const { isSignedIn, nextStep } = await signIn({
+        username: email,
+        password,
+      });
+
       if (!isSignedIn) {
         if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
-          setUsernameVeri(username);
+          setEmailVeri(username);
           router.push('/email_verify');
           return;
         } else {
@@ -55,12 +58,12 @@ const LoginForm = (props) => {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Log in</Text>
         <View>
-          <Text style={styles.label}>Username</Text>
+          <Text style={styles.label}>Email Adrress</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your username"
-            value={username}
-            onChangeText={setUsername}
+            placeholder="Enter your email address"
+            value={email}
+            onChangeText={setEmail}
             autoCapitalize="none"
           />
         </View>

@@ -31,39 +31,39 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+  // useEffect(() => {
+  //   if (fontsLoaded) {
+  //     SplashScreen.hideAsync();
+  //   }
+  // }, [fontsLoaded]);
 
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const currentUser = await Auth.currentAuthenticatedUser();
-        setUser(currentUser);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkUser();
-  }, []);
+  // useEffect(() => {
+  //   const checkUser = async () => {
+  //     try {
+  //       const currentUser = await Auth.currentAuthenticatedUser();
+  //       setUser(currentUser);
+  //     } catch {
+  //       setUser(null);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   checkUser();
+  // }, []);
 
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        router.replace('(tabs)');
-      } else {
-        router.replace('login');
-      }
-    }
-  }, [user, loading]);
+  // useEffect(() => {
+  //   if (!loading) {
+  //     if (user) {
+  //       router.replace('(tabs)');
+  //     } else {
+  //       router.replace('login');
+  //     }
+  //   }
+  // }, [user, loading]);
 
-  if (!fontsLoaded || loading) {
-    return null; // Or a loading spinner
-  }
+  // if (!fontsLoaded || loading) {
+  //   return null; // Or a loading spinner
+  // }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

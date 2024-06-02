@@ -69,14 +69,14 @@ const Cards = () => {
                 Due {item.due_date_next}
               </Text>
             </ThemedView>
-            <Link href={'/login'}>
-              <ThemedText type="link" style={{ color: 'white' }}>
-                Press
-              </ThemedText>
-            </Link>
+
             <Image
               source={require('../../assets/images/home-card.png')}
-              style={{ position: 'absolute', right: 0, resizeMode: 'cover' }}
+              style={{
+                position: 'absolute',
+                right: 0,
+                resizeMode: 'cover',
+              }}
             />
           </ThemedView>
         )}

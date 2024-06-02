@@ -6,7 +6,7 @@ import {
   useAuthenticator,
   useTheme,
 } from '@aws-amplify/ui-react-native';
-import { Slot } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import { I18n } from 'aws-amplify/utils';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
@@ -180,13 +180,6 @@ const ProtectedContent = () => {
           backgroundColor: 'white',
         }}
       >
-        {/* <ScrollView
-          contentContainerStyle={{
-            justifyContent: 'center',
-            backgroundColor: 'red',
-          }}
-        > */}
-
         <Authenticator
           formFields={formFields}
           components={{
@@ -199,23 +192,21 @@ const ProtectedContent = () => {
           }}
           services={{
             handleSignUp: async ({ username, password, attributes }) => {
-              // Handle the sign-up process here
               console.log(username, password, attributes);
-              // Implement the sign-up logic using AWS Amplify or your custom logic
-              // await Auth.signUp({ username, password, attributes });
             },
             handleSignIn: async ({ username, password }) => {
-              // Handle the sign-in process here
               console.log(username, password);
-              // Implement the sign-in logic using AWS Amplify or your custom logic
-              // await Auth.signIn(username, password);
             },
           }}
         >
-          <Slot />
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="personal_info"
+              options={{ headerShown: false }}
+            />
+          </Stack>
         </Authenticator>
-
-        {/* </ScrollView> */}
       </View>
     </View>
   );

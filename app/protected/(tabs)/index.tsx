@@ -8,12 +8,14 @@ import {
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
 import { ThemedView } from '@/components/ThemedView';
+import { useGlobalContext } from '@/store/StoreContext';
 
 export default function HomeScreen() {
+  const { currentUser } = useGlobalContext();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
       <ThemedView style={{ flex: 1, paddingTop: 10 }}>
-        <ProfileView user_details={{}} />
+        <ProfileView username={currentUser.username} />
         <Cards />
       </ThemedView>
     </SafeAreaView>

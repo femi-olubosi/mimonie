@@ -16,12 +16,14 @@ const index = () => {
         await Updates.reloadAsync();
       }
     } catch (error) {
-      alert(`Error fetching latest Expo update: ${error}`);
+      console.error(error);
     }
   }
 
   useEffect(() => {
-    onFetchUpdateAsync();
+    if (!__DEV__) {
+      onFetchUpdateAsync();
+    }
   }, []);
 
   return (
