@@ -16,6 +16,7 @@ import { confirmSignUp, signUp } from 'aws-amplify/auth';
 import Checkbox from 'expo-checkbox';
 import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
+import { ErrorCheck } from '../../utils/errorCheck';
 
 const SignUp = (props) => {
   const [username, setUsername] = useState('');
@@ -24,27 +25,31 @@ const SignUp = (props) => {
   const [showPass, setShowPass] = useState(false);
   const { handleSubmit, toSignIn } = props;
   const [isChecked, setChecked] = useState(false);
-  const { setIsLoading, isLoading, setUsernameVeri } = useGlobalContext();
+  const { setIsLoading, isLoading, setEmailVeri } = useGlobalContext();
 
   const handleSignUp = async () => {
+    if (ErrorCheck({ username, password, email })) {
+      return;
+    }
     if (!isChecked) {
       Alert.alert('Hi', 'You must agree to the terms and conditions');
       return;
     }
+
     setIsLoading(true);
     try {
       const res = await signUp({
-        username,
+        username: email,
         password,
         options: {
           userAttributes: {
             email,
+            preferred_username: username,
           },
         },
       });
 
-      console.log(res);
-      setUsernameVeri(username);
+      setEmailVeri(email);
       router.push('/email_verify');
     } catch (error) {
       Alert.alert('Error', error.message);

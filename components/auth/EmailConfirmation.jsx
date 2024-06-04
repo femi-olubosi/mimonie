@@ -12,20 +12,24 @@ import { Colors } from '../../constants/Colors';
 import { confirmSignUp } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
+import { ErrorCheck } from '../../utils/errorCheck';
 
 const EmailConfirmation = () => {
-  const { usernameVeri, setIsLoading } = useGlobalContext();
+  const { emailVeri, setIsLoading } = useGlobalContext();
   const [code, setCode] = useState(0);
 
   const handleVerify = async () => {
+    // if (ErrorCheck({ email, password })) {
+    //   return;
+    // }
     setIsLoading(true);
     try {
       const { isSignUpComplete, nextStep } = await confirmSignUp({
-        username: usernameVeri,
+        username: emailVeri,
         confirmationCode: code,
       });
-      console.log(nextStep);
-      if (isSignUpComplete) {
+
+      if (isSignUpComplete || nextStep.signUpStep === 'DONE') {
         router.push('/protected');
       } else {
         Alert.alert(

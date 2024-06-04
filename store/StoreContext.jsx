@@ -1,31 +1,34 @@
 import React, { createContext, useEffect, useState, useContext } from 'react';
-import { fetchCurrUser } from '@/api/user.service';
+import { fetchCurrUser, getUserInfo } from '@/api/user.service';
 
 const StoreContext = createContext();
 
 const StoreProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [usernameVeri, setUsernameVeri] = useState('');
+  const [emailVeri, setEmailVeri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
+  const [userInfo, setUserInfo] = useState({});
 
   const toggleMode = () => {
     setIsDarkMode((prevMode) => !prevMode);
   };
 
-  useEffect(() => {
-    fetchCurrUser(setCurrentUser);
-  }, []);
+  // useEffect(() => {
+  //   fetchCurrUser(setCurrentUser);
+  // }, []);
 
   const value = {
     isDarkMode,
     toggleMode,
     isLoading,
     setIsLoading,
-    usernameVeri,
-    setUsernameVeri,
+    emailVeri,
+    setEmailVeri,
     currentUser,
     setCurrentUser,
+    userInfo,
+    setUserInfo,
   };
 
   return (

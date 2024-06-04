@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-const ProfileView = ({ username }) => {
+const ProfileView = ({ username, picture }) => {
   return (
     <View
       style={{
@@ -12,7 +12,7 @@ const ProfileView = ({ username }) => {
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
-        paddingBottom: 24,
+        paddingVertical: 24,
       }}
     >
       <View
@@ -26,19 +26,26 @@ const ProfileView = ({ username }) => {
           style={{
             justifyContent: 'center',
             alignItems: 'center',
-            padding: 10,
+            padding: picture ? 0 : 10,
             backgroundColor: Colors.sec,
             borderRadius: 100,
           }}
         >
-          <FontAwesome
-            name="user-o"
-            size={16}
-            color="white"
-            onPress={() => router.navigate('/protected/account')}
-          />
+          {picture ? (
+            <Image
+              source={{ uri: picture }}
+              style={{ width: 50, height: 50, borderRadius: 25 }}
+            />
+          ) : (
+            <FontAwesome
+              name="user-o"
+              size={16}
+              color="white"
+              onPress={() => router.navigate('/protected/account')}
+            />
+          )}
         </View>
-        <Text style={{ fontSize: 20 }}>{username}</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'er' }}>{username}</Text>
       </View>
       <Ionicons name="notifications-outline" size={24} color="black" />
     </View>

@@ -7,7 +7,6 @@ import amplifyconfig from '../src/amplifyconfiguration.json';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
-
 Amplify.configure(amplifyconfig);
 
 function RootLayout() {
@@ -25,16 +24,16 @@ function RootLayout() {
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsSplashVisible(false);
-    }, 2000);
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setIsSplashVisible(false);
+  //   }, 2000);
 
-    return () => clearTimeout(timer);
-  }, []);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
-  if (!fontsLoaded || isSplashVisible) {
-    return <SplashScreen />;
+  if (!fontsLoaded) {
+    return;
   }
 
   return (

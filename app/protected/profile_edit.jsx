@@ -1,14 +1,284 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  TextInput,
+  ScrollView,
+  Platform,
+} from 'react-native';
+import { Ionicons, AntDesign } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import Button from '../../components/Button';
+import { Colors } from '../../constants/Colors';
+import { fetchCurrUser, updateAttributes } from '../../api/user.service';
+import { useGlobalContext } from '../../store/StoreContext';
+import { DateTimeSelector, SelectInput } from '../../components/Reusable';
+import { ErrorCheck } from '../../utils/errorCheck';
+import Constants from 'expo-constants';
+import { topBar } from '../../cStyle';
 
-const profileEdit = () => {
+const dateOption = [
+  'en-US',
+  {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  },
+];
+
+const PersonalInformation = () => {
+  const [infoDetails, setInfoDetails] = useState({});
+  const { currentUser, setCurrentUser, setIsLoading } = useGlobalContext();
+  const router = useRouter();
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [selectedValue, setSelectedValue] = useState('');
+
+  useEffect(() => {
+    setInfoDetails({ ...currentUser });
+  }, [currentUser]);
+
+  const handleInputChange = (value, name) => {
+    setInfoDetails((prev) => ({ ...prev, [name]: value }));
+  };
+
+  useEffect(() => {
+    setSelectedValue(
+      currentUser['custom:income_from'] +
+        ' - ' +
+        currentUser['custom:income_to']
+    );
+  }, [currentUser]);
+
+  const handleDateChange = (selectedDate) => {
+    setDate(selectedDate);
+    setInfoDetails((prev) => ({
+      ...prev,
+      birthdate: selectedDate.toLocaleDateString(...dateOption),
+    }));
+    setShowDatePicker(false);
+  };
+
+  useEffect(() => {
+    setInfoDetails((prev) => ({
+      ...prev,
+      'custom:income_from': selectedValue?.split('-')[0]?.trim(),
+      'custom:income_to': selectedValue?.split('-')[1]?.trim(),
+    }));
+  }, [selectedValue]);
+
+  const { phone_number, ...rest } = infoDetails;
+  const handleSubmit = async () => {
+    if (ErrorCheck({ phone_number })) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await updateAttributes(infoDetails);
+      await fetchCurrUser(setCurrentUser);
+      router.push('/protected/personal_info');
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleDatePicker = () => {
+    setShowDatePicker(!showDatePicker);
+  };
+
   return (
-    <View>
-      <Text>profile-edit</Text>
-    </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
+      <View style={styles.header}>
+        <Ionicons
+          name="arrow-back"
+          size={24}
+          color="black"
+          onPress={() => router.back()}
+        />
+        <View>
+          <Text style={[styles.headerTitle, { marginBottom: 5 }]}>
+            Personal Information
+          </Text>
+          <Text style={[styles.label, { textAlign: 'center' }]}>
+            Editing...
+          </Text>
+        </View>
+        <TouchableOpacity style={{ opacity: 0 }}>
+          <AntDesign name="edit" size={20} color="black" />
+        </TouchableOpacity>
+      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.listContent}
+      >
+        {formElement.map((item, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.infoContainer]}
+            onPress={() =>
+              item.name === 'birthdate' ? toggleDatePicker() : {}
+            }
+          >
+            <Text style={styles.label}>{item.label}</Text>
+
+            {item.eType === 'incomerange' ? (
+              <SelectInput
+                options={income_range_options}
+                selectedValue={selectedValue}
+                setSelectedValue={setSelectedValue}
+                defaultValue={selectedValue}
+              />
+            ) : (
+              <View
+                style={{
+                  flexDirection: item.name === 'birthdate' ? 'row' : '',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <TextInput
+                  style={styles.value}
+                  value={
+                    item.name === 'birthdate'
+                      ? date.toLocaleDateString(...dateOption)
+                      : infoDetails[item.name]
+                  }
+                  onChangeText={(value) => handleInputChange(value, item.name)}
+                  editable={item.name !== 'birthdate'}
+                  placeholder={item.placeholder}
+                  onPress={() =>
+                    item.name === 'birthdate' ? toggleDatePicker() : {}
+                  }
+                />
+                {item.name === 'birthdate' && (
+                  <DateTimeSelector
+                    show={showDatePicker}
+                    setShow={setShowDatePicker}
+                    date={date}
+                    setDate={handleDateChange}
+                    mode={'date'}
+                  />
+                )}
+              </View>
+            )}
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      <View style={styles.buttonContainer}>
+        <Button
+          title={'Update'}
+          color={Colors.pri}
+          onPress={handleSubmit}
+          outline={true}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
-export default profileEdit;
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    height: Platform.OS === 'android' ? 128 : 80,
+    paddingTop: topBar,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  listContent: {
+    padding: 20,
+  },
+  infoContainer: {
+    marginBottom: 16,
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  label: {
+    fontSize: 14,
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  value: {
+    fontSize: 16,
+    color: '#6B7280',
+    flex: 1,
+  },
+  buttonContainer: {
+    paddingVertical: 10,
+    width: '50%',
+    alignSelf: 'center',
+  },
+});
 
-const styles = StyleSheet.create({});
+export default PersonalInformation;
+
+const formElement = [
+  { label: 'Full Name', name: 'name', placeholder: 'Jimoh Alfonso' },
+  {
+    label: 'Phone Number',
+    name: 'phone_number',
+    placeholder: '+234 0X17 XX4 24X3',
+  },
+  { label: 'Date of Birth', name: 'birthdate', placeholder: '30 July, 1950' },
+  {
+    label: 'Contact Address',
+    name: 'address',
+    placeholder: '200, Kilode Close, Ajangbadi, Lagos',
+  },
+  { label: 'Occupation', name: 'custom:occupation', placeholder: 'Cab Driver' },
+  {
+    label: 'Income Range',
+    name: 'custom:income_from',
+    eType: 'incomerange',
+    placeholder: '',
+  },
+  // {
+  //   label: 'Income To',
+  //   name: 'custom:income_to',
+  //   placeholder: '200000',
+  // },
+  {
+    label: 'County of Origin',
+    name: 'custom:country_of_origin',
+    placeholder: 'Nigeria',
+  },
+  {
+    label: 'County of Residence',
+    name: 'custom:country_of_residence',
+    placeholder: 'Nigeria',
+  },
+];
+
+const income_range_options = [
+  {
+    label: '₦100,000 - ₦250,000',
+    value: '100000 - 250000',
+  },
+  {
+    label: '₦250,000 - ₦500,000',
+    value: '250000 - 500000',
+  },
+  {
+    label: '₦500,000 - ₦750,000',
+    value: '500000 - 750000',
+  },
+  {
+    label: '₦750,000 - ₦1,000,000',
+    value: '750000 - 1000000',
+  },
+];

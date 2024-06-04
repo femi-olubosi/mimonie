@@ -2,7 +2,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-const Button = ({ title, onPress, color, outline }) => {
+const Button = ({ title, onPress, color, outline, styleOverride = {} }) => {
   return (
     <TouchableOpacity
       style={[
@@ -12,6 +12,7 @@ const Button = ({ title, onPress, color, outline }) => {
           borderColor: color,
         },
         outline && styles.outline,
+        { ...styleOverride },
       ]}
       onPress={onPress}
     >
@@ -33,6 +34,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'ib',
   },
   outline: {
     backgroundColor: 'transparent',

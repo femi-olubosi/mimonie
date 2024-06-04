@@ -16,6 +16,7 @@ import { Feather } from '@expo/vector-icons';
 import { signIn } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
+import { ErrorCheck } from '../../utils/errorCheck';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -25,6 +26,9 @@ const LoginForm = (props) => {
   const { isLoading, setIsLoading, setEmailVeri } = useGlobalContext();
 
   const handleSignIn = async () => {
+    if (ErrorCheck({ email })) {
+      return;
+    }
     setIsLoading(true);
     try {
       const { isSignedIn, nextStep } = await signIn({
@@ -34,7 +38,7 @@ const LoginForm = (props) => {
 
       if (!isSignedIn) {
         if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
-          setEmailVeri(username);
+          setEmailVeri(email);
           router.push('/email_verify');
           return;
         } else {

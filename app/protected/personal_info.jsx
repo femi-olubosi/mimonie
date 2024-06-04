@@ -7,64 +7,18 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Button from '../../components/Button';
-import { Colors } from '../../constants/Colors';
+import Constants from 'expo-constants';
+import { useGlobalContext } from '../../store/StoreContext';
+import { topBar } from '../../cStyle';
 
 const PersonalInformation = () => {
+  const { currentUser } = useGlobalContext();
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(false);
-  const [infoItems, setInfoItems] = useState([
-    { label: 'Full Name', value: '', placeholder: 'Jimoh Alfonso' },
-    { label: 'Phone Number', value: '', placeholder: '+234 0X17 XX4 24X3' },
-    { label: 'Date of Birth', value: '', placeholder: '30 July 1950' },
-    {
-      label: 'Contact Address',
-      value: '',
-      placeholder: '200, Kilode Close, Ajangbadi, Lagos',
-    },
-    { label: 'Occupation', value: '', placeholder: 'Cab Driver' },
-    {
-      label: 'Income Range',
-      value: '',
-      placeholder: 'N100,000 - N200,000/month',
-    },
-    { label: 'County of Origin', value: '', placeholder: 'Nigeria' },
-    { label: 'County of Residence', value: '', placeholder: 'Nigeria' },
-  ]);
-
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const handleInputChange = (value, index) => {
-    const updatedItems = [...infoItems];
-    updatedItems[index].value = value;
-    setInfoItems(updatedItems);
-  };
-
-  const handleSubmit = () => {
-    setIsEditing(false);
-    // Add your submit handling logic here
-    console.log('Submitted data:', infoItems);
-  };
-
-  const isProfileComplete = infoItems.every((item) => item.value.trim() !== '');
-
-  const renderItem = ({ item, index }) => (
-    <View style={styles.infoContainer}>
-      <Text style={styles.label}>{item.label}</Text>
-      <TextInput
-        style={styles.value}
-        value={item.value}
-        onChangeText={(value) => handleInputChange(value, index)}
-        editable={isEditing}
-        placeholder={item.placeholder}
-      />
-    </View>
-  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -73,54 +27,98 @@ const PersonalInformation = () => {
           name="arrow-back"
           size={24}
           color="black"
-          onPress={() => router.back()}
+          onPress={() => router.push('/protected/account')}
         />
         <View>
           <Text style={[styles.headerTitle, { marginBottom: 5 }]}>
             Personal Information
           </Text>
-          {isEditing ? (
-            <Text style={[styles.label, { textAlign: 'center' }]}>
-              Editing...
-            </Text>
-          ) : !isProfileComplete ? (
-            <Text style={[styles.label, { textAlign: 'center' }]}>
-              Complete your profile
-            </Text>
-          ) : null}
         </View>
         <TouchableOpacity
-          onPress={handleEditToggle}
-          style={{
-            backgroundColor: isEditing ? Colors.pri : 'transparent',
-            padding: isEditing ? 4 : 0,
-            borderRadius: 4,
-          }}
+          onPress={() => router.push('/protected/profile_edit')}
         >
-          <AntDesign
-            name="edit"
-            size={20}
-            color={isEditing ? 'white' : 'black'}
-          />
+          <AntDesign name="edit" size={20} color={'black'} />
         </TouchableOpacity>
       </View>
       <View style={styles.container}>
-        <FlatList
-          data={infoItems}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
-        />
-        {isEditing && (
-          <View style={styles.buttonContainer}>
-            <Button
-              title={'Update'}
-              color={Colors.pri}
-              onPress={handleSubmit}
-              outline={true}
+        <ScrollView>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Full Name'}</Text>
+            <TextInput
+              style={styles.value}
+              value={currentUser.name ?? 'Complete your profile'}
+              editable={false}
             />
           </View>
-        )}
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Phone Number'}</Text>
+            <TextInput
+              style={styles.value}
+              value={currentUser.phone_number ?? 'Complete your profile'}
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Date of Birth'}</Text>
+            <TextInput
+              style={styles.value}
+              value={currentUser.birthdate ?? 'Complete your profile'}
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Contact Address'}</Text>
+            <TextInput
+              style={styles.value}
+              value={currentUser.address ?? 'Complete your profile'}
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Occupation'}</Text>
+            <TextInput
+              style={styles.value}
+              value={
+                currentUser['custom:occupation'] ?? 'Complete your profile'
+              }
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Income Range'}</Text>
+            <TextInput
+              style={styles.value}
+              value={
+                currentUser['custom:income_from'] +
+                ' - ' +
+                currentUser['custom:income_to']
+              }
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Country of Origin'}</Text>
+            <TextInput
+              style={styles.value}
+              value={
+                currentUser['custom:country_of_origin'] ??
+                'Complete your profile'
+              }
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Country of Residence'}</Text>
+            <TextInput
+              style={styles.value}
+              value={
+                currentUser['custom:country_of_residence'] ??
+                'Complete your profile'
+              }
+              editable={false}
+            />
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -130,24 +128,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingTop: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    height: 100,
+    height: Platform.OS === 'android' ? 128 : 80,
+    paddingTop: topBar,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
   },
   listContent: {
-    padding: 16,
+    padding: 20,
   },
   infoContainer: {
     marginBottom: 16,
-    padding: 16,
+    padding: 20,
     backgroundColor: 'white',
     borderRadius: 8,
     borderWidth: 1,

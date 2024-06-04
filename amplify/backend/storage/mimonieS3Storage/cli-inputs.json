@@ -1,0 +1,14 @@
+{
+  "resourceName": "mimonieS3Storage",
+  "policyUUID": "5c2d7a91",
+  "bucketName": "mimonies3storage",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

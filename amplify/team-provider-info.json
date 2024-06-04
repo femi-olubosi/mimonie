@@ -17,13 +17,22 @@
         "mimonief71364a4": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
           "s3Key": "amplify-builds/mimonief71364a4-734d6a47586563354d48-build.zip"
+        },
+        "userInfo": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/userInfo-7650562f6b3567704434-build.zip"
         }
       },
       "auth": {
         "mimonie": {}
       },
       "api": {
-        "api37a1ef7a": {}
+        "api37a1ef7a": {},
+        "mimonie": {},
+        "userInfo": {}
+      },
+      "storage": {
+        "mimonieS3Storage": {}
       }
     }
   }

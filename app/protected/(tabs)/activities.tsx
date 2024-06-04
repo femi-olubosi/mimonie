@@ -1,11 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import { Button, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StatusBar } from 'expo-status-bar';
 
 const Activities = () => {
   return (
-    <View>
-      <Text>activities</Text>
-    </View>
+    <SafeAreaView>
+      <StatusBar style="dark" />
+    </SafeAreaView>
   );
 };
 

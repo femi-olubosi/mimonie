@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
+import { Tabs } from 'expo-router';
 import {
   Octicons,
   FontAwesome6,
@@ -8,27 +8,46 @@ import {
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { Platform, View } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={() => ({
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].pri,
+        tabBarInactiveTintColor: '#565D6D',
         headerShown: false,
-      }}
+        tabBarStyle: {
+          borderTopWidth: 1,
+          borderColor: '#FAFAFB',
+          height: Platform.OS === 'android' ? 60 : 80,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingBottom: Platform.OS === 'android' ? 10 : 25,
+        },
+      })}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <Octicons
-              name="home"
-              size={24}
-              color={focused ? color : '#565D6D'}
-            />
+            <View
+              style={{
+                borderTopWidth: focused ? 2 : 0,
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                borderTopColor: focused
+                  ? Colors[colorScheme ?? 'light'].pri
+                  : 'transparent',
+              }}
+            >
+              <Octicons name="home" size={24} color={color} />
+            </View>
           ),
         }}
       />
@@ -37,11 +56,20 @@ export default function TabLayout() {
         options={{
           title: 'Activities',
           tabBarIcon: ({ color, focused }) => (
-            <Entypo
-              name="back-in-time"
-              size={24}
-              color={focused ? color : '#565D6D'}
-            />
+            <View
+              style={{
+                borderTopWidth: focused ? 2 : 0,
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                borderTopColor: focused
+                  ? Colors[colorScheme ?? 'light'].pri
+                  : 'transparent',
+              }}
+            >
+              <Entypo name="back-in-time" size={24} color={color} />
+            </View>
           ),
         }}
       />
@@ -50,11 +78,20 @@ export default function TabLayout() {
         options={{
           title: 'Contact',
           tabBarIcon: ({ color, focused }) => (
-            <FontAwesome6
-              name="contact-book"
-              size={24}
-              color={focused ? color : '#565D6D'}
-            />
+            <View
+              style={{
+                borderTopWidth: focused ? 2 : 0,
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                borderTopColor: focused
+                  ? Colors[colorScheme ?? 'light'].pri
+                  : 'transparent',
+              }}
+            >
+              <FontAwesome6 name="contact-book" size={24} color={color} />
+            </View>
           ),
         }}
       />
@@ -63,11 +100,24 @@ export default function TabLayout() {
         options={{
           title: 'Account',
           tabBarIcon: ({ color, focused }) => (
-            <MaterialCommunityIcons
-              name="account-circle-outline"
-              size={24}
-              color={focused ? color : '#565D6D'}
-            />
+            <View
+              style={{
+                borderTopWidth: focused ? 2 : 0,
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                borderTopColor: focused
+                  ? Colors[colorScheme ?? 'light'].pri
+                  : 'transparent',
+              }}
+            >
+              <MaterialCommunityIcons
+                name="account-circle-outline"
+                size={24}
+                color={color}
+              />
+            </View>
           ),
         }}
       />

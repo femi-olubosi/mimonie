@@ -13,6 +13,9 @@
     },
     "api37a1ef7a": {
       "Type": "String"
+    },
+    "userInfo": {
+      "Type": "String"
     }
   },
   "Conditions": {

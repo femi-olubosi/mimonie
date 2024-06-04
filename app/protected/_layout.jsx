@@ -4,12 +4,11 @@ import {
   Authenticator,
   ThemeProvider,
   useAuthenticator,
-  useTheme,
 } from '@aws-amplify/ui-react-native';
-import { Slot, Stack } from 'expo-router';
-import { I18n } from 'aws-amplify/utils';
+import { Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
+import { StatusBar } from 'expo-status-bar';
 
 const theme = {
   tokens: {
@@ -47,16 +46,15 @@ const formFields = {
       order: 3,
     },
   },
+  forgotPassword: {
+    username: {
+      labelHidden: false,
+      placeholder: 'Enter your email address',
+      isRequired: true,
+      label: 'Email Address:',
+    },
+  },
 };
-
-const i8N = I18n.putVocabulariesForLanguage('en', {
-  'Sign In': 'Login', // Tab header
-  'Sign in': 'Log in', // Button label
-  'Sign in to your account': 'Welcome Back!',
-  Username: 'Enter your username', // Username label
-  Password: 'Enter your password', // Password label
-  'Forgot your password?': 'Reset Password',
-});
 
 const ProtectedLayout = () => {
   return (
@@ -69,60 +67,6 @@ const ProtectedLayout = () => {
 };
 
 export default ProtectedLayout;
-
-const MyAppHeader = () => {
-  const {
-    tokens: { space, fontSizes },
-  } = useTheme();
-
-  const { route } = useAuthenticator((context) => [context.route]);
-
-  return (
-    <View>
-      {route === 'signIn' ? (
-        <View>
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 24,
-              marginTop: 20,
-              fontFamily: 'esb',
-            }}
-          >
-            Log In
-          </Text>
-        </View>
-      ) : route === 'signUp' ? (
-        <View
-          style={{
-            marginTop: 20,
-          }}
-        >
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 24,
-              marginBottom: 5,
-              fontFamily: 'esb',
-            }}
-          >
-            Register
-          </Text>
-          <Text
-            style={{
-              textAlign: 'center',
-              fontSize: 15,
-
-              fontFamily: 'er',
-            }}
-          >
-            Create you user account
-          </Text>
-        </View>
-      ) : null}
-    </View>
-  );
-};
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -157,6 +101,7 @@ const ProtectedContent = () => {
 
   return (
     <View style={styles.safeArea}>
+      <StatusBar style="light" />
       {route === 'signIn' || route === 'forgotPassword' ? (
         <View
           style={{
@@ -176,7 +121,7 @@ const ProtectedContent = () => {
         style={{
           flex: 2,
           borderRadius: 10,
-          paddingTop: 10,
+          paddingTop: route === 'signIn' || route === 'forgotPassword' ? 10 : 0,
           backgroundColor: 'white',
         }}
       >
@@ -203,6 +148,10 @@ const ProtectedContent = () => {
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen
               name="personal_info"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="profile_edit"
               options={{ headerShown: false }}
             />
           </Stack>
