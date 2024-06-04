@@ -1,7 +1,17 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { FontAwesome } from '@expo/vector-icons';
+import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { topBar } from '../cStyle';
+import { router } from 'expo-router';
 
 export const Text14 = ({ text }) => (
   <Text style={{ color: '#424856', fontFamily: 'er', fontSize: 14 }}>
@@ -123,3 +133,57 @@ export const SelectInput = ({
     </View>
   );
 };
+
+export const PageView = ({ title, right, children }) => {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
+      <View style={styles.header}>
+        <View
+          style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center' }}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color="black"
+            onPress={() => router.push('/protected/account')}
+          />
+          <View>
+            <Text style={[styles.headerTitle, { marginBottom: 5 }]}>
+              {title}
+            </Text>
+          </View>
+        </View>
+        {right && (
+          <TouchableOpacity
+            onPress={() => router.push('/protected/profile_edit')}
+          >
+            <AntDesign name="edit" size={20} color={'black'} />
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={{ flex: 1, backgroundColor: 'white' }}>{children}</View>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    height: Platform.OS === 'android' ? 128 : 80,
+    paddingTop: topBar,
+    backgroundColor: '#F0F9FF',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});

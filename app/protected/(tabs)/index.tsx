@@ -4,9 +4,11 @@ import {
   Platform,
   ScrollView,
   SafeAreaView,
+  View,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
+import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useEffect } from 'react';
@@ -29,13 +31,13 @@ export default function HomeScreen() {
   }, [currentUser]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>
       <StatusBar style="dark" />
       <ThemedView
         style={{
           flex: 1,
           paddingTop: Platform.OS === 'ios' ? 0 : Constants.statusBarHeight,
-          backgroundColor: 'white',
+          backgroundColor: '#FAFAFB',
         }}
       >
         <ProfileView
@@ -43,6 +45,8 @@ export default function HomeScreen() {
           picture={currentUser.picture}
         />
         <Cards />
+        <Options />
+        <View style={{ flex: 1, backgroundColor: 'white' }}></View>
       </ThemedView>
     </SafeAreaView>
   );

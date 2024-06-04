@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import React from 'react';
 import {
   Authenticator,
@@ -9,6 +16,8 @@ import { Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { StatusBar } from 'expo-status-bar';
+import { AntDesign } from '@expo/vector-icons';
+import { PageView } from '../../components/Reusable';
 
 const theme = {
   tokens: {
@@ -154,6 +163,7 @@ const ProtectedContent = () => {
               name="profile_edit"
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="groups" options={{ headerShown: false }} />
           </Stack>
         </Authenticator>
       </View>

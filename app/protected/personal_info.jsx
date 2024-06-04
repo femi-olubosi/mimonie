@@ -15,33 +15,16 @@ import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import { useGlobalContext } from '../../store/StoreContext';
 import { topBar } from '../../cStyle';
+import { PageView } from '../../components/Reusable';
 
 const PersonalInformation = () => {
   const { currentUser } = useGlobalContext();
   const router = useRouter();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
-      <View style={styles.header}>
-        <Ionicons
-          name="arrow-back"
-          size={24}
-          color="black"
-          onPress={() => router.push('/protected/account')}
-        />
-        <View>
-          <Text style={[styles.headerTitle, { marginBottom: 5 }]}>
-            Personal Information
-          </Text>
-        </View>
-        <TouchableOpacity
-          onPress={() => router.push('/protected/profile_edit')}
-        >
-          <AntDesign name="edit" size={20} color={'black'} />
-        </TouchableOpacity>
-      </View>
+    <PageView title={'Personal Information'} right={true}>
       <View style={styles.container}>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.infoContainer}>
             <Text style={styles.label}>{'Full Name'}</Text>
             <TextInput
@@ -120,7 +103,7 @@ const PersonalInformation = () => {
           </View>
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </PageView>
   );
 };
 

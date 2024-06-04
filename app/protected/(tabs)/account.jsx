@@ -134,8 +134,12 @@ const Account = () => {
             </Text>
           </View>
         </View>
-        <View style={{ backgroundColor: 'white', flex: 2 }}>
-          <ScrollView contentContainerStyle={{ flex: 1, padding: 20 }}>
+        <View style={{ backgroundColor: 'white', flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={{
+              padding: 20,
+            }}
+          >
             {menuItems.map((item, index) => (
               <TouchableOpacity
                 key={index}

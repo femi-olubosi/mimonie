@@ -15,7 +15,11 @@ import Button from '../../components/Button';
 import { Colors } from '../../constants/Colors';
 import { fetchCurrUser, updateAttributes } from '../../api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
-import { DateTimeSelector, SelectInput } from '../../components/Reusable';
+import {
+  DateTimeSelector,
+  PageView,
+  SelectInput,
+} from '../../components/Reusable';
 import { ErrorCheck } from '../../utils/errorCheck';
 import Constants from 'expo-constants';
 import { topBar } from '../../cStyle';
@@ -92,28 +96,10 @@ const PersonalInformation = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
-      <View style={styles.header}>
-        <Ionicons
-          name="arrow-back"
-          size={24}
-          color="black"
-          onPress={() => router.back()}
-        />
-        <View>
-          <Text style={[styles.headerTitle, { marginBottom: 5 }]}>
-            Personal Information
-          </Text>
-          <Text style={[styles.label, { textAlign: 'center' }]}>
-            Editing...
-          </Text>
-        </View>
-        <TouchableOpacity style={{ opacity: 0 }}>
-          <AntDesign name="edit" size={20} color="black" />
-        </TouchableOpacity>
-      </View>
+    <PageView title={'Edit Personal Information'}>
       <ScrollView
         style={styles.container}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
       >
         {formElement.map((item, index) => (
@@ -176,7 +162,7 @@ const PersonalInformation = () => {
           outline={true}
         />
       </View>
-    </SafeAreaView>
+    </PageView>
   );
 };
 

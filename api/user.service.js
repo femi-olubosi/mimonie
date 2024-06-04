@@ -37,6 +37,7 @@ export const uploadFile = async (file, type) => {
       },
     }).result;
     const text = await body.text();
+    const blob = await body.blob();
     return text;
   } catch (error) {
     console.error('Error uploading or getting file URL:', error);
