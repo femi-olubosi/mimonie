@@ -83,7 +83,7 @@ const PersonalInformation = () => {
     try {
       await updateAttributes(infoDetails);
       await fetchCurrUser(setCurrentUser);
-      router.push('/protected/personal_info');
+      router.back();
     } catch (error) {
       console.error(error);
     } finally {

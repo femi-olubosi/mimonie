@@ -164,6 +164,14 @@ const ProtectedContent = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="groups" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="contribution_details"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="create_contribution"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </Authenticator>
       </View>

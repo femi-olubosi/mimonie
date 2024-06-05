@@ -24,24 +24,30 @@ function RootLayout() {
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setIsSplashVisible(false);
-  //   }, 2000);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsSplashVisible(false);
+    }, 3000);
 
-  //   return () => clearTimeout(timer);
-  // }, []);
+    return () => clearTimeout(timer);
+  }, []);
 
-  if (!fontsLoaded) {
-    return;
-  }
+  // if (isSplashVisible) {
+  //   return <SplashScreen />;
+  // }
 
   return (
-    <StoreProvider>
-      <SafeAreaProvider>
-        <RootContent />
-      </SafeAreaProvider>
-    </StoreProvider>
+    <>
+      {isSplashVisible ? (
+        <SplashScreen />
+      ) : (
+        <StoreProvider>
+          <SafeAreaProvider>
+            <RootContent />
+          </SafeAreaProvider>
+        </StoreProvider>
+      )}
+    </>
   );
 }
 

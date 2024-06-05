@@ -1,6 +1,7 @@
 import {
   FlatList,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -22,47 +23,63 @@ const Cards = () => {
         data={cards}
         renderItem={({ item }) => (
           <ThemedView
-            style={[styles.card, { overflow: 'hidden', padding: 10 }]}
+            style={[styles.card, { overflow: 'hidden', position: 'relative' }]}
           >
-            <ThemedView style={{ backgroundColor: Colors.pri, width: '70%' }}>
-              <ThemedText
-                style={{ fontSize: 12, color: 'white', fontFamily: 'isb' }}
-              >
-                {currentUser.preferred_username}'s Contribution
-              </ThemedText>
-              <ThemedText
-                style={{ fontSize: 12, color: 'white', fontFamily: 'im' }}
-              >
-                Group: {item.group}
-              </ThemedText>
-              <Text style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}>
-                Duration: {item.num_of_month} months
-              </Text>
+            <ThemedView
+              style={{
+                backgroundColor: 'transparent',
+                rowGap: 5,
+                paddingLeft: 10,
+                paddingTop: 10,
+                paddingBottom: 10,
+              }}
+            >
               <Text style={{ fontSize: 12, color: 'white', fontFamily: 'isb' }}>
-                Target:{' '}
-                <FontAwesome6 name="naira-sign" size={12} color="white" />
-                {item.target}
+                {currentUser.preferred_username}'s Contribution
               </Text>
-              <Text
-                style={[
-                  styles.text,
-                  { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
-                ]}
+              <View style={{ rowGap: 2 }}>
+                <Text
+                  style={{ fontSize: 12, color: 'white', fontFamily: 'im' }}
+                >
+                  Group: {item.group}
+                </Text>
+                <Text
+                  style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
+                >
+                  Duration: {item.num_of_month} months
+                </Text>
+                <Text
+                  style={{ fontSize: 12, color: 'white', fontFamily: 'isb' }}
+                >
+                  Target:{' '}
+                  <FontAwesome6 name="naira-sign" size={12} color="white" />
+                  {item.target}
+                </Text>
+                <Text
+                  style={[
+                    styles.text,
+                    { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
+                  ]}
+                >
+                  Collect on {item.due_date_final}
+                </Text>
+              </View>
+              <View
+                style={{
+                  paddingVertical: 5,
+                  rowGap: Platform.OS === 'android' ? 0 : 3,
+                }}
               >
-                Collect on {item.due_date_final}
-              </Text>
-              <ThemedText
-                style={[styles.text, { fontSize: 12, fontFamily: 'ir' }]}
-              >
-                {item.num_of_contributions} contribution(s) so far
-              </ThemedText>
-              <ThemedText
-                type="defaultSemibold"
-                style={[styles.text, { fontSize: 32, fontFamily: 'esb' }]}
-              >
-                <FontAwesome6 name="naira-sign" size={28} color="white" />
-                {item.contributions}.00
-              </ThemedText>
+                <Text style={[styles.text, { fontSize: 12, fontFamily: 'ir' }]}>
+                  {item.num_of_contributions} contribution(s) so far
+                </Text>
+                <Text
+                  style={[styles.text, { fontSize: 32, fontFamily: 'esb' }]}
+                >
+                  <FontAwesome6 name="naira-sign" size={28} color="white" />
+                  {item.contributions}.00
+                </Text>
+              </View>
               <Text
                 style={[
                   styles.text,
@@ -79,20 +96,18 @@ const Cards = () => {
                 Due {item.due_date_next}
               </Text>
             </ThemedView>
-            <View
+
+            <Image
+              source={require('../../assets/images/home-card.png')}
               style={{
+                height: '100%',
+                width: '48%',
                 position: 'absolute',
+                objectFit: 'cover',
+                resizeMode: 'cover',
                 right: 0,
-                height: 300,
               }}
-            >
-              <Image
-                source={require('../../assets/images/home-card.png')}
-                style={{
-                  height: '100%',
-                }}
-              />
-            </View>
+            />
           </ThemedView>
         )}
         keyExtractor={(item, index) => index.toString()}
@@ -109,7 +124,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    // paddingStart: 20,
+    backgroundColor: 'white',
   },
   card: {
     backgroundColor: Colors.pri,
@@ -120,11 +135,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-    width: 350,
+    paddingRight: 95,
   },
   text: {
     fontSize: 16,
-    marginBottom: 5,
     color: 'white',
   },
 });

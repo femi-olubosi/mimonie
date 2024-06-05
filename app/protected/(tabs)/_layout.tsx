@@ -74,6 +74,32 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="mimonie"
+        options={{
+          title: 'Mimonie',
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                borderTopWidth: focused ? 2 : 0,
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                borderTopColor: focused
+                  ? Colors[colorScheme ?? 'light'].pri
+                  : 'transparent',
+              }}
+            >
+              <MaterialCommunityIcons
+                name="hand-coin-outline"
+                size={24}
+                color={color}
+              />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="contact"
         options={{
           title: 'Contact',
