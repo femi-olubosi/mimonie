@@ -1,12 +1,12 @@
-type UserInfo @model @auth(rules: [{allow: public}]) {
+type ContributionGroups @model @auth(rules: [{allow: public}]) {
   id: ID!
-  full_name: String
-  phone: AWSPhone
-  date_of_birth: AWSDate
-  contact_address: String
-  occupation: String
-  income_from: Int
-  income_to: String
-  country_of_origin: String
-  country_of_residence: String
-}
+  description: String
+  status: String!
+  target: Int!
+  title: String
+  body_color: String
+  side_color: String
+  amount: Int!
+  name: String!
+  num_of_month: Int
+} 

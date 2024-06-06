@@ -7,6 +7,8 @@ import amplifyconfig from '../src/amplifyconfiguration.json';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import '@azure/core-asynciterator-polyfill';
 Amplify.configure(amplifyconfig);
 
 function RootLayout() {
@@ -24,13 +26,30 @@ function RootLayout() {
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsSplashVisible(false);
-    }, 3000);
+  const [isSignedIn, setIsSignedIn] = useState(null);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const session = await fetchAuthSession();
+        setIsSignedIn(!!session.tokens.accessToken);
+      } catch (error) {
+        setIsSignedIn(false);
+      } finally {
+        setIsSplashVisible(false);
+      }
+    };
+
+    checkAuthStatus();
   }, []);
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setIsSplashVisible(false);
+  //   }, 3000);
+
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   // if (isSplashVisible) {
   //   return <SplashScreen />;
@@ -42,9 +61,9 @@ function RootLayout() {
         <SplashScreen />
       ) : (
         <StoreProvider>
-          <SafeAreaProvider>
-            <RootContent />
-          </SafeAreaProvider>
+          {/* <SafeAreaProvider> */}
+          <RootContent />
+          {/* </SafeAreaProvider> */}
         </StoreProvider>
       )}
     </>

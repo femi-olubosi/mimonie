@@ -5,6 +5,7 @@ import {
   ScrollView,
   SafeAreaView,
   View,
+  Text,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -15,6 +16,8 @@ import { useEffect } from 'react';
 import { fetchCurrUser } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
+import { Colors } from '@/constants/Colors';
+import Button from '@/components/Button';
 
 export default function HomeScreen() {
   const { currentUser, setCurrentUser, setIsLoading } = useGlobalContext();

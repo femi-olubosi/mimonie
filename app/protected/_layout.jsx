@@ -1,11 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import React from 'react';
 import {
   Authenticator,
@@ -16,8 +9,6 @@ import { Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { StatusBar } from 'expo-status-bar';
-import { AntDesign } from '@expo/vector-icons';
-import { PageView } from '../../components/Reusable';
 
 const theme = {
   tokens: {
@@ -67,11 +58,11 @@ const formFields = {
 
 const ProtectedLayout = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <Authenticator.Provider>
-        <ProtectedContent />
-      </Authenticator.Provider>
-    </ThemeProvider>
+    // <ThemeProvider theme={theme}>
+    <Authenticator.Provider>
+      <ProtectedContent />
+    </Authenticator.Provider>
+    // </ThemeProvider>
   );
 };
 

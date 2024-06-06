@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-
     "developmentClient": {
       "silentLaunch": true
     },
@@ -18,7 +17,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "red"
+        "backgroundColor": "#006EBD"
       },
       "package": "com.femiolubosi.mimonie"
     },

@@ -12,6 +12,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { DateTimeSelector, SelectInput } from '../../components/Reusable';
+import { useGlobalContext } from '../../store/StoreContext';
 
 const dateOption = [
   'en-US',
@@ -24,12 +25,11 @@ const dateOption = [
 
 const CreateContribution = () => {
   const [contributionName, setContributionName] = useState('');
-  const [groupCategory, setGroupCategory] = useState('');
-  const [commencementDate, setCommencementDate] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState('Select a category');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
+  const { contributionGroups } = useGlobalContext();
   const router = useRouter();
 
   const handleConfirm = () => {
@@ -42,6 +42,11 @@ const CreateContribution = () => {
   const toggleDatePicker = () => {
     setShowDatePicker(!showDatePicker);
   };
+
+  const groupNameAndValue = contributionGroups.map((item) => ({
+    label: item.title,
+    value: item.name,
+  }));
 
   return (
     <PageView title={'Create Contribution'}>
@@ -64,7 +69,7 @@ const CreateContribution = () => {
           <View style={{ rowGap: 14 }}>
             <Text style={styles.label}>Group Category</Text>
             <SelectInput
-              options={categoryOptions}
+              options={groupNameAndValue}
               selectedValue={selectedValue}
               setSelectedValue={setSelectedValue}
               defaultValue={selectedValue}

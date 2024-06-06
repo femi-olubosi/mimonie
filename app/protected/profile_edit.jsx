@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  Pressable,
 } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -103,7 +104,7 @@ const PersonalInformation = () => {
         contentContainerStyle={styles.listContent}
       >
         {formElement.map((item, index) => (
-          <TouchableOpacity
+          <Pressable
             key={index}
             style={[styles.infoContainer]}
             onPress={() =>
@@ -139,6 +140,9 @@ const PersonalInformation = () => {
                   onPress={() =>
                     item.name === 'birthdate' ? toggleDatePicker() : {}
                   }
+                  keyboardType={
+                    item.name === 'phone_number' ? 'number-pad' : 'default'
+                  }
                 />
                 {item.name === 'birthdate' && (
                   <DateTimeSelector
@@ -151,7 +155,7 @@ const PersonalInformation = () => {
                 )}
               </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </ScrollView>
       <View style={styles.buttonContainer}>

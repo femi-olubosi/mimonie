@@ -9,6 +9,7 @@ const StoreProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
   const [userInfo, setUserInfo] = useState({});
+  const [contributionGroups, setContributionGroups] = useState([]);
 
   const toggleMode = () => {
     setIsDarkMode((prevMode) => !prevMode);
@@ -29,6 +30,8 @@ const StoreProvider = ({ children }) => {
     setCurrentUser,
     userInfo,
     setUserInfo,
+    contributionGroups,
+    setContributionGroups,
   };
 
   return (
