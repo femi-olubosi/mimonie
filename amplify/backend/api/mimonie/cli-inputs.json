@@ -22,7 +22,7 @@
           "resolutionStrategy": {
             "type": "AUTOMERGE"
           },
-          "entityName": "ContributionGroups"
+          "entityName": "Contribution"
         }
       ]
     }

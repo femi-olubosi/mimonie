@@ -156,7 +156,7 @@ const ProtectedContent = () => {
             />
             <Stack.Screen name="groups" options={{ headerShown: false }} />
             <Stack.Screen
-              name="contribution_details"
+              name="mimonie/[id]"
               options={{ headerShown: false }}
             />
             <Stack.Screen

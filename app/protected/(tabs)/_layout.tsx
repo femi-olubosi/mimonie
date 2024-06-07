@@ -74,7 +74,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="mimonie"
+        name="mimonie/index"
         options={{
           title: 'Mimonie',
           tabBarIcon: ({ color, focused }) => (

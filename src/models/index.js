@@ -4,8 +4,9 @@ import { schema } from './schema';
 
 
 
-const { ContributionGroups } = initSchema(schema);
+const { Contribution, ContributionGroups } = initSchema(schema);
 
 export {
+  Contribution,
   ContributionGroups
 };

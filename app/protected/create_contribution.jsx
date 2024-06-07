@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,31 +13,59 @@ import { useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { DateTimeSelector, SelectInput } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
+import { createContribution } from '../../api/contributions.service';
+import { getContributionGroups } from '../../api/groups.service';
 
 const dateOption = [
   'en-US',
   {
-    day: '2-digit',
-    month: '2-digit',
     year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
   },
 ];
 
 const CreateContribution = () => {
   const [contributionName, setContributionName] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedValue, setSelectedValue] = useState('Select a category');
+  const [selectedValue, setSelectedValue] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
-  const { contributionGroups } = useGlobalContext();
+  const {
+    contributionGroups,
+    setContributionGroups,
+    currentUser,
+    setContributions,
+    setIsLoading,
+  } = useGlobalContext();
   const router = useRouter();
 
-  const handleConfirm = () => {
-    // Logic to handle the creation of the contribution
-    setModalVisible(true);
-  };
+  useEffect(() => {
+    getContributionGroups(setContributionGroups);
+  }, []);
 
-  const handleDateChange = () => {};
+  const handleConfirm = async () => {
+    const details = {
+      contributionName,
+      groupName: selectedValue.title,
+      groupId: selectedValue.value,
+      date: date.toLocaleDateString('en-CA'),
+      userId: currentUser.userId,
+      username: currentUser.preferred_username,
+      target: selectedValue.target,
+      amount: selectedValue.amount,
+      num_of_month: selectedValue.num_of_month,
+    };
+    setIsLoading(true);
+    try {
+      await createContribution(details, setContributions);
+      setModalVisible(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const toggleDatePicker = () => {
     setShowDatePicker(!showDatePicker);
@@ -45,7 +73,8 @@ const CreateContribution = () => {
 
   const groupNameAndValue = contributionGroups.map((item) => ({
     label: item.title,
-    value: item.name,
+    value: item.id,
+    ...item,
   }));
 
   return (
@@ -72,7 +101,7 @@ const CreateContribution = () => {
               options={groupNameAndValue}
               selectedValue={selectedValue}
               setSelectedValue={setSelectedValue}
-              defaultValue={selectedValue}
+              defaultValue={selectedValue?.label}
             />
           </View>
 
@@ -97,7 +126,7 @@ const CreateContribution = () => {
                 show={showDatePicker}
                 setShow={setShowDatePicker}
                 date={date}
-                setDate={handleDateChange}
+                setDate={setDate}
                 mode={'date'}
               />
             </Pressable>

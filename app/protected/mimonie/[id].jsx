@@ -1,50 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { PageView } from '../../components/Reusable';
-
-const contributions = [
-  {
-    id: '1',
-    name: 'Contribution 1',
-    dateCreated: '2023-01-01',
-    amount: '$100',
-    numContributors: 10,
-    currentMonth: 'June',
-    targetMonth: 'December',
-    nextContributionDate: '2023-07-01',
-    userRole: 'Creator',
-    isCreator: true,
-    status: 'Open',
-  },
-  {
-    id: '2',
-    name: 'Contribution 2',
-    dateCreated: '2023-02-01',
-    amount: '$200',
-    numContributors: 5,
-    currentMonth: 'June',
-    targetMonth: 'November',
-    nextContributionDate: '2023-07-15',
-    userRole: 'Invitee',
-    isCreator: false,
-    status: 'Closed',
-  },
-];
+import { PageView } from '@/components/Reusable';
+import { useGlobalContext } from '../../../store/StoreContext';
+import Button from '../../../components/Button';
+import { deleteContribution } from '../../../api/contributions.service';
 
 const ContributionDetails = () => {
+  const { contributions } = useGlobalContext();
   const { id } = useLocalSearchParams();
-  const contribution = contributions.find((item) => item.id === '1');
+  const contribution = contributions.find((item) => item.id === id);
 
-  if (!contribution) {
-    return (
-      <PageView title={'Contribution Details'} right={true}>
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Contribution not found</Text>
-        </View>
-      </PageView>
-    );
-  }
+  const handleDelete = async () => {
+    await deleteContribution(id);
+    router.push('/protected/mimonie');
+  };
 
   return (
     <PageView title={'Contribution Details'} right={true}>
@@ -57,7 +27,7 @@ const ContributionDetails = () => {
 
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Date Created</Text>
-            <Text style={styles.value}>{contribution.dateCreated}</Text>
+            <Text style={styles.value}>{contribution.createdAt}</Text>
           </View>
 
           <View style={styles.detailContainer}>
@@ -67,7 +37,7 @@ const ContributionDetails = () => {
 
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Number of Contributors</Text>
-            <Text style={styles.value}>{contribution.numContributors}</Text>
+            <Text style={styles.value}>{contribution.participant.length}</Text>
           </View>
 
           <View style={styles.detailContainer}>
@@ -104,6 +74,14 @@ const ContributionDetails = () => {
             <Text style={styles.value}>{contribution.status}</Text>
           </View>
         </ScrollView>
+        <View>
+          <Button
+            title={'Delete Contribution'}
+            color={'red'}
+            onPress={handleDelete}
+            outline={false}
+          />
+        </View>
       </SafeAreaView>
     </PageView>
   );
@@ -125,15 +103,15 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
   },
   label: {
-    fontSize: 16,
-    color: '#1F2937',
-    marginBottom: 4,
-    fontWeight: 'bold',
-  },
-  value: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 16,
+    marginBottom: 8,
+    fontFamily: 'ir',
+  },
+  value: {
+    fontSize: 16,
+    color: '#1F2937',
+    fontFamily: 'ib',
   },
   errorText: {
     fontSize: 18,

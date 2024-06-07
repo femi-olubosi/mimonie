@@ -7,7 +7,7 @@
             "ConflictDetection": "VERSION"
         },
         "models": {
-            "ContributionGroups": {
+            "Contribution": {
                 "ConflictHandler": "AUTOMERGE",
                 "ConflictDetection": "VERSION"
             }

@@ -123,7 +123,7 @@ export const SelectInput = ({
                 borderColor: 'gray',
               }}
               onPress={() => {
-                setSelectedValue(e.value);
+                setSelectedValue(e);
                 setDrop(false);
               }}
             >
