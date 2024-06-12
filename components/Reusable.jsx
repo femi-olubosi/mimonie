@@ -76,9 +76,10 @@ export const SelectInput = ({
   return (
     <View
       style={{
-        borderRadius: 14,
+        borderRadius: 12,
         borderWidth: drop ? 2 : 1,
         borderColor: 'gray',
+        minheight: 53,
       }}
     >
       <Pressable
@@ -109,6 +110,7 @@ export const SelectInput = ({
           style={{
             width: '100%',
             paddingVertical: 6,
+            backgroundColor: 'white',
           }}
         >
           {options?.map((e, idx) => (
@@ -116,12 +118,12 @@ export const SelectInput = ({
               key={idx}
               style={{
                 paddingHorizontal: 10,
-                paddingVertical: 5,
+                paddingVertical: 10,
                 borderBottomWidth: idx === options.length - 1 ? 0 : 1,
                 borderColor: 'gray',
               }}
               onPress={() => {
-                setSelectedValue(e.value);
+                setSelectedValue(e);
                 setDrop(false);
               }}
             >
@@ -134,19 +136,26 @@ export const SelectInput = ({
   );
 };
 
-export const PageView = ({ title, right, children }) => {
+export const PageView = ({ title, right, children, backIcon = true }) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
-      <View style={styles.header}>
+      <View
+        style={[
+          styles.header,
+          { justifyContent: backIcon ? 'space-between' : 'center' },
+        ]}
+      >
         <View
           style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center' }}
         >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color="black"
-            onPress={() => router.push('/protected/account')}
-          />
+          {backIcon && (
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="black"
+              onPress={() => router.back()}
+            />
+          )}
           <View>
             <Text style={[styles.headerTitle, { marginBottom: 5 }]}>
               {title}
@@ -176,7 +185,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
     padding: 16,
     height: Platform.OS === 'android' ? 128 : 80,
     paddingTop: topBar,

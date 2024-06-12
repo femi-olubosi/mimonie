@@ -17,10 +17,13 @@ import Checkbox from 'expo-checkbox';
 import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
+import { createUserProfile } from '../../api/user.service';
+import * as Device from 'expo-device';
 
 const SignUp = (props) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [phone_number, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const { handleSubmit, toSignIn } = props;
@@ -28,27 +31,35 @@ const SignUp = (props) => {
   const { setIsLoading, isLoading, setEmailVeri } = useGlobalContext();
 
   const handleSignUp = async () => {
-    if (ErrorCheck({ username, password, email })) {
+    if (ErrorCheck({ username, password, email, phone_number })) {
       return;
     }
     if (!isChecked) {
-      Alert.alert('Hi', 'You must agree to the terms and conditions');
+      Alert.alert('Error', 'You must agree to the terms and conditions');
       return;
     }
 
     setIsLoading(true);
     try {
-      const res = await signUp({
+      const { userId } = await signUp({
         username: email,
         password,
         options: {
           userAttributes: {
             email,
             preferred_username: username,
+            phone_number,
           },
+          autoSignIn: true,
         },
       });
 
+      const device = {
+        device_id: Device.osInternalBuildId,
+        device_name: Device.deviceName,
+        device_brand: Device.brand,
+      };
+      await createUserProfile(userId, device);
       setEmailVeri(email);
       router.push('/email_verify');
     } catch (error) {
@@ -102,6 +113,26 @@ const SignUp = (props) => {
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+          />
+        </View>
+        <View
+          style={[
+            styles.input,
+            {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            },
+          ]}
+        >
+          <Fontisto name="phone" size={20} color="gray" />
+          <TextInput
+            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
+            placeholder="Enter your phone number"
+            value={phone_number}
+            onChangeText={setPhone}
+            autoCapitalize="none"
+            keyboardType="phone-pad"
           />
         </View>
         <View

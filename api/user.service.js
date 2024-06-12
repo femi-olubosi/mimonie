@@ -3,8 +3,9 @@ import {
   fetchUserAttributes,
   updateUserAttributes,
 } from 'aws-amplify/auth';
-import { post, get } from 'aws-amplify/api';
 import { downloadData, uploadData } from 'aws-amplify/storage';
+import { UserProfile } from '@/src/models';
+import { DataStore } from 'aws-amplify/datastore';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
@@ -13,6 +14,7 @@ export const fetchCurrUser = async (setCurrentUser) => {
     ...user,
     ...attribute,
   });
+  return user;
 };
 
 export const uploadFile = async (file, type) => {
@@ -54,6 +56,11 @@ export const updateAttributes = async (data) => {
     username,
     preferred_username,
     email,
+    occupation,
+    income_from,
+    income_to,
+    country_of_origin,
+    country_of_residence,
     ...rest
   } = data;
   const res = await updateUserAttributes({
@@ -61,17 +68,61 @@ export const updateAttributes = async (data) => {
   });
 };
 
-export const getUserInfo = async (setUserInfo) => {
-  //   try {
-  //     const restOperation = get({
-  //       apiName: 'userInfo',
-  //       path: '/user-info',
-  //     });
-  //     const { body } = await restOperation.response;
-  //     const json = await body.json();
-  //     console.log('GET call succeeded: ', json);
-  //     // return response;
-  //   } catch (e) {
-  //     console.log('GET call failed: ', JSON.parse(e.response.body));
-  //   }
+export const fetchUserProfile = async (setUserProfile, currentUser) => {
+  try {
+    // await DataStore.clear();
+    // await DataStore.start();
+    // Fetch contributions where the user is a participant
+    const userProfile = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(currentUser.userId)
+    );
+    setUserProfile(userProfile[0]);
+    return userProfile[0];
+  } catch (error) {
+    console.error('Error fetching user user profile:', error);
+    return [];
+  }
+};
+
+export const createUserProfile = async (
+  userId,
+  { device_id, device_name, device_brand }
+) => {
+  try {
+    const userProfile = await DataStore.save(
+      new UserProfile({ userId, device_id, device_name, device_brand })
+    );
+    return userProfile;
+  } catch (error) {
+    console.error('Error creating user profile:', error);
+    throw error;
+  }
+};
+
+export const updateUserProfile = async (updatedData, currentUser) => {
+  try {
+    // Fetch the existing user profile
+    const userProfile = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(currentUser.userId)
+    );
+
+    const data = {
+      preferred_username: currentUser.preferred_username,
+      email: currentUser.email,
+      phone_number: currentUser.phone_number,
+      ...updatedData,
+    };
+
+    // Update the profile with new data
+    const updatedProfile = await DataStore.save(
+      UserProfile.copyOf(userProfile[0], (updated) => {
+        Object.assign(updated, data);
+      })
+    );
+
+    return updatedProfile;
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    throw error;
+  }
 };

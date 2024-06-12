@@ -16,23 +16,30 @@
   "aws_appsync_region": "us-west-2",
   "aws_appsync_authenticationType": "API_KEY",
   "aws_appsync_apiKey": "da2-ukygstrnn5bo5g6cwx6sa6kjpi",
-  "aws_cognito_identity_pool_id": "us-west-2:30228c51-f3b0-435b-a45d-b8555ffc9470",
+  "aws_cognito_identity_pool_id": "us-west-2:5970c58f-3110-4dac-966e-22d627bd0df4",
   "aws_cognito_region": "us-west-2",
-  "aws_user_pools_id": "us-west-2_ZQ29GM7G7",
-  "aws_user_pools_web_client_id": "3dvo48a3q1hcgrvgm1cgirkqun",
+  "aws_user_pools_id": "us-west-2_iekU6f9ny",
+  "aws_user_pools_web_client_id": "7s6bd5sl5gf2drss7mbes9h0pm",
   "oauth": {},
   "aws_cognito_username_attributes": [],
   "aws_cognito_social_providers": [],
   "aws_cognito_signup_attributes": [
-    "EMAIL"
+    "EMAIL",
+    "PHONE_NUMBER",
+    "PREFERRED_USERNAME"
   ],
-  "aws_cognito_mfa_configuration": "OFF",
+  "aws_cognito_mfa_configuration": "OPTIONAL",
   "aws_cognito_mfa_types": [
     "SMS"
   ],
   "aws_cognito_password_protection_settings": {
     "passwordPolicyMinLength": 8,
-    "passwordPolicyCharacters": []
+    "passwordPolicyCharacters": [
+      "REQUIRES_LOWERCASE",
+      "REQUIRES_NUMBERS",
+      "REQUIRES_SYMBOLS",
+      "REQUIRES_UPPERCASE"
+    ]
   },
   "aws_cognito_verification_mechanisms": [
     "EMAIL"

@@ -1,12 +1,62 @@
-type UserInfo @model @auth(rules: [{allow: public}]) {
+type UserProfile @model @auth(rules: [{allow: public}]) {
   id: ID!
-  full_name: String
-  phone: AWSPhone
-  date_of_birth: AWSDate
-  contact_address: String
-  occupation: String
+  name: String
+  preferred_username: String
+  phone_number: AWSPhone
+  birthday: AWSDate
+  address: String
   income_from: Int
-  income_to: String
-  country_of_origin: String
+  income_to: Int
+  occupation: String
   country_of_residence: String
+  country_of_origin: String
+  email: AWSEmail
+  auth_url: String
+  invites: [String]
+  is_bvn_verified: Boolean
+  is_nin_verified: Boolean
+  device_id: String
+  userId: ID
 }
+
+type UserCardDetails @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  last4: String
+  bank: String
+  userId: ID
+  type: String
+  expiry: String
+  authorization_code: String
+}
+
+type Contribution @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  title: String
+  category: String
+  start_date: AWSDate
+  invite_link: AWSURL
+  contributiongroupsID: ID! @index(name: "byContributionGroups")
+  participant: [AWSJSON]
+  owner: String!
+  target: Int!
+  amount: Int!
+  num_of_month: Int!
+  status: String
+  participant_ids: [ID]
+}
+
+type ContributionGroups @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  description: String
+  status: String!
+  target: Int!
+  title: String
+  body_color: String
+  side_color: String
+  amount: Int!
+  name: String!
+  num_of_month: Int
+  Contributions: [Contribution] @hasMany(indexName: "byContributionGroups", fields: ["id"])
+}
+ 

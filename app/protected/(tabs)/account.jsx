@@ -19,24 +19,28 @@ import {
   FontAwesome,
   Ionicons,
   MaterialIcons,
+  Octicons,
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
 import { updateUserAttributes } from 'aws-amplify/auth';
-import { fetchCurrUser } from '../../../api/user.service';
+import { fetchCurrUser, updateUserProfile } from '../../../api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
-  const { currentUser, setCurrentUser, setIsLoading } = useGlobalContext();
+  const { currentUser, setCurrentUser, setIsLoading, userProfile } =
+    useGlobalContext();
   const [profilePicture, setProfilePicture] = useState('');
   const [logoutModal, setLogoutModal] = useState(false);
   const router = useRouter();
 
-  const handleInviteFriends = () => {};
+  const handleInviteFriends = () => {
+    router.push('/protected/contact');
+  };
 
   const handleProfilePicture = async () => {
     try {
@@ -57,6 +61,7 @@ const Account = () => {
         },
       });
 
+      await updateUserProfile({ picture: fileText }, currentUser);
       await fetchCurrUser(setCurrentUser);
     } catch (error) {
       console.error('Error handling profile picture:', error);
@@ -69,7 +74,7 @@ const Account = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
       <View style={{ flex: 1, justifyContent: 'center', paddingTop: topBar }}>
-        <View style={{ backgroundColor: '#F0F9FF', height: 269 }}>
+        <View style={{ backgroundColor: '#F0F9FF', height: 230 }}>
           <View
             style={{
               justifyContent: 'center',
@@ -120,7 +125,7 @@ const Account = () => {
               </Pressable>
             </View>
             <Text style={{ color: '#424856', fontSize: 18, fontFamily: 'er' }}>
-              {currentUser.name}
+              {userProfile.name}
             </Text>
             <Text
               style={{
@@ -138,6 +143,7 @@ const Account = () => {
           <ScrollView
             contentContainerStyle={{
               padding: 20,
+              flex: 1,
             }}
           >
             {menuItems.map((item, index) => (
@@ -154,22 +160,47 @@ const Account = () => {
                 >
                   {item.icon}
                   <Text style={styles.itemText}>{item.title}</Text>
+                  {item.extra && (
+                    <Octicons
+                      name={
+                        userProfile.is_bvn_verified &&
+                        userProfile.is_nin_verified
+                          ? 'verified'
+                          : 'unverified'
+                      }
+                      size={20}
+                      color={
+                        userProfile.is_bvn_verified &&
+                        userProfile.is_nin_verified
+                          ? 'green'
+                          : 'red'
+                      }
+                      style={{ marginLeft: 10 }}
+                    />
+                  )}
                 </View>
                 <Ionicons name="chevron-forward" size={24} color="black" />
               </TouchableOpacity>
             ))}
-            <Button
-              title={'Invite Friends'}
-              color={Colors.pri}
-              onPress={handleInviteFriends}
-              outline={true}
-            />
-            <Button
-              title={'Sign Out'}
-              color={'red'}
-              onPress={() => setLogoutModal(true)}
-              outline={false}
-            />
+            <View
+              style={{
+                flex: 1,
+                justifyContent: 'center',
+              }}
+            >
+              <Button
+                title={'Invite Friends'}
+                color={Colors.pri}
+                onPress={handleInviteFriends}
+                outline={true}
+              />
+              <Button
+                title={'Sign Out'}
+                color={'red'}
+                onPress={() => setLogoutModal(true)}
+                outline={false}
+              />
+            </View>
           </ScrollView>
         </View>
       </View>
@@ -250,7 +281,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 20,
+    paddingVertical: 12,
     paddingHorizontal: 10,
     marginBottom: 8,
   },
@@ -268,10 +299,21 @@ const menuItems = [
     route: '/protected/personal_info',
   },
   {
+    title: 'Documents Verification',
+    icon: <Ionicons name="document-text-outline" size={24} color="black" />,
+    route: '/protected/document_verification',
+    extra: true,
+  },
+  {
     title: 'Cards management',
     icon: <AntDesign name="idcard" size={24} color="black" />,
-    route: '/cards_management',
+    route: '/protected/cards',
   },
+  // {
+  //   title: 'Contributions Invites',
+  //   icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
+  //   route: '/invites',
+  // },
   {
     title: 'Privacy & Security',
     icon: <MaterialIcons name="security" size={24} color="black" />,

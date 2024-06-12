@@ -44,3 +44,34 @@ export const cards = [
     due_date_next: '15 May 2024',
   },
 ];
+
+const contributions = [
+  {
+    id: '1',
+    name: 'Contribution 1',
+    dateCreated: '2023-01-01',
+    amount: '$100',
+    numContributors: 10,
+    currentMonth: 'June',
+    targetMonth: 'December',
+    nextContributionDate: '2023-07-01',
+    userRole: 'Creator',
+    isCreator: true,
+    status: 'Open',
+    createdBy: 'Sammy Oboma',
+  },
+  {
+    id: '2',
+    name: 'Contribution 2',
+    dateCreated: '2023-02-01',
+    amount: '$200',
+    numContributors: 5,
+    currentMonth: 'June',
+    targetMonth: 'November',
+    nextContributionDate: '2023-07-15',
+    userRole: 'Invitee',
+    isCreator: false,
+    status: 'Closed',
+    createdBy: 'Sammy Oboma',
+  },
+];

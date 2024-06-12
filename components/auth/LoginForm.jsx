@@ -17,13 +17,21 @@ import { signIn } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
+import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
+import * as Device from 'expo-device';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const { toSignUp, toForgotPassword } = props;
-  const { isLoading, setIsLoading, setEmailVeri } = useGlobalContext();
+  const {
+    isLoading,
+    setIsLoading,
+    setEmailVeri,
+    setCurrentUser,
+    setUserProfile,
+  } = useGlobalContext();
 
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
@@ -41,10 +49,39 @@ const LoginForm = (props) => {
           setEmailVeri(email);
           router.push('/email_verify');
           return;
+        } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_SMS_CODE') {
+          setEmailVeri(email);
+          router.push('/login_verify');
+          return;
         } else {
           Alert.alert('', nextStep.signInStep);
           return;
         }
+      }
+      const user = await fetchCurrUser(setCurrentUser);
+      const profile = await fetchUserProfile(setUserProfile, user);
+
+      if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
+        Alert.alert(
+          'Device Mismatch',
+          `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Pressed'),
+              style: 'cancel',
+            },
+            {
+              text: 'Register',
+              onPress: async () => {
+                // Send verification code to user's phone number
+                await sendVerificationCode(user.phone_number);
+                router.push('/device_verify'); // Navigate to device verification screen
+              },
+            },
+          ],
+          { cancelable: false }
+        );
       }
       router.push('/protected');
     } catch (error) {
@@ -69,6 +106,7 @@ const LoginForm = (props) => {
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            keyboardType="email-address"
           />
         </View>
         <View>

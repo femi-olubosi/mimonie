@@ -9,13 +9,14 @@ import {
 import React, { useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { confirmSignUp } from 'aws-amplify/auth';
+import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
+import { fetchCurrUser } from '../../api/user.service';
 
 const EmailConfirmation = () => {
-  const { emailVeri, setIsLoading } = useGlobalContext();
+  const { emailVeri, setIsLoading, setCurrentUser } = useGlobalContext();
   const [code, setCode] = useState(0);
 
   const handleVerify = async () => {
@@ -28,8 +29,7 @@ const EmailConfirmation = () => {
         username: emailVeri,
         confirmationCode: code,
       });
-
-      if (isSignUpComplete || nextStep.signUpStep === 'DONE') {
+      if (isSignUpComplete || nextStep === 'DONE') {
         router.push('/protected');
       } else {
         Alert.alert(
@@ -43,6 +43,11 @@ const EmailConfirmation = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResend = async () => {
+    await resendSignUpCode({ username: emailVeri });
+    alert('Code resent successful');
   };
 
   return (
@@ -104,6 +109,15 @@ const EmailConfirmation = () => {
               <Text style={styles.buttonText}>Verify</Text>
             </Pressable>
           </View>
+          <Pressable
+            style={{
+              marginTop: 20,
+              alignSelf: 'center',
+            }}
+            onPress={handleResend}
+          >
+            <Text>Resend Code</Text>
+          </Pressable>
         </View>
       </View>
     </Container>

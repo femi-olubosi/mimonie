@@ -1,0 +1,460 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+  Pressable,
+  FlatList,
+  Alert,
+} from 'react-native';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import { Link, useRouter } from 'expo-router';
+import { PageView } from '@/components/Reusable';
+import { DateTimeSelector, SelectInput } from '../../components/Reusable';
+import { useGlobalContext } from '../../store/StoreContext';
+import { createContribution } from '../../api/contributions.service';
+import { getContributionGroups } from '../../api/groups.service';
+import { sendSMSInvite } from '../../api/invite.service';
+import { Colors } from '../../constants/Colors';
+
+const dateOption = [
+  'en-US',
+  {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  },
+];
+
+const CreateContribution = () => {
+  const [contributionName, setContributionName] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [contactVisible, setContactVisible] = useState(false);
+  const [selectedValue, setSelectedValue] = useState({});
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [contactSearch, setContactSearch] = useState('');
+
+  const [date, setDate] = useState(new Date());
+  const {
+    contributionGroups,
+    setContributionGroups,
+    currentUser,
+    setContributions,
+    setIsLoading,
+    myContacts,
+    userProfile,
+  } = useGlobalContext();
+  const router = useRouter();
+
+  useEffect(() => {
+    getContributionGroups(setContributionGroups);
+  }, []);
+
+  const handleConfirm = async () => {
+    if (
+      !userProfile.income_from ||
+      selectedValue.amount > userProfile.income_from
+    ) {
+      Alert.alert(
+        'Sorry!!',
+        'You cannot create contribution under this category. Update your income'
+      );
+      return;
+    }
+
+    const details = {
+      contributionName,
+      groupName: selectedValue.title,
+      groupId: selectedValue.value,
+      date: date.toLocaleDateString('en-CA'),
+      userId: currentUser.userId,
+      username: currentUser.preferred_username,
+      target: selectedValue.target,
+      amount: selectedValue.amount,
+      num_of_month: selectedValue.num_of_month,
+    };
+    setIsLoading(true);
+    try {
+      await createContribution(
+        details,
+        setContributions,
+        currentUser,
+        userProfile
+      );
+      setModalVisible(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleDatePicker = () => {
+    setShowDatePicker(!showDatePicker);
+  };
+
+  const groupNameAndValue = contributionGroups.map((item) => ({
+    label: item.title,
+    value: item.id,
+    ...item,
+  }));
+
+  const handleInvite = async () => {
+    setContactVisible(true);
+    setModalVisible(false);
+  };
+
+  return (
+    <PageView title={'Create Contribution'}>
+      <View style={styles.container}>
+        <View
+          style={{
+            backgroundColor: 'red',
+            paddingVertical: 5,
+            paddingHorizontal: 5,
+            borderRadius: 8,
+            marginBottom: 20,
+          }}
+        >
+          <Text
+            style={{
+              color: 'white',
+              fontFamily: 'ir',
+              fontSize: 12,
+              alignItems: 'center',
+            }}
+          >
+            You cannot create a contribution at the moment. Please complete you
+            document upload and verification{' '}
+            <Link href={'/protected/kyc'}>
+              <Text
+                style={{
+                  color: 'white',
+                  fontFamily: 'ib',
+                  fontSize: 12,
+                }}
+              >
+                Upload Now
+              </Text>
+            </Link>
+          </Text>
+        </View>
+        <Text style={styles.instructions}>
+          Create a contribution schedule and invite friends to join
+        </Text>
+
+        <View style={{ rowGap: 20 }}>
+          <View style={{ rowGap: 14 }}>
+            <Text style={styles.label}>Contribution Name</Text>
+            <TextInput
+              style={styles.input}
+              value={contributionName}
+              onChangeText={setContributionName}
+              placeholder="Enter Contribution Name"
+            />
+          </View>
+
+          <View style={{ rowGap: 14 }}>
+            <Text style={styles.label}>Group Category</Text>
+            <SelectInput
+              options={groupNameAndValue}
+              selectedValue={selectedValue}
+              setSelectedValue={setSelectedValue}
+              defaultValue={selectedValue?.label}
+            />
+          </View>
+
+          <View style={{ rowGap: 14 }}>
+            <Text style={styles.label}>Commencement Date</Text>
+            <Pressable
+              style={[
+                styles.input,
+                {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                },
+              ]}
+              onPress={toggleDatePicker}
+            >
+              <TextInput
+                value={date.toLocaleDateString(...dateOption)}
+                placeholder="MM / DD / YYYY"
+              />
+              <DateTimeSelector
+                show={showDatePicker}
+                setShow={setShowDatePicker}
+                date={date}
+                setDate={setDate}
+                mode={'date'}
+              />
+            </Pressable>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleConfirm}>
+          <Text style={styles.buttonText}>Confirm</Text>
+        </TouchableOpacity>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalTitle}>Success!</Text>
+              <Text style={styles.modalText}>
+                Your contribution has been created successfully.
+              </Text>
+              <Text style={styles.modalText}>
+                Invite friends from your contact to join
+              </Text>
+              <Pressable style={styles.inviteLink} onPress={handleInvite}>
+                <Text>Click to invite friends</Text>
+              </Pressable>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  setModalVisible(false);
+                  router.push('/protected/mimonie');
+                }}
+              >
+                <Text style={styles.modalButtonText}>Not Now</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={contactVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainerContact}>
+            <View style={styles.modalViewContact}>
+              <Pressable
+                style={{
+                  width: 100,
+                  height: 3,
+                  backgroundColor: 'gray',
+                  position: 'absolute',
+                  borderRadius: 10,
+                  top: 2,
+                  alignSelf: 'center',
+                }}
+                onPress={() => setContactVisible(false)}
+              ></Pressable>
+              <View style={{ paddingVertical: 10 }}>
+                <Text style={styles.modalTitle}>Contacts</Text>
+                <TextInput
+                  style={styles.inputSearch}
+                  value={contactSearch}
+                  onChangeText={setContactSearch}
+                  placeholder="Search Contact"
+                />
+              </View>
+
+              <FlatList
+                data={myContacts.filter((e) =>
+                  e.name.includes(contactSearch.trim())
+                )}
+                keyExtractor={(item) => item.id}
+                renderItem={renderContact}
+              />
+              <View style={{ paddingVertical: 20 }}>
+                <Pressable
+                  style={{
+                    backgroundColor: Colors.pri,
+                    alignSelf: 'center',
+                    paddingHorizontal: 40,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                  }}
+                  onPress={() => {
+                    setContactVisible(false);
+                    router.push('/protected/mimonie');
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 16, color: 'white', fontFamily: 'isb' }}
+                  >
+                    Done
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </PageView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
+    padding: 20,
+  },
+  instructions: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 15,
+    color: '#1F2937',
+    fontFamily: 'ir',
+  },
+  input: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#9095A1',
+    padding: 12,
+    height: 53,
+  },
+  inputSearch: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#9095A1',
+    padding: 12,
+    height: 40,
+    width: '90%',
+    alignSelf: 'center',
+  },
+  button: {
+    backgroundColor: '#006EBD',
+    borderRadius: 12,
+    // padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 100,
+    height: 44,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContainerContact: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalView: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  modalViewContact: {
+    width: '95%',
+    height: '85%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingVertical: 20,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontFamily: 'isb',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  modalText: {
+    fontSize: 16,
+    color: '#6B7280',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  inviteLink: {
+    fontSize: 14,
+    color: '#2563EB',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: '#1F2937',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  contactContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  contactInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 10,
+  },
+
+  contactName: {
+    fontSize: 14,
+    fontFamily: 'ir',
+  },
+  phoneNumber: {
+    color: 'blue',
+  },
+  inviteText: {
+    color: 'green',
+  },
+});
+
+export default CreateContribution;
+
+const renderContact = ({ item }) => {
+  const handleSendInvite = async () => {
+    await sendSMSInvite(item, 12345);
+  };
+
+  return (
+    <TouchableOpacity
+      style={styles.contactContainer}
+      onPress={handleSendInvite}
+    >
+      <View style={styles.contactInfo}>
+        <FontAwesome name="user-circle-o" size={24} color="gray" />
+        <View style={{ rowGap: 2 }}>
+          <Text style={styles.contactName}>{item.name}</Text>
+          {/* {item.phoneNumbers &&
+          item.phoneNumbers.map((phone, index) => (
+            <TouchableOpacity key={index}>
+              <Text style={styles.phoneNumber}>
+                {phone.number} ({phone.label})
+              </Text>
+            </TouchableOpacity>
+          ))} */}
+        </View>
+      </View>
+      <Text style={styles.inviteText}>Invite</Text>
+    </TouchableOpacity>
+  );
+};

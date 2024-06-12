@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import SplashScreen from '../components/SplashScreen';
 import { Amplify } from 'aws-amplify';
 import amplifyconfig from '../src/amplifyconfiguration.json';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
+import { fetchAuthSession } from 'aws-amplify/auth';
+import '@azure/core-asynciterator-polyfill';
 Amplify.configure(amplifyconfig);
 
 function RootLayout() {
@@ -24,24 +25,47 @@ function RootLayout() {
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
 
+  const [isSignedIn, setIsSignedIn] = useState(null);
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const session = await fetchAuthSession();
+        setIsSignedIn(!!session.tokens.accessToken);
+      } catch (error) {
+        setIsSignedIn(false);
+      } finally {
+        setIsSplashVisible(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
+
   // useEffect(() => {
   //   const timer = setTimeout(() => {
   //     setIsSplashVisible(false);
-  //   }, 2000);
+  //   }, 3000);
 
   //   return () => clearTimeout(timer);
   // }, []);
 
-  if (!fontsLoaded) {
-    return;
-  }
+  // if (isSplashVisible) {
+  //   return <SplashScreen />;
+  // }
 
   return (
-    <StoreProvider>
-      <SafeAreaProvider>
-        <RootContent />
-      </SafeAreaProvider>
-    </StoreProvider>
+    <>
+      {isSplashVisible ? (
+        <SplashScreen />
+      ) : (
+        <StoreProvider>
+          {/* <SafeAreaProvider> */}
+          <RootContent />
+          {/* </SafeAreaProvider> */}
+        </StoreProvider>
+      )}
+    </>
   );
 }
 
@@ -55,6 +79,7 @@ function RootContent() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="email_verify" options={{ headerShown: false }} />
+        <Stack.Screen name="login_verify" options={{ headerShown: false }} />
         {/* <Stack.Screen name="personal_info" options={{ headerShown: false }} /> */}
         <Stack.Screen name="protected" options={{ headerShown: false }} />
       </Stack>

@@ -8,7 +8,7 @@ const Options = () => {
     <View
       style={{
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         padding: 20,
       }}
     >

@@ -27,7 +27,7 @@ const index = () => {
   }, []);
 
   return (
-    <View>
+    <View style={{ flex: 1, backgroundColor: Colors.pri }}>
       {updateAvailable ? (
         <View style={styles.centeredView}>
           <Modal

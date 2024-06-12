@@ -8,12 +8,19 @@ import {
   TextInput,
   ScrollView,
   Platform,
+  Pressable,
 } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import { Colors } from '../../constants/Colors';
-import { fetchCurrUser, updateAttributes } from '../../api/user.service';
+import {
+  createUserProfile,
+  fetchCurrUser,
+  fetchUserProfile,
+  updateAttributes,
+  updateUserProfile,
+} from '../../api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
 import {
   DateTimeSelector,
@@ -35,27 +42,35 @@ const dateOption = [
 
 const PersonalInformation = () => {
   const [infoDetails, setInfoDetails] = useState({});
-  const { currentUser, setCurrentUser, setIsLoading } = useGlobalContext();
+  const {
+    currentUser,
+    setCurrentUser,
+    setIsLoading,
+    userProfile,
+    setUserProfile,
+  } = useGlobalContext();
   const router = useRouter();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
-  const [selectedValue, setSelectedValue] = useState('');
+  const [selectedValue, setSelectedValue] = useState({});
 
   useEffect(() => {
-    setInfoDetails({ ...currentUser });
-  }, [currentUser]);
+    setInfoDetails({ ...userProfile });
+  }, [userProfile]);
 
   const handleInputChange = (value, name) => {
     setInfoDetails((prev) => ({ ...prev, [name]: value }));
   };
 
   useEffect(() => {
-    setSelectedValue(
-      currentUser['custom:income_from'] +
-        ' - ' +
-        currentUser['custom:income_to']
-    );
-  }, [currentUser]);
+    if (userProfile?.income_from) {
+      setSelectedValue({
+        label:
+          'N' + userProfile?.income_from + ' - ' + 'N' + userProfile?.income_to,
+        value: userProfile?.income_from + ' - ' + userProfile?.income_to,
+      });
+    }
+  }, [userProfile]);
 
   const handleDateChange = (selectedDate) => {
     setDate(selectedDate);
@@ -67,23 +82,31 @@ const PersonalInformation = () => {
   };
 
   useEffect(() => {
-    setInfoDetails((prev) => ({
-      ...prev,
-      'custom:income_from': selectedValue?.split('-')[0]?.trim(),
-      'custom:income_to': selectedValue?.split('-')[1]?.trim(),
-    }));
+    if (Object.keys(selectedValue || {})?.length > 0) {
+      setInfoDetails((prev) => ({
+        ...prev,
+        income_from: Number(selectedValue?.value?.split('-')[0]?.trim()),
+        income_to: Number(selectedValue?.value?.split('-')[1]?.trim()),
+      }));
+    }
   }, [selectedValue]);
 
-  const { phone_number, ...rest } = infoDetails;
   const handleSubmit = async () => {
-    if (ErrorCheck({ phone_number })) {
-      return;
-    }
     setIsLoading(true);
+    const data = {
+      name: infoDetails.name,
+      birthdate: infoDetails.birthdate,
+      address: infoDetails.address,
+      occupation: infoDetails.occupation,
+      income_from: infoDetails.income_from,
+      income_to: infoDetails.income_to,
+      country_of_residence: infoDetails.country_of_residence,
+      country_of_origin: infoDetails.country_of_origin,
+    };
     try {
-      await updateAttributes(infoDetails);
-      await fetchCurrUser(setCurrentUser);
-      router.push('/protected/personal_info');
+      await updateUserProfile(data, currentUser);
+      await fetchUserProfile(setUserProfile, currentUser);
+      router.back();
     } catch (error) {
       console.error(error);
     } finally {
@@ -103,7 +126,7 @@ const PersonalInformation = () => {
         contentContainerStyle={styles.listContent}
       >
         {formElement.map((item, index) => (
-          <TouchableOpacity
+          <Pressable
             key={index}
             style={[styles.infoContainer]}
             onPress={() =>
@@ -117,7 +140,7 @@ const PersonalInformation = () => {
                 options={income_range_options}
                 selectedValue={selectedValue}
                 setSelectedValue={setSelectedValue}
-                defaultValue={selectedValue}
+                defaultValue={selectedValue.value}
               />
             ) : (
               <View
@@ -139,6 +162,9 @@ const PersonalInformation = () => {
                   onPress={() =>
                     item.name === 'birthdate' ? toggleDatePicker() : {}
                   }
+                  keyboardType={
+                    item.name === 'phone_number' ? 'number-pad' : 'default'
+                  }
                 />
                 {item.name === 'birthdate' && (
                   <DateTimeSelector
@@ -151,7 +177,7 @@ const PersonalInformation = () => {
                 )}
               </View>
             )}
-          </TouchableOpacity>
+          </Pressable>
         ))}
       </ScrollView>
       <View style={styles.buttonContainer}>
@@ -215,21 +241,21 @@ export default PersonalInformation;
 
 const formElement = [
   { label: 'Full Name', name: 'name', placeholder: 'Jimoh Alfonso' },
-  {
-    label: 'Phone Number',
-    name: 'phone_number',
-    placeholder: '+234 0X17 XX4 24X3',
-  },
+  // {
+  //   label: 'Phone Number',
+  //   name: 'phone_number',
+  //   placeholder: '+234 0X17 XX4 24X3',
+  // },
   { label: 'Date of Birth', name: 'birthdate', placeholder: '30 July, 1950' },
   {
     label: 'Contact Address',
     name: 'address',
     placeholder: '200, Kilode Close, Ajangbadi, Lagos',
   },
-  { label: 'Occupation', name: 'custom:occupation', placeholder: 'Cab Driver' },
+  { label: 'Occupation', name: 'occupation', placeholder: 'Cab Driver' },
   {
     label: 'Income Range',
-    name: 'custom:income_from',
+    name: 'income_from',
     eType: 'incomerange',
     placeholder: '',
   },
@@ -240,12 +266,12 @@ const formElement = [
   // },
   {
     label: 'County of Origin',
-    name: 'custom:country_of_origin',
+    name: 'country_of_origin',
     placeholder: 'Nigeria',
   },
   {
     label: 'County of Residence',
-    name: 'custom:country_of_residence',
+    name: 'country_of_residence',
     placeholder: 'Nigeria',
   },
 ];
