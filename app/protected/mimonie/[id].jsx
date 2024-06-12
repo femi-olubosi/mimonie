@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   Image,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { PageView } from '@/components/Reusable';
@@ -31,8 +32,12 @@ const ContributionDetails = () => {
   const contribution = contributions.find((item) => item.id === id);
 
   const handleDelete = async () => {
-    await deleteContribution(id);
-    router.push('/protected/mimonie');
+    // await deleteContribution(id);
+    // router.push('/protected/mimonie');
+    Alert.alert(
+      'Delete Requested',
+      'We will look into your request and act accordingly'
+    );
   };
 
   const createdAtDate = new Date(contribution.createdAt);
@@ -216,7 +221,7 @@ const ContributionDetails = () => {
         {contribution.owner === currentUser.preferred_username ? (
           <View>
             <Button
-              title={'Delete Contribution'}
+              title={'Request a Delete'}
               color={'red'}
               onPress={handleDelete}
               outline={true}
