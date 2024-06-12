@@ -17,13 +17,15 @@ import { signIn } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
+import { fetchCurrUser } from '../../api/user.service';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const { toSignUp, toForgotPassword } = props;
-  const { isLoading, setIsLoading, setEmailVeri } = useGlobalContext();
+  const { isLoading, setIsLoading, setEmailVeri, setCurrentUser } =
+    useGlobalContext();
 
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
@@ -41,11 +43,16 @@ const LoginForm = (props) => {
           setEmailVeri(email);
           router.push('/email_verify');
           return;
+        } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_SMS_CODE') {
+          setEmailVeri(email);
+          router.push('/login_verify');
+          return;
         } else {
           Alert.alert('', nextStep.signInStep);
           return;
         }
       }
+      await fetchCurrUser(setCurrentUser);
       router.push('/protected');
     } catch (error) {
       Alert.alert('Error', error.message);

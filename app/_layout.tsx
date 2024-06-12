@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import SplashScreen from '../components/SplashScreen';
 import { Amplify } from 'aws-amplify';
 import amplifyconfig from '../src/amplifyconfiguration.json';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
 import { fetchAuthSession } from 'aws-amplify/auth';
@@ -80,6 +79,7 @@ function RootContent() {
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="email_verify" options={{ headerShown: false }} />
+        <Stack.Screen name="login_verify" options={{ headerShown: false }} />
         {/* <Stack.Screen name="personal_info" options={{ headerShown: false }} /> */}
         <Stack.Screen name="protected" options={{ headerShown: false }} />
       </Stack>

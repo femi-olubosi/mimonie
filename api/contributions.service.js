@@ -7,9 +7,8 @@ export const fetchUserContributions = async (userId, setContributions) => {
     // await DataStore.start();
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
-      c.participant.contains(userId)
+      c.participant_ids.contains(userId)
     );
-
     setContributions(userContributions);
     return userContributions;
   } catch (error) {
@@ -18,7 +17,19 @@ export const fetchUserContributions = async (userId, setContributions) => {
   }
 };
 
-export const createContribution = async (details, setContributions) => {
+export const createContribution = async (
+  details,
+  setContributions,
+  currentUser,
+  userProfile
+) => {
+  const userObj = {
+    name: userProfile.name || currentUser.preferred_username,
+    picture: currentUser.picture,
+    index: 1,
+    userId: currentUser.userId,
+    contributions: 0,
+  };
   try {
     const newContribution = await DataStore.save(
       new Contribution({
@@ -28,7 +39,8 @@ export const createContribution = async (details, setContributions) => {
         start_date: details.date,
         invite_link: 'https://www.example.com',
         contributiongroupsID: details.groupId,
-        participant: [details.userId],
+        participant: [userObj],
+        participant_ids: [currentUser.userId],
         owner: details.username,
         target: details.target,
         amount: details.amount,
@@ -36,7 +48,6 @@ export const createContribution = async (details, setContributions) => {
         status: 'open',
       })
     );
-    console.log('Contribution group created successfully:', newContribution);
     setContributions((prev) => [...prev, newContribution]);
     return newContribution;
   } catch (error) {
@@ -68,3 +79,17 @@ export const deleteContribution = async (contributionId) => {
     );
   }
 };
+
+export async function updateContribution(id, updates) {
+  const original = await DataStore.query(Contribution, id);
+
+  const updatedContribution = await DataStore.save(
+    Contribution.copyOf(original, (updated) => {
+      Object.keys(updates).forEach((key) => {
+        updated[key] = updates[key];
+      });
+    })
+  );
+
+  return updatedContribution;
+}

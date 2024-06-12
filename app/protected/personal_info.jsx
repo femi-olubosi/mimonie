@@ -18,9 +18,9 @@ import { topBar } from '../../cStyle';
 import { PageView } from '../../components/Reusable';
 
 const PersonalInformation = () => {
-  const { currentUser } = useGlobalContext();
+  const { currentUser, userProfile } = useGlobalContext();
   const router = useRouter();
-
+  console.log({ userProfile });
   return (
     <PageView title={'Personal Information'} right={true}>
       <View style={styles.container}>
@@ -29,23 +29,23 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Full Name'}</Text>
             <TextInput
               style={styles.value}
-              value={currentUser.name ?? 'Complete your profile'}
+              value={userProfile.name ?? 'Complete your profile'}
               editable={false}
             />
           </View>
-          <View style={styles.infoContainer}>
+          {/* <View style={styles.infoContainer}>
             <Text style={styles.label}>{'Phone Number'}</Text>
             <TextInput
               style={styles.value}
               value={currentUser.phone_number ?? 'Complete your profile'}
               editable={false}
             />
-          </View>
+          </View> */}
           <View style={styles.infoContainer}>
             <Text style={styles.label}>{'Date of Birth'}</Text>
             <TextInput
               style={styles.value}
-              value={currentUser.birthdate ?? 'Complete your profile'}
+              value={userProfile?.birthdate ?? 'Complete your profile'}
               editable={false}
             />
           </View>
@@ -53,7 +53,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Contact Address'}</Text>
             <TextInput
               style={styles.value}
-              value={currentUser.address ?? 'Complete your profile'}
+              value={userProfile?.address ?? 'Complete your profile'}
               editable={false}
             />
           </View>
@@ -61,9 +61,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Occupation'}</Text>
             <TextInput
               style={styles.value}
-              value={
-                currentUser['custom:occupation'] ?? 'Complete your profile'
-              }
+              value={userProfile?.occupation ?? 'Complete your profile'}
               editable={false}
             />
           </View>
@@ -71,11 +69,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Income Range'}</Text>
             <TextInput
               style={styles.value}
-              value={
-                currentUser['custom:income_from'] +
-                ' - ' +
-                currentUser['custom:income_to']
-              }
+              value={userProfile?.income_from + ' - ' + userProfile?.income_to}
               editable={false}
             />
           </View>
@@ -83,10 +77,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Country of Origin'}</Text>
             <TextInput
               style={styles.value}
-              value={
-                currentUser['custom:country_of_origin'] ??
-                'Complete your profile'
-              }
+              value={userProfile?.country_of_origin ?? 'Complete your profile'}
               editable={false}
             />
           </View>
@@ -95,8 +86,7 @@ const PersonalInformation = () => {
             <TextInput
               style={styles.value}
               value={
-                currentUser['custom:country_of_residence'] ??
-                'Complete your profile'
+                userProfile?.country_of_residence ?? 'Complete your profile'
               }
               editable={false}
             />

@@ -8,12 +8,24 @@ import Button from '../../components/Button';
 import { router } from 'expo-router';
 
 const groups = () => {
-  const { contributionGroups, setContributionGroups } = useGlobalContext();
+  const {
+    contributionGroups,
+    setContributionGroups,
+    currentUser,
+    userProfile,
+  } = useGlobalContext();
 
   useEffect(() => {
     getContributionGroups(setContributionGroups);
   }, []);
 
+  const handleGoToCreate = (item) => {
+    if (!userProfile.income_from || userProfile.income_from < item.amount) {
+      alert('Your income cannot create this contribution');
+      return;
+    }
+    router.push('/protected/create_contribution');
+  };
   return (
     <PageView title={'Groups'}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -33,9 +45,7 @@ const groups = () => {
               <Text style={styles.groupTarget}>Target: N{item.target}</Text>
               <Button
                 title={'Create Contribution'}
-                onPress={() => {
-                  router.push('/protected/create_contribution');
-                }}
+                onPress={() => handleGoToCreate(item)}
                 color={'black'}
               />
             </View>

@@ -13,6 +13,7 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
 import { fetchUserContributions } from '@/api/contributions.service';
+import { naira } from '@/constants/Currency';
 
 const Mimonie = () => {
   const { currentUser, contributions, setContributions } = useGlobalContext();
@@ -20,7 +21,7 @@ const Mimonie = () => {
 
   useEffect(() => {
     fetchUserContributions(currentUser.userId, setContributions);
-  }, [currentUser]);
+  }, []);
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);
@@ -41,7 +42,10 @@ const Mimonie = () => {
           <Text style={{ fontSize: 10 }}>{item.category}</Text>
         </View>
         <View style={styles.contributionInfo}>
-          <Text style={styles.contributionAmount}>{item.amount}</Text>
+          <Text style={styles.contributionAmount}>
+            {naira}
+            {item.amount}
+          </Text>
           <View
             style={{
               paddingHorizontal: 10,
@@ -108,7 +112,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
     marginBottom: 16,
-    rowGap: 14,
+    rowGap: 10,
   },
   contributionName: {
     fontSize: 16,

@@ -1,3 +1,34 @@
+type UserProfile @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  preferred_username: String
+  phone_number: AWSPhone
+  birthday: AWSDate
+  address: String
+  income_from: Int
+  income_to: Int
+  occupation: String
+  country_of_residence: String
+  country_of_origin: String
+  email: AWSEmail
+  auth_url: String
+  invites: [String]
+  is_bvn_verified: Boolean
+  is_nin_verified: Boolean
+  device_id: String
+  userId: ID
+}
+
+type UserCardDetails @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  last4: String
+  bank: String
+  userId: ID
+  type: String
+  expiry: String
+  authorization_code: String
+}
+
 type Contribution @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String
@@ -6,12 +37,13 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   start_date: AWSDate
   invite_link: AWSURL
   contributiongroupsID: ID! @index(name: "byContributionGroups")
-  participant: [ID]
+  participant: [AWSJSON]
   owner: String!
   target: Int!
   amount: Int!
   num_of_month: Int!
   status: String
+  participant_ids: [ID]
 }
 
 type ContributionGroups @model @auth(rules: [{allow: public}]) {

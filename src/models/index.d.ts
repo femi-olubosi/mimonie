@@ -6,6 +6,104 @@ import { LazyLoading, LazyLoadingDisabled, AsyncCollection } from "@aws-amplify/
 
 
 
+type EagerUserProfile = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserProfile, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly name?: string | null;
+  readonly preferred_username?: string | null;
+  readonly phone_number?: string | null;
+  readonly birthday?: string | null;
+  readonly address?: string | null;
+  readonly income_from?: number | null;
+  readonly income_to?: number | null;
+  readonly occupation?: string | null;
+  readonly country_of_residence?: string | null;
+  readonly country_of_origin?: string | null;
+  readonly email?: string | null;
+  readonly auth_url?: string | null;
+  readonly invites?: (string | null)[] | null;
+  readonly is_bvn_verified?: boolean | null;
+  readonly is_nin_verified?: boolean | null;
+  readonly device_id?: string | null;
+  readonly userId?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyUserProfile = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserProfile, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly name?: string | null;
+  readonly preferred_username?: string | null;
+  readonly phone_number?: string | null;
+  readonly birthday?: string | null;
+  readonly address?: string | null;
+  readonly income_from?: number | null;
+  readonly income_to?: number | null;
+  readonly occupation?: string | null;
+  readonly country_of_residence?: string | null;
+  readonly country_of_origin?: string | null;
+  readonly email?: string | null;
+  readonly auth_url?: string | null;
+  readonly invites?: (string | null)[] | null;
+  readonly is_bvn_verified?: boolean | null;
+  readonly is_nin_verified?: boolean | null;
+  readonly device_id?: string | null;
+  readonly userId?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UserProfile = LazyLoading extends LazyLoadingDisabled ? EagerUserProfile : LazyUserProfile
+
+export declare const UserProfile: (new (init: ModelInit<UserProfile>) => UserProfile) & {
+  copyOf(source: UserProfile, mutator: (draft: MutableModel<UserProfile>) => MutableModel<UserProfile> | void): UserProfile;
+}
+
+type EagerUserCardDetails = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserCardDetails, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly last4?: string | null;
+  readonly bank?: string | null;
+  readonly userId?: string | null;
+  readonly type?: string | null;
+  readonly expiry?: string | null;
+  readonly authorization_code?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyUserCardDetails = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserCardDetails, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly last4?: string | null;
+  readonly bank?: string | null;
+  readonly userId?: string | null;
+  readonly type?: string | null;
+  readonly expiry?: string | null;
+  readonly authorization_code?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UserCardDetails = LazyLoading extends LazyLoadingDisabled ? EagerUserCardDetails : LazyUserCardDetails
+
+export declare const UserCardDetails: (new (init: ModelInit<UserCardDetails>) => UserCardDetails) & {
+  copyOf(source: UserCardDetails, mutator: (draft: MutableModel<UserCardDetails>) => MutableModel<UserCardDetails> | void): UserCardDetails;
+}
+
 type EagerContribution = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<Contribution, 'id'>;
@@ -24,6 +122,7 @@ type EagerContribution = {
   readonly amount: number;
   readonly num_of_month: number;
   readonly status?: string | null;
+  readonly participant_ids?: (string | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -46,6 +145,7 @@ type LazyContribution = {
   readonly amount: number;
   readonly num_of_month: number;
   readonly status?: string | null;
+  readonly participant_ids?: (string | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

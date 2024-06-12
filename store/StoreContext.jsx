@@ -8,9 +8,10 @@ const StoreProvider = ({ children }) => {
   const [emailVeri, setEmailVeri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
-  const [userInfo, setUserInfo] = useState({});
   const [contributionGroups, setContributionGroups] = useState([]);
   const [contributions, setContributions] = useState([]);
+  const [myContacts, setMyContacts] = useState([]);
+  const [userProfile, setUserProfile] = useState({});
 
   const toggleMode = () => {
     setIsDarkMode((prevMode) => !prevMode);
@@ -29,12 +30,14 @@ const StoreProvider = ({ children }) => {
     setEmailVeri,
     currentUser,
     setCurrentUser,
-    userInfo,
-    setUserInfo,
+    userProfile,
+    setUserProfile,
     contributionGroups,
     setContributionGroups,
     contributions,
     setContributions,
+    myContacts,
+    setMyContacts,
   };
 
   return (
