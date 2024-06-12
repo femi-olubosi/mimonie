@@ -2,7 +2,7 @@ import { DataStore } from 'aws-amplify';
 import axios from 'axios';
 import { Contribution, UserActivity, UserCardDetails } from '../src/models'; // Adjust the import paths according to your project structure
 
-const PAYSTACK_SECRET_KEY = 'your_paystack_secret_key';
+const PAYSTACK_SECRET_KEY = '';
 
 export const processContributions = async () => {
   try {
@@ -155,7 +155,7 @@ export const verifyTransaction = async (reference, currentUser) => {
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer sk_test_e25336dc047bf8b1752588da9f2f5beb0a8ab7ad`,
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
           'Content-Type': 'application/json',
         },
       }

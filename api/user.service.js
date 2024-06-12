@@ -14,6 +14,7 @@ export const fetchCurrUser = async (setCurrentUser) => {
     ...user,
     ...attribute,
   });
+  return user;
 };
 
 export const uploadFile = async (file, type) => {
@@ -76,17 +77,20 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
       c.userId.eq(currentUser.userId)
     );
     setUserProfile(userProfile[0]);
-    return userProfile;
+    return userProfile[0];
   } catch (error) {
     console.error('Error fetching user user profile:', error);
     return [];
   }
 };
 
-export const createUserProfile = async (userId) => {
+export const createUserProfile = async (
+  userId,
+  { device_id, device_name, device_brand }
+) => {
   try {
     const userProfile = await DataStore.save(
-      new UserProfile({ userId: userId })
+      new UserProfile({ userId, device_id, device_name, device_brand })
     );
     return userProfile;
   } catch (error) {

@@ -18,6 +18,7 @@ import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { createUserProfile } from '../../api/user.service';
+import * as Device from 'expo-device';
 
 const SignUp = (props) => {
   const [username, setUsername] = useState('');
@@ -53,7 +54,12 @@ const SignUp = (props) => {
         },
       });
 
-      await createUserProfile(userId);
+      const device = {
+        device_id: Device.osInternalBuildId,
+        device_name: Device.deviceName,
+        device_brand: Device.brand,
+      };
+      await createUserProfile(userId, device);
       setEmailVeri(email);
       router.push('/email_verify');
     } catch (error) {

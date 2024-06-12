@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Paystack } from 'react-native-paystack-webview';
 import { View } from 'react-native';
 import { router } from 'expo-router';
@@ -8,6 +8,8 @@ function Pay() {
   const { currentUser } = useGlobalContext();
   const handleSuccess = async (res) => {
     console.log(res.transactionRef.reference);
+    router.push('/protected/cards');
+    return;
     const verificationSuccess = await verifyTransaction(
       res.transactionRef.reference
     );
@@ -23,7 +25,7 @@ function Pay() {
   return (
     <View style={{ flex: 1 }}>
       <Paystack
-        paystackKey="pk_test_093108e7d85bafd70a91edd17c95e3d10d811103"
+        paystackKey=""
         amount={'50.00'}
         billingEmail={currentUser.email}
         activityIndicatorColor={Colors.pri}

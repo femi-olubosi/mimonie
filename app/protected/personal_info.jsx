@@ -20,7 +20,7 @@ import { PageView } from '../../components/Reusable';
 const PersonalInformation = () => {
   const { currentUser, userProfile } = useGlobalContext();
   const router = useRouter();
-  console.log({ userProfile });
+
   return (
     <PageView title={'Personal Information'} right={true}>
       <View style={styles.container}>
