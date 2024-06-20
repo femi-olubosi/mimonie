@@ -45,7 +45,7 @@ const ProfileView = ({ username, picture }) => {
             />
           )}
         </View>
-        <Text style={{ fontSize: 20, fontWeight: 'er' }}>{username}</Text>
+        <Text style={{ fontSize: 20, fontWeight: 'er' }}>Hi, {username}</Text>
       </View>
       <Ionicons name="notifications-outline" size={24} color="black" />
     </View>
