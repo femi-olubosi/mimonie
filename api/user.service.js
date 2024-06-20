@@ -107,7 +107,6 @@ export const updateUserProfile = async (updatedData, currentUser) => {
     );
 
     const data = {
-      preferred_username: currentUser.preferred_username,
       email: currentUser.email,
       phone_number: currentUser.phone_number,
       ...updatedData,

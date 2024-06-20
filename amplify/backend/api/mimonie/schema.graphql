@@ -17,6 +17,10 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   is_nin_verified: Boolean
   device_id: String
   userId: ID
+  customer_code: String
+  verification_in_progress: Boolean
+  subaccount_code: String
+  bank_details: AWSJSON
 }
 
 type UserCardDetails @model @auth(rules: [{allow: public}]) {
@@ -27,6 +31,7 @@ type UserCardDetails @model @auth(rules: [{allow: public}]) {
   type: String
   expiry: String
   authorization_code: String
+  status: String
 }
 
 type Contribution @model @auth(rules: [{allow: public}]) {

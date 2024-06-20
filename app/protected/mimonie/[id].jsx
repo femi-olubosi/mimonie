@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,8 @@ import {
   ScrollView,
   Image,
   Alert,
+  Platform,
+  Pressable,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { PageView } from '@/components/Reusable';
@@ -14,6 +16,8 @@ import { useGlobalContext } from '../../../store/StoreContext';
 import Button from '../../../components/Button';
 import {
   deleteContribution,
+  fetchUserContributions,
+  joinContribution,
   updateContribution,
 } from '../../../api/contributions.service';
 import {
@@ -25,22 +29,51 @@ import {
 import { capitalizeFirstLetter } from '../../../utils/capitalizeFirstLetter';
 import { statusCheck } from '../../../utils/statusCheck';
 import { naira } from '../../../constants/Currency';
+import { Colors } from '../../../constants/Colors';
+import ContactModal from '../../../components/ContactModal';
 
 const ContributionDetails = () => {
-  const { contributions, currentUser } = useGlobalContext();
+  const {
+    contributions,
+    setContributions,
+    currentUser,
+    userProfile,
+    setIsLoading,
+  } = useGlobalContext();
   const { id } = useLocalSearchParams();
   const contribution = contributions.find((item) => item.id === id);
+  const [visible, setVisible] = useState(false);
 
-  const handleDelete = async () => {
-    // await deleteContribution(id);
-    // router.push('/protected/mimonie');
-    Alert.alert(
-      'Delete Requested',
-      'We will look into your request and act accordingly'
-    );
+  const handleJoinContribution = async () => {
+    try {
+      await joinContribution(
+        contribution.id,
+        currentUser,
+        userProfile,
+        setContributions
+      );
+      Alert.alert('Success', 'You have successfully joined the contribution');
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
-  const createdAtDate = new Date(contribution.createdAt);
+  const handleStartContribution = async () => {
+    // const start_date = new Date().toISOString();
+    setIsLoading(true);
+    try {
+      const start_date = null;
+      const res = await updateContribution(contribution.id, { start_date });
+      await fetchUserContributions(currentUser.userId, setContributions);
+      alert('Update Success', `${res.name} contribution updated successfully}`);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startDate = new Date(contribution.start_date);
 
   useEffect(() => {
     (async () => {
@@ -59,7 +92,7 @@ const ContributionDetails = () => {
 
   return (
     <PageView title={'Contribution Details'}>
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Name</Text>
@@ -67,9 +100,11 @@ const ContributionDetails = () => {
           </View>
 
           <View style={styles.detailContainer}>
-            <Text style={styles.label}>Date Created</Text>
+            <Text style={styles.label}>Date Started</Text>
             <Text style={styles.value}>
-              {createdAtDate.toLocaleDateString()}
+              {contribution.start_date
+                ? startDate.toLocaleDateString()
+                : 'Not running'}
             </Text>
           </View>
 
@@ -218,18 +253,35 @@ const ContributionDetails = () => {
             <Text style={styles.value}>{contribution.owner}</Text>
           </View>
         </ScrollView>
-        {contribution.owner === currentUser.preferred_username ? (
-          <View>
-            <Button
-              title={'Request a Delete'}
-              color={'red'}
-              onPress={handleDelete}
-              outline={true}
-              styleOverride={{ width: 200, alignSelf: 'center' }}
-            />
-          </View>
-        ) : null}
-      </SafeAreaView>
+        <Pressable
+          style={styles.fab}
+          onPress={() => {
+            if (contribution.start_date) {
+              // Do nothing or handle if needed
+            } else if (
+              contribution.participant.length === contribution.num_of_month &&
+              contribution.owner === currentUser.preferred_username
+            ) {
+              handleStartContribution();
+            } else if (contribution.owner === currentUser.preferred_username) {
+              setVisible(!visible);
+            } else {
+              handleJoinContribution();
+            }
+          }}
+        >
+          <Text style={styles.fabText}>
+            {contribution.start_date
+              ? 'Running'
+              : contribution.participant.length === contribution.num_of_month
+              ? 'Start'
+              : contribution.owner === currentUser.preferred_username
+              ? 'Invite'
+              : 'Join'}
+          </Text>
+        </Pressable>
+      </View>
+      <ContactModal visible={visible} setVisible={setVisible} />
     </PageView>
   );
 };
@@ -264,6 +316,33 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: 'red',
     textAlign: 'center',
+  },
+  fab: {
+    position: 'absolute',
+    minWidth: 60,
+    minHeight: 60,
+    padding: 4,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.pri,
+    bottom: 10,
+    right: 10,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.5,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
+  },
+  fabText: {
+    color: 'white',
+    fontFamily: 'im', // Ensure this font is loaded in your project
   },
 });
 

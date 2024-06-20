@@ -3,6 +3,7 @@ import {
   Platform,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -80,63 +81,72 @@ export const SelectInput = ({
         borderWidth: drop ? 2 : 1,
         borderColor: 'gray',
         minheight: 53,
+        maxHeight: 200,
       }}
     >
-      <Pressable
-        style={{
-          width: '100%',
-          height: 44,
-          flexDirection: 'row',
-          alignItems: 'center',
-          paddingHorizontal: 10,
-        }}
-        onPress={() => setDrop(!drop)}
-      >
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 14, color: 'gray' }}>
-            {selectedValue.label ?? defaultValue}
-          </Text>
-        </View>
-        <View>
-          <FontAwesome
-            name={drop ? 'angle-up' : 'angle-down'}
-            size={24}
-            color="black"
-          />
-        </View>
-      </Pressable>
-      {drop ? (
-        <View
+      <ScrollView>
+        <Pressable
           style={{
             width: '100%',
-            paddingVertical: 6,
-            backgroundColor: 'white',
+            height: 44,
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 10,
           }}
+          onPress={() => setDrop(!drop)}
         >
-          {options?.map((e, idx) => (
-            <Pressable
-              key={idx}
-              style={{
-                paddingHorizontal: 10,
-                paddingVertical: 10,
-                borderBottomWidth: idx === options.length - 1 ? 0 : 1,
-                borderColor: 'gray',
-              }}
-              onPress={() => {
-                setSelectedValue(e);
-                setDrop(false);
-              }}
-            >
-              <Text style={{ color: 'gray' }}>{e.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-      ) : null}
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 14, color: 'gray' }}>
+              {selectedValue.label ?? defaultValue}
+            </Text>
+          </View>
+          <View>
+            <FontAwesome
+              name={drop ? 'angle-up' : 'angle-down'}
+              size={24}
+              color="black"
+            />
+          </View>
+        </Pressable>
+        {drop ? (
+          <View
+            style={{
+              width: '100%',
+              paddingVertical: 6,
+              backgroundColor: 'white',
+            }}
+          >
+            {options?.map((e, idx) => (
+              <Pressable
+                key={idx}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 10,
+                  borderBottomWidth: idx === options.length - 1 ? 0 : 1,
+                  borderColor: 'gray',
+                }}
+                onPress={() => {
+                  setSelectedValue(e);
+                  setDrop(false);
+                }}
+              >
+                <Text style={{ color: 'gray' }}>{e.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+      </ScrollView>
     </View>
   );
 };
 
-export const PageView = ({ title, right, children, backIcon = true }) => {
+export const PageView = ({
+  title,
+  right,
+  children,
+  backIcon = true,
+  route = null,
+}) => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <View
@@ -153,7 +163,7 @@ export const PageView = ({ title, right, children, backIcon = true }) => {
               name="arrow-back"
               size={24}
               color="black"
-              onPress={() => router.back()}
+              onPress={() => (route ? router.push(route) : router.back())}
             />
           )}
           <View>

@@ -40,6 +40,16 @@ export const validateField = (key, value) => {
         errorMessage = 'Please enter a valid phone number. Should start with +';
       }
       break;
+    case 'accountNumber':
+      if (!/^\d{10}$/.test(value)) {
+        errorMessage = 'Account number must be exactly 10 digits long.';
+      }
+      break;
+    case 'bvn':
+      if (!/^\d{11}$/.test(value)) {
+        errorMessage = 'BVN must be exactly 11 digits long.';
+      }
+      break;
     default:
       errorMessage = 'Fields are required';
       break;

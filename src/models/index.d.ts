@@ -29,6 +29,10 @@ type EagerUserProfile = {
   readonly is_nin_verified?: boolean | null;
   readonly device_id?: string | null;
   readonly userId?: string | null;
+  readonly customer_code?: string | null;
+  readonly verification_in_progress?: boolean | null;
+  readonly subaccount_code?: string | null;
+  readonly bank_details?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -56,6 +60,10 @@ type LazyUserProfile = {
   readonly is_nin_verified?: boolean | null;
   readonly device_id?: string | null;
   readonly userId?: string | null;
+  readonly customer_code?: string | null;
+  readonly verification_in_progress?: boolean | null;
+  readonly subaccount_code?: string | null;
+  readonly bank_details?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -78,6 +86,7 @@ type EagerUserCardDetails = {
   readonly type?: string | null;
   readonly expiry?: string | null;
   readonly authorization_code?: string | null;
+  readonly status?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -94,6 +103,7 @@ type LazyUserCardDetails = {
   readonly type?: string | null;
   readonly expiry?: string | null;
   readonly authorization_code?: string | null;
+  readonly status?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

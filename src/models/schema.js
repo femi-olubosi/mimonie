@@ -130,6 +130,34 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "customer_code": {
+                    "name": "customer_code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "verification_in_progress": {
+                    "name": "verification_in_progress",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "subaccount_code": {
+                    "name": "subaccount_code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "bank_details": {
+                    "name": "bank_details",
+                    "isArray": false,
+                    "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -219,6 +247,13 @@ export const schema = {
                 },
                 "authorization_code": {
                     "name": "authorization_code",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "status": {
+                    "name": "status",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -555,5 +590,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "726b5d4f9276817cce621696c7b59987"
+    "version": "be80ca621bce8f0b68e57f680863ef47"
 };

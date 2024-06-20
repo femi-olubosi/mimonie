@@ -31,6 +31,7 @@ const LoginForm = (props) => {
     setEmailVeri,
     setCurrentUser,
     setUserProfile,
+    userProfile,
   } = useGlobalContext();
 
   const handleSignIn = async () => {
@@ -82,6 +83,11 @@ const LoginForm = (props) => {
           ],
           { cancelable: false }
         );
+      }
+      console.log(!!userProfile.name);
+      if (!userProfile.name) {
+        router.push('/email_verify');
+        return;
       }
       router.push('/protected');
     } catch (error) {

@@ -7,17 +7,15 @@ import {
   StyleSheet,
   Modal,
   Pressable,
-  FlatList,
   Alert,
 } from 'react-native';
-import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { DateTimeSelector, SelectInput } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import { createContribution } from '../../api/contributions.service';
 import { getContributionGroups } from '../../api/groups.service';
-import { sendSMSInvite } from '../../api/invite.service';
+import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
 
 const dateOption = [
@@ -35,7 +33,6 @@ const CreateContribution = () => {
   const [contactVisible, setContactVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [contactSearch, setContactSearch] = useState('');
 
   const [date, setDate] = useState(new Date());
   const {
@@ -44,7 +41,6 @@ const CreateContribution = () => {
     currentUser,
     setContributions,
     setIsLoading,
-    myContacts,
     userProfile,
   } = useGlobalContext();
   const router = useRouter();
@@ -106,42 +102,45 @@ const CreateContribution = () => {
     setContactVisible(true);
     setModalVisible(false);
   };
-
+  const isVerified = userProfile.is_nin_verified && userProfile.is_bvn_verified;
+  console.log(isVerified);
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
-        <View
-          style={{
-            backgroundColor: 'red',
-            paddingVertical: 5,
-            paddingHorizontal: 5,
-            borderRadius: 8,
-            marginBottom: 20,
-          }}
-        >
-          <Text
+        {!isVerified ? (
+          <View
             style={{
-              color: 'white',
-              fontFamily: 'ir',
-              fontSize: 12,
-              alignItems: 'center',
+              backgroundColor: 'red',
+              paddingVertical: 5,
+              paddingHorizontal: 5,
+              borderRadius: 8,
+              marginBottom: 20,
             }}
           >
-            You cannot create a contribution at the moment. Please complete you
-            document upload and verification{' '}
-            <Link href={'/protected/kyc'}>
-              <Text
-                style={{
-                  color: 'white',
-                  fontFamily: 'ib',
-                  fontSize: 12,
-                }}
-              >
-                Upload Now
-              </Text>
-            </Link>
-          </Text>
-        </View>
+            <Text
+              style={{
+                color: 'white',
+                fontFamily: 'ir',
+                fontSize: 12,
+                alignItems: 'center',
+              }}
+            >
+              You cannot create a contribution at the moment. Please complete
+              you document upload and verification{' '}
+              <Link href={'/protected/kyc'}>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontFamily: 'ib',
+                    fontSize: 12,
+                  }}
+                >
+                  Upload Now
+                </Text>
+              </Link>
+            </Text>
+          </View>
+        ) : null}
         <Text style={styles.instructions}>
           Create a contribution schedule and invite friends to join
         </Text>
@@ -167,7 +166,7 @@ const CreateContribution = () => {
             />
           </View>
 
-          <View style={{ rowGap: 14 }}>
+          {/* <View style={{ rowGap: 14 }}>
             <Text style={styles.label}>Commencement Date</Text>
             <Pressable
               style={[
@@ -192,10 +191,17 @@ const CreateContribution = () => {
                 mode={'date'}
               />
             </Pressable>
-          </View>
+          </View> */}
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleConfirm}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            { backgroundColor: isVerified ? Colors.pri : 'gray' },
+          ]}
+          disabled={!userProfile.is_nin_verified || !userProfile.is_bvn_veried}
+          onPress={handleConfirm}
+        >
           <Text style={styles.buttonText}>Confirm</Text>
         </TouchableOpacity>
 
@@ -229,67 +235,7 @@ const CreateContribution = () => {
             </View>
           </View>
         </Modal>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={contactVisible}
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContainerContact}>
-            <View style={styles.modalViewContact}>
-              <Pressable
-                style={{
-                  width: 100,
-                  height: 3,
-                  backgroundColor: 'gray',
-                  position: 'absolute',
-                  borderRadius: 10,
-                  top: 2,
-                  alignSelf: 'center',
-                }}
-                onPress={() => setContactVisible(false)}
-              ></Pressable>
-              <View style={{ paddingVertical: 10 }}>
-                <Text style={styles.modalTitle}>Contacts</Text>
-                <TextInput
-                  style={styles.inputSearch}
-                  value={contactSearch}
-                  onChangeText={setContactSearch}
-                  placeholder="Search Contact"
-                />
-              </View>
-
-              <FlatList
-                data={myContacts.filter((e) =>
-                  e.name.includes(contactSearch.trim())
-                )}
-                keyExtractor={(item) => item.id}
-                renderItem={renderContact}
-              />
-              <View style={{ paddingVertical: 20 }}>
-                <Pressable
-                  style={{
-                    backgroundColor: Colors.pri,
-                    alignSelf: 'center',
-                    paddingHorizontal: 40,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                  }}
-                  onPress={() => {
-                    setContactVisible(false);
-                    router.push('/protected/mimonie');
-                  }}
-                >
-                  <Text
-                    style={{ fontSize: 16, color: 'white', fontFamily: 'isb' }}
-                  >
-                    Done
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </Modal>
+        <ContactModal visible={contactVisible} setVisible={setContactVisible} />
       </View>
     </PageView>
   );
@@ -330,9 +276,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   button: {
-    backgroundColor: '#006EBD',
     borderRadius: 12,
-    // padding: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 100,
@@ -429,32 +373,3 @@ const styles = StyleSheet.create({
 });
 
 export default CreateContribution;
-
-const renderContact = ({ item }) => {
-  const handleSendInvite = async () => {
-    await sendSMSInvite(item, 12345);
-  };
-
-  return (
-    <TouchableOpacity
-      style={styles.contactContainer}
-      onPress={handleSendInvite}
-    >
-      <View style={styles.contactInfo}>
-        <FontAwesome name="user-circle-o" size={24} color="gray" />
-        <View style={{ rowGap: 2 }}>
-          <Text style={styles.contactName}>{item.name}</Text>
-          {/* {item.phoneNumbers &&
-          item.phoneNumbers.map((phone, index) => (
-            <TouchableOpacity key={index}>
-              <Text style={styles.phoneNumber}>
-                {phone.number} ({phone.label})
-              </Text>
-            </TouchableOpacity>
-          ))} */}
-        </View>
-      </View>
-      <Text style={styles.inviteText}>Invite</Text>
-    </TouchableOpacity>
-  );
-};

@@ -30,6 +30,7 @@ import {
 import { ErrorCheck } from '../../utils/errorCheck';
 import Constants from 'expo-constants';
 import { topBar } from '../../cStyle';
+import { naira } from '../../constants/Currency';
 
 const dateOption = [
   'en-US',
@@ -40,7 +41,7 @@ const dateOption = [
   },
 ];
 
-const PersonalInformation = () => {
+const ProfileEdit = () => {
   const [infoDetails, setInfoDetails] = useState({});
   const {
     currentUser,
@@ -55,7 +56,11 @@ const PersonalInformation = () => {
   const [selectedValue, setSelectedValue] = useState({});
 
   useEffect(() => {
-    setInfoDetails({ ...userProfile });
+    setInfoDetails({
+      ...userProfile,
+      firstname: userProfile.name.split(' ')[0],
+      lastname: userProfile.name.split(' ')[1],
+    });
   }, [userProfile]);
 
   const handleInputChange = (value, name) => {
@@ -66,7 +71,11 @@ const PersonalInformation = () => {
     if (userProfile?.income_from) {
       setSelectedValue({
         label:
-          'N' + userProfile?.income_from + ' - ' + 'N' + userProfile?.income_to,
+          naira +
+          userProfile?.income_from +
+          ' - ' +
+          naira +
+          userProfile?.income_to,
         value: userProfile?.income_from + ' - ' + userProfile?.income_to,
       });
     }
@@ -94,7 +103,7 @@ const PersonalInformation = () => {
   const handleSubmit = async () => {
     setIsLoading(true);
     const data = {
-      name: infoDetails.name,
+      name: infoDetails.firstname + ' ' + infoDetails.lastname,
       birthdate: infoDetails.birthdate,
       address: infoDetails.address,
       occupation: infoDetails.occupation,
@@ -237,10 +246,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PersonalInformation;
+export default ProfileEdit;
 
 const formElement = [
-  { label: 'Full Name', name: 'name', placeholder: 'Jimoh Alfonso' },
+  { label: 'First Name', name: 'firstname', placeholder: 'Jimoh' },
+  { label: 'Last Name', name: 'lastname', placeholder: 'Alfonso' },
   // {
   //   label: 'Phone Number',
   //   name: 'phone_number',

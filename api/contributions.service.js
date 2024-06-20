@@ -93,3 +93,65 @@ export async function updateContribution(id, updates) {
 
   return updatedContribution;
 }
+
+export const joinContribution = async (
+  contributionId,
+  currentUser,
+  userProfile,
+  setContributions
+) => {
+  try {
+    // Fetch the existing contribution
+    const originalContribution = await DataStore.query(
+      Contribution,
+      contributionId
+    );
+
+    if (!originalContribution) {
+      throw new Error('Contribution not found');
+    }
+
+    // Parse the participant JSON array
+    const participants = JSON.parse(originalContribution.participant);
+    // Check if the user is already a participant
+    if (
+      participants.some(
+        (participant) => participant.userId === currentUser.userId
+      )
+    ) {
+      throw new Error('User is already a participant in this contribution');
+    }
+
+    // Create a new participant object
+    const newParticipant = {
+      name: userProfile.name || currentUser.preferred_username,
+      picture: currentUser.picture,
+      index: participants.length + 1,
+      userId: currentUser.userId,
+      contributions: 0,
+    };
+
+    // Add the new participant to the participants array
+    participants.push(newParticipant);
+
+    // Update the contribution with the new participant
+    const updatedContribution = await DataStore.save(
+      Contribution.copyOf(originalContribution, (updated) => {
+        updated.participant = participants;
+        updated.participant_ids.push(currentUser.userId);
+      })
+    );
+
+    // Update the state with the new contribution
+    setContributions((prev) =>
+      prev.map((contribution) =>
+        contribution.id === contributionId ? updatedContribution : contribution
+      )
+    );
+
+    return updatedContribution;
+  } catch (error) {
+    console.error('Error joining contribution:', error);
+    throw error;
+  }
+};

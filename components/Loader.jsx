@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/Colors';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 const Loader = ({ isLoading }) => {
@@ -27,14 +28,23 @@ const Loader = ({ isLoading }) => {
               opacity: 0.8,
             }}
           ></View>
-          <View style={{}}>
+          <View
+            style={{
+              width: 70,
+              height: 70,
+              borderRadius: 8,
+              backgroundColor: Colors.pri,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
             <View>
               {/* <Image source={require('../../assets/general/back-ill.png')} /> */}
             </View>
             <ActivityIndicator color={'white'} size={'large'} />
-            <Text style={{ color: 'white', marginTop: 20 }}>
+            {/* <Text style={{ color: 'white', marginTop: 20 }}>
               Please wait...
-            </Text>
+            </Text> */}
           </View>
         </View>
       ) : null}

@@ -13,11 +13,16 @@ import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useEffect } from 'react';
-import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
+import {
+  fetchCurrUser,
+  fetchUserProfile,
+  updateUserProfile,
+} from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
+import { createSubAccount, getPaystackCustomer } from '@/api/payment.service';
 
 export default function HomeScreen() {
   const {
@@ -28,6 +33,7 @@ export default function HomeScreen() {
     setMyContacts,
     contributions,
     setContributions,
+    userProfile,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -56,6 +62,27 @@ export default function HomeScreen() {
     fetchUserContributions(currentUser.userId, setContributions);
   }, [currentUser]);
 
+  useEffect(() => {
+    (async () => {
+      if (userProfile && userProfile?.is_bvn_verified !== true) {
+        const res = await getPaystackCustomer(userProfile?.customer_code);
+
+        if (res.data.identifications?.length > 0) {
+          const subaccount = await createSubAccount(userProfile);
+          await updateUserProfile(
+            {
+              is_bvn_verified: true,
+              verification_in_progress: false,
+              subaccount_code: subaccount.subaccount_code,
+            },
+            currentUser
+          );
+          await fetchUserProfile(setUserProfile, currentUser);
+        }
+      }
+    })();
+  }, [userProfile]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>
       <StatusBar style="dark" />
@@ -67,8 +94,8 @@ export default function HomeScreen() {
         }}
       >
         <ProfileView
-          username={currentUser.preferred_username}
-          picture={currentUser.picture}
+          username={userProfile?.preferred_username}
+          picture={currentUser?.picture}
         />
         <Cards contributions={contributions} />
         <Options />

@@ -2,34 +2,35 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
   StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
   TextInput,
   ScrollView,
   Platform,
 } from 'react-native';
-import { AntDesign, Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import Constants from 'expo-constants';
 import { useGlobalContext } from '../../store/StoreContext';
 import { topBar } from '../../cStyle';
 import { PageView } from '../../components/Reusable';
 
 const PersonalInformation = () => {
-  const { currentUser, userProfile } = useGlobalContext();
-  const router = useRouter();
+  const { userProfile } = useGlobalContext();
 
   return (
     <PageView title={'Personal Information'} right={true}>
       <View style={styles.container}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.infoContainer}>
-            <Text style={styles.label}>{'Full Name'}</Text>
+            <Text style={styles.label}>{'First Name'}</Text>
             <TextInput
               style={styles.value}
-              value={userProfile.name ?? 'Complete your profile'}
+              value={userProfile.name.split(' ')[0]}
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'Last Name'}</Text>
+            <TextInput
+              style={styles.value}
+              value={userProfile.name.split(' ')[1]}
               editable={false}
             />
           </View>
@@ -45,7 +46,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Date of Birth'}</Text>
             <TextInput
               style={styles.value}
-              value={userProfile?.birthdate ?? 'Complete your profile'}
+              value={userProfile?.birthdate}
               editable={false}
             />
           </View>
@@ -53,7 +54,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Contact Address'}</Text>
             <TextInput
               style={styles.value}
-              value={userProfile?.address ?? 'Complete your profile'}
+              value={userProfile?.address}
               editable={false}
             />
           </View>
@@ -61,7 +62,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Occupation'}</Text>
             <TextInput
               style={styles.value}
-              value={userProfile?.occupation ?? 'Complete your profile'}
+              value={userProfile?.occupation}
               editable={false}
             />
           </View>
@@ -77,7 +78,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Country of Origin'}</Text>
             <TextInput
               style={styles.value}
-              value={userProfile?.country_of_origin ?? 'Complete your profile'}
+              value={userProfile?.country_of_origin}
               editable={false}
             />
           </View>
@@ -85,9 +86,7 @@ const PersonalInformation = () => {
             <Text style={styles.label}>{'Country of Residence'}</Text>
             <TextInput
               style={styles.value}
-              value={
-                userProfile?.country_of_residence ?? 'Complete your profile'
-              }
+              value={userProfile?.country_of_residence}
               editable={false}
             />
           </View>

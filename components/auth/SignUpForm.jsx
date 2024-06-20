@@ -21,7 +21,7 @@ import { createUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 
 const SignUp = (props) => {
-  const [username, setUsername] = useState('');
+  // const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [phone_number, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -31,7 +31,7 @@ const SignUp = (props) => {
   const { setIsLoading, isLoading, setEmailVeri } = useGlobalContext();
 
   const handleSignUp = async () => {
-    if (ErrorCheck({ username, password, email, phone_number })) {
+    if (ErrorCheck({ password, email, phone_number })) {
       return;
     }
     if (!isChecked) {
@@ -47,7 +47,7 @@ const SignUp = (props) => {
         options: {
           userAttributes: {
             email,
-            preferred_username: username,
+            preferred_username: 'username',
             phone_number,
           },
           autoSignIn: true,
@@ -77,7 +77,7 @@ const SignUp = (props) => {
           <Text style={styles.title}>Register</Text>
           <Text style={{ textAlign: 'center' }}>Create your account</Text>
         </View>
-        <View
+        {/* <View
           style={[
             styles.input,
             {
@@ -95,7 +95,7 @@ const SignUp = (props) => {
             onChangeText={setUsername}
             autoCapitalize="none"
           />
-        </View>
+        </View> */}
         <View
           style={[
             styles.input,

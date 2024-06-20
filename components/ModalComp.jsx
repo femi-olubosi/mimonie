@@ -1,3 +1,5 @@
+import { View } from 'react-native';
+
 export const ModalComp = ({ modalVisible, children }) => {
   return (
     <>
@@ -22,7 +24,9 @@ export const ModalComp = ({ modalVisible, children }) => {
               opacity: 0.3,
             }}
           ></View>
-          <View style={{ padding: 20 }}>{children}</View>
+          <View style={{ padding: 20, width: '100%', height: '80%' }}>
+            {children}
+          </View>
         </View>
       ) : null}
     </>

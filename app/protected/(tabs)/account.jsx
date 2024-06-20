@@ -18,6 +18,7 @@ import {
   Feather,
   FontAwesome,
   Ionicons,
+  MaterialCommunityIcons,
   MaterialIcons,
   Octicons,
 } from '@expo/vector-icons';
@@ -41,7 +42,7 @@ const Account = () => {
   const handleInviteFriends = () => {
     router.push('/protected/contact');
   };
-
+  // console.log(userProfile);
   const handleProfilePicture = async () => {
     try {
       const file = await imagePicker();
@@ -161,22 +162,26 @@ const Account = () => {
                   {item.icon}
                   <Text style={styles.itemText}>{item.title}</Text>
                   {item.extra && (
-                    <Octicons
-                      name={
-                        userProfile.is_bvn_verified &&
-                        userProfile.is_nin_verified
-                          ? 'verified'
-                          : 'unverified'
-                      }
-                      size={20}
-                      color={
-                        userProfile.is_bvn_verified &&
-                        userProfile.is_nin_verified
-                          ? 'green'
-                          : 'red'
-                      }
-                      style={{ marginLeft: 10 }}
-                    />
+                    <View style={{ marginLeft: 5 }}>
+                      {userProfile.verification_in_progress ? (
+                        <MaterialCommunityIcons
+                          name="progress-clock"
+                          size={20}
+                          color={'#f6bd02'}
+                        />
+                      ) : (
+                        <Octicons
+                          name={
+                            userProfile.is_bvn_verified
+                              ? 'verified'
+                              : 'unverified'
+                          }
+                          size={20}
+                          color={userProfile.is_bvn_verified ? 'green' : 'red'}
+                          style={{ marginLeft: 10 }}
+                        />
+                      )}
+                    </View>
                   )}
                 </View>
                 <Ionicons name="chevron-forward" size={24} color="black" />
@@ -195,7 +200,7 @@ const Account = () => {
                 outline={true}
               />
               <Button
-                title={'Sign Out'}
+                title={'Log Out'}
                 color={'red'}
                 onPress={() => setLogoutModal(true)}
                 outline={false}
@@ -234,11 +239,11 @@ const Account = () => {
               rowGap: 20,
               shadowColor: 'gray',
               shadowOpacity: 0.2,
-              borderTopLeftRadius: 40,
-              borderTopRightRadius: 40,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
             }}
           >
-            <AntDesign name="logout" size={80} style={{ color: 'red' }} />
+            {/* <AntDesign name="logout" size={80} style={{ color: 'red' }} /> */}
             <Text style={{ fontSize: 25, color: 'black' }}>Log Out?</Text>
             <Text
               style={{
@@ -250,23 +255,25 @@ const Account = () => {
             >
               This account will be logged out. Are you sure you want to do this?
             </Text>
-            <Button
-              title={'Sign Out'}
-              color={'red'}
-              onPress={() => {
-                // setLogoutModal(false);
-                signOut();
-              }}
-              outline={false}
-              styleOverride={{ width: 160 }}
-            />
-            <Button
-              color={'gray'}
-              title={'Cancel'}
-              onPress={() => setLogoutModal(false)}
-              outline={true}
-              styleOverride={{ width: 160 }}
-            />
+            <View style={{ width: '100%' }}>
+              <Button
+                title={'Confirm Log Out'}
+                color={'red'}
+                onPress={() => {
+                  // setLogoutModal(false);
+                  signOut();
+                }}
+                outline={false}
+                styleOverride={{ width: '100%' }}
+              />
+              <Button
+                color={'gray'}
+                title={'Cancel'}
+                onPress={() => setLogoutModal(false)}
+                outline={true}
+                styleOverride={{ width: '100%' }}
+              />
+            </View>
           </View>
         </View>
       </Modal>
@@ -301,7 +308,7 @@ const menuItems = [
   {
     title: 'Documents Verification',
     icon: <Ionicons name="document-text-outline" size={24} color="black" />,
-    route: '/protected/document_verification',
+    route: '/protected/kyc',
     extra: true,
   },
   {

@@ -6,19 +6,27 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
 import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { Link, router } from 'expo-router';
-import { ErrorCheck } from '../../utils/errorCheck';
-import { fetchCurrUser } from '../../api/user.service';
+import { Link } from 'expo-router';
+import { ModalComp } from '../ModalComp';
+import CompleteProfile from '../CompleteProfile';
 
 const EmailConfirmation = () => {
-  const { emailVeri, setIsLoading, setCurrentUser } = useGlobalContext();
+  const { emailVeri, setIsLoading, currentUser } = useGlobalContext();
   const [code, setCode] = useState(0);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] =
+    useState(false);
 
+  useEffect(() => {
+    if (currentUser && currentUser.email_verified) {
+      console.log(currentUser.email_verified);
+      setShowCompleteProfileModal(true);
+    }
+  }, [currentUser]);
   const handleVerify = async () => {
     // if (ErrorCheck({ email, password })) {
     //   return;
@@ -30,7 +38,8 @@ const EmailConfirmation = () => {
         confirmationCode: code,
       });
       if (isSignUpComplete || nextStep === 'DONE') {
-        router.push('/protected');
+        // router.push('/protected');
+        setShowCompleteProfileModal(true);
       } else {
         Alert.alert(
           'Warning',
@@ -120,6 +129,9 @@ const EmailConfirmation = () => {
           </Pressable>
         </View>
       </View>
+      <ModalComp modalVisible={showCompleteProfileModal}>
+        <CompleteProfile />
+      </ModalComp>
     </Container>
   );
 };

@@ -1,62 +1,30 @@
 import {
   FlatList,
+  Image,
   Modal,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PageView } from '../../components/Reusable';
 import { Colors } from '../../constants/Colors';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { Paystack } from 'react-native-paystack-webview';
 import { router } from 'expo-router';
+import { useGlobalContext } from '../../store/StoreContext';
+import { fetchCards } from '../../api/payment.service';
 
 const Cards = () => {
-  const [userCards, setUserCards] = useState([]);
+  const [userCards, setUserCards] = useState([{ name: 'Name' }]);
   const [modalVisible, setModalVisible] = useState(false);
+  const { currentUser } = useGlobalContext();
 
-  const renderContribution = ({ item }) => {
-    const createdAtDate = new Date(item.createdAt);
-
-    return (
-      <TouchableOpacity
-        style={styles.contributionContainer}
-        onPress={() => router.push(`/protected/mimonie/${item.id}`)}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <Text style={styles.contributionName}>{item.name}</Text>
-          <Text style={{ fontSize: 10 }}>{item.category}</Text>
-        </View>
-        <View style={styles.contributionInfo}>
-          <Text style={styles.contributionAmount}>{item.amount}</Text>
-          <View
-            style={{
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 8,
-              backgroundColor: item.status === 'open' ? 'green' : 'gray',
-            }}
-          >
-            <Text style={styles.contributionStatus}>{item.status}</Text>
-          </View>
-        </View>
-        <View style={styles.contributionInfo}>
-          <Text style={styles.contributionAmount}>
-            {createdAtDate.toLocaleDateString()}
-          </Text>
-          <Text style={styles.contributionAmount}>By: {item.owner}</Text>
-        </View>
-      </TouchableOpacity>
-    );
-  };
+  useEffect(() => {
+    fetchCards(setUserCards, currentUser);
+  }, []);
 
   const handleAddCardPress = () => {
     setModalVisible(true);
@@ -67,13 +35,42 @@ const Cards = () => {
     router.push('/protected/paystack');
   };
 
+  const renderCards = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+        onPress={() => router.push(`/protected/mimonie/${item.id}`)}
+      >
+        <View
+          style={{ flexDirection: 'row', columnGap: 20, alignItems: 'center' }}
+        >
+          <Image style={{ width: 50, height: 50, borderWidth: 1 }} />
+          <View style={{ rowGap: 5 }}>
+            <Text style={{ fontSize: 16, fontFamily: 'ir' }}>
+              {item.bank || 'Zenith Bank of Nigeria'}
+            </Text>
+
+            <Text style={{ alignSelf: 'flex-end' }}>
+              ********{item.last4 || 2332}
+            </Text>
+          </View>
+        </View>
+        {/* <FontAwesome name="angle-right" size={24} color="black" /> */}
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <PageView title={'Bank Cards'}>
+    <PageView title={'Bank Cards'} route={'/protected/account'}>
       <View style={{ flex: 1, padding: 20 }}>
         <FlatList
           data={userCards}
-          renderItem={renderContribution}
-          keyExtractor={(item) => item.id}
+          renderItem={renderCards}
+          keyExtractor={(item, id) => id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
@@ -101,13 +98,17 @@ const Cards = () => {
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.modalButtonText}>Cancel</Text>
+                <Text style={[styles.modalButtonText, { color: 'red' }]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={handlePay}
               >
-                <Text style={styles.modalButtonText}>Pay Now</Text>
+                <Text style={[styles.modalButtonText, { color: Colors.pri }]}>
+                  Pay Now
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -178,7 +179,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
-    width: '80%',
+    width: '70%',
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
@@ -202,10 +203,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   cancelButton: {
-    backgroundColor: 'gray',
+    // backgroundColor: 'gray',
   },
   confirmButton: {
-    backgroundColor: Colors.pri,
+    // backgroundColor: Colors.pri,
   },
   modalButtonText: {
     color: 'white',

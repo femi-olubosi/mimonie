@@ -2,8 +2,38 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { AntDesign } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useGlobalContext } from '@/store/StoreContext';
+import {
+  createPaystackCustomer,
+  fetchBanks,
+  getPaystackCustomer,
+  subAccount,
+  verifyBVN,
+} from '@/api/payment.service';
 
 const Options = () => {
+  const { userProfile } = useGlobalContext();
+  const handleCustomer = async () => {
+    console.log('object');
+    const { name, phone, email } = userProfile;
+
+    let first_name = name.split(' ')[0];
+    let last_name = name.split(' ')[1];
+
+    // const res = await createPaystackCustomer(
+    //   email,
+    //   first_name,
+    //   last_name,
+    //   phone
+    // );
+
+    // const resBVN = await verifyBVN('', '');
+    // console.log({ resBVN });
+    // const resGet = await getPaystackCustomer('CUS_vt4djmq0rc6qpbx');
+    const res = await fetchBanks();
+    // const res = await subAccount();
+    console.log({ res });
+  };
   return (
     <View
       style={{
@@ -24,6 +54,8 @@ const Options = () => {
       </Pressable>
       <Pressable
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
+        // onPress={() => router.push('/email_verify')}
+        onPress={handleCustomer}
       >
         <Image
           source={require('../../assets/logo/bill.png')}
