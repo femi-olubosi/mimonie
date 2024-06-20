@@ -3,32 +3,21 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
   TextInput,
   ScrollView,
   Platform,
   Pressable,
 } from 'react-native';
-import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import { Colors } from '../../constants/Colors';
-import {
-  createUserProfile,
-  fetchCurrUser,
-  fetchUserProfile,
-  updateAttributes,
-  updateUserProfile,
-} from '../../api/user.service';
+import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
 import {
   DateTimeSelector,
   PageView,
   SelectInput,
 } from '../../components/Reusable';
-import { ErrorCheck } from '../../utils/errorCheck';
-import Constants from 'expo-constants';
 import { topBar } from '../../cStyle';
 import { naira } from '../../constants/Currency';
 

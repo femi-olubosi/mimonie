@@ -20,7 +20,11 @@
       "android": {
         "buildType": "apk"
       },
-      "channel": "preview"
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY": "sk_live_018197960c67614111a22568257da65f67191fb3",
+        "EXPO_PUBLIC_PAYSTACK_PUBLICK_KEY": "pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f"
+      }
     },
     "preview2": {
       "android": {
@@ -37,7 +41,11 @@
       "channel": "preview4"
     },
     "production": {
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY": "sk_live_018197960c67614111a22568257da65f67191fb3",
+        "EXPO_PUBLIC_PAYSTACK_PUBLICK_KEY": "pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f"
+      }
     }
   },
   "submit": {
