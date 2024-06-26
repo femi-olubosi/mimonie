@@ -6,6 +6,42 @@ import { LazyLoading, LazyLoadingDisabled, AsyncCollection } from "@aws-amplify/
 
 
 
+type EagerUserNotifications = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserNotifications, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly type?: string | null;
+  readonly content?: string | null;
+  readonly title?: string | null;
+  readonly read?: boolean | null;
+  readonly userId?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyUserNotifications = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserNotifications, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly type?: string | null;
+  readonly content?: string | null;
+  readonly title?: string | null;
+  readonly read?: boolean | null;
+  readonly userId?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UserNotifications = LazyLoading extends LazyLoadingDisabled ? EagerUserNotifications : LazyUserNotifications
+
+export declare const UserNotifications: (new (init: ModelInit<UserNotifications>) => UserNotifications) & {
+  copyOf(source: UserNotifications, mutator: (draft: MutableModel<UserNotifications>) => MutableModel<UserNotifications> | void): UserNotifications;
+}
+
 type EagerUserProfile = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<UserProfile, 'id'>;
@@ -15,7 +51,7 @@ type EagerUserProfile = {
   readonly name?: string | null;
   readonly preferred_username?: string | null;
   readonly phone_number?: string | null;
-  readonly birthday?: string | null;
+  readonly birthdate?: string | null;
   readonly address?: string | null;
   readonly income_from?: number | null;
   readonly income_to?: number | null;
@@ -46,7 +82,7 @@ type LazyUserProfile = {
   readonly name?: string | null;
   readonly preferred_username?: string | null;
   readonly phone_number?: string | null;
-  readonly birthday?: string | null;
+  readonly birthdate?: string | null;
   readonly address?: string | null;
   readonly income_from?: number | null;
   readonly income_to?: number | null;
@@ -133,6 +169,7 @@ type EagerContribution = {
   readonly num_of_month: number;
   readonly status?: string | null;
   readonly participant_ids?: (string | null)[] | null;
+  readonly currently_at?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -156,6 +193,7 @@ type LazyContribution = {
   readonly num_of_month: number;
   readonly status?: string | null;
   readonly participant_ids?: (string | null)[] | null;
+  readonly currently_at?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

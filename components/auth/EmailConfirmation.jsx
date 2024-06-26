@@ -9,9 +9,9 @@ import {
 import React, { useEffect, useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
+import { autoSignIn, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
 
@@ -28,18 +28,23 @@ const EmailConfirmation = () => {
     }
   }, [currentUser]);
   const handleVerify = async () => {
-    // if (ErrorCheck({ email, password })) {
-    //   return;
-    // }
     setIsLoading(true);
     try {
       const { isSignUpComplete, nextStep } = await confirmSignUp({
         username: emailVeri,
         confirmationCode: code,
       });
-      if (isSignUpComplete || nextStep === 'DONE') {
-        // router.push('/protected');
-        setShowCompleteProfileModal(true);
+      if (isSignUpComplete) {
+        const signInOutput = await autoSignIn();
+        console.log('output', signInOutput);
+        if (signInOutput) {
+          router.push('/protected/complete_profile');
+        } else {
+          Alert.alert(
+            'Sign-in failed',
+            'Unable to sign in automatically. Please try manually.'
+          );
+        }
       } else {
         Alert.alert(
           'Warning',
@@ -55,8 +60,15 @@ const EmailConfirmation = () => {
   };
 
   const handleResend = async () => {
-    await resendSignUpCode({ username: emailVeri });
-    alert('Code resent successful');
+    setIsLoading(true);
+    try {
+      await resendSignUpCode({ username: emailVeri });
+      alert('Code resent successful');
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,8 +82,11 @@ const EmailConfirmation = () => {
             paddingHorizontal: 20,
           }}
         >
-          <Text style={[styles.title, { marginBottom: 40 }]}>
+          <Text style={[styles.title, { marginBottom: 10 }]}>
             Verification Code
+          </Text>
+          <Text style={{ marginBottom: 40, textAlign: 'center' }}>
+            Check ypur email {emailVeri} for a code
           </Text>
           <View>
             <Text style={styles.label}>Code</Text>

@@ -102,7 +102,7 @@ const Account = () => {
                   style={{ width: '100%', height: '100%', borderRadius: 50 }}
                   resizeMode="cover"
                 />
-              ) : currentUser.picture ? (
+              ) : currentUser?.picture ? (
                 <Image
                   source={{ uri: currentUser.picture }}
                   style={{ width: '100%', height: '100%', borderRadius: 50 }}
@@ -126,7 +126,7 @@ const Account = () => {
               </Pressable>
             </View>
             <Text style={{ color: '#424856', fontSize: 18, fontFamily: 'er' }}>
-              {userProfile.name}
+              {userProfile?.name}
             </Text>
             <Text
               style={{
@@ -136,7 +136,7 @@ const Account = () => {
                 marginTop: 10,
               }}
             >
-              {currentUser.phone_number}
+              {currentUser?.phone_number}
             </Text>
           </View>
         </View>
@@ -163,7 +163,7 @@ const Account = () => {
                   <Text style={styles.itemText}>{item.title}</Text>
                   {item.extra && (
                     <View style={{ marginLeft: 5 }}>
-                      {userProfile.verification_in_progress ? (
+                      {userProfile?.verification_in_progress ? (
                         <MaterialCommunityIcons
                           name="progress-clock"
                           size={20}
@@ -172,12 +172,12 @@ const Account = () => {
                       ) : (
                         <Octicons
                           name={
-                            userProfile.is_bvn_verified
+                            userProfile?.is_bvn_verified
                               ? 'verified'
                               : 'unverified'
                           }
                           size={20}
-                          color={userProfile.is_bvn_verified ? 'green' : 'red'}
+                          color={userProfile?.is_bvn_verified ? 'green' : 'red'}
                           style={{ marginLeft: 10 }}
                         />
                       )}

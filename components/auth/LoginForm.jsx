@@ -19,6 +19,8 @@ import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
+import { fetchUserNotification } from '../../api/notifications.service';
+import { convertToAWSDate } from '../../utils/toAWSDate';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -32,6 +34,7 @@ const LoginForm = (props) => {
     setCurrentUser,
     setUserProfile,
     userProfile,
+    setNotifications,
   } = useGlobalContext();
 
   const handleSignIn = async () => {
@@ -61,7 +64,7 @@ const LoginForm = (props) => {
       }
       const user = await fetchCurrUser(setCurrentUser);
       const profile = await fetchUserProfile(setUserProfile, user);
-
+      await fetchUserNotification(user.userId, setNotifications);
       if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
         Alert.alert(
           'Device Mismatch',
@@ -84,9 +87,9 @@ const LoginForm = (props) => {
           { cancelable: false }
         );
       }
-      console.log(!!userProfile.name);
+
       if (!userProfile.name) {
-        router.push('/email_verify');
+        router.push('/protected/complete_profile');
         return;
       }
       router.push('/protected');

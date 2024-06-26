@@ -30,7 +30,14 @@ export const Text18 = ({ text }) => (
   </Text>
 );
 
-export const DateTimeSelector = ({ show, setShow, mode, date, setDate }) => {
+export const DateTimeSelector = ({
+  show,
+  setShow,
+  mode,
+  date,
+  setDate,
+  setDatePick,
+}) => {
   // const [date, setDate] = useState(new Date());
   //   const [mode, setMode] = useState('date');
 
@@ -38,6 +45,7 @@ export const DateTimeSelector = ({ show, setShow, mode, date, setDate }) => {
     const currentDate = selectedDate;
     setShow(false);
     setDate(currentDate);
+    setDatePick(currentDate);
   };
 
   //   const showMode = (currentMode) => {

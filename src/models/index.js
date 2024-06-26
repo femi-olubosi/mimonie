@@ -4,9 +4,10 @@ import { schema } from './schema';
 
 
 
-const { UserProfile, UserCardDetails, Contribution, ContributionGroups } = initSchema(schema);
+const { UserNotifications, UserProfile, UserCardDetails, Contribution, ContributionGroups } = initSchema(schema);
 
 export {
+  UserNotifications,
   UserProfile,
   UserCardDetails,
   Contribution,

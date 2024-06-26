@@ -166,6 +166,14 @@ const ProtectedContent = () => {
             <Stack.Screen name="cards" options={{ headerShown: false }} />
             <Stack.Screen name="paystack" options={{ headerShown: false }} />
             <Stack.Screen name="kyc" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="complete_profile"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="notifications"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </Authenticator>
       </View>

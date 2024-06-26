@@ -40,9 +40,12 @@ const groups = () => {
             <View style={styles.groupContent}>
               <Text style={styles.groupTitle}>{item.title}</Text>
               <Text style={styles.groupSubtitle}>
-                N{item.amount}/month x {item.num_of_month}
+                N{item.amount.toLocaleString('en-US')}/month x{' '}
+                {item.num_of_month}
               </Text>
-              <Text style={styles.groupTarget}>Target: N{item.target}</Text>
+              <Text style={styles.groupTarget}>
+                Target: N{item.target.toLocaleString('en-US')}
+              </Text>
               <Button
                 title={'Create Contribution'}
                 onPress={() => handleGoToCreate(item)}

@@ -38,24 +38,37 @@ const kyc = () => {
       bank_code: selectedValue.value,
     };
 
-    // if (userProfile.verification_in_progress) {
-    //   alert(
-    //     'Verification In Progress',
-    //     `Hi ${userProfile.preferred_username}, Your BVN verification is in progress. Please check back shortly`
-    //   );
-    //   return;
-    // }
+    if (userProfile.verification_in_progress) {
+      alert(
+        'Verification In Progress',
+        `Hi ${userProfile.preferred_username}, Your BVN verification is in progress. Please check back shortly`
+      );
+      return;
+    }
 
     try {
       setIsLoading(true);
       const verify = await verifyBVN(data, userProfile);
-      const res = await updateUserProfile(
+      const res = await getPaystackCustomer(userProfile?.customer_code);
+      await updateUserProfile(
         { verification_in_progress: true, bank_details: JSON.stringify(data) },
         currentUser
       );
+      console.log({ res });
+      if (res.data.identifications?.length > 0) {
+        const subaccount = await createSubAccount(userProfile);
+        await updateUserProfile(
+          {
+            is_bvn_verified: true,
+            verification_in_progress: false,
+            subaccount_code: subaccount.subaccount_code,
+          },
+          currentUser
+        );
+      }
 
-      const fetch = await fetchUserProfile(setUserProfile, currentUser);
-      console.log('fetch', fetch);
+      await fetchUserProfile(setUserProfile, currentUser);
+
       Alert.alert(
         verify.message,
         'This will take upto 2-3 working days. Please be patient while weverify your document',
@@ -84,16 +97,7 @@ const kyc = () => {
 
   return (
     <PageView title={'Document Verification'}>
-      <View style={styles.container}>
-        {/* <SelectInput
-          options={[
-            { value: 'bvn', label: 'BVN' },
-            { value: 'nin', label: 'NIN' },
-          ]}
-          selectedValue={selectedValue}
-          setSelectedValue={setSelectedValue}
-          defaultValue={'Select document'}
-        /> */}
+      {/* <View style={styles.container}>
         <TextInput
           style={styles.input}
           placeholder=""
@@ -115,22 +119,19 @@ const kyc = () => {
           onChangeText={setBvn}
           keyboardType="numeric"
         />
-        {/* <TextInput
-          style={styles.input}
-          placeholder="Bank Code"
-          value={bankCode}
-          onChangeText={setBankCode}
-        /> */}
         <SelectInput
           options={bankList}
           selectedValue={selectedValue}
           setSelectedValue={setSelectedValue}
           defaultValue={'Select document'}
         />
-        <Pressable onPress={handleVerifyBVN} style={{ alignSelf: 'center' }}>
+        <Pressable
+          onPress={handleVerifyBVN}
+          style={{ alignSelf: 'center', marginTop: 20 }}
+        >
           <Text style={{ color: Colors.pri, fontFamily: 'im' }}>Verify</Text>
         </Pressable>
-      </View>
+      </View> */}
     </PageView>
   );
 };

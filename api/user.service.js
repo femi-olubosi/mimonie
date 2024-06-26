@@ -106,16 +106,14 @@ export const updateUserProfile = async (updatedData, currentUser) => {
       c.userId.eq(currentUser.userId)
     );
 
-    const data = {
-      email: currentUser.email,
-      phone_number: currentUser.phone_number,
-      ...updatedData,
-    };
+    // const data = {
+    //   ...updatedData,
+    // };
 
     // Update the profile with new data
     const updatedProfile = await DataStore.save(
       UserProfile.copyOf(userProfile[0], (updated) => {
-        Object.assign(updated, data);
+        Object.assign(updated, updatedData);
       })
     );
 

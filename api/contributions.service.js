@@ -4,12 +4,17 @@ import { Contribution } from '../src/models';
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
     // await DataStore.clear();
-    // await DataStore.start();
+    await DataStore.start();
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
       c.participant_ids.contains(userId)
     );
-    setContributions(userContributions);
+
+    const sorted = userContributions.sort((a, b) =>
+      a.createdAt > b.createdAt ? -1 : 1
+    );
+    console.log('sort', sorted);
+    setContributions(sorted);
     return userContributions;
   } catch (error) {
     console.error('Error fetching user contributions:', error);
@@ -29,6 +34,8 @@ export const createContribution = async (
     index: 1,
     userId: currentUser.userId,
     contributions: 0,
+    auth_url: userProfile.auth_url,
+    email: currentUser.email,
   };
   try {
     const newContribution = await DataStore.save(
@@ -36,12 +43,14 @@ export const createContribution = async (
         name: details.contributionName,
         title: details.contributionName,
         category: details.groupName,
-        start_date: details.date,
-        invite_link: 'https://www.example.com',
+        // start_date: details.date,
+        invite_link: `https://app.mimonie.com/${userProfile.name
+          .split(' ')
+          .join('')}-${details.contributionName.split(' ').join('-')}`,
         contributiongroupsID: details.groupId,
         participant: [userObj],
         participant_ids: [currentUser.userId],
-        owner: details.username,
+        owner: userProfile.name,
         target: details.target,
         amount: details.amount,
         num_of_month: details.num_of_month,
@@ -129,6 +138,8 @@ export const joinContribution = async (
       index: participants.length + 1,
       userId: currentUser.userId,
       contributions: 0,
+      email: currentUser.email,
+      auth_url: userProfile.auth_url,
     };
 
     // Add the new participant to the participants array
@@ -153,5 +164,31 @@ export const joinContribution = async (
   } catch (error) {
     console.error('Error joining contribution:', error);
     throw error;
+  }
+};
+
+export const findContributionByInviteLink = async (invite_link) => {
+  try {
+    const contributions = await DataStore.query(Contribution, (c) =>
+      c.invite_link.eq(invite_link)
+    );
+    // setContribution(Contribution);
+    return contributions;
+  } catch (error) {
+    console.error('Error fetching user contributions:', error);
+    return [];
+  }
+};
+
+export const findContributionByID = async (id) => {
+  try {
+    const contributions = await DataStore.query(Contribution, (c) =>
+      c.id.eq(id)
+    );
+    // setContribution(Contribution);
+    return contributions;
+  } catch (error) {
+    console.error('Error fetching user contributions:', error);
+    return [];
   }
 };

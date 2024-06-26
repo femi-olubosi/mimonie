@@ -1,5 +1,9 @@
 import React, { createContext, useEffect, useState, useContext } from 'react';
-import { fetchCurrUser, getUserInfo } from '@/api/user.service';
+import {
+  fetchCurrUser,
+  fetchUserProfile,
+  getUserInfo,
+} from '@/api/user.service';
 
 const StoreContext = createContext();
 
@@ -12,14 +16,19 @@ const StoreProvider = ({ children }) => {
   const [contributions, setContributions] = useState([]);
   const [myContacts, setMyContacts] = useState([]);
   const [userProfile, setUserProfile] = useState({});
+  const [notifications, setNotifications] = useState([]);
 
   const toggleMode = () => {
     setIsDarkMode((prevMode) => !prevMode);
   };
 
-  // useEffect(() => {
-  //   fetchCurrUser(setCurrentUser);
-  // }, []);
+  useEffect(() => {
+    fetchCurrUser(setCurrentUser);
+  }, []);
+
+  useEffect(() => {
+    fetchUserProfile(setUserProfile, currentUser);
+  }, [currentUser]);
 
   const value = {
     isDarkMode,
@@ -38,6 +47,8 @@ const StoreProvider = ({ children }) => {
     setContributions,
     myContacts,
     setMyContacts,
+    notifications,
+    setNotifications,
   };
 
   return (

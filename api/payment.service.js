@@ -1,7 +1,8 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution, UserActivity, UserCardDetails } from '../src/models';
 
-const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
+const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
+const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
 
 const makePaystackRequest = async (endpoint, method, data) => {
   const url = `https://api.paystack.co${endpoint}`;
@@ -180,7 +181,7 @@ export const verifyTransaction = async (reference, currentUser) => {
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY_LIVE}`,
           'Content-Type': 'application/json',
         },
       }
@@ -238,8 +239,8 @@ export const verifyBVN = async (input, userProfile) => {
     account_number: input.account_number,
     bvn: input.bvn,
     bank_code: input.bank_code,
-    first_name,
-    last_name,
+    first_name: 'Uchenna',
+    last_name: 'Okoro',
   };
 
   return await makePaystackRequest(
@@ -252,8 +253,8 @@ export const verifyBVN = async (input, userProfile) => {
 export const createSubAccount = async (userProfile) => {
   const data = {
     business_name: `${userProfile.preferred_username}${userProfile.phone_number}`,
-    bank_code: userProfile.bank_detils.bank_code,
-    account_number: userProfile.bank_detils.account_number,
+    bank_code: userProfile.bank_details.bank_code,
+    account_number: userProfile.bank_details.account_number,
     percentage_charge: 20,
   };
 
@@ -272,6 +273,23 @@ export const fetchBanks = async () => {
     throw error;
   }
 };
+export const fetchCountries = async () => {
+  try {
+    const response = await fetch('https://restcountries.com/v3.1/all');
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const countries = await response.json();
+    const countryNames = countries
+      .map((country) => country.name.common)
+      .sort((a, b) => (a > b ? 1 : -1));
+
+    return countryNames.map((e) => ({ label: e, value: e }));
+  } catch (error) {
+    console.error('Error fetching country names:', error);
+    return [];
+  }
+};
 
 export const fetchCards = async (setUserCards, currentUser) => {
   try {
@@ -283,5 +301,25 @@ export const fetchCards = async (setUserCards, currentUser) => {
   } catch (error) {
     console.error('Error fetching user user cards:', error);
     return [];
+  }
+};
+
+export const deleteCards = async (id, setUserCards, currentUser) => {
+  try {
+    // Query for the contribution to be deleted
+    const toDelete = await DataStore.query(UserCardDetails, id);
+
+    // Check if the contribution exists
+    if (toDelete) {
+      // Delete the contribution
+
+      await DataStore.delete(toDelete);
+      console.log(`Card with ID ${id} deleted successfully.`);
+      await fetchCards(setUserCards, currentUser);
+    } else {
+      console.log(`card with ID ${id} not found.`);
+    }
+  } catch (error) {
+    console.error(`Error deleting card with ID ${id}:`, error);
   }
 };

@@ -54,8 +54,8 @@ const Options = () => {
       </Pressable>
       <Pressable
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
-        // onPress={() => router.push('/email_verify')}
-        onPress={handleCustomer}
+        // onPress={() => router.push('/protected/complete_profile')}
+        // onPress={{}}
       >
         <Image
           source={require('../../assets/logo/bill.png')}

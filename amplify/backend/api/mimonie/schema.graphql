@@ -1,9 +1,18 @@
+type UserNotifications @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  type: String
+  content: String
+  title: String
+  read: Boolean
+  userId: ID
+}
+
 type UserProfile @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String
   preferred_username: String
   phone_number: AWSPhone
-  birthday: AWSDate
+  birthdate: AWSDate
   address: String
   income_from: Int
   income_to: Int
@@ -49,6 +58,7 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   num_of_month: Int!
   status: String
   participant_ids: [ID]
+  currently_at: String
 }
 
 type ContributionGroups @model @auth(rules: [{allow: public}]) {

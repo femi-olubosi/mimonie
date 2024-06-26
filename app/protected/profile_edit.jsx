@@ -20,6 +20,7 @@ import {
 } from '../../components/Reusable';
 import { topBar } from '../../cStyle';
 import { naira } from '../../constants/Currency';
+import { ErrorCheck } from '../../utils/errorCheck';
 
 const dateOption = [
   'en-US',
@@ -90,7 +91,6 @@ const ProfileEdit = () => {
   }, [selectedValue]);
 
   const handleSubmit = async () => {
-    setIsLoading(true);
     const data = {
       name: infoDetails.firstname + ' ' + infoDetails.lastname,
       birthdate: infoDetails.birthdate,
@@ -101,6 +101,11 @@ const ProfileEdit = () => {
       country_of_residence: infoDetails.country_of_residence,
       country_of_origin: infoDetails.country_of_origin,
     };
+    if (ErrorCheck(data)) {
+      return;
+    }
+
+    setIsLoading(true);
     try {
       await updateUserProfile(data, currentUser);
       await fetchUserProfile(setUserProfile, currentUser);

@@ -3,16 +3,18 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '@/store/StoreContext';
 import { FontAwesome } from '@expo/vector-icons';
 
 const Contact = () => {
   const { myContacts } = useGlobalContext();
+  const [contactSearch, setContactSearch] = useState('');
 
   const renderContact = ({ item }) => (
     <View style={styles.contactContainer}>
@@ -47,8 +49,16 @@ const Contact = () => {
       >
         My Contact
       </Text>
+      <View style={{ paddingHorizontal: 20 }}>
+        <TextInput
+          style={styles.inputSearch}
+          value={contactSearch}
+          onChangeText={setContactSearch}
+          placeholder="Search Contact"
+        />
+      </View>
       <FlatList
-        data={myContacts}
+        data={myContacts.filter((e) => e.name.includes(contactSearch.trim()))}
         keyExtractor={(item) => item.id}
         renderItem={renderContact}
       />
@@ -82,5 +92,15 @@ const styles = StyleSheet.create({
   },
   inviteText: {
     color: 'green',
+  },
+  inputSearch: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#9095A1',
+    padding: 12,
+    height: 40,
+    width: '100%',
+    alignSelf: 'center',
   },
 });

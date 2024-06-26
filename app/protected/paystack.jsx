@@ -6,18 +6,32 @@ import { useGlobalContext } from '../../store/StoreContext';
 import { Colors } from '../../constants/Colors';
 import { updateUserProfile } from '../../api/user.service';
 import { verifyTransaction } from '../../api/payment.service';
+import { createNotification } from '../../api/notifications.service';
 function Pay() {
-  const { currentUser } = useGlobalContext();
+  const { currentUser, setNotifications } = useGlobalContext();
+
   const handleSuccess = async (res) => {
     const response = await verifyTransaction(
       res.transactionRef.reference,
       currentUser
     );
+
     if (response) {
       await updateUserProfile(
         { auth_url: response.authorization_code },
         currentUser
       );
+      await createNotification(
+        {
+          title: 'Card added',
+          content: `You have successfully added a ${response.bank} to your cards collections. Your new card will be the active card`,
+          type: 'card',
+          userId: currentUser.userId,
+          read: false,
+        },
+        setNotifications
+      );
+
       router.push('/protected/cards');
     } else {
       console.error('Transaction verification failed.');

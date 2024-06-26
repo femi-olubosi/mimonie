@@ -13,10 +13,9 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
-import Button from '../../../components/Button';
 import {
-  deleteContribution,
   fetchUserContributions,
+  findContributionByID,
   joinContribution,
   updateContribution,
 } from '../../../api/contributions.service';
@@ -41,8 +40,27 @@ const ContributionDetails = () => {
     setIsLoading,
   } = useGlobalContext();
   const { id } = useLocalSearchParams();
-  const contribution = contributions.find((item) => item.id === id);
+  // const contribution = contributions.find((item) => item.id === id);
   const [visible, setVisible] = useState(false);
+  const [contribution, setContribution] = useState({});
+  const [parsed, setParsed] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const res = await findContributionByID(id);
+
+        setContribution(res[0]);
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   const handleJoinContribution = async () => {
     try {
@@ -52,6 +70,8 @@ const ContributionDetails = () => {
         userProfile,
         setContributions
       );
+      const res = await findContributionByID(id);
+      setContribution(res[0]);
       Alert.alert('Success', 'You have successfully joined the contribution');
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -73,22 +93,18 @@ const ContributionDetails = () => {
     }
   };
 
-  const startDate = new Date(contribution.start_date);
+  const startDate = new Date(contribution?.start_date);
 
   useEffect(() => {
-    (async () => {
-      if (contribution.participant.length === contribution.num_of_month) {
-        const updates = {
-          status: 'running',
-        };
-        await updateContribution(contribution.id, updates);
-      }
-    })();
+    if (contribution) {
+      const parsedData = JSON.parse(contribution?.participant || ['[]']);
+      setParsed(parsedData);
+    }
   }, [contribution]);
+  console.log('fast', parsed);
 
-  const next = JSON.parse(contribution.participant[0]).filter(
-    (e) => e.status !== 'recieved'
-  );
+  const next = parsed?.filter((e) => e.status !== 'recieved');
+  console.log(contribution?.participant?.length);
 
   return (
     <PageView title={'Contribution Details'}>
@@ -96,13 +112,13 @@ const ContributionDetails = () => {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Name</Text>
-            <Text style={styles.value}>{contribution.name}</Text>
+            <Text style={styles.value}>{contribution?.name}</Text>
           </View>
 
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Date Started</Text>
             <Text style={styles.value}>
-              {contribution.start_date
+              {contribution?.start_date
                 ? startDate.toLocaleDateString()
                 : 'Not running'}
             </Text>
@@ -112,7 +128,7 @@ const ContributionDetails = () => {
             <Text style={styles.label}>Status</Text>
             <View
               style={{
-                backgroundColor: statusCheck(contribution.status),
+                backgroundColor: statusCheck(contribution?.status),
                 alignSelf: 'flex-start',
                 paddingVertical: 4,
                 paddingHorizontal: 10,
@@ -120,7 +136,7 @@ const ContributionDetails = () => {
               }}
             >
               <Text style={[styles.value, { color: 'white' }]}>
-                {capitalizeFirstLetter(contribution.status)}
+                {capitalizeFirstLetter(contribution?.status)}
               </Text>
             </View>
           </View>
@@ -129,20 +145,20 @@ const ContributionDetails = () => {
             <Text style={styles.label}>Amount</Text>
             <Text style={styles.value}>
               {naira}
-              {new Intl.NumberFormat('en-US').format(contribution.amount)}
+              {new Intl.NumberFormat('en-US').format(contribution?.amount)}
             </Text>
           </View>
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Target</Text>
             <Text style={styles.value}>
               {naira}
-              {new Intl.NumberFormat('en-US').format(contribution.target)}
+              {new Intl.NumberFormat('en-US').format(contribution?.target)}
             </Text>
           </View>
 
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Number of Contributors</Text>
-            <Text style={styles.value}>{contribution.participant.length}</Text>
+            <Text style={styles.value}>{parsed.length}</Text>
           </View>
           <View
             style={[
@@ -164,8 +180,8 @@ const ContributionDetails = () => {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ rowGap: 8 }}
             >
-              {contribution.participant?.map((e, id) => {
-                const eN = JSON.parse(e)[0];
+              {parsed?.map((eN, id) => {
+                // const eN = JSON.parse(e)[0];
                 return (
                   <View
                     key={id}
@@ -218,21 +234,10 @@ const ContributionDetails = () => {
               })}
             </ScrollView>
           </View>
-          {/* 
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Current Month</Text>
-            <Text style={styles.value}>{contribution.currentMonth}</Text>
-          </View> */}
-          {/* 
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Target Month</Text>
-            <Text style={styles.value}>{contribution.targetMonth}</Text>
-          </View> */}
-
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Next Contribution Day</Text>
             <Text style={styles.value}>
-              {contribution.status !== 'running'
+              {contribution?.status !== 'running'
                 ? ' Not running'
                 : ` 28th  ${new Date().toLocaleString('en-US', {
                     month: 'long',
@@ -243,27 +248,27 @@ const ContributionDetails = () => {
           <View style={styles.detailContainer}>
             <Text style={styles.label}>User role</Text>
             <Text style={styles.value}>
-              {contribution.owner === currentUser.preferred_username
+              {contribution?.owner === userProfile?.name
                 ? 'Creator'
                 : 'invitee'}
             </Text>
           </View>
           <View style={styles.detailContainer}>
             <Text style={styles.label}>Owner</Text>
-            <Text style={styles.value}>{contribution.owner}</Text>
+            <Text style={styles.value}>{contribution?.owner}</Text>
           </View>
         </ScrollView>
         <Pressable
           style={styles.fab}
           onPress={() => {
-            if (contribution.start_date) {
+            if (contribution?.status === 'running') {
               // Do nothing or handle if needed
             } else if (
-              contribution.participant.length === contribution.num_of_month &&
-              contribution.owner === currentUser.preferred_username
+              contribution?.participant.length === contribution?.num_of_month &&
+              contribution?.owner === userProfile?.name
             ) {
               handleStartContribution();
-            } else if (contribution.owner === currentUser.preferred_username) {
+            } else if (contribution?.owner === userProfile?.name) {
               setVisible(!visible);
             } else {
               handleJoinContribution();
@@ -271,11 +276,13 @@ const ContributionDetails = () => {
           }}
         >
           <Text style={styles.fabText}>
-            {contribution.start_date
+            {contribution?.status === 'running'
               ? 'Running'
-              : contribution.participant.length === contribution.num_of_month
+              : contribution?.participant?.length ===
+                  contribution?.num_of_month &&
+                contribution?.owner === userProfile?.name
               ? 'Start'
-              : contribution.owner === currentUser.preferred_username
+              : contribution?.owner === userProfile?.name
               ? 'Invite'
               : 'Join'}
           </Text>

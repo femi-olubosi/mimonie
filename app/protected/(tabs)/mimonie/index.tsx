@@ -6,22 +6,42 @@ import {
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  TextInput,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
-import { fetchUserContributions } from '@/api/contributions.service';
+import {
+  fetchUserContributions,
+  findContributionByInviteLink,
+} from '@/api/contributions.service';
 import { naira } from '@/constants/Currency';
 
 const Mimonie = () => {
-  const { currentUser, contributions, setContributions } = useGlobalContext();
+  const { currentUser, contributions, setContributions, setIsLoading } =
+    useGlobalContext();
   const router = useRouter();
+  const [contributionSearch, setContributionSearch] = useState('');
+  const [searchedContribution, setSearchedContribution] = useState(null);
 
   useEffect(() => {
     fetchUserContributions(currentUser.userId, setContributions);
   }, []);
+
+  const handleSearchContribution = async () => {
+    setIsLoading(true);
+    try {
+      const res = await findContributionByInviteLink(contributionSearch);
+      setSearchedContribution(res);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+      setContributionSearch('');
+    }
+  };
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);
@@ -44,7 +64,7 @@ const Mimonie = () => {
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>
             {naira}
-            {item.amount}
+            {item.amount.toLocaleString('en-US')}
           </Text>
           <View
             style={{
@@ -76,8 +96,44 @@ const Mimonie = () => {
   return (
     <PageView title={'My Contributions'} backIcon={false}>
       <View style={{ flex: 1, padding: 20 }}>
+        <Text
+          style={{
+            color: 'gray',
+            fontSize: 11,
+            fontFamily: 'ir',
+            marginBottom: 4,
+          }}
+        >
+          Do you have an invite link? Paste it below to search
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            columnGap: 4,
+            borderWidth: 1,
+            borderColor: '#9095A1',
+            borderRadius: 12,
+            paddingHorizontal: 15,
+            height: 40,
+            backgroundColor: 'white',
+          }}
+        >
+          <TextInput
+            style={styles.inputSearch}
+            value={contributionSearch}
+            onChangeText={setContributionSearch}
+            placeholder="Search Contribution"
+          />
+          <AntDesign
+            name="search1"
+            size={16}
+            color="gray"
+            onPress={handleSearchContribution}
+          />
+        </View>
         <FlatList
-          data={contributions}
+          data={searchedContribution || contributions}
           renderItem={renderContribution}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
@@ -103,7 +159,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   listContent: {
-    paddingBottom: 20,
+    paddingVertical: 20,
   },
   contributionContainer: {
     padding: 16,
@@ -146,6 +202,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     marginLeft: 8,
+  },
+  inputSearch: {
+    backgroundColor: 'white',
+    height: '100%',
+    flex: 1,
+    fontSize: 11,
+    color: 'gray',
   },
 });
 

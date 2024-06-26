@@ -50,6 +50,18 @@ export const validateField = (key, value) => {
         errorMessage = 'BVN must be exactly 11 digits long.';
       }
       break;
+    case 'name':
+      if (!value) {
+        errorMessage = 'Fields are required';
+        console.log(value);
+      }
+      break;
+    case `${key}`:
+      if (!value) {
+        errorMessage = 'Fields are required';
+        console.log(value);
+      }
+      break;
     default:
       errorMessage = 'Fields are required';
       break;

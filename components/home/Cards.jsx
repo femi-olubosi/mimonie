@@ -5,20 +5,17 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
 import { getMonthsAfter } from '@/utils/getMonthsAfter';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { naira } from '@/constants/Currency';
 import { FontAwesome6 } from '@expo/vector-icons';
-import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 
 const Cards = ({ contributions }) => {
-  const { currentUser } = useGlobalContext();
-
+  console.log(contributions);
   return (
     <ThemedView style={styles.container}>
       {contributions.length === 0 ? (
@@ -52,14 +49,13 @@ const Cards = ({ contributions }) => {
           data={contributions}
           renderItem={({ item }) => {
             const num_of_contributions = 0;
-            // console.log(JSON.parse(item.participant).index);
-            // JSON.parse(item.participant[0])[0]?.contributions?.length || 0;
             return (
-              <ThemedView
+              <TouchableOpacity
                 style={[
                   styles.card,
                   { overflow: 'hidden', position: 'relative' },
                 ]}
+                onPress={() => router.push(`/protected/mimonie/${item.id}`)}
               >
                 <ThemedView
                   style={{
@@ -95,7 +91,7 @@ const Cards = ({ contributions }) => {
                     >
                       Target:{' '}
                       <FontAwesome6 name="naira-sign" size={12} color="white" />
-                      {item.target}
+                      {item.target.toLocaleString('en-US')}
                     </Text>
                     <Text
                       style={[
@@ -124,7 +120,10 @@ const Cards = ({ contributions }) => {
                       style={[styles.text, { fontSize: 32, fontFamily: 'esb' }]}
                     >
                       <FontAwesome6 name="naira-sign" size={28} color="white" />
-                      {num_of_contributions * item.amount}.00
+                      {(num_of_contributions * item.amount).toLocaleString(
+                        'en-US',
+                        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                      )}
                     </Text>
                   </View>
                   <Text
@@ -139,7 +138,7 @@ const Cards = ({ contributions }) => {
                     style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
                   >
                     <FontAwesome6 name="naira-sign" size={16} color="white" />
-                    {item.amount}
+                    {item.amount.toLocaleString('en-US')}
                   </Text>
                   <Text
                     style={[styles.text, { fontSize: 10, fontFamily: 'ir' }]}
@@ -164,7 +163,7 @@ const Cards = ({ contributions }) => {
                     right: 0,
                   }}
                 />
-              </ThemedView>
+              </TouchableOpacity>
             );
           }}
           keyExtractor={(item, index) => index.toString()}

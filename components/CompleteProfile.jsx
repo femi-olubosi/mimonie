@@ -17,6 +17,14 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { DateTimeSelector, PageView, SelectInput } from '@/components/Reusable';
 import { topBar } from '@/cStyle';
 import { naira } from '@/constants/Currency';
+import { fetchCurrUser } from '../api/user.service';
+import { ErrorCheck } from '../utils/errorCheck';
+import {
+  createNotification,
+  fetchUserNotification,
+} from '../api/notifications.service';
+import { convertToAWSDate } from '../utils/toAWSDate';
+import { fetchCountries } from '../api/payment.service';
 
 const dateOption = [
   'en-US',
@@ -35,19 +43,28 @@ const CompleteProfile = () => {
     setIsLoading,
     userProfile,
     setUserProfile,
+    setNotifications,
   } = useGlobalContext();
   const router = useRouter();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
+  const [datePick, setDatePick] = useState();
   const [selectedValue, setSelectedValue] = useState({});
+  const [selectedCountry, setSelectedCountry] = useState({});
+  const [selectedOrigin, setSelectedOrigin] = useState({});
+  const [countries, setCountries] = useState([]);
 
-  //   useEffect(() => {
-  //     setInfoDetails({
-  //       ...userProfile,
-  //       firstname: userProfile.name.split(' ')[0],
-  //       lastname: userProfile.name.split(' ')[1],
-  //     });
-  //   }, [userProfile]);
+  useEffect(() => {
+    fetchCurrUser(setCurrentUser);
+  }, []);
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+      const res = await fetchCountries();
+      setCountries(res);
+    };
+    fetchCountry();
+  }, []);
 
   const handleInputChange = (value, name) => {
     setInfoDetails((prev) => ({ ...prev, [name]: value }));
@@ -86,11 +103,28 @@ const CompleteProfile = () => {
     }
   }, [selectedValue]);
 
+  useEffect(() => {
+    if (Object.keys(selectedCountry || {})?.length > 0) {
+      setInfoDetails((prev) => ({
+        ...prev,
+        country_of_residence: selectedCountry.value,
+      }));
+    }
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    if (Object.keys(selectedOrigin || {})?.length > 0) {
+      setInfoDetails((prev) => ({
+        ...prev,
+        country_of_origin: selectedOrigin.value,
+      }));
+    }
+  }, [selectedOrigin]);
+
   const handleSubmit = async () => {
-    setIsLoading(true);
     const data = {
       name: infoDetails.firstname + ' ' + infoDetails.lastname,
-      birthdate: infoDetails.birthdate,
+      birthdate: convertToAWSDate(infoDetails.birthdate),
       address: infoDetails.address,
       occupation: infoDetails.occupation,
       income_from: infoDetails.income_from,
@@ -98,22 +132,42 @@ const CompleteProfile = () => {
       country_of_residence: infoDetails.country_of_residence,
       country_of_origin: infoDetails.country_of_origin,
       email: currentUser.email,
-      preferred_username: infoDetails.preferred_username,
+      preferred_username: 'username',
+      phone_number: currentUser.phone_number,
     };
+
+    if (ErrorCheck(data)) {
+      return;
+    }
+    setIsLoading(true);
     try {
       await updateUserProfile(data, currentUser);
+      const user = await fetchUserProfile(setUserProfile, currentUser);
+      console.log({ user });
+      // const res = await createPaystackCustomer(
+      //   currentUser.email,
+      //   infoDetails.firstname,
+      //   infoDetails.lastname,
+      //   currentUser.phone_number
+      // );
+
+      // const update = await updateUserProfile(
+      //   { ...data, customer_code: res.data.customer_code },
+      //   currentUser
+      // );
+      // console.log({ update });
+      await createNotification(
+        {
+          title: 'Account Created',
+          content: `Hi ${infoDetails.firstname}, You have joined mimonie network. Navigate to account screen to complete your KYC to start contributing`,
+          type: 'account',
+          userId: currentUser.userId,
+          read: false,
+        },
+        setNotifications
+      );
+      await fetchUserNotification(currentUser.userId, setNotifications);
       await fetchUserProfile(setUserProfile, currentUser);
-      const res = await createPaystackCustomer(
-        currentUser.email,
-        infoDetails.firstname,
-        infoDetails.lastname,
-        currentUser.phone_number
-      );
-      console.log('customer', res);
-      await updateUserProfile(
-        { ...data, customer_code: res.data.customer_code },
-        currentUser
-      );
       router.push('/protected');
     } catch (error) {
       console.error(error);
@@ -143,12 +197,32 @@ const CompleteProfile = () => {
           >
             <Text style={styles.label}>{item.label}</Text>
 
-            {item.eType === 'incomerange' ? (
+            {item.eType === 'select' ? (
               <SelectInput
-                options={income_range_options}
-                selectedValue={selectedValue}
-                setSelectedValue={setSelectedValue}
-                defaultValue={selectedValue.value}
+                options={
+                  item.name === 'income_from' ? income_range_options : countries
+                }
+                selectedValue={
+                  item.name === 'income_from'
+                    ? selectedValue
+                    : item.name === 'country_of_origin'
+                    ? selectedOrigin
+                    : selectedCountry
+                }
+                setSelectedValue={
+                  item.name === 'income_from'
+                    ? setSelectedValue
+                    : item.name === 'country_of_origin'
+                    ? setSelectedOrigin
+                    : setSelectedCountry
+                }
+                defaultValue={
+                  item.name === 'income_from'
+                    ? selectedValue.value
+                    : item.name === 'country_of_origin'
+                    ? selectedOrigin.value
+                    : selectedCountry.value
+                }
               />
             ) : (
               <View
@@ -161,7 +235,7 @@ const CompleteProfile = () => {
                   style={styles.value}
                   value={
                     item.name === 'birthdate'
-                      ? date.toLocaleDateString(...dateOption)
+                      ? datePick?.toLocaleDateString(...dateOption)
                       : infoDetails[item.name]
                   }
                   onChangeText={(value) => handleInputChange(value, item.name)}
@@ -180,6 +254,7 @@ const CompleteProfile = () => {
                     setShow={setShowDatePicker}
                     date={date}
                     setDate={handleDateChange}
+                    setDatePick={setDatePick}
                     mode={'date'}
                   />
                 )}
@@ -248,25 +323,25 @@ const styles = StyleSheet.create({
 export default CompleteProfile;
 
 const formElement = [
-  { label: 'First Name', name: 'firstname', placeholder: 'Jimoh' },
-  { label: 'Last Name', name: 'lastname', placeholder: 'Alfonso' },
-  { label: 'User Name', name: 'preferred_username', placeholder: 'Username' },
+  { label: 'First Name', name: 'firstname', placeholder: '' },
+  { label: 'Last Name', name: 'lastname', placeholder: '' },
+  // { label: 'User Name', name: 'preferred_username', placeholder: 'Username' },
   // {
   //   label: 'Phone Number',
   //   name: 'phone_number',
   //   placeholder: '+234 0X17 XX4 24X3',
   // },
-  { label: 'Date of Birth', name: 'birthdate', placeholder: '30 July, 1950' },
+  { label: 'Date of Birth', name: 'birthdate', placeholder: '' },
   {
     label: 'Contact Address',
     name: 'address',
-    placeholder: '200, Kilode Close, Ajangbadi, Lagos',
+    placeholder: '',
   },
-  { label: 'Occupation', name: 'occupation', placeholder: 'Cab Driver' },
+  { label: 'Occupation', name: 'occupation', placeholder: '' },
   {
     label: 'Income Range',
     name: 'income_from',
-    eType: 'incomerange',
+    eType: 'select',
     placeholder: '',
   },
   // {
@@ -275,14 +350,16 @@ const formElement = [
   //   placeholder: '200000',
   // },
   {
-    label: 'County of Origin',
+    label: 'Country of Origin',
     name: 'country_of_origin',
-    placeholder: 'Nigeria',
+    eType: 'select',
+    placeholder: '',
   },
   {
-    label: 'County of Residence',
+    label: 'Country of Residence',
     name: 'country_of_residence',
-    placeholder: 'Nigeria',
+    eType: 'select',
+    placeholder: '',
   },
 ];
 

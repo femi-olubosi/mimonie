@@ -22,6 +22,7 @@ import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
+import { fetchUserNotification } from '@/api/notifications.service';
 import { createSubAccount, getPaystackCustomer } from '@/api/payment.service';
 
 export default function HomeScreen() {
@@ -34,6 +35,8 @@ export default function HomeScreen() {
     contributions,
     setContributions,
     userProfile,
+    setNotifications,
+    notifications,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -41,16 +44,15 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    // fetchCurrUser(setCurrentUser);
     fetchUserProfile(setUserProfile, currentUser);
   }, [currentUser]);
 
   useEffect(() => {
     setIsLoading(true);
-    if (currentUser.preferred_username) {
+    if (userProfile) {
       setIsLoading(false);
     }
-  }, [currentUser]);
+  }, [userProfile]);
 
   useEffect(() => {
     (async () => {
@@ -63,25 +65,37 @@ export default function HomeScreen() {
   }, [currentUser]);
 
   useEffect(() => {
-    (async () => {
-      if (userProfile && userProfile?.is_bvn_verified !== true) {
-        const res = await getPaystackCustomer(userProfile?.customer_code);
+    fetchUserNotification(currentUser.userId, setNotifications);
+  }, [currentUser]);
 
-        if (res.data.identifications?.length > 0) {
-          const subaccount = await createSubAccount(userProfile);
-          await updateUserProfile(
-            {
-              is_bvn_verified: true,
-              verification_in_progress: false,
-              subaccount_code: subaccount.subaccount_code,
-            },
-            currentUser
-          );
-          await fetchUserProfile(setUserProfile, currentUser);
-        }
-      }
-    })();
-  }, [userProfile]);
+  // useEffect(() => {
+  //   (async () => {
+  //     if (userProfile && userProfile?.is_bvn_verified !== true) {
+  //       const res = await getPaystackCustomer(userProfile?.customer_code);
+  //       if (res.data.identifications?.length > 0) {
+  //         alert('BVN Verified');
+  //         await updateUserProfile(
+  //           {
+  //             is_bvn_verified: true,
+  //             verification_in_progress: false,
+  //           },
+  //           currentUser
+  //         );
+  //         await fetchUserProfile(setUserProfile, currentUser);
+  //         const subaccount = await createSubAccount(userProfile);
+  //         await updateUserProfile(
+  //           {
+  //             is_bvn_verified: true,
+  //             verification_in_progress: false,
+  //             subaccount_code: subaccount.subaccount_code,
+  //           },
+  //           currentUser
+  //         );
+  //         await fetchUserProfile(setUserProfile, currentUser);
+  //       }
+  //     }
+  //   })();
+  // }, [userProfile]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>
@@ -94,8 +108,9 @@ export default function HomeScreen() {
         }}
       >
         <ProfileView
-          username={userProfile?.preferred_username}
+          name={userProfile?.name}
           picture={currentUser?.picture}
+          notifications={notifications}
         />
         <Cards contributions={contributions} />
         <Options />

@@ -17,6 +17,7 @@ import { createContribution } from '../../api/contributions.service';
 import { getContributionGroups } from '../../api/groups.service';
 import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
+import { ErrorCheck } from '../../utils/errorCheck';
 
 const dateOption = [
   'en-US',
@@ -65,13 +66,16 @@ const CreateContribution = () => {
       contributionName,
       groupName: selectedValue.title,
       groupId: selectedValue.value,
-      date: date.toLocaleDateString('en-CA'),
+      // date: date.toLocaleDateString('en-CA'),
       userId: currentUser.userId,
       username: currentUser.preferred_username,
       target: selectedValue.target,
       amount: selectedValue.amount,
       num_of_month: selectedValue.num_of_month,
     };
+    if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
+      return;
+    }
     setIsLoading(true);
     try {
       await createContribution(
@@ -103,11 +107,11 @@ const CreateContribution = () => {
     setModalVisible(false);
   };
   const isVerified = userProfile.is_nin_verified && userProfile.is_bvn_verified;
-  console.log(isVerified);
+
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
-        {!isVerified ? (
+        {/* {!isVerified ? (
           <View
             style={{
               backgroundColor: 'red',
@@ -140,7 +144,7 @@ const CreateContribution = () => {
               </Link>
             </Text>
           </View>
-        ) : null}
+        ) : null} */}
         <Text style={styles.instructions}>
           Create a contribution schedule and invite friends to join
         </Text>
@@ -197,9 +201,9 @@ const CreateContribution = () => {
         <TouchableOpacity
           style={[
             styles.button,
-            { backgroundColor: isVerified ? Colors.pri : 'gray' },
+            { backgroundColor: !isVerified ? Colors.pri : 'gray' },
           ]}
-          disabled={!userProfile.is_nin_verified || !userProfile.is_bvn_veried}
+          // disabled={!userProfile.is_nin_verified || !userProfile.is_bvn_veried}
           onPress={handleConfirm}
         >
           <Text style={styles.buttonText}>Confirm</Text>

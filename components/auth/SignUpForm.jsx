@@ -55,9 +55,9 @@ const SignUp = (props) => {
       });
 
       const device = {
-        device_id: Device.osInternalBuildId,
-        device_name: Device.deviceName,
-        device_brand: Device.brand,
+        device_id: Device.osInternalBuildId || null,
+        device_name: Device.deviceName || null,
+        device_brand: Device.brand || null,
       };
       await createUserProfile(userId, device);
       setEmailVeri(email);

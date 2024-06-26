@@ -23,7 +23,9 @@
       "channel": "preview",
       "env": {
         "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY": "sk_live_018197960c67614111a22568257da65f67191fb3",
-        "EXPO_PUBLIC_PAYSTACK_PUBLICK_KEY": "pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f"
+        "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST": "sk_test_e25336dc047bf8b1752588da9f2f5beb0a8ab7ad",
+        "EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY": "pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f",
+        "EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY_TEST": "pk_test_093108e7d85bafd70a91edd17c95e3d10d811103"
       }
     },
     "preview2": {
@@ -44,7 +46,9 @@
       "channel": "production",
       "env": {
         "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY": "sk_live_018197960c67614111a22568257da65f67191fb3",
-        "EXPO_PUBLIC_PAYSTACK_PUBLICK_KEY": "pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f"
+        "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST": "sk_test_e25336dc047bf8b1752588da9f2f5beb0a8ab7ad",
+        "EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY": "pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f",
+        "EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY_TEST": "pk_test_093108e7d85bafd70a91edd17c95e3d10d811103"
       }
     }
   },
