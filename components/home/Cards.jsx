@@ -15,7 +15,6 @@ import { FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const Cards = ({ contributions }) => {
-  console.log(contributions);
   return (
     <ThemedView style={styles.container}>
       {contributions.length === 0 ? (

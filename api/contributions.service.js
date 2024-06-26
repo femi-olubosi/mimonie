@@ -13,7 +13,7 @@ export const fetchUserContributions = async (userId, setContributions) => {
     const sorted = userContributions.sort((a, b) =>
       a.createdAt > b.createdAt ? -1 : 1
     );
-    console.log('sort', sorted);
+
     setContributions(sorted);
     return userContributions;
   } catch (error) {
@@ -44,9 +44,9 @@ export const createContribution = async (
         title: details.contributionName,
         category: details.groupName,
         // start_date: details.date,
-        invite_link: `https://app.mimonie.com/${userProfile.name
-          .split(' ')
-          .join('')}-${details.contributionName.split(' ').join('-')}`,
+        invite_link: `https://app.mimonie.com/${
+          currentUser.userId
+        }-${details.contributionName.split(' ').join('-')}`,
         contributiongroupsID: details.groupId,
         participant: [userObj],
         participant_ids: [currentUser.userId],
