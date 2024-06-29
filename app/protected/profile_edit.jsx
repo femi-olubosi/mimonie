@@ -168,6 +168,7 @@ const ProfileEdit = () => {
                   keyboardType={
                     item.name === 'phone_number' ? 'number-pad' : 'default'
                   }
+                  scrollEnabled={true}
                 />
                 {item.name === 'birthdate' && (
                   <DateTimeSelector

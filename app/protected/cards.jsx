@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { PageView } from '../../components/Reusable';
@@ -40,6 +41,13 @@ const Cards = () => {
   };
 
   const handleDeleteCard = async () => {
+    if (pushObj.status === 'active') {
+      Alert.alert(
+        'Sorry',
+        'You cannot delete an active card as it is tied to your contributions. To Delete this card'
+      );
+      return;
+    }
     setIsLoading(true);
     try {
       await deleteCards(pushObj.id, setUserCards, currentUser);
@@ -58,19 +66,31 @@ const Cards = () => {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
+          borderBottomWidth: 1,
+          borderBottomColor: 'gray',
+          paddingVertical: 5,
         }}
       >
         <View
-          style={{ flexDirection: 'row', columnGap: 20, alignItems: 'center' }}
+          style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center' }}
         >
+          <View style={{ width: 20 }}>
+            {item.status === 'active' && (
+              <AntDesign name="check" size={22} color={Colors.pri} />
+            )}
+          </View>
           <Image
             source={getBankLogo(item.bank)}
-            style={{ width: 50, height: 50 }}
+            style={{
+              width: 50,
+              height: 50,
+              objectFit: 'contain',
+            }}
           />
           <View style={{ rowGap: 5 }}>
-            <Text style={{ fontSize: 16, fontFamily: 'ir' }}>{item.bank}</Text>
+            <Text style={{ fontSize: 14, fontFamily: 'ir' }}>{item.bank}</Text>
 
-            <Text style={{ alignSelf: 'flex-end' }}>
+            <Text style={{ alignSelf: 'flex-end', fontSize: 10 }}>
               ********{item.last4}
               {'  '}
               {capitalizeFirstLetter(item.type)}
@@ -81,7 +101,10 @@ const Cards = () => {
           name="trash"
           size={24}
           color="red"
-          onPress={() => setPushObj(item)}
+          onPress={() => {
+            setPushObj(item);
+            setShowConfirmModal(true);
+          }}
         />
       </TouchableOpacity>
     );
@@ -166,7 +189,7 @@ const Cards = () => {
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setModalVisible(false)}
+                onPress={() => setShowConfirmModal(false)}
               >
                 <Text style={[styles.modalButtonText, { color: 'red' }]}>
                   Cancel

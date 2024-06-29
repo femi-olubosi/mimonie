@@ -71,7 +71,7 @@ export const updateAttributes = async (data) => {
 export const fetchUserProfile = async (setUserProfile, currentUser) => {
   try {
     // await DataStore.clear();
-    // await DataStore.start();
+    await DataStore.start();
     // Fetch contributions where the user is a participant
     const userProfile = await DataStore.query(UserProfile, (c) =>
       c.userId.eq(currentUser.userId)

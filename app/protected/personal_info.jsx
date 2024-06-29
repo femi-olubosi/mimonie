@@ -53,9 +53,10 @@ const PersonalInformation = () => {
           <View style={styles.infoContainer}>
             <Text style={styles.label}>{'Contact Address'}</Text>
             <TextInput
-              style={styles.value}
+              style={[styles.value, { lineHeight: 30 }]}
               value={userProfile?.address}
               editable={false}
+              multiline={true}
             />
           </View>
           <View style={styles.infoContainer}>

@@ -175,7 +175,6 @@ const makePaystackRequest = async (endpoint, method, data) => {
 // };
 
 export const verifyTransaction = async (reference, currentUser) => {
-  console.log('reference', reference);
   try {
     const verificationResponse = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,
@@ -191,6 +190,21 @@ export const verifyTransaction = async (reference, currentUser) => {
     console.log('veri', responseData);
     if (responseData.status && responseData.data) {
       const { authorization, customer } = responseData.data;
+
+      const previousCards = await DataStore.query(UserCardDetails, (c) =>
+        c.userId.eq(currentUser.userId)
+      );
+
+      await Promise.all(
+        previousCards.map(async (card) => {
+          await DataStore.save(
+            UserCardDetails.copyOf(card, (updated) => {
+              updated.status = 'inactive';
+            })
+          );
+        })
+      );
+
       // Store the card details using DataStore
       await DataStore.save(
         new UserCardDetails({
@@ -200,6 +214,29 @@ export const verifyTransaction = async (reference, currentUser) => {
           type: authorization.card_type,
           expiry: `${authorization.exp_month}/${authorization.exp_year}`,
           authorization_code: authorization.authorization_code,
+          status: 'active',
+        })
+      );
+
+      const userContributions = await DataStore.query(Contribution, (c) =>
+        c.participant_ids.contains(currentUser.userId)
+      );
+
+      await Promise.all(
+        userContributions.map(async (contribution) => {
+          const participants = JSON.parse(contribution.participant);
+
+          const updatedParticipants = participants.map((participant) =>
+            participant.userId === currentUser.userId
+              ? { ...participant, auth_url: newCard.authorization_code }
+              : participant
+          );
+
+          await DataStore.save(
+            Contribution.copyOf(contribution, (updated) => {
+              updated.participant = JSON.stringify(updatedParticipants);
+            })
+          );
         })
       );
 
@@ -292,6 +329,7 @@ export const fetchCountries = async () => {
 };
 
 export const fetchCards = async (setUserCards, currentUser) => {
+  await DataStore.start();
   try {
     const userCards = await DataStore.query(UserCardDetails, (c) =>
       c.userId.eq(currentUser.userId)
