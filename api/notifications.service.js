@@ -9,7 +9,12 @@ export const fetchUserNotification = async (userId, setNotifications) => {
     const userNotifications = await DataStore.query(UserNotifications, (c) =>
       c.userId.eq(userId)
     );
-    setNotifications(userNotifications);
+
+    const sorted = userNotifications.sort((a, b) =>
+      a.createdAt > b.createdAt ? -1 : 1
+    );
+
+    setNotifications(sorted);
     return userNotifications;
   } catch (error) {
     console.error('Error fetching user notifications:', error);

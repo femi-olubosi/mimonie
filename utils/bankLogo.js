@@ -1,51 +1,40 @@
 export const getBankLogo = (bank_name) => {
-  switch (bank_name?.toLowerCase()) {
-    case 'access':
-    case 'access bank':
-      return require('../assets/banks/access.png');
-    case 'gtbank':
-    case 'gt bank':
-    case 'guaranty trust bank':
-      return require('../assets/banks/gtb.png');
-    case 'zenith':
-    case 'zenith bank':
-      return require('../assets/banks/zenith.png');
-    case 'uba':
-    case 'united bank for africa':
-      return require('../assets/banks/uba.png');
-    case 'fidelity':
-    case 'fidelity bank':
-      return require('../assets/banks/fidelity.png');
-    case 'first bank':
-    case 'firstbank':
-    case 'first bank of nigeria':
-      return require('../assets/banks/first.png');
-    // case 'fcmb':
-    // case 'first city monument bank':
-    //   return require('../assets/banks/fcmb.png');
-    // case 'union bank':
-    //   return require('../assets/banks/union.png');
-    case 'sterling':
-    case 'sterling bank':
-      return require('../assets/banks/sterling.png');
-    // case 'stanbic ibtc':
-    // case 'stanbic':
-    //   return require('../assets/banks/stanbic.png');
-    // case 'ecobank':
-    //   return require('../assets/banks/ecobank.png');
-    // case 'wema':
-    // case 'wema bank':
-    //   return require('../assets/banks/wema.png');
-    // case 'keystone':
-    // case 'keystone bank':
-    //   return require('../assets/banks/keystone.png');
-    // case 'unity':
-    // case 'unity bank':
-    //   return require('../assets/banks/unity.png');
-    case 'polaris':
-    case 'polaris bank':
-      return require('../assets/banks/polaris.png');
-    default:
-      return require('../assets/banks/default.jpeg');
+  if (!bank_name) return require('../assets/banks/default.jpeg');
+
+  const lowerCaseName = bank_name.toLowerCase();
+
+  if (lowerCaseName.includes('access')) {
+    return require('../assets/banks/access.png');
+  } else if (
+    lowerCaseName.includes('gtbank') ||
+    lowerCaseName.includes('gt bank') ||
+    lowerCaseName.includes('guaranty trust bank')
+  ) {
+    return require('../assets/banks/gtb.png');
+  } else if (lowerCaseName.includes('zenith')) {
+    return require('../assets/banks/zenith.png');
+  } else if (
+    lowerCaseName.includes('uba') ||
+    lowerCaseName.includes('united bank for africa')
+  ) {
+    return require('../assets/banks/uba.png');
+  } else if (lowerCaseName.includes('fidelity')) {
+    return require('../assets/banks/fidelity.png');
+  } else if (
+    lowerCaseName.includes('first bank') ||
+    lowerCaseName.includes('firstbank') ||
+    lowerCaseName.includes('first bank of nigeria')
+  ) {
+    return require('../assets/banks/first.png');
+  } else if (lowerCaseName.includes('sterling')) {
+    return require('../assets/banks/sterling.png');
+  } else if (lowerCaseName.includes('polaris')) {
+    return require('../assets/banks/polaris.png');
+  } else if (lowerCaseName.includes('kuda')) {
+    return require('../assets/banks/kuda.png');
+  } else if (lowerCaseName.includes('paycom')) {
+    return require('../assets/banks/paycom.png');
+  } else {
+    return require('../assets/banks/default.jpeg');
   }
 };
