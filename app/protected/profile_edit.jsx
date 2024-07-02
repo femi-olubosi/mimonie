@@ -21,6 +21,7 @@ import {
 import { topBar } from '../../cStyle';
 import { naira } from '../../constants/Currency';
 import { ErrorCheck } from '../../utils/errorCheck';
+import { fetchCountries } from '../../api/payment.service';
 
 const dateOption = [
   'en-US',
@@ -44,6 +45,17 @@ const ProfileEdit = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [date, setDate] = useState(new Date());
   const [selectedValue, setSelectedValue] = useState({});
+  const [selectedCountry, setSelectedCountry] = useState({});
+  const [selectedOrigin, setSelectedOrigin] = useState({});
+  const [countries, setCountries] = useState([]);
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+      const res = await fetchCountries();
+      setCountries(res);
+    };
+    fetchCountry();
+  }, []);
 
   useEffect(() => {
     setInfoDetails({
@@ -51,6 +63,14 @@ const ProfileEdit = () => {
       firstname: userProfile.name.split(' ')[0],
       lastname: userProfile.name.split(' ')[1],
     });
+    setSelectedCountry((prev) => ({
+      ...prev,
+      label: userProfile.country_of_residence,
+    }));
+    setSelectedOrigin((prev) => ({
+      ...prev,
+      label: userProfile.country_of_origin,
+    }));
   }, [userProfile]);
 
   const handleInputChange = (value, name) => {
@@ -89,6 +109,24 @@ const ProfileEdit = () => {
       }));
     }
   }, [selectedValue]);
+
+  useEffect(() => {
+    if (Object.keys(selectedCountry || {})?.length > 0) {
+      setInfoDetails((prev) => ({
+        ...prev,
+        country_of_residence: selectedCountry.value,
+      }));
+    }
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    if (Object.keys(selectedOrigin || {})?.length > 0) {
+      setInfoDetails((prev) => ({
+        ...prev,
+        country_of_origin: selectedOrigin.value,
+      }));
+    }
+  }, [selectedOrigin]);
 
   const handleSubmit = async () => {
     const data = {
@@ -138,12 +176,32 @@ const ProfileEdit = () => {
           >
             <Text style={styles.label}>{item.label}</Text>
 
-            {item.eType === 'incomerange' ? (
+            {item.eType === 'select' ? (
               <SelectInput
-                options={income_range_options}
-                selectedValue={selectedValue}
-                setSelectedValue={setSelectedValue}
-                defaultValue={selectedValue.value}
+                options={
+                  item.name === 'income_from' ? income_range_options : countries
+                }
+                selectedValue={
+                  item.name === 'income_from'
+                    ? selectedValue
+                    : item.name === 'country_of_origin'
+                    ? selectedOrigin
+                    : selectedCountry
+                }
+                setSelectedValue={
+                  item.name === 'income_from'
+                    ? setSelectedValue
+                    : item.name === 'country_of_origin'
+                    ? setSelectedOrigin
+                    : setSelectedCountry
+                }
+                defaultValue={
+                  item.name === 'income_from'
+                    ? selectedValue.value
+                    : item.name === 'country_of_origin'
+                    ? selectedOrigin.value
+                    : selectedCountry.value
+                }
               />
             ) : (
               <View
@@ -186,10 +244,18 @@ const ProfileEdit = () => {
       </ScrollView>
       <View style={styles.buttonContainer}>
         <Button
+          title={'Cancel'}
+          color={'red'}
+          onPress={() => router.back()}
+          outline={true}
+          styleOverride={{ flex: 1 }}
+        />
+        <Button
           title={'Update'}
           color={Colors.pri}
           onPress={handleSubmit}
           outline={true}
+          styleOverride={{ flex: 1 }}
         />
       </View>
     </PageView>
@@ -236,8 +302,10 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingVertical: 10,
-    width: '50%',
     alignSelf: 'center',
+    flexDirection: 'row',
+    width: '90%',
+    columnGap: 20,
   },
 });
 
@@ -261,7 +329,7 @@ const formElement = [
   {
     label: 'Income Range',
     name: 'income_from',
-    eType: 'incomerange',
+    eType: 'select',
     placeholder: '',
   },
   // {
@@ -272,11 +340,13 @@ const formElement = [
   {
     label: 'County of Origin',
     name: 'country_of_origin',
+    eType: 'select',
     placeholder: 'Nigeria',
   },
   {
     label: 'County of Residence',
     name: 'country_of_residence',
+    eType: 'select',
     placeholder: 'Nigeria',
   },
 ];
