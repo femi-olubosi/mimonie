@@ -23,7 +23,7 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
 import { updateUserAttributes } from 'aws-amplify/auth';
@@ -33,6 +33,7 @@ import { topBar } from '../../../cStyle';
 import { get } from 'aws-amplify/api';
 import { searchTree } from '../../../utils/searchTree';
 import { createNotification } from '../../../api/notifications.service';
+import { isNameIncluded } from '../../../utils/isNameIncluded';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -79,51 +80,53 @@ const Account = () => {
     }
   };
 
-  useEffect(() => {
-    async function getSmileStatus() {
-      try {
-        const restOperation = get({
-          apiName: 'callback',
-          path: '/smileid-callback',
-        });
+  useFocusEffect(
+    React.useCallback(() => {
+      async function getSmileStatus() {
+        try {
+          const restOperation = get({
+            apiName: 'callback',
+            path: '/smileid-callback',
+          });
 
-        const { body } = await restOperation.response;
-        const json = await body.json();
-        console.log('GET call succeeded: ', json);
+          const { body } = await restOperation.response;
+          const json = await body.json();
+          console.log('GET call succeeded: ', json);
 
-        const res = await searchTree(json, 'FullName');
-        console.log(res, userProfile.name);
-        if (res.includes(userProfile.name)) {
-          await updateUserProfile(
-            { is_bvn_verified: true, verification_in_progress: false },
-            currentUser
-          );
+          const res = await searchTree(json, 'FullName');
 
-          await createNotification(
-            {
-              title: 'Verification Completed',
-              content: `You have successfully verified your identity. You now have access to all features of the app`,
-              type: 'account',
-              userId: currentUser.userId,
-              read: false,
-            },
-            setNotifications
-          );
-        } else {
-          Alert.alert(
-            'Attention!!',
-            'You have not complete your verification. Please verify to have full access to the app'
-          );
+          if (isNameIncluded(res[0], userProfile.name)) {
+            await updateUserProfile(
+              { is_bvn_verified: true, verification_in_progress: false },
+              currentUser
+            );
+
+            await createNotification(
+              {
+                title: 'Verification Completed',
+                content: `You have successfully verified your identity. You now have access to all features of the app`,
+                type: 'verification',
+                userId: currentUser.userId,
+                read: false,
+              },
+              setNotifications
+            );
+          } else {
+            Alert.alert(
+              'Attention!!',
+              'You have not complete your verification. Please verify to have full access to the app'
+            );
+          }
+          await fetchCurrUser(setCurrentUser);
+        } catch (e) {
+          console.log('GET call failed: ', JSON.parse(e.response.body));
         }
-        await fetchCurrUser(setCurrentUser);
-      } catch (e) {
-        console.log('GET call failed: ', JSON.parse(e.response.body));
       }
-    }
-    if (!userProfile.is_bvn_verified) {
-      getSmileStatus();
-    }
-  }, []);
+      if (!userProfile.is_bvn_verified) {
+        getSmileStatus();
+      }
+    }, [userProfile.is_bvn_verified])
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -218,11 +221,23 @@ const Account = () => {
                   {item.extra && (
                     <View style={{ marginLeft: 5 }}>
                       {userProfile?.verification_in_progress ? (
-                        <MaterialCommunityIcons
-                          name="progress-clock"
-                          size={20}
-                          color={'#f6bd02'}
-                        />
+                        <View
+                          style={{
+                            backgroundColor: 'yellow',
+                            paddingHorizontal: 4,
+                            paddingVertical: 2,
+                            borderRadius: 5,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: 'white',
+                            }}
+                          >
+                            Pending
+                          </Text>
+                        </View>
                       ) : (
                         <View
                           style={{

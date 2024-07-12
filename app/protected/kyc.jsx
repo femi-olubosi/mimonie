@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 import { PageView } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import { WebView } from 'react-native-webview';
@@ -26,18 +26,22 @@ const kyc = () => {
 
   return (
     <PageView title={'Verification'} route={'/protected/account'}>
-      <WebView
-        source={{
-          uri: 'https://links.sandbox.usesmileid.com/6982/224e85f5-3ed7-4626-97c2-955bd221bfeb',
-        }}
-        style={styles.webview}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-          Alert.alert('WebView error: ', nativeEvent.description);
-        }}
-      />
+      <ScrollView contentContainerStyle={{ flex: 1 }}>
+        {!userProfile.is_bvn_verified ? (
+          <WebView
+            source={{
+              uri: 'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0',
+            }}
+            style={styles.webview}
+            onLoadStart={() => setIsLoading(true)}
+            onLoadEnd={() => setIsLoading(false)}
+            onError={(syntheticEvent) => {
+              const { nativeEvent } = syntheticEvent;
+              Alert.alert('WebView error: ', nativeEvent.description);
+            }}
+          />
+        ) : null}
+      </ScrollView>
     </PageView>
   );
 };
@@ -45,7 +49,6 @@ const kyc = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     padding: 20,
     rowGap: 20,
   },
