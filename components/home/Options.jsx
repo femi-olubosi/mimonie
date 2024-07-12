@@ -144,7 +144,7 @@ const Options = () => {
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
         // onPress={() => router.push('/protected/complete_profile')}
         // onPress={getTodo}
-        onPress={postTodo}
+        // onPress={postTodo}
       >
         <Image
           source={require('../../assets/logo/bill.png')}
