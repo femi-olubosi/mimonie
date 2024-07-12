@@ -223,7 +223,7 @@ const Account = () => {
                       {userProfile?.verification_in_progress ? (
                         <View
                           style={{
-                            backgroundColor: 'yellow',
+                            backgroundColor: '#ecb753',
                             paddingHorizontal: 4,
                             paddingVertical: 2,
                             borderRadius: 5,
@@ -232,7 +232,7 @@ const Account = () => {
                           <Text
                             style={{
                               fontSize: 10,
-                              color: 'white',
+                              color: 'black',
                             }}
                           >
                             Pending
