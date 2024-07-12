@@ -24,6 +24,7 @@ import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { createSubAccount, getPaystackCustomer } from '@/api/payment.service';
+import { callbackUrl } from '@/utils/callbackUrl';
 
 export default function HomeScreen() {
   const {
@@ -67,35 +68,6 @@ export default function HomeScreen() {
   useEffect(() => {
     fetchUserNotification(currentUser.userId, setNotifications);
   }, [currentUser]);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     if (userProfile && userProfile?.is_bvn_verified !== true) {
-  //       const res = await getPaystackCustomer(userProfile?.customer_code);
-  //       if (res.data.identifications?.length > 0) {
-  //         alert('BVN Verified');
-  //         await updateUserProfile(
-  //           {
-  //             is_bvn_verified: true,
-  //             verification_in_progress: false,
-  //           },
-  //           currentUser
-  //         );
-  //         await fetchUserProfile(setUserProfile, currentUser);
-  //         const subaccount = await createSubAccount(userProfile);
-  //         await updateUserProfile(
-  //           {
-  //             is_bvn_verified: true,
-  //             verification_in_progress: false,
-  //             subaccount_code: subaccount.subaccount_code,
-  //           },
-  //           currentUser
-  //         );
-  //         await fetchUserProfile(setUserProfile, currentUser);
-  //       }
-  //     }
-  //   })();
-  // }, [userProfile]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>

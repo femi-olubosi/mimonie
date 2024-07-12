@@ -14,6 +14,20 @@
       "providerPlugin": "awscloudformation",
       "service": "API Gateway"
     },
+    "callback": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "mimonie": {
       "dependsOn": [],
       "output": {
@@ -84,6 +98,25 @@
     }
   },
   "function": {
+    "callbackurl": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "dynamoc73ffc4d"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "mimonief71364a4": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -97,6 +130,22 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_callbackurl_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
     "AMPLIFY_function_mimonief71364a4_deploymentBucketName": {
       "usedBy": [
         {
@@ -131,6 +180,10 @@
     }
   },
   "storage": {
+    "dynamoc73ffc4d": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
     "mimonieS3Storage": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",

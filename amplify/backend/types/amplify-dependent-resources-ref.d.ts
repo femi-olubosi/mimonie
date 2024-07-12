@@ -5,6 +5,11 @@ export type AmplifyDependentResourcesAttributes = {
       "ApiName": "string",
       "RootUrl": "string"
     },
+    "callback": {
+      "ApiId": "string",
+      "ApiName": "string",
+      "RootUrl": "string"
+    },
     "mimonie": {
       "GraphQLAPIEndpointOutput": "string",
       "GraphQLAPIIdOutput": "string",
@@ -29,6 +34,13 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
+    "callbackurl": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
     "mimonief71364a4": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
@@ -45,6 +57,14 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "storage": {
+    "dynamoc73ffc4d": {
+      "Arn": "string",
+      "Name": "string",
+      "PartitionKeyName": "string",
+      "PartitionKeyType": "string",
+      "Region": "string",
+      "StreamArn": "string"
+    },
     "mimonieS3Storage": {
       "BucketName": "string",
       "Region": "string"

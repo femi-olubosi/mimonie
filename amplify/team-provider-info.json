@@ -16,11 +16,15 @@
       "function": {
         "mimonief71364a4": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/mimonief71364a4-734d6a47586563354d48-build.zip"
+          "s3Key": "amplify-builds/mimonief71364a4-5232377a6476757a7939-build.zip"
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-7650562f6b3567704434-build.zip"
+          "s3Key": "amplify-builds/userInfo-747a4c6b6138786f4c61-build.zip"
+        },
+        "callbackurl": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/callbackurl-7249464442496d723551-build.zip"
         }
       },
       "auth": {
@@ -29,10 +33,12 @@
       "api": {
         "api37a1ef7a": {},
         "mimonie": {},
-        "userInfo": {}
+        "userInfo": {},
+        "callback": {}
       },
       "storage": {
-        "mimonieS3Storage": {}
+        "mimonieS3Storage": {},
+        "dynamoc73ffc4d": {}
       }
     }
   }

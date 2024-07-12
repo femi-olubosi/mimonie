@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/smileid-callback": {
+      "name": "/smileid-callback",
+      "lambdaFunction": "callbackurl",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

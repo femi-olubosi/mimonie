@@ -10,6 +10,11 @@
       "name": "userInfo",
       "endpoint": "https://530fccgcb6.execute-api.us-west-2.amazonaws.com/dev",
       "region": "us-west-2"
+    },
+    {
+      "name": "callback",
+      "endpoint": "https://hoj6qa5x8j.execute-api.us-west-2.amazonaws.com/dev",
+      "region": "us-west-2"
     }
   ],
   "aws_appsync_graphqlEndpoint": "https://we5nakk36bcwhkp7zxlaju4rea.appsync-api.us-west-2.amazonaws.com/graphql",
@@ -45,5 +50,12 @@
     "EMAIL"
   ],
   "aws_user_files_s3_bucket": "mimonies3storageb7338-dev",
-  "aws_user_files_s3_bucket_region": "us-west-2"
+  "aws_user_files_s3_bucket_region": "us-west-2",
+  "aws_dynamodb_all_tables_region": "us-west-2",
+  "aws_dynamodb_table_schemas": [
+    {
+      "tableName": "dynamoc73ffc4d-dev",
+      "region": "us-west-2"
+    }
+  ]
 }
