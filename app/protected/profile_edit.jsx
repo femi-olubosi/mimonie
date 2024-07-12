@@ -63,14 +63,14 @@ const ProfileEdit = () => {
       firstname: userProfile.name.split(' ')[0],
       lastname: userProfile.name.split(' ')[1],
     });
-    setSelectedCountry((prev) => ({
-      ...prev,
+    setSelectedCountry({
+      value: userProfile.country_of_residence,
       label: userProfile.country_of_residence,
-    }));
-    setSelectedOrigin((prev) => ({
-      ...prev,
+    });
+    setSelectedOrigin({
+      value: userProfile.country_of_origin,
       label: userProfile.country_of_origin,
-    }));
+    });
   }, [userProfile]);
 
   const handleInputChange = (value, name) => {
@@ -130,7 +130,12 @@ const ProfileEdit = () => {
 
   const handleSubmit = async () => {
     const data = {
-      name: infoDetails.firstname + ' ' + infoDetails.lastname,
+      name:
+        infoDetails.firstname +
+        ' ' +
+        infoDetails.middlename +
+        ' ' +
+        infoDetails.lastname,
       birthdate: infoDetails.birthdate,
       address: infoDetails.address,
       occupation: infoDetails.occupation,
