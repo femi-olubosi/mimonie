@@ -1,0 +1,10 @@
+{
+  "resourceName": "dynamoc73ffc4d",
+  "tableName": "dynamoc73ffc4d",
+  "partitionKey": {
+    "fieldName": "userId",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}

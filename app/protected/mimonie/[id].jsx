@@ -32,15 +32,9 @@ import { Colors } from '../../../constants/Colors';
 import ContactModal from '../../../components/ContactModal';
 
 const ContributionDetails = () => {
-  const {
-    contributions,
-    setContributions,
-    currentUser,
-    userProfile,
-    setIsLoading,
-  } = useGlobalContext();
+  const { setContributions, currentUser, userProfile, setIsLoading } =
+    useGlobalContext();
   const { id } = useLocalSearchParams();
-  // const contribution = contributions.find((item) => item.id === id);
   const [visible, setVisible] = useState(false);
   const [contribution, setContribution] = useState({});
   const [parsed, setParsed] = useState([]);
@@ -79,13 +73,15 @@ const ContributionDetails = () => {
   };
 
   const handleStartContribution = async () => {
-    // const start_date = new Date().toISOString();
     setIsLoading(true);
     try {
       const start_date = null;
       const res = await updateContribution(contribution.id, { start_date });
       await fetchUserContributions(currentUser.userId, setContributions);
-      alert('Update Success', `${res.name} contribution updated successfully}`);
+      Alert.alert(
+        'Update Success',
+        `${res.name} contribution updated successfully}`
+      );
     } catch (error) {
       console.log(error);
     } finally {
@@ -101,10 +97,8 @@ const ContributionDetails = () => {
       setParsed(parsedData);
     }
   }, [contribution]);
-  console.log('fast', parsed);
 
   const next = parsed?.filter((e) => e.status !== 'recieved');
-  console.log(contribution?.participant?.length);
 
   return (
     <PageView title={'Contribution Details'}>

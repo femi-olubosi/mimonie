@@ -49,7 +49,7 @@ const Cards = ({ contributions }) => {
           renderItem={({ item }) => {
             const num_of_contributions = 0;
             return (
-              <TouchableOpacity
+              <Pressable
                 style={[
                   styles.card,
                   { overflow: 'hidden', position: 'relative' },
@@ -162,7 +162,7 @@ const Cards = ({ contributions }) => {
                     right: 0,
                   }}
                 />
-              </TouchableOpacity>
+              </Pressable>
             );
           }}
           keyExtractor={(item, index) => index.toString()}

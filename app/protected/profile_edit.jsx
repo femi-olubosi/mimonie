@@ -167,79 +167,99 @@ const ProfileEdit = () => {
         contentContainerStyle={styles.listContent}
       >
         {formElement.map((item, index) => (
-          <Pressable
-            key={index}
-            style={[styles.infoContainer]}
-            onPress={() =>
-              item.name === 'birthdate' ? toggleDatePicker() : {}
-            }
-          >
-            <Text style={styles.label}>{item.label}</Text>
+          <View key={index}>
+            <Pressable
+              style={[
+                styles.infoContainer,
+                { marginBottom: item.helperText ? 2 : 16 },
+              ]}
+              onPress={() =>
+                item.name === 'birthdate' ? toggleDatePicker() : {}
+              }
+            >
+              <Text style={styles.label}>{item.label}</Text>
 
-            {item.eType === 'select' ? (
-              <SelectInput
-                options={
-                  item.name === 'income_from' ? income_range_options : countries
-                }
-                selectedValue={
-                  item.name === 'income_from'
-                    ? selectedValue
-                    : item.name === 'country_of_origin'
-                    ? selectedOrigin
-                    : selectedCountry
-                }
-                setSelectedValue={
-                  item.name === 'income_from'
-                    ? setSelectedValue
-                    : item.name === 'country_of_origin'
-                    ? setSelectedOrigin
-                    : setSelectedCountry
-                }
-                defaultValue={
-                  item.name === 'income_from'
-                    ? selectedValue.value
-                    : item.name === 'country_of_origin'
-                    ? selectedOrigin.value
-                    : selectedCountry.value
-                }
-              />
-            ) : (
-              <View
+              {item.eType === 'select' ? (
+                <SelectInput
+                  options={
+                    item.name === 'income_from'
+                      ? income_range_options
+                      : countries
+                  }
+                  selectedValue={
+                    item.name === 'income_from'
+                      ? selectedValue
+                      : item.name === 'country_of_origin'
+                      ? selectedOrigin
+                      : selectedCountry
+                  }
+                  setSelectedValue={
+                    item.name === 'income_from'
+                      ? setSelectedValue
+                      : item.name === 'country_of_origin'
+                      ? setSelectedOrigin
+                      : setSelectedCountry
+                  }
+                  defaultValue={
+                    item.name === 'income_from'
+                      ? selectedValue.value
+                      : item.name === 'country_of_origin'
+                      ? selectedOrigin.value
+                      : selectedCountry.value
+                  }
+                />
+              ) : (
+                <View
+                  style={{
+                    flexDirection: item.name === 'birthdate' ? 'row' : '',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <TextInput
+                    style={styles.value}
+                    value={
+                      item.name === 'birthdate'
+                        ? date.toLocaleDateString(...dateOption)
+                        : infoDetails[item.name]
+                    }
+                    onChangeText={(value) =>
+                      handleInputChange(value, item.name)
+                    }
+                    editable={item.name !== 'birthdate'}
+                    placeholder={item.placeholder}
+                    onPress={() =>
+                      item.name === 'birthdate' ? toggleDatePicker() : {}
+                    }
+                    keyboardType={
+                      item.name === 'phone_number' ? 'number-pad' : 'default'
+                    }
+                    scrollEnabled={true}
+                  />
+                  {item.name === 'birthdate' && (
+                    <DateTimeSelector
+                      show={showDatePicker}
+                      setShow={setShowDatePicker}
+                      date={date}
+                      setDate={handleDateChange}
+                      mode={'date'}
+                    />
+                  )}
+                </View>
+              )}
+            </Pressable>
+            {item.helperText && (
+              <Text
                 style={{
-                  flexDirection: item.name === 'birthdate' ? 'row' : '',
-                  justifyContent: 'space-between',
+                  fontSize: 10,
+                  color: 'gray',
+                  marginBottom: 16,
+                  marginLeft: 5,
                 }}
               >
-                <TextInput
-                  style={styles.value}
-                  value={
-                    item.name === 'birthdate'
-                      ? date.toLocaleDateString(...dateOption)
-                      : infoDetails[item.name]
-                  }
-                  onChangeText={(value) => handleInputChange(value, item.name)}
-                  editable={item.name !== 'birthdate'}
-                  placeholder={item.placeholder}
-                  onPress={() =>
-                    item.name === 'birthdate' ? toggleDatePicker() : {}
-                  }
-                  keyboardType={
-                    item.name === 'phone_number' ? 'number-pad' : 'default'
-                  }
-                  scrollEnabled={true}
-                />
-                {item.name === 'birthdate' && (
-                  <DateTimeSelector
-                    show={showDatePicker}
-                    setShow={setShowDatePicker}
-                    date={date}
-                    setDate={handleDateChange}
-                    mode={'date'}
-                  />
-                )}
-              </View>
+                {item.helperText}
+              </Text>
             )}
-          </Pressable>
+          </View>
         ))}
       </ScrollView>
       <View style={styles.buttonContainer}>
@@ -283,7 +303,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   infoContainer: {
-    marginBottom: 16,
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 8,
@@ -312,8 +331,18 @@ const styles = StyleSheet.create({
 export default ProfileEdit;
 
 const formElement = [
-  { label: 'First Name', name: 'firstname', placeholder: 'Jimoh' },
-  { label: 'Last Name', name: 'lastname', placeholder: 'Alfonso' },
+  {
+    label: 'First Name',
+    name: 'firstname',
+    placeholder: 'Jimoh',
+    helperText: 'Use  first name as on official document',
+  },
+  {
+    label: 'Last Name',
+    name: 'lastname',
+    placeholder: 'Alfonso',
+    helperText: 'Use  last name as on official document',
+  },
   // {
   //   label: 'Phone Number',
   //   name: 'phone_number',

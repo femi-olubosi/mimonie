@@ -111,7 +111,7 @@ const CreateContribution = () => {
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
-        {/* {!isVerified ? (
+        {!userProfile.is_bvn_verified ? (
           <View
             style={{
               backgroundColor: 'red',
@@ -130,7 +130,7 @@ const CreateContribution = () => {
               }}
             >
               You cannot create a contribution at the moment. Please complete
-              you document upload and verification{' '}
+              your identity verification
               <Link href={'/protected/kyc'}>
                 <Text
                   style={{
@@ -139,12 +139,12 @@ const CreateContribution = () => {
                     fontSize: 12,
                   }}
                 >
-                  Upload Now
+                  Verify Now
                 </Text>
               </Link>
             </Text>
           </View>
-        ) : null} */}
+        ) : null}
         <Text style={styles.instructions}>
           Create a contribution schedule and invite friends to join
         </Text>
@@ -201,9 +201,13 @@ const CreateContribution = () => {
         <TouchableOpacity
           style={[
             styles.button,
-            { backgroundColor: !isVerified ? Colors.pri : 'gray' },
+            {
+              backgroundColor: userProfile.is_bvn_verified
+                ? Colors.pri
+                : 'gray',
+            },
           ]}
-          // disabled={!userProfile.is_nin_verified || !userProfile.is_bvn_veried}
+          disabled={!userProfile.is_bvn_verified}
           onPress={handleConfirm}
         >
           <Text style={styles.buttonText}>Confirm</Text>

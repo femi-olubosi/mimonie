@@ -1,137 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  TextInput,
-  Button,
-  Alert,
-  StyleSheet,
-  Pressable,
-  Text,
-} from 'react-native';
-import { PageView, SelectInput } from '../../components/Reusable';
-import {
-  fetchBanks,
-  verifyBVN,
-  getPaystackCustomer,
-} from '@/api/payment.service';
-import { Colors } from '../../constants/Colors';
+import { Alert, StyleSheet } from 'react-native';
+import { PageView } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
-import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
+import { WebView } from 'react-native-webview';
 import { router } from 'expo-router';
-import { ErrorCheck } from '../../utils/errorCheck';
 
 const kyc = () => {
-  const [accountNumber, setAccountNumber] = useState('');
-  const [bvn, setBvn] = useState('');
-  const [selectedValue, setSelectedValue] = useState({});
-  const [bankList, setBankList] = useState([]);
-  const { userProfile, currentUser, setUserProfile, setIsLoading } =
-    useGlobalContext();
+  const { userProfile, setIsLoading } = useGlobalContext();
 
-  const handleVerifyBVN = async () => {
-    if (ErrorCheck({ accountNumber, bvn: bvn })) {
-      return;
-    }
-    const data = {
-      account_number: accountNumber,
-      bvn: bvn,
-      bank_code: selectedValue.value,
-    };
-
-    if (userProfile.verification_in_progress) {
-      alert(
-        'Verification In Progress',
-        `Hi ${userProfile.preferred_username}, Your BVN verification is in progress. Please check back shortly`
-      );
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const verify = await verifyBVN(data, userProfile);
-      const res = await getPaystackCustomer(userProfile?.customer_code);
-      await updateUserProfile(
-        { verification_in_progress: true, bank_details: JSON.stringify(data) },
-        currentUser
-      );
-      console.log({ res });
-      if (res.data.identifications?.length > 0) {
-        const subaccount = await createSubAccount(userProfile);
-        await updateUserProfile(
-          {
-            is_bvn_verified: true,
-            verification_in_progress: false,
-            subaccount_code: subaccount.subaccount_code,
-          },
-          currentUser
-        );
-      }
-
-      await fetchUserProfile(setUserProfile, currentUser);
-
+  useEffect(() => {
+    if (userProfile.is_bvn_verified) {
       Alert.alert(
-        verify.message,
-        'This will take upto 2-3 working days. Please be patient while weverify your document',
+        'Verification',
+        'This user is already verified',
         [
           {
             text: 'OK',
-            onPress: () => router.push('/protected/account'),
+            onPress: () => router.back(),
           },
         ],
         { cancelable: false }
       );
-    } catch (error) {
-      console.log(error);
-      Alert.alert('Error', error.message || 'Something went wrong');
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    (async () => {
-      const res = await fetchBanks();
-      setBankList(res);
-    })();
   }, []);
 
   return (
-    <PageView title={'Document Verification'}>
-      {/* <View style={styles.container}>
-        <TextInput
-          style={styles.input}
-          placeholder=""
-          value={'BVN'}
-          keyboardType="numeric"
-          editable={false}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Account Number"
-          value={accountNumber}
-          onChangeText={setAccountNumber}
-          keyboardType="numeric"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="BVN"
-          value={bvn}
-          onChangeText={setBvn}
-          keyboardType="numeric"
-        />
-        <SelectInput
-          options={bankList}
-          selectedValue={selectedValue}
-          setSelectedValue={setSelectedValue}
-          defaultValue={'Select document'}
-        />
-        <Pressable
-          onPress={handleVerifyBVN}
-          style={{ alignSelf: 'center', marginTop: 20 }}
-        >
-          <Text style={{ color: Colors.pri, fontFamily: 'im' }}>Verify</Text>
-        </Pressable>
-      </View> */}
+    <PageView title={'Verification'} route={'/protected/account'}>
+      <WebView
+        source={{
+          uri: 'https://links.sandbox.usesmileid.com/6982/224e85f5-3ed7-4626-97c2-955bd221bfeb',
+        }}
+        style={styles.webview}
+        onLoadStart={() => setIsLoading(true)}
+        onLoadEnd={() => setIsLoading(false)}
+        onError={(syntheticEvent) => {
+          const { nativeEvent } = syntheticEvent;
+          Alert.alert('WebView error: ', nativeEvent.description);
+        }}
+      />
     </PageView>
   );
 };
@@ -143,13 +49,8 @@ const styles = StyleSheet.create({
     padding: 20,
     rowGap: 20,
   },
-  input: {
-    width: '100%',
-    height: 51,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#9095A1',
-    borderRadius: 12,
+  webview: {
+    flex: 1,
   },
 });
 

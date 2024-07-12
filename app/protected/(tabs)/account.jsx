@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -9,7 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '../../../components/Button';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { imagePicker } from '@/utils/ImagePicker';
@@ -20,7 +21,6 @@ import {
   Ionicons,
   MaterialCommunityIcons,
   MaterialIcons,
-  Octicons,
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
@@ -30,11 +30,19 @@ import { updateUserAttributes } from 'aws-amplify/auth';
 import { fetchCurrUser, updateUserProfile } from '../../../api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
+import { get } from 'aws-amplify/api';
+import { searchTree } from '../../../utils/searchTree';
+import { createNotification } from '../../../api/notifications.service';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
-  const { currentUser, setCurrentUser, setIsLoading, userProfile } =
-    useGlobalContext();
+  const {
+    currentUser,
+    setCurrentUser,
+    setIsLoading,
+    userProfile,
+    setNotifications,
+  } = useGlobalContext();
   const [profilePicture, setProfilePicture] = useState('');
   const [logoutModal, setLogoutModal] = useState(false);
   const router = useRouter();
@@ -42,7 +50,7 @@ const Account = () => {
   const handleInviteFriends = () => {
     router.push('/protected/contact');
   };
-  // console.log(userProfile);
+
   const handleProfilePicture = async () => {
     try {
       const file = await imagePicker();
@@ -70,6 +78,52 @@ const Account = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    async function getSmileStatus() {
+      try {
+        const restOperation = get({
+          apiName: 'callback',
+          path: '/smileid-callback',
+        });
+
+        const { body } = await restOperation.response;
+        const json = await body.json();
+        console.log('GET call succeeded: ', json);
+
+        const res = await searchTree(json, 'FullName');
+        console.log(res, userProfile.name);
+        if (res.includes(userProfile.name)) {
+          await updateUserProfile(
+            { is_bvn_verified: true, verification_in_progress: false },
+            currentUser
+          );
+
+          await createNotification(
+            {
+              title: 'Verification Completed',
+              content: `You have successfully verified your identity. You now have access to all features of the app`,
+              type: 'account',
+              userId: currentUser.userId,
+              read: false,
+            },
+            setNotifications
+          );
+        } else {
+          Alert.alert(
+            'Attention!!',
+            'You have not complete your verification. Please verify to have full access to the app'
+          );
+        }
+        await fetchCurrUser(setCurrentUser);
+      } catch (e) {
+        console.log('GET call failed: ', JSON.parse(e.response.body));
+      }
+    }
+    if (!userProfile.is_bvn_verified) {
+      getSmileStatus();
+    }
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -170,16 +224,27 @@ const Account = () => {
                           color={'#f6bd02'}
                         />
                       ) : (
-                        <Octicons
-                          name={
-                            userProfile?.is_bvn_verified
-                              ? 'verified'
-                              : 'unverified'
-                          }
-                          size={20}
-                          color={userProfile?.is_bvn_verified ? 'green' : 'red'}
-                          style={{ marginLeft: 10 }}
-                        />
+                        <View
+                          style={{
+                            backgroundColor: userProfile.is_bvn_verified
+                              ? 'green'
+                              : 'red',
+                            paddingHorizontal: 4,
+                            paddingVertical: 2,
+                            borderRadius: 5,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: 'white',
+                            }}
+                          >
+                            {userProfile.is_bvn_verified
+                              ? 'Verified'
+                              : 'Not Verified'}
+                          </Text>
+                        </View>
                       )}
                     </View>
                   )}
@@ -306,7 +371,7 @@ const menuItems = [
     route: '/protected/personal_info',
   },
   {
-    title: 'Documents Verification',
+    title: 'Verification',
     icon: <Ionicons name="document-text-outline" size={24} color="black" />,
     route: '/protected/kyc',
     extra: true,
