@@ -7,3 +7,21 @@ export function isNameIncluded(fullName, targetName) {
   // Check if every part of targetNameParts is included in fullNameParts
   return targetNameParts.every((part) => fullNameParts.includes(part));
 }
+
+export function isNameAndDobIncluded(data, targetName, targetDob) {
+  const targetNameParts = targetName
+    .split(' ')
+    .map((part) => part.toLowerCase());
+
+  return data.some((item) => {
+    if (item.DOB === targetDob) {
+      const fullNameParts = item.FullName.split(' ').map((part) =>
+        part.toLowerCase()
+      );
+
+      // Check if all parts of the full name are included in the target name
+      return fullNameParts.every((part) => targetNameParts.includes(part));
+    }
+    return false;
+  });
+}

@@ -24,7 +24,7 @@
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-7249464442496d723551-build.zip"
+          "s3Key": "amplify-builds/callbackurl-336d6132586e5664616d-build.zip"
         }
       },
       "auth": {

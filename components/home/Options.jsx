@@ -98,6 +98,23 @@ const Options = () => {
     }
   }
 
+  async function getOneTodo() {
+    try {
+      const restOperation = get({
+        apiName: 'callback',
+        path: `/smileid-callback/${10}`,
+      });
+
+      const { body } = await restOperation.response;
+      const response = await body.json();
+
+      console.log('Single get call succeeded');
+      console.log(response);
+    } catch (e) {
+      console.log('POST call failed: ', JSON.parse(e.response.body));
+    }
+  }
+
   async function postTodo() {
     try {
       const restOperation = post({
@@ -106,8 +123,8 @@ const Options = () => {
         options: {
           body: {
             name: 'Lest trying',
-            id: 1234,
-            FullName: 'Sherif Roheem',
+            id: '2',
+            FullName: 'Sherif Roheem Olaitan',
           },
         },
       });
@@ -144,6 +161,7 @@ const Options = () => {
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
         // onPress={() => router.push('/protected/complete_profile')}
         // onPress={getTodo}
+        // onPress={getOneTodo}
         // onPress={postTodo}
       >
         <Image

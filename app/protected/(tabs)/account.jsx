@@ -33,7 +33,10 @@ import { topBar } from '../../../cStyle';
 import { get } from 'aws-amplify/api';
 import { searchTree } from '../../../utils/searchTree';
 import { createNotification } from '../../../api/notifications.service';
-import { isNameIncluded } from '../../../utils/isNameIncluded';
+import {
+  isNameAndDobIncluded,
+  isNameIncluded,
+} from '../../../utils/isNameIncluded';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -95,7 +98,9 @@ const Account = () => {
 
           const res = await searchTree(json, 'FullName');
 
-          if (isNameIncluded(res[0], userProfile.name)) {
+          if (
+            isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
+          ) {
             await updateUserProfile(
               { is_bvn_verified: true, verification_in_progress: false },
               currentUser

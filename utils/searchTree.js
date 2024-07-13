@@ -2,7 +2,9 @@ export function searchTree(obj, key) {
   const results = [];
   if (typeof obj === 'object') {
     if (key in obj && obj[key] !== null) {
-      results.push(obj[key]);
+      if (obj.FullName && obj.DOB) {
+        results.push({ FullName: obj.FullName, DOB: obj.DOB });
+      }
     }
     for (let prop in obj) {
       const result = searchTree(obj[prop], key);

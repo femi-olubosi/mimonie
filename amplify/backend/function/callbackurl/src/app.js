@@ -79,24 +79,14 @@ app.get(path, async function (req, res) {
 });
 
 app.post(path, async function (req, res) {
-  let userId = UNAUTH;
+  const timestamp = new Date().toISOString();
 
-  // Check if userId is present in the request context
-  if (
-    req.apiGateway &&
-    req.apiGateway.event &&
-    req.apiGateway.event.requestContext
-  ) {
-    userId =
-      req.apiGateway.event.requestContext.identity.cognitoIdentityId || UNAUTH;
-  }
-
-  const user = req.apiGateway.event.requestContext.identity;
   let putItemParams = {
     TableName: tableName,
     Item: {
       ...req.body,
-      userId: 'smildId',
+      userId: req.body.PartnerParams.user_id,
+      timestamp,
     },
   };
   try {
@@ -106,7 +96,6 @@ app.post(path, async function (req, res) {
       url: req.url,
       data: data,
       body: req.body,
-      user,
     });
   } catch (err) {
     res.statusCode = 500;
