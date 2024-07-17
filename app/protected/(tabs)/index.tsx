@@ -6,9 +6,11 @@ import {
   SafeAreaView,
   View,
   Text,
+  Pressable,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
+import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
@@ -25,6 +27,8 @@ import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { createSubAccount, getPaystackCustomer } from '@/api/payment.service';
 import { callbackUrl } from '@/utils/callbackUrl';
+import { FontAwesome } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const {
@@ -84,18 +88,55 @@ export default function HomeScreen() {
           picture={currentUser?.picture}
           notifications={notifications}
         />
-        <Cards contributions={contributions} />
-        <Options />
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: 'white',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Text>You do not have any activity yet</Text>
-        </View>
+        <ScrollView contentContainerStyle={{ flex: 1 }}>
+          <Cards contributions={contributions} />
+          <Options />
+          <Advert />
+          <View
+            style={{ paddingHorizontal: 20, backgroundColor: 'white', flex: 1 }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ fontFamily: 'esb', fontSize: 20 }}>
+                Recent Activities
+              </Text>
+              <Pressable
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  columnGap: 4,
+                }}
+                onPress={() => router.push('/protected/activities')}
+              >
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontFamily: 'ir',
+                    color: '#9095A1',
+                  }}
+                >
+                  {'See all'}
+                </Text>
+                <FontAwesome name="angle-right" size={16} color="gray" />
+              </Pressable>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'white',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text>You do not have any activity yet</Text>
+            </View>
+          </View>
+        </ScrollView>
       </ThemedView>
     </SafeAreaView>
   );

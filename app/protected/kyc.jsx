@@ -9,7 +9,7 @@ const kyc = () => {
   const { userProfile, setIsLoading } = useGlobalContext();
 
   useEffect(() => {
-    if (userProfile.is_bvn_verified) {
+    if (userProfile.is_nin_verified) {
       Alert.alert(
         'Verification',
         'This user is already verified',

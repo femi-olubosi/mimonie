@@ -44,7 +44,7 @@ const Cards = () => {
     if (pushObj.status === 'active') {
       Alert.alert(
         'Sorry',
-        'You cannot delete an active card as it is tied to your contributions. To Delete this card'
+        'You cannot delete an active card as it is tied to your contributions'
       );
       return;
     }

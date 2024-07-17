@@ -273,9 +273,9 @@ export const verifyBVN = async (input, userProfile) => {
   const data = {
     country: 'NG',
     type: 'bank_account',
-    account_number: input.account_number,
+    account_number: input.accountNumber,
     bvn: input.bvn,
-    bank_code: input.bank_code,
+    bank_code: '007',
     first_name: 'Uchenna',
     last_name: 'Okoro',
   };

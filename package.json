@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint",
-    "amplify-modelgen": "amplify codegen models"
+    "amplify-modelgen": "amplify codegen models",
+    "update": "eas update --branch preview --message 'New update'",
+    "build-android": "eas build -p android --profile preview"
   },
   "jest": {
     "preset": "jest-expo"

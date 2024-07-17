@@ -88,7 +88,7 @@ const LoginForm = (props) => {
         );
       }
 
-      if (!userProfile.name) {
+      if (!userProfile?.name) {
         router.push('/protected/complete_profile');
         return;
       }

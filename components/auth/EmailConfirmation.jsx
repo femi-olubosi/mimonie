@@ -36,7 +36,6 @@ const EmailConfirmation = () => {
       });
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
-        console.log('output', signInOutput);
         if (signInOutput) {
           router.push('/protected/complete_profile');
         } else {
@@ -52,7 +51,7 @@ const EmailConfirmation = () => {
         );
       }
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error?.message);
       console.error('Error confirming signup:', error);
     } finally {
       setIsLoading(false);

@@ -27,7 +27,11 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
 import { updateUserAttributes } from 'aws-amplify/auth';
-import { fetchCurrUser, updateUserProfile } from '../../../api/user.service';
+import {
+  fetchCurrUser,
+  fetchUserProfile,
+  updateUserProfile,
+} from '../../../api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
 import { get } from 'aws-amplify/api';
@@ -37,6 +41,10 @@ import {
   isNameAndDobIncluded,
   isNameIncluded,
 } from '../../../utils/isNameIncluded';
+import {
+  createSubAccount,
+  getPaystackCustomer,
+} from '../../../api/payment.service';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -45,6 +53,7 @@ const Account = () => {
     setCurrentUser,
     setIsLoading,
     userProfile,
+    setUserProfile,
     setNotifications,
   } = useGlobalContext();
   const [profilePicture, setProfilePicture] = useState('');
@@ -94,17 +103,13 @@ const Account = () => {
 
           const { body } = await restOperation.response;
           const json = await body.json();
-          console.log('GET call succeeded: ', json);
 
           const res = await searchTree(json, 'FullName');
 
           if (
             isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
           ) {
-            await updateUserProfile(
-              { is_bvn_verified: true, verification_in_progress: false },
-              currentUser
-            );
+            await updateUserProfile({ is_nin_verified: true }, currentUser);
 
             await createNotification(
               {
@@ -122,15 +127,42 @@ const Account = () => {
               'You have not complete your verification. Please verify to have full access to the app'
             );
           }
-          await fetchCurrUser(setCurrentUser);
+          await fetchUserProfile(setUserProfile, currentUser);
         } catch (e) {
           console.log('GET call failed: ', JSON.parse(e.response.body));
         }
       }
-      if (!userProfile.is_bvn_verified) {
+      const fetchCustomer = async () => {
+        const res = await getPaystackCustomer(userProfile.customer_code);
+
+        if (res.data.identified) {
+          const subacc = await createSubAccount(userProfile);
+
+          await updateUserProfile({
+            is_bvn_verified: true,
+            verification_in_progress: false,
+            subaccount_code: subacc.data.subaccount_code,
+          });
+          await fetchUserProfile(setUserProfile, currentUser);
+          await createNotification(
+            {
+              title: 'Verification Completed',
+              content: `You have successfully verified your identity. You now have access to all features of the app`,
+              type: 'verification',
+              userId: currentUser.userId,
+              read: false,
+            },
+            setNotifications
+          );
+        }
+      };
+      if (!userProfile.is_nin_verified) {
         getSmileStatus();
       }
-    }, [userProfile.is_bvn_verified])
+      if (!userProfile.is_bvn_verified) {
+        fetchCustomer();
+      }
+    }, [userProfile.is_bvn_verified, userProfile.is_nin_verified])
   );
 
   return (
@@ -223,7 +255,31 @@ const Account = () => {
                 >
                   {item.icon}
                   <Text style={styles.itemText}>{item.title}</Text>
-                  {item.extra && (
+                  {item.extra && item.title === 'Verify Identity' ? (
+                    <View
+                      style={{
+                        backgroundColor: userProfile.is_nin_verified
+                          ? 'green'
+                          : 'red',
+                        paddingHorizontal: 4,
+                        paddingVertical: 2,
+                        borderRadius: 5,
+                        marginLeft: 5,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 10,
+                          color: 'white',
+                        }}
+                      >
+                        {userProfile.is_nin_verified
+                          ? 'Verified'
+                          : 'Not Verified'}
+                      </Text>
+                    </View>
+                  ) : null}
+                  {item.extra && item.title === 'Verify BVN' ? (
                     <View style={{ marginLeft: 5 }}>
                       {userProfile?.verification_in_progress ? (
                         <View
@@ -267,7 +323,7 @@ const Account = () => {
                         </View>
                       )}
                     </View>
-                  )}
+                  ) : null}
                 </View>
                 <Ionicons name="chevron-forward" size={24} color="black" />
               </TouchableOpacity>
@@ -391,9 +447,15 @@ const menuItems = [
     route: '/protected/personal_info',
   },
   {
-    title: 'Verification',
-    icon: <Ionicons name="document-text-outline" size={24} color="black" />,
+    title: 'Verify Identity',
+    icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
     route: '/protected/kyc',
+    extra: true,
+  },
+  {
+    title: 'Verify BVN',
+    icon: <Ionicons name="document-text-outline" size={24} color="black" />,
+    route: '/protected/bvn',
     extra: true,
   },
   {

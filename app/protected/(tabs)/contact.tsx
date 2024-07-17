@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '@/store/StoreContext';
 import { FontAwesome } from '@expo/vector-icons';
+import { topBar } from '@/cStyle';
 
 const Contact = () => {
   const { myContacts } = useGlobalContext();
@@ -37,7 +38,7 @@ const Contact = () => {
   );
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ paddingTop: topBar }}>
       <StatusBar style="dark" />
       <Text
         style={{
@@ -58,7 +59,9 @@ const Contact = () => {
         />
       </View>
       <FlatList
-        data={myContacts.filter((e) => e.name.includes(contactSearch.trim()))}
+        data={myContacts.filter((e) =>
+          e.name.toLowerCase().includes(contactSearch.toLowerCase().trim())
+        )}
         keyExtractor={(item) => item.id}
         renderItem={renderContact}
       />

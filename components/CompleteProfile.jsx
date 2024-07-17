@@ -141,21 +141,21 @@ const CompleteProfile = () => {
     }
     setIsLoading(true);
     try {
-      await updateUserProfile(data, currentUser);
-      const user = await fetchUserProfile(setUserProfile, currentUser);
-      console.log({ user });
-      // const res = await createPaystackCustomer(
-      //   currentUser.email,
-      //   infoDetails.firstname,
-      //   infoDetails.lastname,
-      //   currentUser.phone_number
-      // );
+      // await updateUserProfile(data, currentUser);
+      // const user = await fetchUserProfile(setUserProfile, currentUser);
+      // console.log({ user });
+      const res = await createPaystackCustomer(
+        currentUser.email,
+        infoDetails.firstname,
+        infoDetails.lastname,
+        currentUser.phone_number
+      );
 
-      // const update = await updateUserProfile(
-      //   { ...data, customer_code: res.data.customer_code },
-      //   currentUser
-      // );
-      // console.log({ update });
+      const update = await updateUserProfile(
+        { ...data, customer_code: res.data.customer_code },
+        currentUser
+      );
+      console.log({ update });
       await createNotification(
         {
           title: 'Account Created',

@@ -63,7 +63,7 @@ const SignUp = (props) => {
       setEmailVeri(email);
       router.push('/email_verify');
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error?.message);
       console.error('Error signing up:', error);
     } finally {
       setIsLoading(false);
@@ -77,25 +77,6 @@ const SignUp = (props) => {
           <Text style={styles.title}>Register</Text>
           <Text style={{ textAlign: 'center' }}>Create your account</Text>
         </View>
-        {/* <View
-          style={[
-            styles.input,
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            },
-          ]}
-        >
-          <AntDesign name="user" size={20} color="gray" />
-          <TextInput
-            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
-            placeholder="Enter your username"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-          />
-        </View> */}
         <View
           style={[
             styles.input,

@@ -174,6 +174,7 @@ const ProtectedContent = () => {
               name="notifications"
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="bvn" options={{ headerShown: false }} />
           </Stack>
         </Authenticator>
       </View>
