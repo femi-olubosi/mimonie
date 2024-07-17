@@ -238,7 +238,6 @@ const Account = () => {
           <ScrollView
             contentContainerStyle={{
               padding: 20,
-              flex: 1,
             }}
           >
             {menuItems.map((item, index) => (
@@ -332,6 +331,7 @@ const Account = () => {
               style={{
                 flex: 1,
                 justifyContent: 'center',
+                marginTop: 30,
               }}
             >
               <Button
