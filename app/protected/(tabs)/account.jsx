@@ -55,6 +55,7 @@ const Account = () => {
     userProfile,
     setUserProfile,
     setNotifications,
+    myContacts,
   } = useGlobalContext();
   const [profilePicture, setProfilePicture] = useState('');
   const [logoutModal, setLogoutModal] = useState(false);
@@ -121,11 +122,6 @@ const Account = () => {
               },
               setNotifications
             );
-          } else {
-            Alert.alert(
-              'Attention!!',
-              'You have not complete your verification. Please verify to have full access to the app'
-            );
           }
           await fetchUserProfile(setUserProfile, currentUser);
         } catch (e) {
@@ -147,7 +143,7 @@ const Account = () => {
           await createNotification(
             {
               title: 'Verification Completed',
-              content: `You have successfully verified your identity. You now have access to all features of the app`,
+              content: `Your BVN verification is complete and approved. You now have access to all features of the app`,
               type: 'verification',
               userId: currentUser.userId,
               read: false,

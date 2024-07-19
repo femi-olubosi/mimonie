@@ -14,32 +14,35 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
 import * as Device from 'expo-device';
 import { fetchCurrUser } from '../../api/user.service';
+import { createNotification } from '../../api/notifications.service';
 
 const DeviceVerification = () => {
-  const { emailVeri, setIsLoading, setCurrentUser } = useGlobalContext();
+  const { setIsLoading, setCurrentUser, currentUser, setNotifications } =
+    useGlobalContext();
   const [code, setCode] = useState(0);
 
   const handleVerify = async () => {
-    // if (ErrorCheck({ email, password })) {
-    //   return;
-    // }
     setIsLoading(true);
     try {
-      const { isSignUpComplete, nextStep } = await confirmUserAttribute({
+      await confirmUserAttribute({
         userAttributeKey: 'phone_number',
         confirmationCode: code,
       });
 
-      const device = {
-        device_id: Device.osInternalBuildId,
-        device_name: Device.deviceName,
-        device_brand: Device.brand,
-      };
-      const user = await fetchCurrUser(setCurrentUser);
-      await updateUserProfile(device, user);
+      await fetchCurrUser(setCurrentUser);
+      await createNotification(
+        {
+          title: 'Phone Verification Completed',
+          content: `Thank you for verifying your phone number`,
+          type: 'verification',
+          userId: currentUser.userId,
+          read: false,
+        },
+        setNotifications
+      );
       Alert.alert(
         'Success',
-        `Your device "${Device.deviceName}" has been registered successfully.`,
+        `Your phone number has been verified successfully.`,
         [
           {
             text: 'Continue',

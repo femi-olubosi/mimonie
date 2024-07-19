@@ -5,6 +5,7 @@ type UserNotifications @model @auth(rules: [{allow: public}]) {
   title: String
   read: Boolean
   userId: ID
+  global: Boolean
 }
 
 type UserProfile @model @auth(rules: [{allow: public}]) {
@@ -30,6 +31,8 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   verification_in_progress: Boolean
   subaccount_code: String
   bank_details: AWSJSON
+  device_name: String
+  device_brand: String
 }
 
 type UserCardDetails @model @auth(rules: [{allow: public}]) {

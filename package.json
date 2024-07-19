@@ -12,6 +12,8 @@
     "lint": "expo lint",
     "amplify-modelgen": "amplify codegen models",
     "update": "eas update --branch preview --message 'New update'",
+    "update-4": "eas update --branch preview4 --message 'New update'",
+    "prod": "eas update --branch production --message 'New update'",
     "build-android": "eas build -p android --profile preview"
   },
   "jest": {

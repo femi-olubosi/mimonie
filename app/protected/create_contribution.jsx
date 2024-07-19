@@ -169,33 +169,6 @@ const CreateContribution = () => {
               defaultValue={selectedValue?.label}
             />
           </View>
-
-          {/* <View style={{ rowGap: 14 }}>
-            <Text style={styles.label}>Commencement Date</Text>
-            <Pressable
-              style={[
-                styles.input,
-                {
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                },
-              ]}
-              onPress={toggleDatePicker}
-            >
-              <TextInput
-                value={date.toLocaleDateString(...dateOption)}
-                placeholder="MM / DD / YYYY"
-              />
-              <DateTimeSelector
-                show={showDatePicker}
-                setShow={setShowDatePicker}
-                date={date}
-                setDate={setDate}
-                mode={'date'}
-              />
-            </Pressable>
-          </View> */}
         </View>
 
         <TouchableOpacity

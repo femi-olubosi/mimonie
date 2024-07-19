@@ -13,10 +13,43 @@ import React, { useState } from 'react';
 import { useGlobalContext } from '../store/StoreContext';
 import { Colors } from '../constants/Colors';
 import { FontAwesome } from '@expo/vector-icons';
+import { sendSMSInvite } from '../api/invite.service';
 
 const ContactModal = ({ visible, setVisible }) => {
   const [contactSearch, setContactSearch] = useState('');
   const { myContacts } = useGlobalContext();
+
+  const handleSendInvite = async (item) => {
+    await sendSMSInvite(item, 12345);
+  };
+
+  const renderContact = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={styles.contactContainer}
+        onPress={() => handleSendInvite(item)}
+      >
+        <View style={styles.contactInfo}>
+          <FontAwesome name="user-circle-o" size={24} color="gray" />
+          <View style={{ rowGap: 2 }}>
+            <Text style={styles.contactName}>{item.name}</Text>
+          </View>
+        </View>
+        <Text style={styles.inviteText}>Invite</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const filteredContacts =
+    myContacts && Array.isArray(myContacts)
+      ? myContacts.filter(
+          (e) =>
+            e.name &&
+            typeof e.name === 'string' &&
+            e.name.toLowerCase().includes(contactSearch.toLowerCase().trim())
+        )
+      : [];
+
   return (
     <Modal
       animationType="slide"
@@ -49,9 +82,7 @@ const ContactModal = ({ visible, setVisible }) => {
           </View>
 
           <FlatList
-            data={myContacts.filter((e) =>
-              e.name.includes(contactSearch.trim())
-            )}
+            data={filteredContacts}
             keyExtractor={(item) => item.id}
             renderItem={renderContact}
           />
@@ -214,32 +245,3 @@ const styles = StyleSheet.create({
     color: 'green',
   },
 });
-
-const renderContact = ({ item }) => {
-  const handleSendInvite = async () => {
-    await sendSMSInvite(item, 12345);
-  };
-
-  return (
-    <TouchableOpacity
-      style={styles.contactContainer}
-      onPress={handleSendInvite}
-    >
-      <View style={styles.contactInfo}>
-        <FontAwesome name="user-circle-o" size={24} color="gray" />
-        <View style={{ rowGap: 2 }}>
-          <Text style={styles.contactName}>{item.name}</Text>
-          {/* {item.phoneNumbers &&
-            item.phoneNumbers.map((phone, index) => (
-              <TouchableOpacity key={index}>
-                <Text style={styles.phoneNumber}>
-                  {phone.number} ({phone.label})
-                </Text>
-              </TouchableOpacity>
-            ))} */}
-        </View>
-      </View>
-      <Text style={styles.inviteText}>Invite</Text>
-    </TouchableOpacity>
-  );
-};

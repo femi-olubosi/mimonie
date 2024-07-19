@@ -17,6 +17,7 @@ type EagerUserNotifications = {
   readonly title?: string | null;
   readonly read?: boolean | null;
   readonly userId?: string | null;
+  readonly global?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -32,6 +33,7 @@ type LazyUserNotifications = {
   readonly title?: string | null;
   readonly read?: boolean | null;
   readonly userId?: string | null;
+  readonly global?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -69,6 +71,8 @@ type EagerUserProfile = {
   readonly verification_in_progress?: boolean | null;
   readonly subaccount_code?: string | null;
   readonly bank_details?: string | null;
+  readonly device_name?: string | null;
+  readonly device_brand?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -100,6 +104,8 @@ type LazyUserProfile = {
   readonly verification_in_progress?: boolean | null;
   readonly subaccount_code?: string | null;
   readonly bank_details?: string | null;
+  readonly device_name?: string | null;
+  readonly device_brand?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet } from 'react-native';
+import { Alert, Dimensions, ScrollView, StyleSheet, View } from 'react-native';
 import { PageView } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import { WebView } from 'react-native-webview';
@@ -26,22 +26,24 @@ const kyc = () => {
 
   return (
     <PageView title={'Verification'} route={'/protected/account'}>
-      <ScrollView contentContainerStyle={{ flex: 1 }}>
-        {!userProfile.is_bvn_verified ? (
-          <WebView
-            source={{
-              uri: 'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0',
-            }}
-            style={styles.webview}
-            onLoadStart={() => setIsLoading(true)}
-            onLoadEnd={() => setIsLoading(false)}
-            onError={(syntheticEvent) => {
-              const { nativeEvent } = syntheticEvent;
-              Alert.alert('WebView error: ', nativeEvent.description);
-            }}
-          />
-        ) : null}
-      </ScrollView>
+      <View style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          {!userProfile.is_bvn_verified ? (
+            <WebView
+              source={{
+                uri: 'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0',
+              }}
+              style={styles.webview}
+              onLoadStart={() => setIsLoading(true)}
+              onLoadEnd={() => setIsLoading(false)}
+              onError={(syntheticEvent) => {
+                const { nativeEvent } = syntheticEvent;
+                Alert.alert('WebView error: ', nativeEvent.description);
+              }}
+            />
+          ) : null}
+        </ScrollView>
+      </View>
     </PageView>
   );
 };
@@ -53,7 +55,7 @@ const styles = StyleSheet.create({
     rowGap: 20,
   },
   webview: {
-    flex: 1,
+    minHeight: Dimensions.get('window').height,
   },
 });
 

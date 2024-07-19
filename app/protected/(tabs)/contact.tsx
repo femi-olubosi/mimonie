@@ -1,10 +1,11 @@
 import {
   FlatList,
+  Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import React, { useState } from 'react';
@@ -12,30 +13,41 @@ import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '@/store/StoreContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { topBar } from '@/cStyle';
+import { sendInvite } from '@/api/invite.service';
 
 const Contact = () => {
   const { myContacts } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
 
-  const renderContact = ({ item }) => (
-    <View style={styles.contactContainer}>
-      <View style={styles.contactInfo}>
-        <FontAwesome name="user-circle-o" size={24} color="gray" />
-        <View style={{ rowGap: 2 }}>
-          <Text style={styles.contactName}>{item.name}</Text>
-          {/* {item.phoneNumbers &&
-            item.phoneNumbers.map((phone, index) => (
-              <TouchableOpacity key={index}>
-                <Text style={styles.phoneNumber}>
-                  {phone.number} ({phone.label})
-                </Text>
-              </TouchableOpacity>
-            ))} */}
+  const handleInvite = async (item) => {
+    await sendInvite(item);
+  };
+
+  const renderContact = ({ item }) => {
+    return (
+      <View style={styles.contactContainer}>
+        <View style={styles.contactInfo}>
+          <FontAwesome name="user-circle-o" size={24} color="gray" />
+          <View style={{ rowGap: 2 }}>
+            <Text style={styles.contactName}>{item?.name}</Text>
+          </View>
         </View>
+        <Pressable onPress={() => handleInvite(item)}>
+          <Text style={styles.inviteText}>Invite</Text>
+        </Pressable>
       </View>
-      <Text style={styles.inviteText}>Invite</Text>
-    </View>
-  );
+    );
+  };
+
+  const filteredContacts =
+    myContacts && Array.isArray(myContacts)
+      ? myContacts.filter(
+          (e) =>
+            e.name &&
+            typeof e.name === 'string' &&
+            e.name.toLowerCase().includes(contactSearch.toLowerCase().trim())
+        )
+      : [];
 
   return (
     <SafeAreaView style={{ paddingTop: topBar }}>
@@ -59,9 +71,7 @@ const Contact = () => {
         />
       </View>
       <FlatList
-        data={myContacts.filter((e) =>
-          e.name.toLowerCase().includes(contactSearch.toLowerCase().trim())
-        )}
+        data={filteredContacts}
         keyExtractor={(item) => item.id}
         renderItem={renderContact}
       />

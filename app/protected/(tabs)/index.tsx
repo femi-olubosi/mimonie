@@ -7,6 +7,7 @@ import {
   View,
   Text,
   Pressable,
+  Alert,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -14,7 +15,7 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   fetchCurrUser,
   fetchUserProfile,
@@ -27,8 +28,10 @@ import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { createSubAccount, getPaystackCustomer } from '@/api/payment.service';
 import { callbackUrl } from '@/utils/callbackUrl';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { notificationIcon } from '@/utils/notificationsIcon';
+import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
 
 export default function HomeScreen() {
   const {
@@ -43,6 +46,7 @@ export default function HomeScreen() {
     setNotifications,
     notifications,
   } = useGlobalContext();
+  const [alertShown, setAlertShown] = useState(false);
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -73,6 +77,29 @@ export default function HomeScreen() {
     fetchUserNotification(currentUser.userId, setNotifications);
   }, [currentUser]);
 
+  console.log('currentUser', !!currentUser.phone_number_verified, 'newds');
+  useEffect(() => {
+    if (currentUser.phone_number_verified !== 'true' && !alertShown) {
+      setAlertShown(true);
+      Alert.alert(
+        'Verification',
+        'Please Verify your phone number',
+        [
+          {
+            text: 'Verify Now',
+            onPress: async () => {
+              await sendUserAttributeVerificationCode({
+                userAttributeKey: 'phone_number',
+              });
+              router.push('/protected/device_verify');
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+  }, [currentUser, alertShown]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>
       <StatusBar style="dark" />
@@ -88,7 +115,7 @@ export default function HomeScreen() {
           picture={currentUser?.picture}
           notifications={notifications}
         />
-        <ScrollView contentContainerStyle={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={{}}>
           <Cards contributions={contributions} />
           <Options />
           <Advert />
@@ -131,9 +158,71 @@ export default function HomeScreen() {
                 backgroundColor: 'white',
                 justifyContent: 'center',
                 alignItems: 'center',
+                gap: 20,
+                paddingVertical: 20,
               }}
             >
-              <Text>You do not have any activity yet</Text>
+              {notifications.map((e, index) => {
+                return (
+                  <View
+                    key={index}
+                    style={{
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      minHeight: 74,
+                      borderColor: '#DEE1E6',
+                      width: '100%',
+                      gap: 20,
+                      padding: 10,
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        columnGap: 10,
+                        alignItems: 'center',
+                      }}
+                    >
+                      {/* {userProfile?.name === userProfile?.phoneNumber ? (
+                        <MaterialCommunityIcons
+                          name="arrow-bottom-right-thin-circle-outline"
+                          size={24}
+                          color="black"
+                        />
+                      ) : (
+                        <MaterialCommunityIcons
+                          name="arrow-top-left-thin-circle-outline"
+                          size={24}
+                          color="red"
+                        />
+                      )} */}
+                      {notificationIcon(e.type)}
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <Text style={{ fontSize: 14, fontFamily: 'im' }}>
+                          {e.title}
+                        </Text>
+                        {/* <Text>{formatTimestamp(e.createdAt)}</Text> */}
+                      </View>
+                    </View>
+                    <View>
+                      <Text
+                        style={{
+                          color: '#9095A1',
+                          fontSize: 12,
+                          fontFamily: 'ir',
+                        }}
+                      >
+                        {e.content}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
           </View>
         </ScrollView>

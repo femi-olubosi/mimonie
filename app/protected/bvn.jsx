@@ -39,10 +39,10 @@ const Bvn = () => {
   }, []);
 
   useEffect(() => {
-    if (userProfile.is_bvn_verified) {
+    if (userProfile.is_bvn_verified || userProfile.verification_in_progress) {
       Alert.alert(
         'BVN Verification',
-        'This user BVN is already verified',
+        'This user BVN is already verified or the verification is in progress',
         [
           {
             text: 'OK',
@@ -79,12 +79,13 @@ const Bvn = () => {
         {
           title: 'Verification In Progress',
           content: `You have successfully processed your BVN verification. You will be notified when the verification is complete`,
-          type: 'verification',
+          type: 'alert',
           userId: currentUser.userId,
           read: false,
         },
         setNotifications
       );
+
       Alert.alert(
         'We have recieved your request',
         'We will notify you when your BVN is verified',
@@ -98,6 +99,7 @@ const Bvn = () => {
       );
     } catch (error) {
       console.log(error);
+      Alert.alert('error', error);
     } finally {
       setIsLoading(false);
     }
@@ -132,12 +134,6 @@ const Bvn = () => {
               Hint: This should be the account number tied to your BVN
             </Text>
             <Text style={styles.label}>Bank Name</Text>
-            {/* <TextInput
-              style={styles.input}
-              placeholder="Enter your bank name"
-              value={bankName}
-              onChangeText={setBankName}
-            /> */}
             <View style={{ width: '100%' }}>
               <SelectInput
                 options={banks}
@@ -172,8 +168,8 @@ const styles = StyleSheet.create({
   },
   container_1: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
     padding: 20,
     // backgroundColor: '#f9f9f9',
   },
@@ -190,7 +186,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.dark,
     marginBottom: 8,
-    marginTop: 20,
+    marginTop: 10,
   },
   input: {
     width: '100%',

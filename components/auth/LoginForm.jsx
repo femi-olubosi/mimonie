@@ -13,7 +13,11 @@ import {
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { signIn } from 'aws-amplify/auth';
+import {
+  sendUserAttributeVerificationCode,
+  signIn,
+  signOut,
+} from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
@@ -64,6 +68,7 @@ const LoginForm = (props) => {
       }
       const user = await fetchCurrUser(setCurrentUser);
       const profile = await fetchUserProfile(setUserProfile, user);
+
       await fetchUserNotification(user.userId, setNotifications);
       if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
         Alert.alert(
@@ -72,15 +77,16 @@ const LoginForm = (props) => {
           [
             {
               text: 'Cancel',
-              onPress: () => console.log('Cancel Pressed'),
+              onPress: () => signOut(),
               style: 'cancel',
             },
             {
               text: 'Register',
               onPress: async () => {
-                // Send verification code to user's phone number
-                await sendVerificationCode(user.phone_number);
-                router.push('/device_verify'); // Navigate to device verification screen
+                await sendUserAttributeVerificationCode({
+                  userAttributeKey: 'phone_number',
+                });
+                router.push('/protected/device_verify');
               },
             },
           ],
@@ -88,7 +94,7 @@ const LoginForm = (props) => {
         );
       }
 
-      if (!userProfile?.name) {
+      if (!profile?.name) {
         router.push('/protected/complete_profile');
         return;
       }
@@ -100,6 +106,7 @@ const LoginForm = (props) => {
       setIsLoading(false);
     }
   };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

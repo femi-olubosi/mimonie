@@ -20,3 +20,23 @@ export const sendSMSInvite = async (contact, contributionId) => {
     Alert.alert('SMS is not available on this device');
   }
 };
+
+export const sendInvite = async (contact) => {
+  const contributionLink = `myapp://`;
+  const message = `You are invited to join mimonie app. Click the link to open: ${contributionLink}`;
+
+  const isAvailable = await SMS.isAvailableAsync();
+  if (isAvailable) {
+    const { result } = await SMS.sendSMSAsync(
+      [
+        contact.phoneNumbers[0].label !== 'home'
+          ? contact.phoneNumbers[0].number
+          : contact.phoneNumbers[1].number,
+      ],
+      message
+    );
+    console.log(result);
+  } else {
+    Alert.alert('SMS is not available on this device');
+  }
+};
