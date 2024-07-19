@@ -78,29 +78,29 @@ export default function HomeScreen() {
     fetchUserNotification(currentUser.userId, setNotifications);
   }, [currentUser]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (currentUser.phone_number_verified !== 'true' && !alertShown) {
-        setAlertShown(true);
-        Alert.alert(
-          'Verification',
-          'Please Verify your phone number',
-          [
-            {
-              text: 'Verify Now',
-              onPress: async () => {
-                await sendUserAttributeVerificationCode({
-                  userAttributeKey: 'phone_number',
-                });
-                router.push('/protected/device_verify');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      }
-    }
-  }, [currentUser, alertShown, isLoading]);
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     if (currentUser.phone_number_verified !== 'true' && !alertShown) {
+  //       setAlertShown(true);
+  //       Alert.alert(
+  //         'Verification',
+  //         'Please Verify your phone number',
+  //         [
+  //           {
+  //             text: 'Verify Now',
+  //             onPress: async () => {
+  //               await sendUserAttributeVerificationCode({
+  //                 userAttributeKey: 'phone_number',
+  //               });
+  //               router.push('/protected/device_verify');
+  //             },
+  //           },
+  //         ],
+  //         { cancelable: false }
+  //       );
+  //     }
+  //   }
+  // }, [currentUser, alertShown, isLoading]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>

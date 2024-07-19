@@ -28,7 +28,7 @@ const kyc = () => {
     <PageView title={'Verification'} route={'/protected/account'}>
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          {!userProfile.is_bvn_verified ? (
+          {!userProfile.is_nin_verified ? (
             <WebView
               source={{
                 uri: 'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0',

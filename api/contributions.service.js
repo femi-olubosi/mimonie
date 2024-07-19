@@ -35,6 +35,7 @@ export const createContribution = async (
     userId: currentUser.userId,
     contributions: 0,
     auth_url: userProfile.auth_url,
+    subaccount_code: userProfile.subaccount_code,
     email: currentUser.email,
   };
   try {
@@ -140,6 +141,7 @@ export const joinContribution = async (
       contributions: 0,
       email: currentUser.email,
       auth_url: userProfile.auth_url,
+      subaccount_code: userProfile.subaccount_code,
     };
 
     // Add the new participant to the participants array

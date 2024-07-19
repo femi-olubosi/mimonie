@@ -92,6 +92,7 @@ const LoginForm = (props) => {
           ],
           { cancelable: false }
         );
+        return;
       }
 
       if (!profile?.name) {

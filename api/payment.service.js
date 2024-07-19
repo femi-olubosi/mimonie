@@ -29,150 +29,178 @@ const makePaystackRequest = async (endpoint, method, data) => {
   }
 };
 
-// export const processContributions = async () => {
-//   try {
-//     // Fetch all contributions
-//     const contributions = await DataStore.query(Contribution);
+export const processContributions = async () => {
+  try {
+    //     // Fetch all contributions
+    const contributions = await DataStore.query(Contribution);
 
-//     // Iterate through each contribution
-//     for (const contribution of contributions) {
-//       const participants = contribution.participant.map(
-//         (p) => JSON.parse(p)[0]
-//       );
-//       const inProgressParticipant = participants.find(
-//         (p) => p.status === 'in progress'
-//       );
+    //     // Iterate through each contribution
+    for (const contribution of contributions) {
+      const participants = contribution.participant.map(
+        (p) => JSON.parse(p)[0]
+      );
+      const inProgressParticipant = participants.find(
+        (p) => p.status === 'in progress'
+      );
 
-//       if (!inProgressParticipant) {
-//         console.error(
-//           `No participant with status 'in progress' found for contribution ${contribution.id}`
-//         );
-//         continue;
-//       }
+      if (!inProgressParticipant) {
+        console.error(
+          `No participant with status 'in progress' found for contribution ${contribution.id}`
+        );
+        continue;
+      }
 
-//       // Process payments for each participant
-//       for (const participant of participants) {
-//         if (participant.status !== 'in progress') {
-//           // Deduct amount from participant
-//           const deductionSuccess = await processPayment(
-//             participant.authId,
-//             contribution.amount
-//           );
+      // Process payments for each participant
+      for (const participant of participants) {
+        if (participant.status !== 'in progress') {
+          // Deduct amount from participant
+          // const deductionSuccess = await processPayment(
+          //   participant.authId,
+          //   contribution.amount
+          // );
 
-//           if (deductionSuccess) {
-//             // Update participant's contributions
-//             participant.contributions.push({
-//               type: 'debit',
-//               amount: contribution.amount,
-//               status: 'success',
-//             });
+          const flow = chargeAndSplitPayment(subaccount, auth_url);
 
-//             // Save user activity for deduction
-//             await DataStore.save(
-//               new UserActivity({
-//                 userId: participant.id,
-//                 type: 'deduction',
-//                 amount: contribution.amount,
-//               })
-//             );
-//           } else {
-//             console.error(
-//               `Failed to deduct amount from participant ${participant.id}`
-//             );
-//           }
-//         }
-//       }
+          if (deductionSuccess) {
+            // Update participant's contributions
+            participant.contributions.push({
+              type: 'debit',
+              amount: contribution.amount,
+              status: 'success',
+            });
 
-//       // Credit the amount to the in-progress participant
-//       const creditSuccess = await processPayment(
-//         inProgressParticipant.authId,
-//         contribution.amount,
-//         true
-//       );
+            // Save user activity for deduction
+            await DataStore.save(
+              new UserActivity({
+                userId: participant.id,
+                type: 'deduction',
+                amount: contribution.amount,
+              })
+            );
+          } else {
+            console.error(
+              `Failed to deduct amount from participant ${participant.id}`
+            );
+          }
+        }
+      }
 
-//       if (creditSuccess) {
-//         // Update in-progress participant's contributions
-//         inProgressParticipant.contributions.push({
-//           type: 'credit',
-//           amount: contribution.amount,
-//           status: 'success',
-//         });
+      // Credit the amount to the in-progress participant
+      const creditSuccess = await processPayment(
+        inProgressParticipant.authId,
+        contribution.amount,
+        true
+      );
 
-//         // Save user activity for credit
-//         await DataStore.save(
-//           new UserActivity({
-//             userId: inProgressParticipant.id,
-//             type: 'collection',
-//             amount: contribution.amount,
-//           })
-//         );
+      if (creditSuccess) {
+        // Update in-progress participant's contributions
+        inProgressParticipant.contributions.push({
+          type: 'credit',
+          amount: contribution.amount,
+          status: 'success',
+        });
 
-//         // Update in-progress participant's status to received
-//         inProgressParticipant.status = 'received';
+        // Save user activity for credit
+        await DataStore.save(
+          new UserActivity({
+            userId: inProgressParticipant.id,
+            type: 'collection',
+            amount: contribution.amount,
+          })
+        );
 
-//         // Update other participants' statuses for the next cycle
-//         const nextParticipant = participants.find(
-//           (p) => p.status === 'pending'
-//         );
-//         if (nextParticipant) {
-//           nextParticipant.status = 'in progress';
-//         }
+        // Update in-progress participant's status to received
+        inProgressParticipant.status = 'received';
 
-//         // Save the updated participants
-//         await DataStore.save(
-//           Contribution.copyOf(contribution, (updated) => {
-//             updated.participant = participants.map((p) => JSON.stringify([p]));
-//           })
-//         );
-//       } else {
-//         console.error(
-//           `Failed to credit amount to participant ${inProgressParticipant.id}`
-//         );
-//       }
-//     }
-//   } catch (error) {
-//     console.error('Error processing contributions:', error);
-//   }
-// };
+        // Update other participants' statuses for the next cycle
+        const nextParticipant = participants.find(
+          (p) => p.status === 'pending'
+        );
+        if (nextParticipant) {
+          nextParticipant.status = 'in progress';
+        }
 
-// const processPayment = async (authId, amount, isCredit = false) => {
-//   try {
-//     const url = isCredit
-//       ? 'https://api.paystack.co/transaction/charge_authorization'
-//       : 'https://api.paystack.co/transaction/debit_authorization';
-//     const response = await axios.post(
-//       url,
-//       {
-//         authorization_code: authId,
-//         amount: amount * 100, // Paystack expects the amount in kobo (Nigerian Naira subunit)
-//         email: 'user@example.com', // Replace with the participant's email
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-//           'Content-Type': 'application/json',
-//         },
-//       }
-//     );
+        // Save the updated participants
+        await DataStore.save(
+          Contribution.copyOf(contribution, (updated) => {
+            updated.participant = participants.map((p) => JSON.stringify([p]));
+          })
+        );
+      } else {
+        console.error(
+          `Failed to credit amount to participant ${inProgressParticipant.id}`
+        );
+      }
+    }
+  } catch (error) {
+    console.error('Error processing contributions:', error);
+  }
+};
 
-//     if (response.data.status === 'success') {
-//       console.log(
-//         `${
-//           isCredit ? 'Credited' : 'Debited'
-//         } ${amount} to/from authId: ${authId}`
-//       );
-//       return true;
-//     } else {
-//       console.error(
-//         `Failed to ${isCredit ? 'credit' : 'debit'}: ${response.data.message}`
-//       );
-//       return false;
-//     }
-//   } catch (error) {
-//     console.error('Error processing payment:', error);
-//     return false;
-//   }
-// };
+const processPayment = async (authId, amount, isCredit = false) => {
+  try {
+    const url = isCredit
+      ? 'https://api.paystack.co/transaction/charge_authorization'
+      : 'https://api.paystack.co/transaction/debit_authorization';
+    const response = await axios.post(
+      url,
+      {
+        authorization_code: authId,
+        amount: amount * 100, // Paystack expects the amount in kobo (Nigerian Naira subunit)
+        email: 'user@example.com', // Replace with the participant's email
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    if (response.data.status === 'success') {
+      console.log(
+        `${
+          isCredit ? 'Credited' : 'Debited'
+        } ${amount} to/from authId: ${authId}`
+      );
+      return true;
+    } else {
+      console.error(
+        `Failed to ${isCredit ? 'credit' : 'debit'}: ${response.data.message}`
+      );
+      return false;
+    }
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    return false;
+  }
+};
+
+export const chargeAndSplitPayment = async (subaccount_code, payer) => {
+  const data = {
+    email: 'kaydee4love@gmail.com',
+    amount: '2000',
+    authorization_code: 'AUTH_72btv547',
+    subaccount: 'ACCT_ut3hm8l9vmch3fg',
+    // transaction_charge: 100,
+    bearer: 'subaccount',
+  };
+
+  // const data = {
+  //   email: payer.email,
+  //   amount: '2000',
+  //   authorization_code: payer.authorization_code,
+  //   subaccount: subaccount_code,
+  //   // transaction_charge: 100,
+  //   bearer: 'subaccount',
+  // };
+
+  return await makePaystackRequest(
+    '/transaction/charge_authorization',
+    'POST',
+    data
+  );
+};
 
 export const verifyTransaction = async (reference, currentUser) => {
   try {
@@ -289,7 +317,7 @@ export const verifyBVN = async (input, userProfile) => {
 
 export const createSubAccount = async (userProfile) => {
   const data = {
-    business_name: `${userProfile.preferred_username}${userProfile.phone_number}`,
+    business_name: `${userProfile.name}`,
     settlement_bank: userProfile.bank_details.bank_code,
     account_number: userProfile.bank_details.account_number,
     percentage_charge: 20,

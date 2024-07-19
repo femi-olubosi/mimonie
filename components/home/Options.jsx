@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { get } from 'aws-amplify/api';
 import { post } from 'aws-amplify/api';
 import { useGlobalContext } from '@/store/StoreContext';
-import { verifyBVN } from '@/api/payment.service';
+import { chargeAndSplitPayment, verifyBVN } from '@/api/payment.service';
 
 const opt = {
   timestamp: '2018-03-13T21:04:11.193Z',
@@ -141,12 +141,16 @@ const Options = () => {
   }
 
   async function verifyBV() {
-    const res = await verifyBVN(
-      { accountNumber: '1436300245', bvn: '22168103399', bank_code: '044' },
-      userProfile
-    );
+    // const res = await verifyBVN(
+    //   { accountNumber: '1436300245', bvn: '22168103399', bank_code: '044' },
+    //   userProfile
+    // );
 
-    console.log('res', res);
+    // console.log('res', res);
+
+    const res = await chargeAndSplitPayment();
+
+    console.log('charge', res);
   }
 
   return (
