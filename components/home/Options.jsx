@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import { get } from 'aws-amplify/api';
 import { post } from 'aws-amplify/api';
 import { useGlobalContext } from '@/store/StoreContext';
+import { verifyBVN } from '@/api/payment.service';
 
 const opt = {
   timestamp: '2018-03-13T21:04:11.193Z',
@@ -139,6 +140,15 @@ const Options = () => {
     }
   }
 
+  async function verifyBV() {
+    const res = await verifyBVN(
+      { accountNumber: '1436300245', bvn: '22168103399', bank_code: '044' },
+      userProfile
+    );
+
+    console.log('res', res);
+  }
+
   return (
     <View
       style={{
@@ -163,6 +173,7 @@ const Options = () => {
         // onPress={getTodo}
         // onPress={getOneTodo}
         // onPress={postTodo}
+        onPress={verifyBV}
       >
         <Image
           source={require('../../assets/logo/bill.png')}

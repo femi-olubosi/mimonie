@@ -85,7 +85,7 @@ const EmailConfirmation = () => {
             Verification Code
           </Text>
           <Text style={{ marginBottom: 40, textAlign: 'center' }}>
-            Check ypur email {emailVeri} for a code
+            Check your email {emailVeri} for a code
           </Text>
           <View>
             <Text style={styles.label}>Code</Text>

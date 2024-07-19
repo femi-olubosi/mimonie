@@ -32,6 +32,7 @@ import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { notificationIcon } from '@/utils/notificationsIcon';
 import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
+import { isLoading } from 'expo-font';
 
 export default function HomeScreen() {
   const {
@@ -77,28 +78,29 @@ export default function HomeScreen() {
     fetchUserNotification(currentUser.userId, setNotifications);
   }, [currentUser]);
 
-  console.log('currentUser', !!currentUser.phone_number_verified, 'newds');
   useEffect(() => {
-    if (currentUser.phone_number_verified !== 'true' && !alertShown) {
-      setAlertShown(true);
-      Alert.alert(
-        'Verification',
-        'Please Verify your phone number',
-        [
-          {
-            text: 'Verify Now',
-            onPress: async () => {
-              await sendUserAttributeVerificationCode({
-                userAttributeKey: 'phone_number',
-              });
-              router.push('/protected/device_verify');
+    if (!isLoading) {
+      if (currentUser.phone_number_verified !== 'true' && !alertShown) {
+        setAlertShown(true);
+        Alert.alert(
+          'Verification',
+          'Please Verify your phone number',
+          [
+            {
+              text: 'Verify Now',
+              onPress: async () => {
+                await sendUserAttributeVerificationCode({
+                  userAttributeKey: 'phone_number',
+                });
+                router.push('/protected/device_verify');
+              },
             },
-          },
-        ],
-        { cancelable: false }
-      );
+          ],
+          { cancelable: false }
+        );
+      }
     }
-  }, [currentUser, alertShown]);
+  }, [currentUser, alertShown, isLoading]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>

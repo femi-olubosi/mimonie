@@ -9,7 +9,11 @@ import {
 import React, { useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { confirmUserAttribute } from 'aws-amplify/auth';
+import {
+  confirmUserAttribute,
+  sendUserAttributeVerificationCode,
+  signOut,
+} from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
 import * as Device from 'expo-device';
@@ -59,6 +63,14 @@ const DeviceVerification = () => {
     }
   };
 
+  const handleResend = async () => {
+    const res = await sendUserAttributeVerificationCode({
+      userAttributeKey: 'phone_number',
+    });
+
+    console.log({ res });
+  };
+
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -100,9 +112,9 @@ const DeviceVerification = () => {
                 alignItems: 'center',
               }}
             >
-              <Link href={'/protected'}>
+              <Pressable onPress={() => signOut()}>
                 <Text style={styles.buttonText}>Later</Text>
-              </Link>
+              </Pressable>
             </View>
             <Pressable
               style={{
@@ -118,7 +130,7 @@ const DeviceVerification = () => {
               <Text style={styles.buttonText}>Verify</Text>
             </Pressable>
           </View>
-          {/* <Pressable
+          <Pressable
             style={{
               marginTop: 20,
               alignSelf: 'center',
@@ -126,7 +138,7 @@ const DeviceVerification = () => {
             onPress={handleResend}
           >
             <Text>Resend Code</Text>
-          </Pressable> */}
+          </Pressable>
         </View>
       </View>
     </Container>

@@ -130,15 +130,17 @@ const Account = () => {
       }
       const fetchCustomer = async () => {
         const res = await getPaystackCustomer(userProfile.customer_code);
-
         if (res.data.identified) {
           const subacc = await createSubAccount(userProfile);
 
-          await updateUserProfile({
-            is_bvn_verified: true,
-            verification_in_progress: false,
-            subaccount_code: subacc.data.subaccount_code,
-          });
+          await updateUserProfile(
+            {
+              is_bvn_verified: true,
+              verification_in_progress: false,
+              subaccount_code: subacc.data.subaccount_code,
+            },
+            currentUser
+          );
           await fetchUserProfile(setUserProfile, currentUser);
           await createNotification(
             {

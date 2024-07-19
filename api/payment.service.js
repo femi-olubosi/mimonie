@@ -275,11 +275,11 @@ export const verifyBVN = async (input, userProfile) => {
     type: 'bank_account',
     account_number: input.accountNumber,
     bvn: input.bvn,
-    bank_code: '007',
-    first_name: 'Uchenna',
-    last_name: 'Okoro',
+    bank_code: input.bank_code,
+    first_name,
+    last_name,
   };
-
+  console.log({ data });
   return await makePaystackRequest(
     `/customer/${customer_code}/identification`,
     'POST',
@@ -290,7 +290,7 @@ export const verifyBVN = async (input, userProfile) => {
 export const createSubAccount = async (userProfile) => {
   const data = {
     business_name: `${userProfile.preferred_username}${userProfile.phone_number}`,
-    bank_code: userProfile.bank_details.bank_code,
+    settlement_bank: userProfile.bank_details.bank_code,
     account_number: userProfile.bank_details.account_number,
     percentage_charge: 20,
   };

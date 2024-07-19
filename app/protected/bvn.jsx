@@ -67,12 +67,22 @@ const Bvn = () => {
     }
     try {
       setIsLoading(true);
+
       await verifyBVN(
-        { bvn, accountNumber, bankCode: selectedValue.value },
+        { bvn, accountNumber, bank_code: selectedValue.value },
         userProfile
       );
 
-      await updateUserProfile({ verification_in_progress: true }, currentUser);
+      await updateUserProfile(
+        {
+          verification_in_progress: true,
+          bank_details: {
+            bank_code: selectedValue.value,
+            account_number: accountNumber,
+          },
+        },
+        currentUser
+      );
       await fetchUserProfile(setUserProfile, currentUser);
 
       await createNotification(
@@ -99,7 +109,7 @@ const Bvn = () => {
       );
     } catch (error) {
       console.log(error);
-      Alert.alert('error', error);
+      Alert.alert('error', error.message);
     } finally {
       setIsLoading(false);
     }
