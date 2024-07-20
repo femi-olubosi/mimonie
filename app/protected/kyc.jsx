@@ -1,12 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Dimensions, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { PageView } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import { WebView } from 'react-native-webview';
 import { router } from 'expo-router';
+import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
+import { createNotification } from '../../api/notifications.service';
+import Button from '../../components/Button';
+import { Colors } from '../../constants/Colors';
 
 const kyc = () => {
-  const { userProfile, setIsLoading } = useGlobalContext();
+  const {
+    userProfile,
+    setIsLoading,
+    setNotifications,
+    setUserProfile,
+    currentUser,
+  } = useGlobalContext();
 
   useEffect(() => {
     if (userProfile.is_nin_verified) {
@@ -23,6 +40,27 @@ const kyc = () => {
       );
     }
   }, []);
+
+  const handleFinish = async () => {
+    await updateUserProfile(
+      {
+        verification_in_progress_id: true,
+      },
+      currentUser
+    );
+    await fetchUserProfile(setUserProfile, currentUser);
+    await createNotification(
+      {
+        title: 'Verification In Progress',
+        content: `You have successfully processed your Identity verification. You will be notified when the verification is complete`,
+        type: 'alert',
+        userId: currentUser.userId,
+        read: false,
+      },
+      setNotifications
+    );
+    router.push('/protected/account');
+  };
 
   return (
     <PageView title={'Verification'} route={'/protected/account'}>
@@ -43,6 +81,16 @@ const kyc = () => {
             />
           ) : null}
         </ScrollView>
+        <View style={{ padding: 20 }}>
+          <Button
+            title={'Upload Completed'}
+            color={Colors.pri}
+            onPress={handleFinish}
+          />
+          <Text style={{ fontSize: 12, textAlign: 'center' }}>
+            Click only if you have completed the upload process
+          </Text>
+        </View>
       </View>
     </PageView>
   );

@@ -22,6 +22,7 @@ import { topBar } from '../../cStyle';
 import { naira } from '../../constants/Currency';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCountries } from '../../api/payment.service';
+import { convertToAWSDate } from '../../utils/toAWSDate';
 
 const dateOption = [
   'en-US',
@@ -130,13 +131,8 @@ const ProfileEdit = () => {
 
   const handleSubmit = async () => {
     const data = {
-      name:
-        infoDetails.firstname +
-        ' ' +
-        infoDetails.middlename +
-        ' ' +
-        infoDetails.lastname,
-      birthdate: infoDetails.birthdate,
+      name: infoDetails.firstname + ' ' + infoDetails.lastname,
+      birthdate: convertToAWSDate(infoDetails.birthdate),
       address: infoDetails.address,
       occupation: infoDetails.occupation,
       income_from: infoDetails.income_from,

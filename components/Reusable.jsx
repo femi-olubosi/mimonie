@@ -46,7 +46,9 @@ export const DateTimeSelector = ({
     const currentDate = selectedDate;
     setShow(false);
     setDate(currentDate);
-    setDatePick(currentDate);
+    if (setDatePick) {
+      setDatePick(currentDate);
+    }
   };
 
   //   const showMode = (currentMode) => {

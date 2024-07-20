@@ -73,6 +73,7 @@ type EagerUserProfile = {
   readonly bank_details?: string | null;
   readonly device_name?: string | null;
   readonly device_brand?: string | null;
+  readonly verification_in_progress_id?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -106,6 +107,7 @@ type LazyUserProfile = {
   readonly bank_details?: string | null;
   readonly device_name?: string | null;
   readonly device_brand?: string | null;
+  readonly verification_in_progress_id?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

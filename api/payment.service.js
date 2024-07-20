@@ -59,9 +59,9 @@ export const processContributions = async () => {
           //   contribution.amount
           // );
 
-          const flow = chargeAndSplitPayment(subaccount, auth_url);
+          const flow = chargeAndSplitPayment(subaccount_code, participant);
 
-          if (deductionSuccess) {
+          if (flow) {
             // Update participant's contributions
             participant.contributions.push({
               type: 'debit',

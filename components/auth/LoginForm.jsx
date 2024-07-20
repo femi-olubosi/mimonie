@@ -70,30 +70,30 @@ const LoginForm = (props) => {
       const profile = await fetchUserProfile(setUserProfile, user);
 
       await fetchUserNotification(user.userId, setNotifications);
-      if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
-        Alert.alert(
-          'Device Mismatch',
-          `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Register',
-              onPress: async () => {
-                await sendUserAttributeVerificationCode({
-                  userAttributeKey: 'phone_number',
-                });
-                router.push('/protected/device_verify');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
+      // if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
+      //   Alert.alert(
+      //     'Device Mismatch',
+      //     `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
+      //     [
+      //       {
+      //         text: 'Cancel',
+      //         onPress: () => signOut(),
+      //         style: 'cancel',
+      //       },
+      //       {
+      //         text: 'Register',
+      //         onPress: async () => {
+      //           await sendUserAttributeVerificationCode({
+      //             userAttributeKey: 'phone_number',
+      //           });
+      //           router.push('/protected/device_verify');
+      //         },
+      //       },
+      //     ],
+      //     { cancelable: false }
+      //   );
+      //   return;
+      // }
 
       if (!profile?.name) {
         router.push('/protected/complete_profile');

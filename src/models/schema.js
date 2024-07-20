@@ -266,6 +266,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "verification_in_progress_id": {
+                    "name": "verification_in_progress_id",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -705,5 +712,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "b2f966eb16d168bfc609eaeb797d3f7c"
+    "version": "2225a5800e97351cfde10ba9e93ea9e5"
 };

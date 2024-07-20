@@ -51,6 +51,15 @@
       },
       "eas": {
         "projectId": "39c78bcd-192c-4415-93f2-7f24376ad86d"
+      },
+      "smileIdentity": {
+        "test_url": "https://sdktest.smileidentity.com/",
+        "test_lambda_url": "https://testapi.smileidentity.com/v1/",
+        "prod_url": "https://sdk.smileidentity.com/",
+        "prod_lambda_url": "https://api.smileidentity.com/v1/",
+        "auth_token": "YvcDscATuJxxTj7W8fTWvb3c80mB20iLgu3USfFpABJkph8zLGUi9vgT7DtJ1rF6AB1+kaRXkCgolWtIlW247Lq0zcvDJccS1KvnRF+yA1K13rmieMY0t3D214EWm7fsE3CkMwig2ngia3i5Lh0n+0V//ucYo8UbPR6EdMjUJ0Y=",
+        "partner_id": "6982",
+        "version": "1.0.0"
       }
     },
     "owner": "femi-olubosi",
