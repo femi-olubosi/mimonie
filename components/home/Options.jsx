@@ -5,7 +5,13 @@ import { router } from 'expo-router';
 import { get } from 'aws-amplify/api';
 import { post } from 'aws-amplify/api';
 import { useGlobalContext } from '@/store/StoreContext';
-import { chargeAndSplitPayment, verifyBVN } from '@/api/payment.service';
+import {
+  chargeAndSplitPayment,
+  initialize,
+  processContributions,
+  verify,
+  verifyBVN,
+} from '@/api/payment.service';
 
 const opt = {
   timestamp: '2018-03-13T21:04:11.193Z',
@@ -81,7 +87,7 @@ const opt = {
   ],
 };
 const Options = () => {
-  const { userProfile } = useGlobalContext();
+  const { userProfile, currentUser } = useGlobalContext();
   async function getTodo() {
     try {
       const restOperation = get({
@@ -99,59 +105,11 @@ const Options = () => {
     }
   }
 
-  async function getOneTodo() {
-    try {
-      const restOperation = get({
-        apiName: 'callback',
-        path: `/smileid-callback/${10}`,
-      });
+  const tryOut = async () => {
+    const res = await processContributions();
 
-      const { body } = await restOperation.response;
-      const response = await body.json();
-
-      console.log('Single get call succeeded');
-      console.log(response);
-    } catch (e) {
-      console.log('POST call failed: ', JSON.parse(e.response.body));
-    }
-  }
-
-  async function postTodo() {
-    try {
-      const restOperation = post({
-        apiName: 'callback',
-        path: '/smileid-callback',
-        options: {
-          body: {
-            name: 'Lest trying',
-            id: '2',
-            FullName: 'Sherif Roheem Olaitan',
-          },
-        },
-      });
-
-      const { body } = await restOperation.response;
-      const response = await body.json();
-
-      console.log('POST call succeeded');
-      console.log(response);
-    } catch (e) {
-      console.log('POST call failed: ', JSON.parse(e.response.body));
-    }
-  }
-
-  async function verifyBV() {
-    // const res = await verifyBVN(
-    //   { accountNumber: '1436300245', bvn: '22168103399', bank_code: '044' },
-    //   userProfile
-    // );
-
-    // console.log('res', res);
-
-    const res = await chargeAndSplitPayment();
-
-    console.log('charge', res);
-  }
+    console.log('res', res);
+  };
 
   return (
     <View
@@ -175,15 +133,13 @@ const Options = () => {
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
         // onPress={() => router.push('/protected/complete_profile')}
         // onPress={getTodo}
-        // onPress={getOneTodo}
-        // onPress={postTodo}
-        onPress={verifyBV}
+        onPress={tryOut}
       >
         <Image
           source={require('../../assets/logo/bill.png')}
           style={{ width: 22, height: 22 }}
         />
-        <Text style={{ fontSize: 14, fontFamily: 'im' }}>Pay bills</Text>
+        <Text style={{ fontSize: 14, fontFamily: 'im' }}>Terms</Text>
       </Pressable>
       <Pressable
         style={{
@@ -191,6 +147,7 @@ const Options = () => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
+        onPress={() => router.push('/protected/flow')}
       >
         <AntDesign name="question" size={25} color="black" />
         <Text style={{ fontSize: 14, fontFamily: 'im' }}>Help/FAQ</Text>

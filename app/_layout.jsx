@@ -42,6 +42,7 @@ function RootLayout() {
     checkAuthStatus();
   }, []);
 
+  useEffect(() => {}, []);
   // useEffect(() => {
   //   const timer = setTimeout(() => {
   //     setIsSplashVisible(false);

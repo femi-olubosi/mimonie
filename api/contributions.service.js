@@ -3,7 +3,6 @@ import { Contribution } from '../src/models';
 
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
-    // await DataStore.clear();
     await DataStore.start();
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
@@ -37,6 +36,7 @@ export const createContribution = async (
     auth_url: userProfile.auth_url,
     subaccount_code: userProfile.subaccount_code,
     email: currentUser.email,
+    status: 'in progress',
   };
   try {
     const newContribution = await DataStore.save(
@@ -142,6 +142,7 @@ export const joinContribution = async (
       email: currentUser.email,
       auth_url: userProfile.auth_url,
       subaccount_code: userProfile.subaccount_code,
+      status: 'pending',
     };
 
     // Add the new participant to the participants array
@@ -174,7 +175,6 @@ export const findContributionByInviteLink = async (invite_link) => {
     const contributions = await DataStore.query(Contribution, (c) =>
       c.invite_link.eq(invite_link)
     );
-    // setContribution(Contribution);
     return contributions;
   } catch (error) {
     console.error('Error fetching user contributions:', error);
@@ -183,11 +183,12 @@ export const findContributionByInviteLink = async (invite_link) => {
 };
 
 export const findContributionByID = async (id) => {
+  await DataStore.start();
   try {
     const contributions = await DataStore.query(Contribution, (c) =>
       c.id.eq(id)
     );
-    // setContribution(Contribution);
+
     return contributions;
   } catch (error) {
     console.error('Error fetching user contributions:', error);

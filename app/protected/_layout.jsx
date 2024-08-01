@@ -179,6 +179,7 @@ const ProtectedContent = () => {
               name="device_verify"
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="flow" options={{ headerShown: false }} />
           </Stack>
         </Authenticator>
       </View>

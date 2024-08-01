@@ -1,3 +1,13 @@
+type UserActivity @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  type: String
+  amount: Int
+  description: String
+  userId: ID
+  status: String
+  extra: AWSJSON
+}
+
 type UserNotifications @model @auth(rules: [{allow: public}]) {
   id: ID!
   type: String
@@ -33,6 +43,7 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   bank_details: AWSJSON
   device_name: String
   device_brand: String
+  verification_in_progress_id: Boolean
 }
 
 type UserCardDetails @model @auth(rules: [{allow: public}]) {

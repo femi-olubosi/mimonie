@@ -104,18 +104,20 @@ const Account = () => {
 
           const { body } = await restOperation.response;
           const json = await body.json();
-
+          console.log({ json });
           const res = await searchTree(json, 'FullName');
-
           if (
             isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
           ) {
-            await updateUserProfile({ is_nin_verified: true }, currentUser);
+            await updateUserProfile(
+              { is_nin_verified: true, verification_in_progress_id: false },
+              currentUser
+            );
 
             await createNotification(
               {
                 title: 'Verification Completed',
-                content: `You have successfully verified your identity. You now have access to all features of the app`,
+                content: `You have successfully verified your identity`,
                 type: 'verification',
                 userId: currentUser.userId,
                 read: false,
@@ -145,7 +147,7 @@ const Account = () => {
           await createNotification(
             {
               title: 'Verification Completed',
-              content: `Your BVN verification is complete and approved. You now have access to all features of the app`,
+              content: `Your BVN verification is complete and approved`,
               type: 'verification',
               userId: currentUser.userId,
               read: false,
@@ -253,27 +255,49 @@ const Account = () => {
                   {item.icon}
                   <Text style={styles.itemText}>{item.title}</Text>
                   {item.extra && item.title === 'Verify Identity' ? (
-                    <View
-                      style={{
-                        backgroundColor: userProfile.is_nin_verified
-                          ? 'green'
-                          : 'red',
-                        paddingHorizontal: 4,
-                        paddingVertical: 2,
-                        borderRadius: 5,
-                        marginLeft: 5,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          color: 'white',
-                        }}
-                      >
-                        {userProfile.is_nin_verified
-                          ? 'Verified'
-                          : 'Not Verified'}
-                      </Text>
+                    <View style={{ marginLeft: 5 }}>
+                      {userProfile?.verification_in_progress_id ? (
+                        <View
+                          style={{
+                            backgroundColor: '#ecb753',
+                            paddingHorizontal: 4,
+                            paddingVertical: 2,
+                            borderRadius: 5,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: 'black',
+                            }}
+                          >
+                            Pending
+                          </Text>
+                        </View>
+                      ) : (
+                        <View
+                          style={{
+                            backgroundColor: userProfile.is_nin_verified
+                              ? 'green'
+                              : 'red',
+                            paddingHorizontal: 4,
+                            paddingVertical: 2,
+                            borderRadius: 5,
+                            marginLeft: 5,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 10,
+                              color: 'white',
+                            }}
+                          >
+                            {userProfile.is_nin_verified
+                              ? 'Verified'
+                              : 'Not Verified'}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                   ) : null}
                   {item.extra && item.title === 'Verify BVN' ? (

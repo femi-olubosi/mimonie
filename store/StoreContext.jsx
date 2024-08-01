@@ -4,6 +4,7 @@ import {
   fetchUserProfile,
   getUserInfo,
 } from '@/api/user.service';
+import { DataStore } from 'aws-amplify/datastore';
 
 const StoreContext = createContext();
 
@@ -17,6 +18,9 @@ const StoreProvider = ({ children }) => {
   const [myContacts, setMyContacts] = useState([]);
   const [userProfile, setUserProfile] = useState({});
   const [notifications, setNotifications] = useState([]);
+  const [userActivities, setUserActivities] = useState([]);
+
+  DataStore.start();
 
   const toggleMode = () => {
     setIsDarkMode((prevMode) => !prevMode);
@@ -49,6 +53,8 @@ const StoreProvider = ({ children }) => {
     setMyContacts,
     notifications,
     setNotifications,
+    userActivities,
+    setUserActivities,
   };
 
   return (

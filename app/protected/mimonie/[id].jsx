@@ -10,7 +10,7 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, router } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
 import {
@@ -18,18 +18,18 @@ import {
   findContributionByID,
   joinContribution,
   updateContribution,
-} from '../../../api/contributions.service';
+} from '@/api/contributions.service';
 import {
   AntDesign,
   FontAwesome,
   Fontisto,
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
-import { capitalizeFirstLetter } from '../../../utils/capitalizeFirstLetter';
-import { statusCheck } from '../../../utils/statusCheck';
-import { naira } from '../../../constants/Currency';
-import { Colors } from '../../../constants/Colors';
-import ContactModal from '../../../components/ContactModal';
+import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
+import { statusCheck } from '@/utils/statusCheck';
+import { naira } from '@/constants/Currency';
+import { Colors } from '@/constants/Colors';
+import ContactModal from '@/components/ContactModal';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -57,6 +57,18 @@ const ContributionDetails = () => {
   }, [id]);
 
   const handleJoinContribution = async () => {
+    if (!userProfile.is_bvn_verified || !userProfile.is_nin_verified) {
+      Alert.alert('Please verify your identity');
+      return;
+    }
+
+    if (
+      parsed.some((participant) => participant.userId === currentUser.userId)
+    ) {
+      Alert.alert('Error', 'You are already a member of this contribution');
+      return;
+    }
+
     try {
       await joinContribution(
         contribution.id,
@@ -64,9 +76,18 @@ const ContributionDetails = () => {
         userProfile,
         setContributions
       );
-      const res = await findContributionByID(id);
-      setContribution(res[0]);
-      Alert.alert('Success', 'You have successfully joined the contribution');
+
+      Alert.alert(
+        'Success',
+        'You have successfully joined the contribution',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back(),
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (error) {
       Alert.alert('Error', error.message);
     }
@@ -75,7 +96,9 @@ const ContributionDetails = () => {
   const handleStartContribution = async () => {
     setIsLoading(true);
     try {
-      const start_date = null;
+      const date = new Date();
+      const start_date = date.toLocaleDateString('en-CA');
+
       const res = await updateContribution(contribution.id, { start_date });
       await fetchUserContributions(currentUser.userId, setContributions);
       Alert.alert(
@@ -94,6 +117,7 @@ const ContributionDetails = () => {
   useEffect(() => {
     if (contribution) {
       const parsedData = JSON.parse(contribution?.participant || ['[]']);
+
       setParsed(parsedData);
     }
   }, [contribution]);
@@ -255,7 +279,10 @@ const ContributionDetails = () => {
         <Pressable
           style={styles.fab}
           onPress={() => {
-            if (contribution?.status === 'running') {
+            if (
+              contribution?.status === 'running' ||
+              contribution?.status === 'completed'
+            ) {
               // Do nothing or handle if needed
             } else if (
               contribution?.participant.length === contribution?.num_of_month &&
@@ -270,7 +297,9 @@ const ContributionDetails = () => {
           }}
         >
           <Text style={styles.fabText}>
-            {contribution?.status === 'running'
+            {contribution?.status === 'completed'
+              ? 'Completed'
+              : contribution?.status === 'running'
               ? 'Running'
               : contribution?.participant?.length ===
                   contribution?.num_of_month &&
