@@ -136,7 +136,7 @@ const SignUp = (props) => {
           />
           <Pressable onPress={() => setShowPass(!showPass)}>
             <Feather
-              name={showPass ? 'eye-off' : 'eye'}
+              name={showPass ? 'eye' : 'eye-off'}
               size={20}
               color="gray"
             />
