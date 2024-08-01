@@ -1,3 +1,13 @@
+type UserActivity @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  type: String
+  amount: Int
+  description: String
+  userId: ID
+  status: String
+  extra: AWSJSON
+}
+
 type UserNotifications @model @auth(rules: [{allow: public}]) {
   id: ID!
   type: String

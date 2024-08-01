@@ -7,7 +7,7 @@ const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
 const makePaystackRequest = async (endpoint, method, data) => {
   const url = `https://api.paystack.co${endpoint}`;
   const headers = {
-    Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+    Authorization: `Bearer ${PAYSTACK_SECRET_KEY_LIVE}`,
     'Content-Type': 'application/json',
   };
 
@@ -31,14 +31,17 @@ const makePaystackRequest = async (endpoint, method, data) => {
 
 export const processContributions = async () => {
   try {
-    //     // Fetch all contributions
-    const contributions = await DataStore.query(Contribution);
+    // Fetch all contributions
+    const contributions = await DataStore.query(Contribution, (c) =>
+      c.status.eq('running')
+    );
 
-    //     // Iterate through each contribution
+    // Iterate through each contribution
     for (const contribution of contributions) {
-      const participants = contribution.participant.map(
-        (p) => JSON.parse(p)[0]
-      );
+      if (contribution.status !== 'running') continue;
+      const participants = JSON.parse(contribution?.participant || ['[]']);
+      console.log(participants);
+
       const inProgressParticipant = participants.find(
         (p) => p.status === 'in progress'
       );
@@ -50,62 +53,54 @@ export const processContributions = async () => {
         continue;
       }
 
+      let allPaymentsSuccessful = true;
+
       // Process payments for each participant
       for (const participant of participants) {
         if (participant.status !== 'in progress') {
-          // Deduct amount from participant
-          // const deductionSuccess = await processPayment(
-          //   participant.authId,
-          //   contribution.amount
-          // );
+          const flow = await chargeAndSplitPayment(
+            inProgressParticipant.subaccount_code,
+            participant,
+            contribution.amount
+          );
 
-          const flow = chargeAndSplitPayment(subaccount_code, participant);
-
-          if (flow) {
-            // Update participant's contributions
-            participant.contributions.push({
-              type: 'debit',
-              amount: contribution.amount,
-              status: 'success',
-            });
-
-            // Save user activity for deduction
+          if (flow.data.gateway_response === 'Approved') {
+            // Save user activity for Contribution
             await DataStore.save(
               new UserActivity({
-                userId: participant.id,
-                type: 'deduction',
+                userId: participant.userId,
+                type: 'contribution',
                 amount: contribution.amount,
+                description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
+              })
+            );
+
+            // Save user activity for Receiver
+            await DataStore.save(
+              new UserActivity({
+                userId: inProgressParticipant.userId,
+                type: 'collection',
+                amount: contribution.amount,
+                description: `Received payment from ${participant.name} for ${contribution.name}`,
               })
             );
           } else {
             console.error(
               `Failed to deduct amount from participant ${participant.id}`
             );
+            allPaymentsSuccessful = false;
           }
         }
       }
 
-      // Credit the amount to the in-progress participant
-      const creditSuccess = await processPayment(
-        inProgressParticipant.authId,
-        contribution.amount,
-        true
-      );
-
-      if (creditSuccess) {
-        // Update in-progress participant's contributions
-        inProgressParticipant.contributions.push({
-          type: 'credit',
-          amount: contribution.amount,
-          status: 'success',
-        });
-
-        // Save user activity for credit
+      if (allPaymentsSuccessful) {
+        // Save user activity for final Collection
         await DataStore.save(
           new UserActivity({
-            userId: inProgressParticipant.id,
+            userId: inProgressParticipant.userId,
             type: 'collection',
-            amount: contribution.amount,
+            amount: contribution.amount * (participants.length - 1),
+            description: `Final collection for ${contribution.name}`,
           })
         );
 
@@ -120,15 +115,18 @@ export const processContributions = async () => {
           nextParticipant.status = 'in progress';
         }
 
+        const allReceived = participants.every(
+          (participant) => participant.status === 'received'
+        );
+
         // Save the updated participants
         await DataStore.save(
           Contribution.copyOf(contribution, (updated) => {
-            updated.participant = participants.map((p) => JSON.stringify([p]));
+            updated.participant = participants;
+            if (allReceived) {
+              updated.status = 'completed';
+            }
           })
-        );
-      } else {
-        console.error(
-          `Failed to credit amount to participant ${inProgressParticipant.id}`
         );
       }
     }
@@ -137,63 +135,57 @@ export const processContributions = async () => {
   }
 };
 
-const processPayment = async (authId, amount, isCredit = false) => {
-  try {
-    const url = isCredit
-      ? 'https://api.paystack.co/transaction/charge_authorization'
-      : 'https://api.paystack.co/transaction/debit_authorization';
-    const response = await axios.post(
-      url,
-      {
-        authorization_code: authId,
-        amount: amount * 100, // Paystack expects the amount in kobo (Nigerian Naira subunit)
-        email: 'user@example.com', // Replace with the participant's email
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+export const chargeAndSplitPayment = async (
+  subaccount_code,
+  payer,
+  contribution
+) => {
+  // 5000 = 50 naira
+  // 500000 = 5000
+  // 2500000 = 25000
+  // const data = {
+  //   email: 'kaydee4love@gmail.com',
+  //   amount: '10000',
+  //   authorization_code: 'AUTH_i5253ae3fe',
+  //   // subaccount: 'ACCT_ut3hm8l9vmch3fg',
+  //   subaccount: 'ACCT_72r8ubywcve3chi',
+  //   transaction_charge: 50,
+  //   // bearer: 'subaccount',
+  //   metadata: JSON.stringify({
+  //     custom_fields: [
+  //       {
+  //         display_name: 'Test Name',
+  //         variable_name: 'Test Name',
+  //         value: 'Test Name',
+  //       },
+  //       {
+  //         display_name: 'Purpose',
+  //         variable_name: 'purpose',
+  //         value: 'Contribution',
+  //       },
+  //     ],
+  //   }),
+  // };
 
-    if (response.data.status === 'success') {
-      console.log(
-        `${
-          isCredit ? 'Credited' : 'Debited'
-        } ${amount} to/from authId: ${authId}`
-      );
-      return true;
-    } else {
-      console.error(
-        `Failed to ${isCredit ? 'credit' : 'debit'}: ${response.data.message}`
-      );
-      return false;
-    }
-  } catch (error) {
-    console.error('Error processing payment:', error);
-    return false;
-  }
-};
-
-export const chargeAndSplitPayment = async (subaccount_code, payer) => {
   const data = {
-    email: 'kaydee4love@gmail.com',
-    amount: '2000',
-    authorization_code: 'AUTH_72btv547',
-    subaccount: 'ACCT_ut3hm8l9vmch3fg',
-    // transaction_charge: 100,
-    bearer: 'subaccount',
+    email: payer.email,
+    amount: contribution.amount * 100,
+    authorization_code: payer.authorization_code,
+    subaccount: subaccount_code,
+    transaction_charge: 50000,
+    // bearer: 'subaccount',
+    metadata: JSON.stringify({
+      custom_fields: [
+        {
+          display_name: 'Purpose',
+          variable_name: 'purpose',
+          value: 'Contribution',
+        },
+      ],
+    }),
   };
 
-  // const data = {
-  //   email: payer.email,
-  //   amount: '2000',
-  //   authorization_code: payer.authorization_code,
-  //   subaccount: subaccount_code,
-  //   // transaction_charge: 100,
-  //   bearer: 'subaccount',
-  // };
+  // llzxfca1g6c235m
 
   return await makePaystackRequest(
     '/transaction/charge_authorization',
@@ -218,7 +210,6 @@ export const verifyTransaction = async (reference, currentUser) => {
     console.log('veri', responseData);
     if (responseData.status && responseData.data) {
       const { authorization, customer } = responseData.data;
-
       const previousCards = await DataStore.query(UserCardDetails, (c) =>
         c.userId.eq(currentUser.userId)
       );
@@ -250,23 +241,25 @@ export const verifyTransaction = async (reference, currentUser) => {
         c.participant_ids.contains(currentUser.userId)
       );
 
-      await Promise.all(
-        userContributions.map(async (contribution) => {
-          const participants = JSON.parse(contribution.participant);
+      if (userContributions.length > 0) {
+        await Promise.all(
+          userContributions.map(async (contribution) => {
+            const participants = JSON.parse(contribution.participant);
 
-          const updatedParticipants = participants.map((participant) =>
-            participant.userId === currentUser.userId
-              ? { ...participant, auth_url: newCard.authorization_code }
-              : participant
-          );
+            const updatedParticipants = participants.map((participant) =>
+              participant.userId === currentUser.userId
+                ? { ...participant, auth_url: authorization.authorization_code }
+                : participant
+            );
 
-          await DataStore.save(
-            Contribution.copyOf(contribution, (updated) => {
-              updated.participant = JSON.stringify(updatedParticipants);
-            })
-          );
-        })
-      );
+            await DataStore.save(
+              Contribution.copyOf(contribution, (updated) => {
+                updated.participant = JSON.stringify(updatedParticipants);
+              })
+            );
+          })
+        );
+      }
 
       return authorization;
     } else {
@@ -338,6 +331,7 @@ export const fetchBanks = async () => {
     throw error;
   }
 };
+
 export const fetchCountries = async () => {
   try {
     const response = await fetch('https://restcountries.com/v3.1/all');

@@ -6,6 +6,44 @@ import { LazyLoading, LazyLoadingDisabled, AsyncCollection } from "@aws-amplify/
 
 
 
+type EagerUserActivity = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserActivity, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly type?: string | null;
+  readonly amount?: number | null;
+  readonly description?: string | null;
+  readonly userId?: string | null;
+  readonly status?: string | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyUserActivity = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserActivity, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly type?: string | null;
+  readonly amount?: number | null;
+  readonly description?: string | null;
+  readonly userId?: string | null;
+  readonly status?: string | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UserActivity = LazyLoading extends LazyLoadingDisabled ? EagerUserActivity : LazyUserActivity
+
+export declare const UserActivity: (new (init: ModelInit<UserActivity>) => UserActivity) & {
+  copyOf(source: UserActivity, mutator: (draft: MutableModel<UserActivity>) => MutableModel<UserActivity> | void): UserActivity;
+}
+
 type EagerUserNotifications = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<UserNotifications, 'id'>;

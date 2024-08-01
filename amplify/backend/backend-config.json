@@ -117,6 +117,11 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "contributionTrigger": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "mimonief71364a4": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -143,6 +148,22 @@
         {
           "category": "function",
           "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionTrigger_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionTrigger"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionTrigger_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionTrigger"
         }
       ]
     },

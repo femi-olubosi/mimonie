@@ -24,22 +24,24 @@ const kyc = () => {
     setUserProfile,
     currentUser,
   } = useGlobalContext();
+  const [btnActive, setBtnActive] = useState(false);
 
-  useEffect(() => {
-    if (userProfile.is_nin_verified) {
-      Alert.alert(
-        'Verification',
-        'This user is already verified',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ],
-        { cancelable: false }
-      );
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (userProfile.is_nin_verified) {
+  //     setIsLoading(false);
+  //     Alert.alert(
+  //       'Verification',
+  //       'This user is already verified',
+  //       [
+  //         {
+  //           text: 'OK',
+  //           onPress: () => router.back(),
+  //         },
+  //       ],
+  //       { cancelable: false }
+  //     );
+  //   }
+  // }, []);
 
   const handleFinish = async () => {
     await updateUserProfile(
@@ -62,11 +64,19 @@ const kyc = () => {
     router.push('/protected/account');
   };
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setBtnActive(true);
+    }, 360000);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   return (
     <PageView title={'Verification'} route={'/protected/account'}>
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          {!userProfile.is_nin_verified ? (
+          {userProfile.is_nin_verified ? (
             <WebView
               source={{
                 uri: 'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0',
@@ -81,16 +91,19 @@ const kyc = () => {
             />
           ) : null}
         </ScrollView>
-        <View style={{ padding: 20 }}>
-          <Button
-            title={'Upload Completed'}
-            color={Colors.pri}
-            onPress={handleFinish}
-          />
-          <Text style={{ fontSize: 12, textAlign: 'center' }}>
-            Click only if you have completed the upload process
-          </Text>
-        </View>
+        {btnActive ? (
+          <View style={{ padding: 20 }}>
+            <Button
+              title={'Upload Completed'}
+              color={Colors.pri}
+              onPress={handleFinish}
+              disabled={!btnActive}
+            />
+            <Text style={{ fontSize: 12, textAlign: 'center' }}>
+              Click only if you have completed the upload process
+            </Text>
+          </View>
+        ) : null}
       </View>
     </PageView>
   );

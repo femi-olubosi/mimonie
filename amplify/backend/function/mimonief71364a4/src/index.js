@@ -1,16 +1,23 @@
 /**
  * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
+
+const AWS = require('aws-sdk');
+const { processContributions } = require('../../../../../api/payment.service');
+
 exports.handler = async (event) => {
   console.log(`EVENT: ${JSON.stringify(event)}`);
+  const res = await processContributions();
   return {
     statusCode: 200,
-    //  Uncomment below to enable CORS requests
-    //  headers: {
-    //      "Access-Control-Allow-Origin": "*",
-    //      "Access-Control-Allow-Headers": "*"
-    //  },
-    body: JSON.stringify(event.body),
-    // user: JSON.stringify(event.requestContext.identity.caller),
+
+    body: JSON.stringify({
+      message: 'Success',
+      data: res,
+    }),
   };
+};
+
+exports.handler.event = {
+  schedule: 'cron(5 21 * * ? )',
 };
