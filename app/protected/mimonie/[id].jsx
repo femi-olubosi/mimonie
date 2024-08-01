@@ -40,20 +40,7 @@ const ContributionDetails = () => {
   const [parsed, setParsed] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const res = await findContributionByID(id);
-
-        setContribution(res[0]);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+    findContributionByID(id, setContribution);
   }, [id]);
 
   const handleJoinContribution = async () => {
@@ -122,7 +109,9 @@ const ContributionDetails = () => {
     }
   }, [contribution]);
 
-  const next = parsed?.filter((e) => e.status !== 'recieved');
+  const next = parsed?.find((e) => e.status !== 'received');
+
+  console.log(next);
 
   return (
     <PageView title={'Contribution Details'}>
@@ -196,7 +185,7 @@ const ContributionDetails = () => {
             <Text style={styles.label}>Contributors</Text>
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ rowGap: 8 }}
+              contentContainerStyle={{ rowGap: 8, paddingBottom: 10 }}
             >
               {parsed?.map((eN, id) => {
                 // const eN = JSON.parse(e)[0];
@@ -235,12 +224,12 @@ const ContributionDetails = () => {
                         <MaterialCommunityIcons
                           name="progress-check"
                           size={14}
-                          color="yellow"
+                          color="#ecb753"
                         />
                       ) : (
                         <AntDesign name="minussquareo" size={14} color="gray" />
                       )}
-                      {next[0].userId === eN.userId ? (
+                      {next?.userId === eN.userId ? (
                         <Text style={{ color: 'lightgreen', fontFamily: 'ir' }}>
                           Next
                         </Text>
