@@ -49,6 +49,14 @@ const ContributionDetails = () => {
       return;
     }
 
+    if (!userProfile.auth_url) {
+      Alert.alert(
+        'Sorry!!',
+        'You cannot create contribution at the moment. Add a card to continue'
+      );
+      return;
+    }
+
     if (
       parsed.some((participant) => participant.userId === currentUser.userId)
     ) {
@@ -203,14 +211,8 @@ const ContributionDetails = () => {
                         alignItems: 'center',
                       }}
                     >
-                      {eN.picture ? (
-                        <Image
-                          source={{ uri: eN.picture }}
-                          style={{ width: 20, height: 20, borderRadius: 10 }}
-                        />
-                      ) : (
-                        <FontAwesome name="user-circle-o" color={'gray'} />
-                      )}
+                      <FontAwesome name="user-circle-o" color={'gray'} />
+
                       <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
                       {eN.status === 'received' ? (
                         <Fontisto

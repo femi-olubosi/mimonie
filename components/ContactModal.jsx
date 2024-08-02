@@ -18,7 +18,7 @@ import { sendSMSInvite } from '../api/invite.service';
 const ContactModal = ({ visible, setVisible, invite_link }) => {
   const [contactSearch, setContactSearch] = useState('');
   const { myContacts } = useGlobalContext();
-  console.log('invite', invite_link);
+
   const handleSendInvite = async (item) => {
     await sendSMSInvite(item, invite_link);
   };
