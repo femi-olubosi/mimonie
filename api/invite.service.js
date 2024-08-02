@@ -1,9 +1,8 @@
 import * as SMS from 'expo-sms';
 import { Alert } from 'react-native';
 
-export const sendSMSInvite = async (contact, contributionId) => {
-  const contributionLink = `myapp://contribution/${contributionId}`;
-  const message = `You are invited to join a contribution. Click the link to join: ${contributionLink}`;
+export const sendSMSInvite = async (contact, inviteLink) => {
+  const message = `You are invited to join a contribution. Click the link to join: ${inviteLink}`;
 
   const isAvailable = await SMS.isAvailableAsync();
   if (isAvailable) {

@@ -26,9 +26,8 @@ import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
-import { createSubAccount, getPaystackCustomer } from '@/api/payment.service';
-import { callbackUrl } from '@/utils/callbackUrl';
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+
+import { FontAwesome } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { notificationIcon } from '@/utils/notificationsIcon';
 import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
@@ -164,7 +163,7 @@ export default function HomeScreen() {
                 paddingVertical: 20,
               }}
             >
-              {notifications.map((e, index) => {
+              {notifications.map((e: any, index: any) => {
                 return (
                   <View
                     key={index}

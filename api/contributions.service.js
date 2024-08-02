@@ -14,7 +14,28 @@ export const fetchUserContributions = async (userId, setContributions) => {
     );
 
     setContributions(sorted);
-    return userContributions;
+
+    // Set up real-time subscription
+    const subscription = DataStore.observe(Contribution).subscribe(
+      async (msg) => {
+        if (
+          msg.opType === 'INSERT' ||
+          msg.opType === 'UPDATE' ||
+          msg.opType === 'DELETE'
+        ) {
+          const updatedContributions = await DataStore.query(
+            Contribution,
+            (c) => c.participant_ids.contains(userId)
+          );
+          const sortedUpdated = updatedContributions.sort((a, b) =>
+            a.createdAt > b.createdAt ? -1 : 1
+          );
+          setContributions(sortedUpdated);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   } catch (error) {
     console.error('Error fetching user contributions:', error);
     return [];
@@ -45,7 +66,7 @@ export const createContribution = async (
         title: details.contributionName,
         category: details.groupName,
         // start_date: details.date,
-        invite_link: `https://app.mimonie.com/${
+        invite_link: `https://app.mimonie.net/${
           currentUser.userId
         }-${details.contributionName.split(' ').join('-')}`,
         contributiongroupsID: details.groupId,
@@ -182,14 +203,31 @@ export const findContributionByInviteLink = async (invite_link) => {
   }
 };
 
-export const findContributionByID = async (id) => {
+export const findContributionByID = async (id, setContribution) => {
   await DataStore.start();
   try {
     const contributions = await DataStore.query(Contribution, (c) =>
       c.id.eq(id)
     );
 
-    return contributions;
+    setContribution(contributions[0]);
+
+    // Set up real-time subscription
+    const subscription = DataStore.observe(Contribution, id).subscribe(
+      async (msg) => {
+        if (msg.opType === 'UPDATE') {
+          const updatedContributions = await DataStore.query(
+            Contribution,
+            (c) => c.id.eq(id)
+          );
+
+          setContribution(updatedContributions[0]);
+        }
+      }
+    );
+
+    // Return a cleanup function to unsubscribe
+    return () => subscription.unsubscribe();
   } catch (error) {
     console.error('Error fetching user contributions:', error);
     return [];
