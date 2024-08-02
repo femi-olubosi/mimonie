@@ -111,8 +111,6 @@ const ContributionDetails = () => {
 
   const next = parsed?.find((e) => e.status !== 'received');
 
-  console.log(next);
-
   return (
     <PageView title={'Contribution Details'}>
       <View style={styles.container}>
@@ -300,7 +298,11 @@ const ContributionDetails = () => {
           </Text>
         </Pressable>
       </View>
-      <ContactModal visible={visible} setVisible={setVisible} />
+      <ContactModal
+        visible={visible}
+        setVisible={setVisible}
+        invite_link={contribution.invite_link}
+      />
     </PageView>
   );
 };

@@ -34,6 +34,7 @@ const CreateContribution = () => {
   const [contactVisible, setContactVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [newContribution, setNewContribution] = useState({});
 
   const [date, setDate] = useState(new Date());
   const {
@@ -78,12 +79,13 @@ const CreateContribution = () => {
     }
     setIsLoading(true);
     try {
-      await createContribution(
+      const res = await createContribution(
         details,
         setContributions,
         currentUser,
         userProfile
       );
+      setNewContribution(res);
       setModalVisible(true);
     } catch (error) {
       console.error(error);
@@ -199,7 +201,7 @@ const CreateContribution = () => {
                 Your contribution has been created successfully.
               </Text>
               <Text style={styles.modalText}>
-                Invite friends from your contact to join
+                Invite friends from your contact to join {newContribution.title}
               </Text>
               <Pressable style={styles.inviteLink} onPress={handleInvite}>
                 <Text>Click to invite friends</Text>
@@ -216,7 +218,11 @@ const CreateContribution = () => {
             </View>
           </View>
         </Modal>
-        <ContactModal visible={contactVisible} setVisible={setContactVisible} />
+        <ContactModal
+          visible={contactVisible}
+          setVisible={setContactVisible}
+          invite_link={newContribution.invite_link}
+        />
       </View>
     </PageView>
   );

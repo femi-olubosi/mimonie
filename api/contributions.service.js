@@ -66,7 +66,7 @@ export const createContribution = async (
         title: details.contributionName,
         category: details.groupName,
         // start_date: details.date,
-        invite_link: `https://app.mimonie.com/${
+        invite_link: `https://app.mimonie.net/${
           currentUser.userId
         }-${details.contributionName.split(' ').join('-')}`,
         contributiongroupsID: details.groupId,
