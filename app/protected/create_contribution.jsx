@@ -63,6 +63,14 @@ const CreateContribution = () => {
       return;
     }
 
+    if (!userProfile.auth_url) {
+      Alert.alert(
+        'Sorry!!',
+        'You cannot create contribution at the moment. Add a card to continue'
+      );
+      return;
+    }
+
     const details = {
       contributionName,
       groupName: selectedValue.title,
@@ -113,7 +121,7 @@ const CreateContribution = () => {
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
-        {!userProfile.is_bvn_verified ? (
+        {!isVerified ? (
           <View
             style={{
               backgroundColor: 'red',
@@ -177,12 +185,10 @@ const CreateContribution = () => {
           style={[
             styles.button,
             {
-              backgroundColor: userProfile.is_bvn_verified
-                ? Colors.pri
-                : 'gray',
+              backgroundColor: isVerified ? Colors.pri : 'gray',
             },
           ]}
-          disabled={!userProfile.is_bvn_verified}
+          disabled={!isVerified}
           onPress={handleConfirm}
         >
           <Text style={styles.buttonText}>Confirm</Text>

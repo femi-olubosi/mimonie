@@ -77,6 +77,7 @@ export default function HomeScreen() {
     fetchUserNotification(currentUser.userId, setNotifications);
   }, [currentUser]);
 
+  console.log(userProfile);
   // useEffect(() => {
   //   if (!isLoading) {
   //     if (currentUser.phone_number_verified !== 'true' && !alertShown) {
