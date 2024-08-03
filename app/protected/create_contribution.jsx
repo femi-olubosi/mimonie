@@ -141,7 +141,7 @@ const CreateContribution = () => {
             >
               You cannot create a contribution at the moment. Please complete
               your identity verification
-              <Link href={'/protected/kyc'}>
+              <Link href={'/protected/account'}>
                 <Text
                   style={{
                     color: 'white',

@@ -44,7 +44,12 @@ const ContributionDetails = () => {
   }, [id]);
 
   const handleJoinContribution = async () => {
-    if (!userProfile.is_bvn_verified || !userProfile.is_nin_verified) {
+    if (!userProfile.is_bvn_verified) {
+      Alert.alert('Please verify your bvn');
+      return;
+    }
+
+    if (!userProfile.is_nin_verified) {
       Alert.alert('Please verify your identity');
       return;
     }
