@@ -68,7 +68,7 @@ const Cards = ({ contributions }) => {
                   <Text
                     style={{ fontSize: 12, color: 'white', fontFamily: 'isb' }}
                   >
-                    {item.name} by: {item.owner}
+                    {item.name} by: {item.owner.split(' ')[0]}
                   </Text>
                   <View style={{ rowGap: 2 }}>
                     <Text
@@ -79,7 +79,7 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
                     >
-                      Duration: {item.num_of_month} months
+                      Duration: {item.num_of_month} {item.currently_at}
                     </Text>
                     <Text
                       style={{
@@ -92,7 +92,7 @@ const Cards = ({ contributions }) => {
                       <FontAwesome6 name="naira-sign" size={12} color="white" />
                       {item.target.toLocaleString('en-US')}
                     </Text>
-                    <Text
+                    {/* <Text
                       style={[
                         styles.text,
                         { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
@@ -102,7 +102,7 @@ const Cards = ({ contributions }) => {
                       {item.status !== 'running'
                         ? ' (Not running yet)'
                         : getMonthsAfter(item.start_date, item.num_of_month)}
-                    </Text>
+                    </Text> */}
                   </View>
                   <View
                     style={{
@@ -139,16 +139,7 @@ const Cards = ({ contributions }) => {
                     <FontAwesome6 name="naira-sign" size={16} color="white" />
                     {item.amount.toLocaleString('en-US')}
                   </Text>
-                  <Text
-                    style={[styles.text, { fontSize: 10, fontFamily: 'ir' }]}
-                  >
-                    Due Date:
-                    {item.status !== 'running'
-                      ? ' Not running'
-                      : ` 28th  ${new Date().toLocaleString('en-US', {
-                          month: 'long',
-                        })}`}
-                  </Text>
+                  <NextContributionDay contribution={item} />
                 </ThemedView>
 
                 <Image
@@ -175,6 +166,57 @@ const Cards = ({ contributions }) => {
 };
 
 export default Cards;
+
+const NextContributionDay = ({ contribution }) => {
+  const getNextContributionDay = () => {
+    if (contribution?.status !== 'running') {
+      return 'Not running';
+    }
+
+    const today = new Date();
+    let nextContributionDay;
+
+    switch (contribution?.currently_at) {
+      case 'days':
+        nextContributionDay = new Date(today);
+        nextContributionDay.setDate(today.getDate() + 1);
+        break;
+      case 'weeks':
+        nextContributionDay = new Date(today);
+        nextContributionDay.setDate(
+          today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)
+        );
+        break;
+      case 'months':
+        nextContributionDay = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          28
+        );
+        if (today.getDate() > 28) {
+          nextContributionDay.setMonth(today.getMonth() + 1);
+        }
+        break;
+      default:
+        nextContributionDay = 'Invalid contribution period';
+    }
+
+    return typeof nextContributionDay === 'string'
+      ? nextContributionDay
+      : nextContributionDay.toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'long',
+        });
+  };
+
+  return (
+    <View>
+      <Text style={[styles.text, { fontSize: 10, fontFamily: 'ir' }]}>
+        Due Date: {getNextContributionDay()}
+      </Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

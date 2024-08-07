@@ -22,8 +22,8 @@ const express = require('express');
 const ddbClient = new DynamoDBClient({ region: process.env.TABLE_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
-// let tableName = 'dynamoc73ffc4d';
-let tableName = 'Contribution-d4itlx42uzhtrctybtkmaxruya';
+let tableName = 'dynamoc73ffc4d';
+// let tableName = 'Contribution-d4itlx42uzhtrctybtkmaxruya';
 if (process.env.ENV && process.env.ENV !== 'NONE') {
   tableName = tableName + '-' + process.env.ENV;
 }
@@ -109,27 +109,27 @@ app.post(path, async function (req, res) {
  ***************************************/
 
 // Add a new route for Smile Identity callback
-// app.post('/smileid-callback', async function (req, res) {
-//   let responseMessage = 'Callback received';
+app.post('/smileid-callback', async function (req, res) {
+  let responseMessage = 'Callback received';
 
-//   try {
-//     const kycResponse = req.body;
-//     console.log('Smile Identity Callback:', kycResponse);
+  try {
+    const kycResponse = req.body;
+    console.log('Smile Identity Callback:', kycResponse);
 
-//     const params = {
-//       TableName: tableName,
-//       Item: kycResponse,
-//     };
+    const params = {
+      TableName: tableName,
+      Item: kycResponse,
+    };
 
-//     await ddbDocClient.send(new PutCommand(params));
-//     responseMessage = 'KYC data stored successfully';
-//   } catch (error) {
-//     console.error('Error storing KYC response:', error);
-//     responseMessage = error || 'Error storing KYC response';
-//   }
+    await ddbDocClient.send(new PutCommand(params));
+    responseMessage = 'KYC data stored successfully';
+  } catch (error) {
+    console.error('Error storing KYC response:', error);
+    responseMessage = error || 'Error storing KYC response';
+  }
 
-//   res.status(200).json({ message: responseMessage });
-// });
+  res.status(200).json({ message: responseMessage });
+});
 
 app.listen(3000, function () {
   console.log('App started');

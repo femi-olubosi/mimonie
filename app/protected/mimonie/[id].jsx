@@ -99,10 +99,13 @@ const ContributionDetails = () => {
       const date = new Date();
       const start_date = date.toLocaleDateString('en-CA');
 
-      const res = await updateContribution(contribution.id, { start_date });
-      await fetchUserContributions(currentUser.userId, setContributions);
+      const res = await updateContribution(contribution.id, {
+        start_date: start_date,
+        status: 'running',
+      });
+      await findContributionByID(id, setContribution);
       Alert.alert(
-        'Update Success',
+        'Contribution Started Successfully',
         `${res.name} contribution updated successfully}`
       );
     } catch (error) {
@@ -115,9 +118,16 @@ const ContributionDetails = () => {
   const startDate = new Date(contribution?.start_date);
 
   useEffect(() => {
-    if (contribution) {
-      const parsedData = JSON.parse(contribution?.participant || ['[]']);
+    const safeParseJSON = (data, fallback) => {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return fallback;
+      }
+    };
 
+    if (contribution) {
+      const parsedData = safeParseJSON(contribution?.participant, []);
       setParsed(parsedData);
     }
   }, [contribution]);
@@ -246,17 +256,7 @@ const ContributionDetails = () => {
               })}
             </ScrollView>
           </View>
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Next Contribution Day</Text>
-            <Text style={styles.value}>
-              {contribution?.status !== 'running'
-                ? ' Not running'
-                : ` 28th  ${new Date().toLocaleString('en-US', {
-                    month: 'long',
-                  })}`}
-            </Text>
-          </View>
-
+          <NextContributionDay contribution={contribution} />
           <View style={styles.detailContainer}>
             <Text style={styles.label}>User role</Text>
             <Text style={styles.value}>
@@ -270,40 +270,47 @@ const ContributionDetails = () => {
             <Text style={styles.value}>{contribution?.owner}</Text>
           </View>
         </ScrollView>
-        <Pressable
-          style={styles.fab}
-          onPress={() => {
-            if (
-              contribution?.status === 'running' ||
-              contribution?.status === 'completed'
-            ) {
-              // Do nothing or handle if needed
-            } else if (
-              contribution?.participant.length === contribution?.num_of_month &&
-              contribution?.owner === userProfile?.name
-            ) {
-              handleStartContribution();
-            } else if (contribution?.owner === userProfile?.name) {
-              setVisible(!visible);
-            } else {
-              handleJoinContribution();
-            }
-          }}
-        >
-          <Text style={styles.fabText}>
-            {contribution?.status === 'completed'
-              ? 'Completed'
-              : contribution?.status === 'running'
-              ? 'Running'
-              : contribution?.participant?.length ===
-                  contribution?.num_of_month &&
+        {parsed.some(
+          (participant) => participant.userId === currentUser.userId
+        ) && contribution?.owner !== userProfile?.name ? null : (
+          <Pressable
+            style={styles.fab}
+            onPress={() => {
+              if (
+                contribution?.status === 'running' ||
+                contribution?.status === 'completed'
+              ) {
+                // Do nothing or handle if needed
+              } else if (
+                parsed?.length === contribution?.num_of_month &&
                 contribution?.owner === userProfile?.name
-              ? 'Start'
-              : contribution?.owner === userProfile?.name
-              ? 'Invite'
-              : 'Join'}
-          </Text>
-        </Pressable>
+              ) {
+                handleStartContribution();
+              } else if (
+                parsed?.length !== contribution?.num_of_month &&
+                contribution?.owner === userProfile?.name
+              ) {
+                setVisible(!visible);
+              } else {
+                handleJoinContribution();
+              }
+            }}
+          >
+            <Text style={styles.fabText}>
+              {contribution?.status === 'completed'
+                ? 'Completed'
+                : contribution?.status === 'running'
+                ? 'Running'
+                : parsed?.length === contribution?.num_of_month &&
+                  contribution?.owner === userProfile?.name
+                ? 'Start'
+                : parsed?.length !== contribution?.num_of_month &&
+                  contribution?.owner === userProfile?.name
+                ? 'Invite'
+                : 'Join'}
+            </Text>
+          </Pressable>
+        )}
       </View>
       <ContactModal
         visible={visible}
@@ -311,6 +318,56 @@ const ContributionDetails = () => {
         invite_link={contribution.invite_link}
       />
     </PageView>
+  );
+};
+
+const NextContributionDay = ({ contribution }) => {
+  const getNextContributionDay = () => {
+    if (contribution?.status !== 'running') {
+      return 'Not running';
+    }
+
+    const today = new Date();
+    let nextContributionDay;
+
+    switch (contribution?.currently_at) {
+      case 'days':
+        nextContributionDay = new Date(today);
+        nextContributionDay.setDate(today.getDate() + 1);
+        break;
+      case 'weeks':
+        nextContributionDay = new Date(today);
+        nextContributionDay.setDate(
+          today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)
+        );
+        break;
+      case 'months':
+        nextContributionDay = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          28
+        );
+        if (today.getDate() > 28) {
+          nextContributionDay.setMonth(today.getMonth() + 1);
+        }
+        break;
+      default:
+        nextContributionDay = 'Invalid contribution period';
+    }
+
+    return typeof nextContributionDay === 'string'
+      ? nextContributionDay
+      : nextContributionDay.toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'long',
+        });
+  };
+
+  return (
+    <View style={styles.detailContainer}>
+      <Text style={styles.label}>Next Contribution Day</Text>
+      <Text style={styles.value}>{getNextContributionDay()}</Text>
+    </View>
   );
 };
 

@@ -1,14 +1,16 @@
 export const statusCheck = (status) => {
   switch (status) {
     case 'open':
-      return 'green';
+      return '#FFC107';
     case 'running':
-      return 'blue';
+      return '#28a745';
     case 'closed':
-      return 'red';
+      return '#dc3545';
     case 'locked':
-      return 'grey';
+      return '#6c757d';
+    case 'completed':
+      return '#17a2b8';
     default:
-      return 'black';
+      return '#000000';
   }
 };

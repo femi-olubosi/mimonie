@@ -147,7 +147,7 @@ const Options = () => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => router.push('/protected/flow')}
+        // onPress={() => router.push('/protected/flow')}
       >
         <AntDesign name="question" size={25} color="black" />
         <Text style={{ fontSize: 14, fontFamily: 'im' }}>Help/FAQ</Text>
