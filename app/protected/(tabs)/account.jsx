@@ -132,7 +132,9 @@ const Account = () => {
       }
       const fetchCustomer = async () => {
         const res = await getPaystackCustomer(userProfile.customer_code);
-        if (res.data.identified) {
+
+        // if (res.data.identified) {
+        if (true) {
           const subacc = await createSubAccount(userProfile);
 
           await updateUserProfile(
@@ -159,10 +161,15 @@ const Account = () => {
       if (!userProfile.is_nin_verified) {
         getSmileStatus();
       }
-      if (!userProfile.is_bvn_verified) {
+      // if (!userProfile.is_bvn_verified) {
+      if (userProfile.verification_in_progress) {
         fetchCustomer();
       }
-    }, [userProfile.is_bvn_verified, userProfile.is_nin_verified])
+    }, [
+      userProfile.is_bvn_verified,
+      userProfile.is_nin_verified,
+      userProfile.subaccount_code,
+    ])
   );
 
   return (
