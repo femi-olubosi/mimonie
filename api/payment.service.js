@@ -64,7 +64,6 @@ export const processContributions = async () => {
             contribution.amount
           );
 
-          console.log('flow', flow);
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
             // Save user activity for Contribution
@@ -104,7 +103,6 @@ export const processContributions = async () => {
       }
 
       if (allPaymentsSuccessful) {
-        console.log('payment successfull');
         // Save user activity for final Collection
         await DataStore.save(
           new UserActivity({
