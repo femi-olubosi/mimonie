@@ -13,8 +13,18 @@ import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useGlobalContext } from '@/store/StoreContext';
+
+const safeParseJSON = (data, fallback) => {
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return fallback;
+  }
+};
 
 const Cards = ({ contributions }) => {
+  const { userProfile } = useGlobalContext();
   return (
     <ThemedView style={styles.container}>
       {contributions.length === 0 ? (
@@ -48,6 +58,10 @@ const Cards = ({ contributions }) => {
           data={contributions}
           renderItem={({ item }) => {
             const num_of_contributions = 0;
+            const participants = safeParseJSON(item?.participant, []);
+            const currentParticipant = participants?.find(
+              (e) => e.userId === userProfile.userId
+            );
             return (
               <Pressable
                 style={[
@@ -113,16 +127,18 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'ir' }]}
                     >
-                      {num_of_contributions} contribution(s) so far
+                      {currentParticipant.contributions} contribution(s) so far
                     </Text>
                     <Text
                       style={[styles.text, { fontSize: 32, fontFamily: 'esb' }]}
                     >
                       <FontAwesome6 name="naira-sign" size={28} color="white" />
-                      {(num_of_contributions * item.amount).toLocaleString(
-                        'en-US',
-                        { minimumFractionDigits: 2, maximumFractionDigits: 2 }
-                      )}
+                      {(
+                        currentParticipant.contributions * item.amount
+                      ).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </Text>
                   </View>
                   <Text

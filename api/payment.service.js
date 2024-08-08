@@ -64,7 +64,9 @@ export const processContributions = async () => {
             contribution.amount
           );
 
-          if (flow.data.gateway_response === 'Approved') {
+          console.log('flow', flow);
+          if (flow.data.status === 'success') {
+            participant.contributions = (participant.contributions || 0) + 1;
             // Save user activity for Contribution
             await DataStore.save(
               new UserActivity({
@@ -85,15 +87,24 @@ export const processContributions = async () => {
               })
             );
           } else {
-            console.error(
-              `Failed to deduct amount from participant ${participant.id}`
+            await DataStore.save(
+              new UserActivity({
+                userId: participant.userId,
+                type: 'contribution',
+                amount: contribution.amount,
+                description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. Please fund your account`,
+              })
             );
+            // console.error(
+            //   `Failed to deduct amount from participant ${participant.name}`
+            // );
             allPaymentsSuccessful = false;
           }
         }
       }
 
       if (allPaymentsSuccessful) {
+        console.log('payment successfull');
         // Save user activity for final Collection
         await DataStore.save(
           new UserActivity({
@@ -169,10 +180,11 @@ export const chargeAndSplitPayment = async (
 
   const data = {
     email: payer.email,
-    amount: contribution.amount * 100,
-    authorization_code: payer.authorization_code,
+    // amount: `${contribution.amount * 100}`,
+    amount: 10000,
+    authorization_code: payer.auth_url,
     subaccount: subaccount_code,
-    transaction_charge: 50000,
+    transaction_charge: 500,
     // bearer: 'subaccount',
     metadata: JSON.stringify({
       custom_fields: [
