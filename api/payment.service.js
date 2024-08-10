@@ -29,16 +29,52 @@ const makePaystackRequest = async (endpoint, method, data) => {
   }
 };
 
+export const calculateDifference = (startDate, variant) => {
+  const start = new Date(startDate);
+  const now = new Date();
+  let difference;
+
+  switch (variant) {
+    case 'days':
+      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+      break;
+    case 'weeks':
+      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+      break;
+    case 'months':
+      difference =
+        (now.getFullYear() - start.getFullYear()) * 12 +
+        now.getMonth() -
+        start.getMonth();
+      break;
+    default:
+      difference = 0;
+  }
+
+  return difference;
+};
+
 export const processContributions = async () => {
   try {
     // Fetch all contributions
     const contributions = await DataStore.query(Contribution, (c) =>
       c.status.eq('running')
     );
+    console.log(contributions);
 
     // Iterate through each contribution
     for (const contribution of contributions) {
-      if (contribution.status !== 'running') continue;
+      const currentCount = calculateDifference(
+        contribution.start_date,
+        contribution.variant
+      );
+      contribution.current_count = currentCount;
+
+      if (
+        contribution.status !== 'running' ||
+        contribution.currently_at === currentCount
+      )
+        continue;
       const participants = JSON.parse(contribution?.participant || ['[]']);
       console.log(participants);
 
@@ -57,7 +93,10 @@ export const processContributions = async () => {
 
       // Process payments for each participant
       for (const participant of participants) {
-        if (participant.status !== 'in progress') {
+        if (
+          participant.status !== 'in progress' &&
+          contribution.current_count > participant.contributions
+        ) {
           const flow = await chargeAndSplitPayment(
             inProgressParticipant.subaccount_code,
             participant,
@@ -83,6 +122,12 @@ export const processContributions = async () => {
                 type: 'collection',
                 amount: contribution.amount,
                 description: `Received payment from ${participant.name} for ${contribution.name}`,
+              })
+            );
+
+            await DataStore.save(
+              Contribution.copyOf(contribution, (updated) => {
+                updated.participant = participants;
               })
             );
           } else {
@@ -144,42 +189,16 @@ export const processContributions = async () => {
   }
 };
 
-export const chargeAndSplitPayment = async (
-  subaccount_code,
-  payer,
-  contribution
-) => {
-  // 5000 = 50 naira
-  // 500000 = 5000
-  // 2500000 = 25000
-  // const data = {
-  //   email: 'kaydee4love@gmail.com',
-  //   amount: '10000',
-  //   authorization_code: 'AUTH_i5253ae3fe',
-  //   // subaccount: 'ACCT_ut3hm8l9vmch3fg',
-  //   subaccount: 'ACCT_72r8ubywcve3chi',
-  //   transaction_charge: 50,
-  //   // bearer: 'subaccount',
-  //   metadata: JSON.stringify({
-  //     custom_fields: [
-  //       {
-  //         display_name: 'Test Name',
-  //         variable_name: 'Test Name',
-  //         value: 'Test Name',
-  //       },
-  //       {
-  //         display_name: 'Purpose',
-  //         variable_name: 'purpose',
-  //         value: 'Contribution',
-  //       },
-  //     ],
-  //   }),
-  // };
+export const testTrigger = () => {
+  console.log('triggered');
+  return 'Triggered';
+};
 
+export const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
   const data = {
     email: payer.email,
-    // amount: `${contribution.amount * 100}`,
-    amount: 10000,
+    amount: `${amount * 100}`,
+    // amount: 10000,
     authorization_code: payer.auth_url,
     subaccount: subaccount_code,
     transaction_charge: 500,
@@ -194,9 +213,6 @@ export const chargeAndSplitPayment = async (
       ],
     }),
   };
-
-  // llzxfca1g6c235m
-
   return await makePaystackRequest(
     '/transaction/charge_authorization',
     'POST',

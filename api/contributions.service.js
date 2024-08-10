@@ -1,9 +1,20 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
+import { debounce } from 'lodash';
 
-export const fetchUserContributions = async (userId, setContributions) => {
+const debouncedSetContributions = debounce((setContributions, data) => {
+  setContributions(data);
+}, 1000);
+
+// Fetch user contributions and set up real-time updates
+export const fetchUserContributions = async (
+  userId,
+  setContributions,
+  getContributions
+) => {
   try {
     await DataStore.start();
+
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
       c.participant_ids.contains(userId)
@@ -30,7 +41,15 @@ export const fetchUserContributions = async (userId, setContributions) => {
           const sortedUpdated = updatedContributions.sort((a, b) =>
             a.createdAt > b.createdAt ? -1 : 1
           );
-          setContributions(sortedUpdated);
+
+          // Compare with the current state before updating
+          const currentContributions = getContributions();
+          if (
+            JSON.stringify(currentContributions) !==
+            JSON.stringify(sortedUpdated)
+          ) {
+            debouncedSetContributions(setContributions, sortedUpdated);
+          }
         }
       }
     );
@@ -38,7 +57,6 @@ export const fetchUserContributions = async (userId, setContributions) => {
     return () => subscription.unsubscribe();
   } catch (error) {
     console.error('Error fetching user contributions:', error);
-    return [];
   }
 };
 
@@ -77,6 +95,8 @@ export const createContribution = async (
         amount: details.amount,
         num_of_month: details.num_of_month,
         status: 'open',
+        current_count: 0,
+        variant: 'days',
       })
     );
     setContributions((prev) => [...prev, newContribution]);

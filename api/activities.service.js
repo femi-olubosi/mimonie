@@ -1,20 +1,31 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { UserActivity } from '../src/models';
 
-export const fetchUserActivities = async (userId, setUserActivities) => {
+import { debounce } from 'lodash';
+
+const debouncedSetUserActivities = debounce((setUserActivities, data) => {
+  setUserActivities(data);
+}, 1000);
+
+export const fetchUserActivities = async (
+  userId,
+  setUserActivities,
+  getUserActivities
+) => {
   try {
     await DataStore.start();
-    // Fetch contributions where the user is a participant
+
+    // Fetch activities where the user is a participant
     const activities = await DataStore.query(UserActivity, (c) =>
       c.userId.eq(userId)
     );
-
     const sorted = activities.sort((a, b) =>
       a.createdAt > b.createdAt ? -1 : 1
     );
 
     setUserActivities(sorted);
 
+    // Set up real-time subscription
     const subscription = DataStore.observe(UserActivity).subscribe(
       async (msg) => {
         if (
@@ -28,14 +39,21 @@ export const fetchUserActivities = async (userId, setUserActivities) => {
           const sortedUpdated = updatedActivities.sort((a, b) =>
             a.createdAt > b.createdAt ? -1 : 1
           );
-          setUserActivities(sortedUpdated);
+
+          // Compare with the current state before updating
+          const currentActivities = getUserActivities();
+          if (
+            JSON.stringify(currentActivities) !== JSON.stringify(sortedUpdated)
+          ) {
+            debouncedSetUserActivities(setUserActivities, sortedUpdated);
+          }
         }
       }
     );
 
     return () => subscription.unsubscribe();
   } catch (error) {
-    console.error('Error fetching user user activities:', error);
+    console.error('Error fetching user activities:', error);
     return [];
   }
 };

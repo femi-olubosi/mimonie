@@ -4,7 +4,7 @@
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
-      "Default": "cron(59 21 * * ? *)",
+      "Default": "cron(0 0/2 ? * * *)",
       "Description": "Schedule Expression"
     },
     "deploymentBucketName": {

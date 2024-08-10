@@ -27,11 +27,19 @@ import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 
-import { FontAwesome } from '@expo/vector-icons';
+import {
+  FontAwesome,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { notificationIcon } from '@/utils/notificationsIcon';
 import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
 import { isLoading } from 'expo-font';
+import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
+import { formatTimestamp } from '@/utils/formatTimestamp';
+import { naira } from '@/constants/Currency';
+import { fetchUserActivities } from '@/api/activities.service';
 
 export default function HomeScreen() {
   const {
@@ -45,8 +53,12 @@ export default function HomeScreen() {
     userProfile,
     setNotifications,
     notifications,
+    userActivities,
+    setUserActivities,
   } = useGlobalContext();
   const [alertShown, setAlertShown] = useState(false);
+  const getContributions = () => contributions;
+  const getUserActivities = () => userActivities;
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -70,12 +82,26 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    fetchUserContributions(currentUser.userId, setContributions);
+    fetchUserContributions(
+      currentUser.userId,
+      setContributions,
+      getContributions
+    );
   }, [currentUser]);
 
   useEffect(() => {
     fetchUserNotification(currentUser.userId, setNotifications);
   }, [currentUser]);
+
+  useEffect(() => {
+    (async () => {
+      await fetchUserActivities(
+        userProfile.userId,
+        setUserActivities,
+        getUserActivities
+      );
+    })();
+  }, [userProfile]);
 
   // useEffect(() => {
   //   if (!isLoading) {
@@ -163,7 +189,7 @@ export default function HomeScreen() {
                 paddingVertical: 20,
               }}
             >
-              {notifications.map((e: any, index: any) => {
+              {userActivities.map((item: any, index: any) => {
                 return (
                   <View
                     key={index}
@@ -181,14 +207,16 @@ export default function HomeScreen() {
                       style={{
                         flexDirection: 'row',
                         columnGap: 10,
-                        alignItems: 'center',
+                        alignItems: 'start',
                       }}
                     >
-                      {/* {userProfile?.name === userProfile?.phoneNumber ? (
+                      {item.description.includes('Failed') ? (
+                        <MaterialIcons name="block" size={24} color="red" />
+                      ) : item.type === 'collection' ? (
                         <MaterialCommunityIcons
                           name="arrow-bottom-right-thin-circle-outline"
                           size={24}
-                          color="black"
+                          color="green"
                         />
                       ) : (
                         <MaterialCommunityIcons
@@ -196,30 +224,54 @@ export default function HomeScreen() {
                           size={24}
                           color="red"
                         />
-                      )} */}
-                      {notificationIcon(e.type)}
+                      )}
                       <View
                         style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
+                          flex: 1,
+                          rowGap: 12,
                         }}
                       >
-                        <Text style={{ fontSize: 14, fontFamily: 'im' }}>
-                          {e.title}
+                        <Text
+                          style={{
+                            fontSize: 16,
+                            fontFamily: 'ir',
+                            color: item.description.includes('Failed')
+                              ? 'red'
+                              : 'gray',
+                          }}
+                        >
+                          {item.description.includes('Failed')
+                            ? 'Failed Contribution'
+                            : capitalizeFirstLetter(item.type)}
                         </Text>
-                        {/* <Text>{formatTimestamp(e.createdAt)}</Text> */}
+                        <Text
+                          style={{
+                            fontSize: 13,
+                            fontFamily: 'ir',
+                            color: 'gray',
+                          }}
+                        >
+                          {item.description}
+                        </Text>
                       </View>
-                    </View>
-                    <View>
-                      <Text
-                        style={{
-                          color: '#9095A1',
-                          fontSize: 12,
-                          fontFamily: 'ir',
-                        }}
-                      >
-                        {e.content}
-                      </Text>
+                      <View style={{ rowGap: 12 }}>
+                        <Text
+                          style={{
+                            color: item.type === 'collection' ? 'green' : 'red',
+                            fontSize: 16,
+                            fontFamily: 'ir',
+                          }}
+                        >
+                          {naira}
+                          {item.amount.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </Text>
+                        <Text style={{ fontSize: 10, color: 'gray' }}>
+                          {formatTimestamp(item.createdAt)}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 );
@@ -231,22 +283,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

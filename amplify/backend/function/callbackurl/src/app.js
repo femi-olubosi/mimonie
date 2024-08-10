@@ -72,7 +72,7 @@ app.get(path, async function (req, res) {
 
   try {
     const data = await ddbDocClient.send(new ScanCommand(params));
-    res.json(data.Items);
+    res.json({ data: data.Items, tableName });
   } catch (err) {
     res.statusCode = 500;
     res.json({ error: 'Could not load items: ' + err.message });
@@ -109,27 +109,27 @@ app.post(path, async function (req, res) {
  ***************************************/
 
 // Add a new route for Smile Identity callback
-app.post('/smileid-callback', async function (req, res) {
-  let responseMessage = 'Callback received';
+// app.post('/smileid-callback', async function (req, res) {
+//   let responseMessage = 'Callback received';
 
-  try {
-    const kycResponse = req.body;
-    console.log('Smile Identity Callback:', kycResponse);
+//   try {
+//     const kycResponse = req.body;
+//     console.log('Smile Identity Callback:', kycResponse);
 
-    const params = {
-      TableName: tableName,
-      Item: kycResponse,
-    };
+//     const params = {
+//       TableName: tableName,
+//       Item: kycResponse,
+//     };
 
-    await ddbDocClient.send(new PutCommand(params));
-    responseMessage = 'KYC data stored successfully';
-  } catch (error) {
-    console.error('Error storing KYC response:', error);
-    responseMessage = error || 'Error storing KYC response';
-  }
+//     await ddbDocClient.send(new PutCommand(params));
+//     responseMessage = 'KYC data stored successfully';
+//   } catch (error) {
+//     console.error('Error storing KYC response:', error);
+//     responseMessage = error || 'Error storing KYC response';
+//   }
 
-  res.status(200).json({ message: responseMessage });
-});
+//   res.status(200).json({ message: responseMessage });
+// });
 
 app.listen(3000, function () {
   console.log('App started');
