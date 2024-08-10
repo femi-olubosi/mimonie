@@ -9,6 +9,7 @@ import {
   chargeAndSplitPayment,
   initialize,
   processContributions,
+  testTrigger,
   verify,
   verifyBVN,
 } from '@/api/payment.service';
@@ -106,8 +107,10 @@ const Options = () => {
   }
 
   const tryOut = async () => {
-    const res = await processContributions();
-    console.log('res', res);
+    if (userProfile.name !== 'Sherif-deen Abdur-roheem') {
+      return;
+    }
+    await processContributions();
   };
 
   return (
@@ -132,7 +135,7 @@ const Options = () => {
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
         // onPress={() => router.push('/protected/complete_profile')}
         // onPress={getTodo}
-        // onPress={tryOut}
+        onPress={tryOut}
       >
         <Image
           source={require('../../assets/logo/bill.png')}

@@ -11,7 +11,7 @@ import {
 import { getMonthsAfter } from '@/utils/getMonthsAfter';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { Entypo, FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 
@@ -62,6 +62,8 @@ const Cards = ({ contributions }) => {
             const currentParticipant = participants?.find(
               (e) => e.userId === userProfile.userId
             );
+            const done =
+              currentParticipant.contributions === participants.length - 1;
             return (
               <Pressable
                 style={[
@@ -93,7 +95,7 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
                     >
-                      Duration: {item.num_of_month} {item.currently_at}
+                      Duration: {item.num_of_month} {item.variant}
                     </Text>
                     <Text
                       style={{
@@ -130,9 +132,19 @@ const Cards = ({ contributions }) => {
                       {currentParticipant.contributions} contribution(s) so far
                     </Text>
                     <Text
-                      style={[styles.text, { fontSize: 32, fontFamily: 'esb' }]}
+                      style={[
+                        styles.text,
+                        {
+                          fontSize: 32,
+                          fontFamily: 'esb',
+                          color:
+                            contributions < item.current_count
+                              ? 'red'
+                              : 'white',
+                        },
+                      ]}
                     >
-                      <FontAwesome6 name="naira-sign" size={28} color="white" />
+                      <FontAwesome6 name="naira-sign" size={28} />
                       {(
                         currentParticipant.contributions * item.amount
                       ).toLocaleString('en-US', {
@@ -152,10 +164,24 @@ const Cards = ({ contributions }) => {
                   <Text
                     style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
                   >
-                    <FontAwesome6 name="naira-sign" size={16} color="white" />
-                    {item.amount.toLocaleString('en-US')}
+                    {done ? (
+                      'Completed'
+                    ) : (
+                      <>
+                        <FontAwesome6
+                          name="naira-sign"
+                          size={16}
+                          color="white"
+                        />
+                        {item.amount.toLocaleString('en-US')}
+                      </>
+                    )}
                   </Text>
-                  <NextContributionDay contribution={item} />
+                  <NextContributionDay
+                    contribution={item}
+                    done={done}
+                    currentParticipant={currentParticipant}
+                  />
                 </ThemedView>
 
                 <Image
@@ -183,7 +209,7 @@ const Cards = ({ contributions }) => {
 
 export default Cards;
 
-const NextContributionDay = ({ contribution }) => {
+const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   const getNextContributionDay = () => {
     if (contribution?.status !== 'running') {
       return 'Not running';
@@ -192,7 +218,7 @@ const NextContributionDay = ({ contribution }) => {
     const today = new Date();
     let nextContributionDay;
 
-    switch (contribution?.currently_at) {
+    switch (contribution?.variant) {
       case 'days':
         nextContributionDay = new Date(today);
         nextContributionDay.setDate(today.getDate() + 1);
@@ -226,10 +252,33 @@ const NextContributionDay = ({ contribution }) => {
   };
 
   return (
-    <View>
-      <Text style={[styles.text, { fontSize: 10, fontFamily: 'ir' }]}>
-        Due Date: {getNextContributionDay()}
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+      <Text
+        style={[
+          styles.text,
+          {
+            fontSize: 10,
+            fontFamily: 'ir',
+            color:
+              currentParticipant.contributions <
+              parseInt(contribution.current_count)
+                ? '#FF7F7F'
+                : 'white',
+          },
+        ]}
+      >
+        Due Date:{' '}
+        {done
+          ? 'Completed'
+          : currentParticipant.contributions <
+            parseInt(contribution.current_count)
+          ? 'Today (Please fund your card)'
+          : getNextContributionDay()}
       </Text>
+      {currentParticipant.contributions <
+        parseInt(contribution.current_count) && (
+        <Entypo name="back-in-time" size={10} color="#FF7F7F" />
+      )}
     </View>
   );
 };

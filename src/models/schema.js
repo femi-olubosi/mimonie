@@ -620,6 +620,20 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "variant": {
+                    "name": "variant",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "current_count": {
+                    "name": "current_count",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -806,5 +820,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "8a342391245670c086d528c6f7b00bf2"
+    "version": "50f0c3257918654c07cec170e1e0194d"
 };

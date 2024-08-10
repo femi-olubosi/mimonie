@@ -24,11 +24,11 @@
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-5836646249487731314c-build.zip"
+          "s3Key": "amplify-builds/callbackurl-5868336a69635664386b-build.zip"
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/contributionTrigger-324356444d43395a2f73-build.zip"
+          "s3Key": "amplify-builds/contributionTrigger-6d6c42746633336b6e48-build.zip"
         }
       },
       "auth": {

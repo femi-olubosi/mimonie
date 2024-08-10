@@ -73,6 +73,8 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   status: String
   participant_ids: [ID]
   currently_at: String
+  variant: String
+  current_count: Int
 }
 
 type ContributionGroups @model @auth(rules: [{allow: public}]) {

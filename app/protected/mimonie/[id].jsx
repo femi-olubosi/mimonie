@@ -30,6 +30,7 @@ import { statusCheck } from '@/utils/statusCheck';
 import { naira } from '@/constants/Currency';
 import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
+import { calculateDifference } from '@/api/payment.service';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -209,7 +210,6 @@ const ContributionDetails = () => {
               contentContainerStyle={{ rowGap: 8, paddingBottom: 10 }}
             >
               {parsed?.map((eN, id) => {
-                // const eN = JSON.parse(e)[0];
                 return (
                   <View
                     key={id}
@@ -256,7 +256,7 @@ const ContributionDetails = () => {
               })}
             </ScrollView>
           </View>
-          <NextContributionDay contribution={contribution} />
+          <NextContributionDay contribution={contribution} parsed={parsed} />
           <View style={styles.detailContainer}>
             <Text style={styles.label}>User role</Text>
             <Text style={styles.value}>
@@ -321,7 +321,12 @@ const ContributionDetails = () => {
   );
 };
 
-const NextContributionDay = ({ contribution }) => {
+const NextContributionDay = ({ contribution, parsed }) => {
+  const currentCount = calculateDifference(
+    contribution.start_date,
+    contribution.variant
+  );
+
   const getNextContributionDay = () => {
     if (contribution?.status !== 'running') {
       return 'Not running';
@@ -330,7 +335,7 @@ const NextContributionDay = ({ contribution }) => {
     const today = new Date();
     let nextContributionDay;
 
-    switch (contribution?.currently_at) {
+    switch (contribution?.variant) {
       case 'days':
         nextContributionDay = new Date(today);
         nextContributionDay.setDate(today.getDate() + 1);
@@ -366,7 +371,13 @@ const NextContributionDay = ({ contribution }) => {
   return (
     <View style={styles.detailContainer}>
       <Text style={styles.label}>Next Contribution Day</Text>
-      <Text style={styles.value}>{getNextContributionDay()}</Text>
+      <Text style={styles.value}>
+        {contribution.status === 'completed'
+          ? 'Completed'
+          : currentCount === parsed.length
+          ? '-'
+          : getNextContributionDay()}
+      </Text>
     </View>
   );
 };

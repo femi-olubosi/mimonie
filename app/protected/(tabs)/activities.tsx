@@ -5,16 +5,21 @@ import { PageView } from '@/components/Reusable';
 import { fetchUserActivities } from '@/api/activities.service';
 import { useGlobalContext } from '@/store/StoreContext';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { naira } from '@/constants/Currency';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 
 const Activities = () => {
   const { userProfile, userActivities, setUserActivities } = useGlobalContext();
+  const getUserActivities = () => userActivities;
 
   useEffect(() => {
     (async () => {
-      await fetchUserActivities(userProfile.userId, setUserActivities);
+      await fetchUserActivities(
+        userProfile.userId,
+        setUserActivities,
+        getUserActivities
+      );
     })();
   }, []);
 
@@ -37,7 +42,9 @@ const Activities = () => {
           alignItems: 'start',
         }}
       >
-        {item.type === 'collection' ? (
+        {item.description.includes('Failed') ? (
+          <MaterialIcons name="block" size={24} color="red" />
+        ) : item.type === 'collection' ? (
           <MaterialCommunityIcons
             name="arrow-bottom-right-thin-circle-outline"
             size={24}
@@ -60,10 +67,12 @@ const Activities = () => {
             style={{
               fontSize: 16,
               fontFamily: 'ir',
-              color: 'gray',
+              color: item.description.includes('Failed') ? 'red' : 'gray',
             }}
           >
-            {capitalizeFirstLetter(item.type)}
+            {item.description.includes('Failed')
+              ? 'Failed Contribution'
+              : capitalizeFirstLetter(item.type)}
           </Text>
           <Text
             style={{
@@ -112,7 +121,6 @@ const Activities = () => {
             renderItem={renderItem}
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={{
-              flex: 1,
               backgroundColor: 'white',
               gap: 20,
               paddingVertical: 20,

@@ -216,6 +216,8 @@ type EagerContribution = {
   readonly status?: string | null;
   readonly participant_ids?: (string | null)[] | null;
   readonly currently_at?: string | null;
+  readonly variant?: string | null;
+  readonly current_count?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -240,6 +242,8 @@ type LazyContribution = {
   readonly status?: string | null;
   readonly participant_ids?: (string | null)[] | null;
   readonly currently_at?: string | null;
+  readonly variant?: string | null;
+  readonly current_count?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
