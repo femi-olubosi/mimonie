@@ -11,8 +11,7 @@ const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
 
 const contributionTableName = 'Contribution-d4itlx42uzhtrctybtkmaxruya-dev';
 const userActivityTableName = 'UserActivity-d4itlx42uzhtrctybtkmaxruya-dev';
-const PAYSTACK_SECRET_KEY_LIVE =
-  'sk_live_018197960c67614111a22568257da65f67191fb3';
+const PAYSTACK_SECRET_KEY_LIVE = process.env.PAYSTACK_SECRET_KEY_LIVE;
 
 const https = require('https');
 
@@ -89,10 +88,16 @@ const calculateDifference = (startDate, variant) => {
 };
 
 // Function to fetch contributions
-const fetchContributions = async () => {
+const fetchRunningContributions = async () => {
   const params = {
     TableName: contributionTableName,
-    Select: 'ALL_ATTRIBUTES',
+    FilterExpression: '#status = :status',
+    ExpressionAttributeNames: {
+      '#status': 'status',
+    },
+    ExpressionAttributeValues: {
+      ':status': 'running',
+    },
   };
 
   try {
@@ -167,18 +172,10 @@ const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
   );
 };
 
-const safeParseJSON = (data, fallback) => {
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    return fallback;
-  }
-};
-
 // Main processing function
 const processContributions = async () => {
   try {
-    const contributions = await fetchContributions();
+    const contributions = await fetchRunningContributions();
 
     for (const contribution of contributions) {
       // Calculate the difference based on the variant
@@ -188,11 +185,7 @@ const processContributions = async () => {
       );
       contribution.current_count = currentCount - 1;
 
-      if (
-        contribution.status !== 'running' ||
-        parseInt(contribution.currently_at) === currentCount
-      )
-        continue;
+      if (parseInt(contribution.currently_at) === currentCount) continue;
 
       // const participants = JSON.parse(contribution.participant || '[]');
       const participants = contribution?.participant;

@@ -3,11 +3,8 @@ import { UserNotifications } from '../src/models';
 
 export const fetchUserNotification = async (userId, setNotifications) => {
   try {
-    // await DataStore.clear();
-    // await DataStore.start();
-    // Fetch contributions where the user is a participant
     const userNotifications = await DataStore.query(UserNotifications, (c) =>
-      c.userId.eq(userId)
+      c.or((c) => [c.userId.eq(userId), c.global.eq(true)])
     );
 
     const sorted = userNotifications.sort((a, b) =>
@@ -26,7 +23,7 @@ export const fetchUserNotification = async (userId, setNotifications) => {
         ) {
           const updatedNotifications = await DataStore.query(
             UserNotifications,
-            (c) => c.userId.eq(userId)
+            (c) => c.or((c) => [c.userId.eq(userId), c.global.eq(true)])
           );
           const sortedUpdated = updatedNotifications.sort((a, b) =>
             a.createdAt > b.createdAt ? -1 : 1
