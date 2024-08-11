@@ -108,6 +108,18 @@ export const notificationIcon = (type) => {
           <Entypo name="credit-card" size={20} color="white" />
         </View>
       );
+    case 'reminder':
+      return (
+        <View
+          style={{
+            backgroundColor: '#FFA500',
+            padding: 6,
+            borderRadius: 12,
+          }}
+        >
+          <Ionicons name="alarm" size={20} color="white" />
+        </View>
+      );
   }
 };
 

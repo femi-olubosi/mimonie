@@ -117,6 +117,12 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "contributionNotifications": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "contributionTrigger": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -151,7 +157,31 @@
         }
       ]
     },
+    "AMPLIFY_function_contributionNotifications_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionNotifications_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionNotifications"
+        }
+      ]
+    },
     "AMPLIFY_function_contributionTrigger_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionTrigger"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionTrigger_paystackSecretKeyLive": {
       "usedBy": [
         {
           "category": "function",

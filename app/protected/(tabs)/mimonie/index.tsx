@@ -18,6 +18,8 @@ import {
   findContributionByInviteLink,
 } from '@/api/contributions.service';
 import { naira } from '@/constants/Currency';
+import { statusCheck } from '@/utils/statusCheck';
+import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 
 const Mimonie = () => {
   const { currentUser, contributions, setContributions, setIsLoading } =
@@ -71,10 +73,12 @@ const Mimonie = () => {
               paddingHorizontal: 10,
               paddingVertical: 4,
               borderRadius: 8,
-              backgroundColor: item.status === 'open' ? 'green' : 'gray',
+              backgroundColor: statusCheck(item.status),
             }}
           >
-            <Text style={styles.contributionStatus}>{item.status}</Text>
+            <Text style={styles.contributionStatus}>
+              {capitalizeFirstLetter(item.status)}
+            </Text>
           </View>
         </View>
         {/* <View style={styles.contributionInfo}>

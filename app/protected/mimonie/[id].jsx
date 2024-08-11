@@ -374,7 +374,7 @@ const NextContributionDay = ({ contribution, parsed }) => {
       <Text style={styles.value}>
         {contribution.status === 'completed'
           ? 'Completed'
-          : currentCount === parsed.length
+          : currentCount >= parsed.length
           ? '-'
           : getNextContributionDay()}
       </Text>

@@ -63,7 +63,7 @@ const Cards = ({ contributions }) => {
               (e) => e.userId === userProfile.userId
             );
             const done =
-              currentParticipant.contributions === participants.length - 1;
+              currentParticipant.contributions >= participants.length - 1;
             return (
               <Pressable
                 style={[
