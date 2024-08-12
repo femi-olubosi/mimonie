@@ -5,10 +5,8 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { getMonthsAfter } from '@/utils/getMonthsAfter';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { Entypo, FontAwesome6 } from '@expo/vector-icons';
@@ -62,8 +60,7 @@ const Cards = ({ contributions }) => {
               (e) => e.userId === userProfile?.userId
             );
             const done =
-              currentParticipant?.contributions > 0 &&
-              currentParticipant?.contributions >= participants.length - 1;
+              currentParticipant?.contributions >= participants?.length - 1;
             return (
               <Pressable
                 style={[
