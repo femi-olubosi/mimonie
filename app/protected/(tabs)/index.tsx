@@ -83,14 +83,14 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserContributions(
-      currentUser.userId,
+      currentUser?.userId,
       setContributions,
       getContributions
     );
   }, [currentUser]);
 
   useEffect(() => {
-    fetchUserNotification(currentUser.userId, setNotifications);
+    fetchUserNotification(currentUser?.userId, setNotifications);
   }, [currentUser]);
 
   useEffect(() => {

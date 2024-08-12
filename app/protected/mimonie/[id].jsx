@@ -322,11 +322,6 @@ const ContributionDetails = () => {
 };
 
 const NextContributionDay = ({ contribution, parsed }) => {
-  const currentCount = calculateDifference(
-    contribution.start_date,
-    contribution.variant
-  );
-
   const getNextContributionDay = () => {
     if (contribution?.status !== 'running') {
       return 'Not running';
@@ -374,7 +369,8 @@ const NextContributionDay = ({ contribution, parsed }) => {
       <Text style={styles.value}>
         {contribution.status === 'completed'
           ? 'Completed'
-          : currentCount >= parsed.length
+          : contribution.currentCount !== 0 &&
+            contribution.currentCount >= parsed.length
           ? '-'
           : getNextContributionDay()}
       </Text>
