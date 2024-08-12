@@ -8,22 +8,49 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { useGlobalContext } from '@/store/StoreContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { topBar } from '@/cStyle';
 import { sendInvite } from '@/api/invite.service';
+import { Colors } from '@/constants/Colors';
+import { fetchAllUsers } from '@/api/admin.service';
+import { findMatchingUser } from '@/utils/findMatchingUser';
+import { updateUserProfile } from '@/api/user.service';
 
 const Contact = () => {
-  const { myContacts } = useGlobalContext();
+  const { myContacts, setAllUsers, allUsers, currentUser } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
+
+  useEffect(() => {
+    fetchAllUsers(setAllUsers);
+  }, []);
 
   const handleInvite = async (item) => {
     await sendInvite(item);
   };
 
+  const handleRequestConnect = async (connections: {}) => {
+    await updateUserProfile(connections, currentUser);
+  };
+
   const renderContact = ({ item }) => {
+    const contactDetails = item.phoneNumbers;
+
+    const { found, userProfile } = findMatchingUser(allUsers, contactDetails);
+
+    const connections = {
+      userId: userProfile?.userId,
+      name: userProfile?.name,
+      phone_number: userProfile?.phone_number,
+      email: userProfile?.email,
+      occupation: userProfile?.occupation,
+      verified: userProfile?.is_nin_verified && userProfile?.is_bvn_verified,
+      status: 'pending',
+      type: 'user',
+    };
+
     return (
       <View style={styles.contactContainer}>
         <View style={styles.contactInfo}>
@@ -32,9 +59,35 @@ const Contact = () => {
             <Text style={styles.contactName}>{item?.name}</Text>
           </View>
         </View>
-        <Pressable onPress={() => handleInvite(item)}>
-          <Text style={styles.inviteText}>Invite</Text>
-        </Pressable>
+
+        <View style={{}}>
+          {found ? (
+            <Pressable
+              style={{
+                paddingHorizontal: 4,
+                paddingVertical: 6,
+                borderRadius: 4,
+                borderWidth: 1,
+                borderColor: Colors.pri,
+                marginTop: 3,
+              }}
+              onPress={() => handleRequestConnect(connections)}
+            >
+              <Text
+                style={{
+                  fontSize: 8,
+                  color: Colors.pri,
+                }}
+              >
+                Request Connection
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable onPress={() => handleInvite(item)}>
+              <Text style={styles.inviteText}>Invite</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
     );
   };
