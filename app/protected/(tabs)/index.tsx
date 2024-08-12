@@ -96,7 +96,7 @@ export default function HomeScreen() {
   useEffect(() => {
     (async () => {
       await fetchUserActivities(
-        userProfile.userId,
+        userProfile?.userId,
         setUserActivities,
         getUserActivities
       );

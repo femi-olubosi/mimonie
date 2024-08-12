@@ -17,10 +17,18 @@ import { sendInvite } from '@/api/invite.service';
 import { Colors } from '@/constants/Colors';
 import { fetchAllUsers } from '@/api/admin.service';
 import { findMatchingUser } from '@/utils/findMatchingUser';
-import { updateUserProfile } from '@/api/user.service';
+import { updateUserConnections } from '@/api/network.service';
+import { fetchUserProfile } from '@/api/user.service';
 
 const Contact = () => {
-  const { myContacts, setAllUsers, allUsers, currentUser } = useGlobalContext();
+  const {
+    myContacts,
+    setAllUsers,
+    allUsers,
+    userProfile,
+    setUserProfile,
+    currentUser,
+  } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
 
   useEffect(() => {
@@ -32,14 +40,19 @@ const Contact = () => {
   };
 
   const handleRequestConnect = async (connections: {}) => {
-    await updateUserProfile(connections, currentUser);
+    try {
+      await updateUserConnections(connections, userProfile);
+      await fetchUserProfile(setUserProfile, currentUser);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const renderContact = ({ item }) => {
     const contactDetails = item.phoneNumbers;
 
     const { found, userProfile } = findMatchingUser(allUsers, contactDetails);
-
+    console.log(userProfile, found);
     const connections = {
       userId: userProfile?.userId,
       name: userProfile?.name,

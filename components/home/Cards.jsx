@@ -5,10 +5,8 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import { getMonthsAfter } from '@/utils/getMonthsAfter';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
 import { Entypo, FontAwesome6 } from '@expo/vector-icons';
@@ -57,13 +55,12 @@ const Cards = ({ contributions }) => {
         <FlatList
           data={contributions}
           renderItem={({ item }) => {
-            const num_of_contributions = 0;
             const participants = safeParseJSON(item?.participant, []);
             const currentParticipant = participants?.find(
-              (e) => e.userId === userProfile.userId
+              (e) => e.userId === userProfile?.userId
             );
             const done =
-              currentParticipant.contributions >= participants.length - 1;
+              currentParticipant?.contributions >= participants?.length - 1;
             return (
               <Pressable
                 style={[
@@ -129,7 +126,7 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'ir' }]}
                     >
-                      {currentParticipant.contributions} contribution(s) so far
+                      {currentParticipant?.contributions} contribution(s) so far
                     </Text>
                     <Text
                       style={[
@@ -146,7 +143,7 @@ const Cards = ({ contributions }) => {
                     >
                       <FontAwesome6 name="naira-sign" size={28} />
                       {(
-                        currentParticipant.contributions * item.amount
+                        currentParticipant?.contributions * item.amount
                       ).toLocaleString('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -260,8 +257,8 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
             fontSize: 10,
             fontFamily: 'ir',
             color:
-              currentParticipant.contributions <
-              parseInt(contribution.current_count)
+              currentParticipant?.contributions <
+              parseInt(contribution?.current_count)
                 ? '#FF7F7F'
                 : 'white',
           },
@@ -270,13 +267,13 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
         Due Date:{' '}
         {done
           ? 'Completed'
-          : currentParticipant.contributions <
-            parseInt(contribution.current_count)
+          : currentParticipant?.contributions <
+            parseInt(contribution?.current_count)
           ? 'Today (Please fund your card)'
           : getNextContributionDay()}
       </Text>
-      {currentParticipant.contributions <
-        parseInt(contribution.current_count) && (
+      {currentParticipant?.contributions <
+        parseInt(contribution?.current_count) && (
         <Entypo name="back-in-time" size={10} color="#FF7F7F" />
       )}
     </View>

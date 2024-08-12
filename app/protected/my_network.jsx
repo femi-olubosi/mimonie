@@ -6,28 +6,59 @@ import {
   FlatList,
   Pressable,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '../../constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
-
-const dummyConnections = [
-  { id: '1', name: 'John Doe', occupation: 'Software Developer' },
-  { id: '2', name: 'Jane Smith', occupation: 'Graphic Designer' },
-  { id: '3', name: 'Emily Johnson', occupation: 'Project Manager' },
-];
-
-const dummyPendingRequests = [
-  { id: '4', name: 'Michael Brown', occupation: 'Data Scientist' },
-  { id: '5', name: 'Sarah Wilson', occupation: 'Product Manager' },
-];
+import {
+  removeConnection,
+  acceptConnectionRequest,
+  rejectConnectionRequest,
+} from '@/api/network.service';
+import { fetchUserProfile } from '@/api/user.service';
+import { useGlobalContext } from '../../store/StoreContext';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
+  const { currentUser, setUserProfile, userProfile } = useGlobalContext();
+  const [parsedConnect, setParsedConnect] = useState([]);
 
-  const handleRemoveRequest = (item) => {};
+  const handleRemoveRequest = async (data) => {
+    try {
+      await rejectConnectionRequest(data, userProfile);
+      await fetchUserProfile(setUserProfile, currentUser);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-  const handleConnectRequest = (data) => {};
+  const handleConnectRequest = async (data) => {
+    if (activeTab === 1) {
+      await removeConnection(data, userProfile);
+    } else if (activeTab === 2) {
+      await acceptConnectionRequest(data, userProfile);
+    }
+  };
+
+  useEffect(() => {
+    const safeParseJSON = (data, fallback) => {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return fallback;
+      }
+    };
+
+    if (userProfile.connections) {
+      const parsedData = safeParseJSON(userProfile?.connections, []);
+      setParsedConnect(parsedData);
+    }
+  }, [userProfile]);
+
+  const myConnections = parsedConnect?.filter((e) => e.status === 'accepted');
+  const pendingConnections = parsedConnect?.filter(
+    (e) => e.type === 'request' && e.status === 'pending'
+  );
 
   const renderConnectionItem = ({ item }) => (
     <View
@@ -147,14 +178,14 @@ const connect = () => {
               }}
             >
               <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
-                {dummyPendingRequests.length || 0}
+                {pendingConnections?.length || 0}
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
         <FlatList
-          data={activeTab === 1 ? dummyConnections : dummyPendingRequests}
+          data={activeTab === 1 ? myConnections : pendingConnections}
           renderItem={renderConnectionItem}
           keyExtractor={(item) => item.id}
         />
