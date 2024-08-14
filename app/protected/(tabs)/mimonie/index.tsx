@@ -27,14 +27,9 @@ const Mimonie = () => {
   const router = useRouter();
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
-  const getContributions = () => contributions;
 
   useEffect(() => {
-    fetchUserContributions(
-      currentUser.userId,
-      setContributions,
-      getContributions
-    );
+    fetchUserContributions(currentUser.userId, setContributions);
   }, []);
 
   const handleSearchContribution = async () => {

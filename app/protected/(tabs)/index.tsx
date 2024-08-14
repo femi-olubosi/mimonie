@@ -57,7 +57,6 @@ export default function HomeScreen() {
     setUserActivities,
   } = useGlobalContext();
   const [alertShown, setAlertShown] = useState(false);
-  const getContributions = () => contributions;
   const getUserActivities = () => userActivities;
 
   useEffect(() => {
@@ -82,11 +81,7 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    fetchUserContributions(
-      currentUser?.userId,
-      setContributions,
-      getContributions
-    );
+    fetchUserContributions(currentUser?.userId, setContributions);
   }, [currentUser]);
 
   useEffect(() => {

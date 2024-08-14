@@ -624,7 +624,7 @@ export const schema = {
                 "currently_at": {
                     "name": "currently_at",
                     "isArray": false,
-                    "type": "String",
+                    "type": "Int",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -828,5 +828,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "0bfadde9345cf38f0b8c6536513d662d"
+    "version": "fc9fe9190d831759babf3bd5d7560ce8"
 };
