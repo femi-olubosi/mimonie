@@ -9,7 +9,7 @@ import {
   TextInput,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
@@ -31,6 +31,12 @@ const Mimonie = () => {
   useEffect(() => {
     fetchUserContributions(currentUser.userId, setContributions);
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setSearchedContribution(null);
+    }, [])
+  );
 
   const handleSearchContribution = async () => {
     setIsLoading(true);
