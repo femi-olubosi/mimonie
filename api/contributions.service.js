@@ -2,10 +2,14 @@ import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
 import { debounce } from 'lodash';
 
+// const debouncedSetContributions = debounce((setContributions, data) => {
+//   setContributions(data);
+// }, 1000);
+
 // Fetch user contributions and set up real-time updates
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
-    // await DataStore.clear();
+    await DataStore.start();
 
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
@@ -195,35 +199,14 @@ export const joinContribution = async (
   }
 };
 
-export const findContributionByInviteLink = async (
-  invite_link,
-  setContribution
-) => {
+export const findContributionByInviteLink = async (invite_link) => {
   try {
     const contributions = await DataStore.query(Contribution, (c) =>
       c.invite_link.eq(invite_link)
     );
-
-    setContribution(contributions[0]);
-
-    // Set up real-time subscription
-    const subscription = DataStore.observe(Contribution, invite_link).subscribe(
-      async (msg) => {
-        if (msg.opType === 'UPDATE') {
-          const updatedContributions = await DataStore.query(
-            Contribution,
-            (c) => c.invite_link.eq(invite_link)
-          );
-
-          setContribution(updatedContributions[0]);
-        }
-      }
-    );
-
-    // Return a cleanup function to unsubscribe
-    return () => subscription.unsubscribe();
+    return contributions;
   } catch (error) {
-    console.error('Error fetching user contributions link:', error);
+    console.error('Error fetching user contributions:', error);
     return [];
   }
 };

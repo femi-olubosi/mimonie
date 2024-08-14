@@ -25,7 +25,7 @@ const Cards = ({ contributions }) => {
   const { userProfile } = useGlobalContext();
   return (
     <ThemedView style={styles.container}>
-      {contributions.length === 0 ? (
+      {contributions?.length === 0 ? (
         <View
           style={{
             width: 200,
