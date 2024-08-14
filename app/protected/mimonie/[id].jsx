@@ -18,6 +18,7 @@ import {
   findContributionByID,
   joinContribution,
   updateContribution,
+  findContributionByInviteLink,
 } from '@/api/contributions.service';
 import {
   AntDesign,
@@ -100,7 +101,7 @@ const ContributionDetails = () => {
       const date = new Date();
       const start_date = date.toLocaleDateString('en-CA');
 
-      const res = await updateContribution(contribution.id, {
+      const res = await updateContribution(contribution?.id, {
         start_date: start_date,
         status: 'running',
       });
@@ -315,7 +316,7 @@ const ContributionDetails = () => {
       <ContactModal
         visible={visible}
         setVisible={setVisible}
-        invite_link={contribution.invite_link}
+        invite_link={contribution?.invite_link}
       />
     </PageView>
   );
@@ -367,10 +368,10 @@ const NextContributionDay = ({ contribution, parsed }) => {
     <View style={styles.detailContainer}>
       <Text style={styles.label}>Next Contribution Day</Text>
       <Text style={styles.value}>
-        {contribution.status === 'completed'
+        {contribution?.status === 'completed'
           ? 'Completed'
-          : contribution.currentCount !== 0 &&
-            contribution.currentCount >= parsed.length
+          : contribution?.currentCount !== 0 &&
+            contribution?.currentCount >= parsed.length
           ? '-'
           : getNextContributionDay()}
       </Text>

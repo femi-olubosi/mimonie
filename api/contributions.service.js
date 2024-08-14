@@ -2,18 +2,10 @@ import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
 import { debounce } from 'lodash';
 
-const debouncedSetContributions = debounce((setContributions, data) => {
-  setContributions(data);
-}, 1000);
-
 // Fetch user contributions and set up real-time updates
-export const fetchUserContributions = async (
-  userId,
-  setContributions,
-  getContributions
-) => {
+export const fetchUserContributions = async (userId, setContributions) => {
   try {
-    await DataStore.start();
+    // await DataStore.clear();
 
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
@@ -41,15 +33,7 @@ export const fetchUserContributions = async (
           const sortedUpdated = updatedContributions.sort((a, b) =>
             a.createdAt > b.createdAt ? -1 : 1
           );
-
-          // Compare with the current state before updating
-          const currentContributions = getContributions();
-          if (
-            JSON.stringify(currentContributions) !==
-            JSON.stringify(sortedUpdated)
-          ) {
-            debouncedSetContributions(setContributions, sortedUpdated);
-          }
+          setContributions(sortedUpdated);
         }
       }
     );
@@ -84,7 +68,7 @@ export const createContribution = async (
         title: details.contributionName,
         category: details.groupName,
         // start_date: details.date,
-        invite_link: `https://app.mimonie.net/${
+        invite_link: `myapp://protected/mimonie/${
           currentUser.userId
         }-${details.contributionName.split(' ').join('-')}`,
         contributiongroupsID: details.groupId,
@@ -211,14 +195,35 @@ export const joinContribution = async (
   }
 };
 
-export const findContributionByInviteLink = async (invite_link) => {
+export const findContributionByInviteLink = async (
+  invite_link,
+  setContribution
+) => {
   try {
     const contributions = await DataStore.query(Contribution, (c) =>
       c.invite_link.eq(invite_link)
     );
-    return contributions;
+
+    setContribution(contributions[0]);
+
+    // Set up real-time subscription
+    const subscription = DataStore.observe(Contribution, invite_link).subscribe(
+      async (msg) => {
+        if (msg.opType === 'UPDATE') {
+          const updatedContributions = await DataStore.query(
+            Contribution,
+            (c) => c.invite_link.eq(invite_link)
+          );
+
+          setContribution(updatedContributions[0]);
+        }
+      }
+    );
+
+    // Return a cleanup function to unsubscribe
+    return () => subscription.unsubscribe();
   } catch (error) {
-    console.error('Error fetching user contributions:', error);
+    console.error('Error fetching user contributions link:', error);
     return [];
   }
 };

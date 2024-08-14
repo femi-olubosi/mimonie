@@ -183,11 +183,18 @@ const processContributions = async () => {
         contribution.start_date,
         contribution.variant
       );
-      contribution.current_count = currentCount - 1;
 
-      if (parseInt(contribution.currently_at) === currentCount) continue;
+      // Stop updating current_count if it equals num_of_month - 1
+      if (contribution.current_count !== contribution.num_of_month - 1) {
+        contribution.current_count = currentCount;
+      }
 
-      // const participants = JSON.parse(contribution.participant || '[]');
+      // Convert currently_at to an integer if it is not already
+      const currentAt = parseInt(contribution.currently_at) || 0;
+
+      // Skip if currently_at matches currentCount or if currentCount is 0 (same day as start date)
+      if (currentAt === currentCount || currentCount === 0) continue;
+
       const participants = contribution?.participant;
 
       const inProgressParticipant = participants[0].find(
@@ -195,6 +202,7 @@ const processContributions = async () => {
       );
 
       let allPaymentsSuccessful = true;
+      let paymentsProcessed = false;
 
       for (const participant of participants[0]) {
         if (
@@ -209,6 +217,7 @@ const processContributions = async () => {
 
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
+            paymentsProcessed = true;
 
             await saveUserActivity({
               id: uuidv4(),
@@ -229,7 +238,7 @@ const processContributions = async () => {
             // Update and save the contribution after each successful payment
             contribution.participant = participants;
             await updateContribution(contribution);
-            console.log('succes');
+            console.log('success');
           } else {
             console.log('failed');
             await saveUserActivity({
@@ -243,7 +252,8 @@ const processContributions = async () => {
           }
         }
       }
-      if (allPaymentsSuccessful) {
+
+      if (allPaymentsSuccessful && paymentsProcessed) {
         console.log('done');
         await saveUserActivity({
           id: uuidv4(),
@@ -283,8 +293,4 @@ const processContributions = async () => {
 
 exports.handler = async (event, context) => {
   await processContributions();
-};
-
-exports.handler.event = {
-  schedule: 'cron(0 0/2 ? * * *)',
 };

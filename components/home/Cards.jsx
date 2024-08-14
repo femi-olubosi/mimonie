@@ -60,6 +60,7 @@ const Cards = ({ contributions }) => {
               (e) => e.userId === userProfile?.userId
             );
             const done =
+              currentParticipant?.contributions !== 0 &&
               currentParticipant?.contributions >= participants?.length - 1;
             return (
               <Pressable
@@ -143,7 +144,7 @@ const Cards = ({ contributions }) => {
                     >
                       <FontAwesome6 name="naira-sign" size={28} />
                       {(
-                        currentParticipant?.contributions * item.amount
+                        currentParticipant?.contributions * item.amount || 0
                       ).toLocaleString('en-US', {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
@@ -212,6 +213,16 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
       return 'Not running';
     }
 
+    if (
+      currentParticipant?.contributions < parseInt(contribution?.current_count)
+    ) {
+      return 'Today (Please fund your card)';
+    }
+
+    if (done) {
+      return 'Completed';
+    }
+
     const today = new Date();
     let nextContributionDay;
 
@@ -264,13 +275,7 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
           },
         ]}
       >
-        Due Date:{' '}
-        {done
-          ? 'Completed'
-          : currentParticipant?.contributions <
-            parseInt(contribution?.current_count)
-          ? 'Today (Please fund your card)'
-          : getNextContributionDay()}
+        Due Date: {getNextContributionDay()}
       </Text>
       {currentParticipant?.contributions <
         parseInt(contribution?.current_count) && (

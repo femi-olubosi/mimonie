@@ -73,7 +73,7 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   num_of_month: Int!
   status: String
   participant_ids: [ID]
-  currently_at: String
+  currently_at: Int
   variant: String
   current_count: Int
 }
