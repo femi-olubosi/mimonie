@@ -11,15 +11,10 @@ import { formatTimestamp } from '@/utils/formatTimestamp';
 
 const Activities = () => {
   const { userProfile, userActivities, setUserActivities } = useGlobalContext();
-  const getUserActivities = () => userActivities;
 
   useEffect(() => {
     (async () => {
-      await fetchUserActivities(
-        userProfile.userId,
-        setUserActivities,
-        getUserActivities
-      );
+      await fetchUserActivities(userProfile.userId, setUserActivities);
     })();
   }, []);
 

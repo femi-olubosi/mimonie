@@ -3,15 +3,11 @@ import { UserActivity } from '../src/models';
 
 import { debounce } from 'lodash';
 
-const debouncedSetUserActivities = debounce((setUserActivities, data) => {
-  setUserActivities(data);
-}, 1000);
+// const debouncedSetUserActivities = debounce((setUserActivities, data) => {
+//   setUserActivities(data);
+// }, 1000);
 
-export const fetchUserActivities = async (
-  userId,
-  setUserActivities,
-  getUserActivities
-) => {
+export const fetchUserActivities = async (userId, setUserActivities) => {
   try {
     await DataStore.start();
 
@@ -40,13 +36,7 @@ export const fetchUserActivities = async (
             a.createdAt > b.createdAt ? -1 : 1
           );
 
-          // Compare with the current state before updating
-          const currentActivities = getUserActivities();
-          if (
-            JSON.stringify(currentActivities) !== JSON.stringify(sortedUpdated)
-          ) {
-            debouncedSetUserActivities(setUserActivities, sortedUpdated);
-          }
+          setUserActivities(sortedUpdated);
         }
       }
     );

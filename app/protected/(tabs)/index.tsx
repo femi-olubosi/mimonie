@@ -57,7 +57,6 @@ export default function HomeScreen() {
     setUserActivities,
   } = useGlobalContext();
   const [alertShown, setAlertShown] = useState(false);
-  const getUserActivities = () => userActivities;
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -90,11 +89,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     (async () => {
-      await fetchUserActivities(
-        userProfile?.userId,
-        setUserActivities,
-        getUserActivities
-      );
+      await fetchUserActivities(userProfile?.userId, setUserActivities);
     })();
   }, [userProfile]);
 

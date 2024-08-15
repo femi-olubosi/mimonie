@@ -106,7 +106,7 @@ const Cards = ({ contributions }) => {
                       <FontAwesome6 name="naira-sign" size={12} color="white" />
                       {item.target.toLocaleString('en-US')}
                     </Text>
-                    {/* <Text
+                    <Text
                       style={[
                         styles.text,
                         { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
@@ -115,8 +115,12 @@ const Cards = ({ contributions }) => {
                       Collect on{' '}
                       {item.status !== 'running'
                         ? ' (Not running yet)'
-                        : getMonthsAfter(item.start_date, item.num_of_month)}
-                    </Text> */}
+                        : getCollectionDate(
+                            item.start_date,
+                            currentParticipant.index,
+                            item.variant
+                          )}
+                    </Text>
                   </View>
                   <View
                     style={{
@@ -208,14 +212,16 @@ const Cards = ({ contributions }) => {
 export default Cards;
 
 const NextContributionDay = ({ contribution, done, currentParticipant }) => {
+  const updateMe =
+    contribution?.current_count !== currentParticipant?.index &&
+    currentParticipant?.contributions < parseInt(contribution?.current_count);
+
   const getNextContributionDay = () => {
     if (contribution?.status !== 'running') {
       return 'Not running';
     }
 
-    if (
-      currentParticipant?.contributions < parseInt(contribution?.current_count)
-    ) {
+    if (updateMe) {
       return 'Today (Please fund your card)';
     }
 
@@ -267,22 +273,47 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
           {
             fontSize: 10,
             fontFamily: 'ir',
-            color:
-              currentParticipant?.contributions <
-              parseInt(contribution?.current_count)
-                ? '#FF7F7F'
-                : 'white',
+            color: updateMe ? '#FF7F7F' : 'white',
           },
         ]}
       >
         Due Date: {getNextContributionDay()}
       </Text>
-      {currentParticipant?.contributions <
-        parseInt(contribution?.current_count) && (
-        <Entypo name="back-in-time" size={10} color="#FF7F7F" />
-      )}
+      {updateMe && <Entypo name="back-in-time" size={10} color="#FF7F7F" />}
     </View>
   );
+};
+
+const getCollectionDate = (startDate, participantIndex, variant) => {
+  const start = new Date(startDate);
+  let collectionDate;
+
+  switch (variant) {
+    case 'days':
+      collectionDate = new Date(start);
+      collectionDate.setDate(start.getDate() + participantIndex);
+      break;
+    case 'weeks':
+      collectionDate = new Date(start);
+      collectionDate.setDate(
+        start.getDate() + participantIndex * 7 - start.getDay() + 1
+      );
+      break;
+    case 'months':
+      collectionDate = new Date(start);
+      collectionDate.setMonth(start.getMonth() + participantIndex);
+      collectionDate.setDate(28); // Always 28th of the month
+      break;
+    default:
+      collectionDate = 'Invalid contribution period';
+  }
+
+  return collectionDate instanceof Date
+    ? collectionDate.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+      })
+    : collectionDate;
 };
 
 const styles = StyleSheet.create({
