@@ -117,7 +117,7 @@ const Cards = ({ contributions }) => {
                         ? ' (Not running yet)'
                         : getCollectionDate(
                             item.start_date,
-                            currentParticipant.index,
+                            currentParticipant?.index,
                             item.variant
                           )}
                     </Text>

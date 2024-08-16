@@ -207,7 +207,7 @@ const processContributions = async () => {
       for (const participant of participants[0]) {
         if (
           participant.status !== 'in progress' &&
-          contribution.current_count > participant.contributions
+          participant.last_successful_round !== currentCount
         ) {
           const flow = await chargeAndSplitPayment(
             inProgressParticipant.subaccount_code,
@@ -217,6 +217,7 @@ const processContributions = async () => {
 
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
+            participant.last_successful_round === currentCount;
             paymentsProcessed = true;
 
             await saveUserActivity({
@@ -238,9 +239,7 @@ const processContributions = async () => {
             // Update and save the contribution after each successful payment
             contribution.participant = participants;
             await updateContribution(contribution);
-            console.log('success');
           } else {
-            console.log('failed');
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
@@ -254,7 +253,6 @@ const processContributions = async () => {
       }
 
       if (allPaymentsSuccessful && paymentsProcessed) {
-        console.log('done');
         await saveUserActivity({
           id: uuidv4(),
           userId: inProgressParticipant.userId,
