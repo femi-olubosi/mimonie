@@ -328,6 +328,17 @@ const NextContributionDay = ({ contribution, parsed }) => {
       return 'Not running';
     }
 
+    if (contribution?.status === 'completed') {
+      return 'Completed';
+    }
+
+    if (
+      contribution?.current_count !== 0 &&
+      contribution?.current_count >= parsed.length
+    ) {
+      return '-';
+    }
+
     const today = new Date();
     let nextContributionDay;
 
@@ -367,14 +378,7 @@ const NextContributionDay = ({ contribution, parsed }) => {
   return (
     <View style={styles.detailContainer}>
       <Text style={styles.label}>Next Contribution Day</Text>
-      <Text style={styles.value}>
-        {contribution?.status === 'completed'
-          ? 'Completed'
-          : contribution?.currentCount !== 0 &&
-            contribution?.currentCount >= parsed.length
-          ? '-'
-          : getNextContributionDay()}
-      </Text>
+      <Text style={styles.value}>{getNextContributionDay()}</Text>
     </View>
   );
 };

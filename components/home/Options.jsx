@@ -2,8 +2,12 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { AntDesign, FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { processContributions } from '@/api/payment.service';
 
 const Options = () => {
+  const tryNow = async () => {
+    const res = await processContributions();
+  };
   return (
     <View
       style={{
@@ -35,6 +39,7 @@ const Options = () => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
+        // onPress={tryNow}
         // onPress={() => router.push('/protected/flow')}
       >
         <AntDesign name="question" size={25} color="black" />
