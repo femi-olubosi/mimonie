@@ -5,12 +5,9 @@ import { router } from 'expo-router';
 import { processContributions } from '@/api/payment.service';
 
 const Options = () => {
-  // const tryNow = async () => {
-  //   console.log('start');
-  //   // return;
-  //   const res = await processContributions();
-  //   console.log('res', res);
-  // };
+  const tryNow = async () => {
+    const res = await processContributions();
+  };
   return (
     <View
       style={{

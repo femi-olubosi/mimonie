@@ -185,9 +185,11 @@ const processContributions = async () => {
       );
 
       // Stop updating current_count if it equals num_of_month - 1
-      if (contribution.current_count !== contribution.num_of_month - 1) {
+      if (contribution.current_count !== contribution.num_of_month) {
         contribution.current_count = currentCount;
       }
+
+      await updateContribution(contribution);
 
       // Convert currently_at to an integer if it is not already
       const currentAt = parseInt(contribution.currently_at) || 0;
@@ -217,7 +219,7 @@ const processContributions = async () => {
 
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
-            participant.last_successful_round === currentCount;
+            participant.last_successful_round = currentCount;
             paymentsProcessed = true;
 
             await saveUserActivity({
@@ -260,6 +262,10 @@ const processContributions = async () => {
           amount: contribution.amount * (participants[0].length - 1),
           description: `Final collection for ${contribution.name}`,
         });
+
+        for (const participant of participants[0]) {
+          participant.last_successful_round = currentCount;
+        }
 
         inProgressParticipant.status = 'received';
 

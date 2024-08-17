@@ -139,10 +139,7 @@ const Cards = ({ contributions }) => {
                         {
                           fontSize: 32,
                           fontFamily: 'esb',
-                          color:
-                            contributions < item.current_count
-                              ? 'red'
-                              : 'white',
+                          color: 'white',
                         },
                       ]}
                     >
@@ -214,7 +211,7 @@ export default Cards;
 const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   const updateMe =
     contribution?.current_count !== currentParticipant?.index &&
-    currentParticipant?.contributions < parseInt(contribution?.current_count);
+    (currentParticipant?.last_payment_round || 0) < contribution?.current_count;
 
   const getNextContributionDay = () => {
     if (contribution?.status !== 'running') {

@@ -68,14 +68,18 @@ export const processContributions = async () => {
         contribution.variant
       );
 
-      if (contribution.current_count !== contribution.num_of_month - 1) {
-        contribution.current_count = currentCount;
+      if (contribution.current_count !== contribution.num_of_month) {
+        await DataStore.save(
+          Contribution.copyOf(contribution, (updated) => {
+            updated.current_count = currentCount;
+          })
+        );
       }
+
       // Convert currently_at to an integer if it is not already
       const currentAt = parseInt(contribution.currently_at) || 0;
-
       // Skip if currently_at matches currentCount or if currentCount is 0 (same day as start date)
-      // if (currentAt === currentCount || currentCount === 0) continue;
+      if (currentAt === currentCount || currentCount === 0) continue;
 
       const participants = JSON.parse(contribution?.participant || ['[]']);
       // console.log(currentCount);
@@ -100,7 +104,11 @@ export const processContributions = async () => {
           participant.status !== 'in progress' &&
           participant.last_successful_round !== currentCount
         ) {
-          console.log('update', participant.name);
+          // console.log(
+          //   'update',
+          //   participant.name,
+          //   participant.last_successful_round
+          // );
 
           const flow = await chargeAndSplitPayment(
             inProgressParticipant.subaccount_code,
@@ -109,6 +117,7 @@ export const processContributions = async () => {
           );
 
           if (flow.data.status === 'success') {
+            // if (true) {
             participant.contributions = (participant.contributions || 0) + 1;
             participant.last_successful_round = currentCount;
             paymentsProcessed = true;
@@ -157,15 +166,19 @@ export const processContributions = async () => {
 
       if (allPaymentsSuccessful && paymentsProcessed) {
         // Save user activity for final Collection
-        // await DataStore.save(
-        //   new UserActivity({
-        //     userId: inProgressParticipant.userId,
-        //     type: 'collection',
-        //     amount: contribution.amount * (participants.length - 1),
-        //     description: `Final collection for ${contribution.name}`,
-        //   })
-        // );
-        console.log('yo');
+        await DataStore.save(
+          new UserActivity({
+            userId: inProgressParticipant.userId,
+            type: 'collection',
+            amount: contribution.amount * (participants.length - 1),
+            description: `Final collection for ${contribution.name}`,
+          })
+        );
+
+        for (const participant of participants[0]) {
+          participant.last_successful_round = currentCount;
+        }
+
         // Update in-progress participant's status to received
         inProgressParticipant.status = 'received';
 
