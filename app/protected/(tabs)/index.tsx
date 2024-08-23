@@ -15,7 +15,7 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   fetchCurrUser,
   fetchUserProfile,
@@ -32,7 +32,7 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { notificationIcon } from '@/utils/notificationsIcon';
 import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
 import { isLoading } from 'expo-font';
@@ -79,19 +79,24 @@ export default function HomeScreen() {
     })();
   }, []);
 
-  useEffect(() => {
-    fetchUserContributions(currentUser?.userId, setContributions);
-  }, [currentUser]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserContributions(currentUser?.userId, setContributions);
+    }, [currentUser])
+  );
 
   useEffect(() => {
     fetchUserNotification(currentUser?.userId, setNotifications);
   }, [currentUser]);
 
-  useEffect(() => {
-    (async () => {
-      await fetchUserActivities(userProfile?.userId, setUserActivities);
-    })();
-  }, [userProfile]);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchActivities = async () => {
+        await fetchUserActivities(userProfile?.userId, setUserActivities);
+      };
+      fetchActivities();
+    }, [userProfile])
+  );
 
   // useEffect(() => {
   //   if (!isLoading) {

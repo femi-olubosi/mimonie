@@ -1,6 +1,6 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
-import { debounce } from 'lodash';
+import * as Linking from 'expo-linking';
 
 // const debouncedSetContributions = debounce((setContributions, data) => {
 //   setContributions(data);
@@ -23,26 +23,26 @@ export const fetchUserContributions = async (userId, setContributions) => {
     setContributions(sorted);
 
     // Set up real-time subscription
-    const subscription = DataStore.observe(Contribution).subscribe(
-      async (msg) => {
-        if (
-          msg.opType === 'INSERT' ||
-          msg.opType === 'UPDATE' ||
-          msg.opType === 'DELETE'
-        ) {
-          const updatedContributions = await DataStore.query(
-            Contribution,
-            (c) => c.participant_ids.contains(userId)
-          );
-          const sortedUpdated = updatedContributions.sort((a, b) =>
-            a.createdAt > b.createdAt ? -1 : 1
-          );
-          setContributions(sortedUpdated);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    // const subscription = DataStore.observe(Contribution).subscribe(
+    //   async (msg) => {
+    //     if (
+    //       msg.opType === 'INSERT' ||
+    //       msg.opType === 'UPDATE' ||
+    //       msg.opType === 'DELETE'
+    //     ) {
+    //       const updatedContributions = await DataStore.query(
+    //         Contribution,
+    //         (c) => c.participant_ids.contains(userId)
+    //       );
+    //       const sortedUpdated = updatedContributions.sort((a, b) =>
+    //         a.createdAt > b.createdAt ? -1 : 1
+    //       );
+    //       setContributions(sortedUpdated);
+    //     }
+    //   }
+    // );
+    return sorted;
+    // return () => subscription.unsubscribe();
   } catch (error) {
     console.error('Error fetching user contributions:', error);
   }
@@ -65,16 +65,21 @@ export const createContribution = async (
     email: currentUser.email,
     status: 'in progress',
   };
+
+  const link = Linking.createURL('protected/mimonie', {
+    queryParams: {
+      userId: currentUser.userId,
+      contributionName: details.contributionName.split(' ').join('-'),
+    },
+  });
+
   try {
     const newContribution = await DataStore.save(
       new Contribution({
         name: details.contributionName,
         title: details.contributionName,
         category: details.groupName,
-        // start_date: details.date,
-        invite_link: `myapp://protected/mimonie/${
-          currentUser.userId
-        }-${details.contributionName.split(' ').join('-')}`,
+        invite_link: link,
         contributiongroupsID: details.groupId,
         participant: [userObj],
         participant_ids: [currentUser.userId],

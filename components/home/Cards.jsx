@@ -113,7 +113,7 @@ const Cards = ({ contributions }) => {
                       ]}
                     >
                       Collect on{' '}
-                      {item.status !== 'running'
+                      {item.status === 'open'
                         ? ' (Not running yet)'
                         : getCollectionDate(
                             item.start_date,
@@ -163,8 +163,10 @@ const Cards = ({ contributions }) => {
                   <Text
                     style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
                   >
-                    {done ? (
+                    {item.status === 'commpleted' ? (
                       'Completed'
+                    ) : done ? (
+                      'Completed your part'
                     ) : (
                       <>
                         <FontAwesome6
@@ -211,19 +213,23 @@ export default Cards;
 const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   const updateMe =
     contribution?.current_count !== currentParticipant?.index &&
-    (currentParticipant?.last_payment_round || 0) < contribution?.current_count;
+    currentParticipant?.last_payment_round < contribution?.current_count;
 
   const getNextContributionDay = () => {
-    if (contribution?.status !== 'running') {
+    if (contribution?.status === 'open') {
       return 'Not running';
+    }
+
+    if (contribution?.status === 'completed') {
+      return 'Completed';
+    }
+
+    if (done) {
+      return '-';
     }
 
     if (updateMe) {
       return 'Today (Please fund your card)';
-    }
-
-    if (done) {
-      return 'Completed';
     }
 
     const today = new Date();

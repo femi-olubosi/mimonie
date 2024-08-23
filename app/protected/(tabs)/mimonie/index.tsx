@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
+import * as Linking from 'expo-linking';
 import {
   fetchUserContributions,
   findContributionByInviteLink,
@@ -28,28 +29,47 @@ const Mimonie = () => {
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
 
-  useEffect(() => {
-    fetchUserContributions(currentUser.userId, setContributions);
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      setSearchedContribution(null);
-    }, [])
-  );
-
-  const handleSearchContribution = async () => {
+  const handleSearchContribution = async (searchTerm) => {
     setIsLoading(true);
     try {
-      const res = await findContributionByInviteLink(contributionSearch);
+      const searchQuery =
+        typeof searchTerm === 'string' && searchTerm.trim() !== ''
+          ? searchTerm
+          : contributionSearch;
+
+      const res = await findContributionByInviteLink(searchQuery);
       setSearchedContribution(res);
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
-      setContributionSearch('');
+      if (!searchTerm) {
+        setContributionSearch('');
+      }
     }
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserContributions(currentUser.userId, setContributions);
+      const handleDeepLink = (event) => {
+        const { path, queryParams } = Linking.parse(event.url);
+        if (path === 'mimonie') {
+          const inviteLink = `myapp://protected/mimonie?userId=${queryParams?.userId}&contributionName=${queryParams?.contributionName}`;
+          setContributionSearch(inviteLink);
+          handleSearchContribution(inviteLink);
+        }
+      };
+
+      // Add listener for incoming links
+      const subscription = Linking.addEventListener('url', handleDeepLink);
+
+      // Cleanup the listener when the screen loses focus or unmounts
+      return () => {
+        subscription.remove();
+      };
+    }, [])
+  );
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);
@@ -142,6 +162,24 @@ const Mimonie = () => {
             onPress={handleSearchContribution}
           />
         </View>
+        {searchedContribution && (
+          <TouchableOpacity
+            style={{
+              alignSelf: 'flex-end',
+              marginTop: 10,
+              borderWidth: 1,
+              borderColor: 'gray',
+              borderRadius: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+            }}
+            onPress={() => {
+              setSearchedContribution(null), setContributionSearch('');
+            }}
+          >
+            <Text style={{ fontSize: 12 }}>Clear search</Text>
+          </TouchableOpacity>
+        )}
         <FlatList
           data={searchedContribution || contributions}
           renderItem={renderContribution}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,13 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import { useRouter, useLocalSearchParams, router } from 'expo-router';
+import {
+  useRouter,
+  useLocalSearchParams,
+  router,
+  useFocusEffect,
+} from 'expo-router';
+import * as Linking from 'expo-linking';
 import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
 import {
@@ -324,7 +330,7 @@ const ContributionDetails = () => {
 
 const NextContributionDay = ({ contribution, parsed }) => {
   const getNextContributionDay = () => {
-    if (contribution?.status !== 'running') {
+    if (contribution?.status === 'open') {
       return 'Not running';
     }
 
