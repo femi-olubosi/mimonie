@@ -1,10 +1,5 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
-import * as Linking from 'expo-linking';
-
-// const debouncedSetContributions = debounce((setContributions, data) => {
-//   setContributions(data);
-// }, 1000);
 
 // Fetch user contributions and set up real-time updates
 export const fetchUserContributions = async (userId, setContributions) => {
@@ -66,12 +61,9 @@ export const createContribution = async (
     status: 'in progress',
   };
 
-  const link = Linking.createURL('protected/mimonie', {
-    queryParams: {
-      userId: currentUser.userId,
-      contributionName: details.contributionName.split(' ').join('-'),
-    },
-  });
+  const link = `https://mimonie.net/protected/mimonie?userId=${
+    currentUser.userId
+  }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -93,6 +85,7 @@ export const createContribution = async (
       })
     );
     setContributions((prev) => [...prev, newContribution]);
+    console.log(newContribution);
     return newContribution;
   } catch (error) {
     console.error('Error creating contribution group:', error);

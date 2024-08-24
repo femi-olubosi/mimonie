@@ -28,6 +28,8 @@ const Mimonie = () => {
   const router = useRouter();
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
+  const [text, setText] = useState('');
+  const [text1, setText1] = useState('');
 
   const handleSearchContribution = async (searchTerm) => {
     setIsLoading(true);
@@ -49,27 +51,39 @@ const Mimonie = () => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchUserContributions(currentUser.userId, setContributions);
-      const handleDeepLink = (event) => {
-        const { path, queryParams } = Linking.parse(event.url);
-        if (path === 'mimonie') {
-          const inviteLink = `myapp://protected/mimonie?userId=${queryParams?.userId}&contributionName=${queryParams?.contributionName}`;
-          setContributionSearch(inviteLink);
-          handleSearchContribution(inviteLink);
-        }
-      };
+  useEffect(() => {
+    fetchUserContributions(currentUser.userId, setContributions);
+    console.log('just');
+    const fetchAndHandleDeepLink = (url) => {
+      const { path, queryParams } = Linking.parse(url);
 
-      // Add listener for incoming links
-      const subscription = Linking.addEventListener('url', handleDeepLink);
+      if (path === 'mimonie' || path === 'protected/mimonie') {
+        setContributionSearch(url);
+        handleSearchContribution(url);
+      }
+    };
 
-      // Cleanup the listener when the screen loses focus or unmounts
-      return () => {
-        subscription.remove();
-      };
-    }, [])
-  );
+    const handleDeepLink = (event) => {
+      console.log('Deep link received:', event.url);
+      fetchAndHandleDeepLink(event.url);
+    };
+
+    // Check if the app was opened with a deep link initially
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log('App opened with URL:', url);
+        fetchAndHandleDeepLink(url);
+      }
+    });
+
+    // Add listener for incoming links
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);

@@ -1,0 +1,27 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "XM5XFU43RV.com.femiolubosi.mimonie"
+        ],
+        "components": [
+          {
+            "/": "*",
+            "comment": "Matches all routes"
+          }
+        ]
+      }
+    ]
+  },
+  "activitycontinuation": {
+    "apps": [
+      "XM5XFU43RV.com.femiolubosi.mimonie"
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "XM5XFU43RV.com.femiolubosi.mimonie"
+    ]
+  }
+}
