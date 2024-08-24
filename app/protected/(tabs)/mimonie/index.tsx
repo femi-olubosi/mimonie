@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
+import * as Linking from 'expo-linking';
 import {
   fetchUserContributions,
   findContributionByInviteLink,
@@ -27,29 +28,62 @@ const Mimonie = () => {
   const router = useRouter();
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
+  const [text, setText] = useState('');
+  const [text1, setText1] = useState('');
 
-  useEffect(() => {
-    fetchUserContributions(currentUser.userId, setContributions);
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      setSearchedContribution(null);
-    }, [])
-  );
-
-  const handleSearchContribution = async () => {
+  const handleSearchContribution = async (searchTerm) => {
     setIsLoading(true);
     try {
-      const res = await findContributionByInviteLink(contributionSearch);
+      const searchQuery =
+        typeof searchTerm === 'string' && searchTerm.trim() !== ''
+          ? searchTerm
+          : contributionSearch;
+
+      const res = await findContributionByInviteLink(searchQuery);
       setSearchedContribution(res);
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
-      setContributionSearch('');
+      if (!searchTerm) {
+        setContributionSearch('');
+      }
     }
   };
+
+  useEffect(() => {
+    fetchUserContributions(currentUser.userId, setContributions);
+
+    const fetchAndHandleDeepLink = (url) => {
+      const { path, queryParams } = Linking.parse(url);
+
+      if (path === 'mimonie' || path === 'protected/mimonie') {
+        setContributionSearch(url);
+        handleSearchContribution(url);
+      }
+    };
+
+    const handleDeepLink = (event) => {
+      console.log('Deep link received:', event.url);
+      fetchAndHandleDeepLink(event.url);
+    };
+
+    // Check if the app was opened with a deep link initially
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        console.log('App opened with URL:', url);
+        fetchAndHandleDeepLink(url);
+      }
+    });
+
+    // Add listener for incoming links
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);
@@ -142,6 +176,24 @@ const Mimonie = () => {
             onPress={handleSearchContribution}
           />
         </View>
+        {searchedContribution && (
+          <TouchableOpacity
+            style={{
+              alignSelf: 'flex-end',
+              marginTop: 10,
+              borderWidth: 1,
+              borderColor: 'gray',
+              borderRadius: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+            }}
+            onPress={() => {
+              setSearchedContribution(null), setContributionSearch('');
+            }}
+          >
+            <Text style={{ fontSize: 12 }}>Clear search</Text>
+          </TouchableOpacity>
+        )}
         <FlatList
           data={searchedContribution || contributions}
           renderItem={renderContribution}

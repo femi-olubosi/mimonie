@@ -1,10 +1,5 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
-import { debounce } from 'lodash';
-
-// const debouncedSetContributions = debounce((setContributions, data) => {
-//   setContributions(data);
-// }, 1000);
 
 // Fetch user contributions and set up real-time updates
 export const fetchUserContributions = async (userId, setContributions) => {
@@ -24,26 +19,26 @@ export const fetchUserContributions = async (userId, setContributions) => {
     setContributions(sorted);
 
     // Set up real-time subscription
-    const subscription = DataStore.observe(Contribution).subscribe(
-      async (msg) => {
-        if (
-          msg.opType === 'INSERT' ||
-          msg.opType === 'UPDATE' ||
-          msg.opType === 'DELETE'
-        ) {
-          const updatedContributions = await DataStore.query(
-            Contribution,
-            (c) => c.participant_ids.contains(userId)
-          );
-          const sortedUpdated = updatedContributions.sort((a, b) =>
-            a.createdAt > b.createdAt ? -1 : 1
-          );
-          setContributions(sortedUpdated);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    // const subscription = DataStore.observe(Contribution).subscribe(
+    //   async (msg) => {
+    //     if (
+    //       msg.opType === 'INSERT' ||
+    //       msg.opType === 'UPDATE' ||
+    //       msg.opType === 'DELETE'
+    //     ) {
+    //       const updatedContributions = await DataStore.query(
+    //         Contribution,
+    //         (c) => c.participant_ids.contains(userId)
+    //       );
+    //       const sortedUpdated = updatedContributions.sort((a, b) =>
+    //         a.createdAt > b.createdAt ? -1 : 1
+    //       );
+    //       setContributions(sortedUpdated);
+    //     }
+    //   }
+    // );
+    return sorted;
+    // return () => subscription.unsubscribe();
   } catch (error) {
     console.error('Error fetching user contributions:', error);
   }
@@ -64,18 +59,21 @@ export const createContribution = async (
     auth_url: userProfile.auth_url,
     subaccount_code: userProfile.subaccount_code,
     email: currentUser.email,
+    last_payment_round: 0,
     status: 'in progress',
   };
+
+  const link = `https://mimonie.net/protected/mimonie?userId=${
+    currentUser.userId
+  }&contributionName=${details.contributionName.split(' ').join('')}`;
+
   try {
     const newContribution = await DataStore.save(
       new Contribution({
         name: details.contributionName,
         title: details.contributionName,
         category: details.groupName,
-        // start_date: details.date,
-        invite_link: `myapp://protected/mimonie/${
-          currentUser.userId
-        }-${details.contributionName.split(' ').join('-')}`,
+        invite_link: link,
         contributiongroupsID: details.groupId,
         participant: [userObj],
         participant_ids: [currentUser.userId],
@@ -89,6 +87,7 @@ export const createContribution = async (
       })
     );
     setContributions((prev) => [...prev, newContribution]);
+    console.log(newContribution);
     return newContribution;
   } catch (error) {
     console.error('Error creating contribution group:', error);
@@ -172,6 +171,7 @@ export const joinContribution = async (
       email: currentUser.email,
       auth_url: userProfile.auth_url,
       subaccount_code: userProfile.subaccount_code,
+      last_payment_round: 0,
       status: 'pending',
     };
 

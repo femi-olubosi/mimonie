@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.femiolubosi.mimonie",
+      "sha256_cert_fingerprints": [
+        "53:06:CB:F5:58:BD:2F:35:88:D6:9C:D5:88:25:10:B0:A0:E2:B2:07:99:23:2E:A5:EB:F6:F2:B3:87:FA:67:5E"
+      ]
+    }
+  }
+]

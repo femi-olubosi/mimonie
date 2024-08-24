@@ -2,25 +2,40 @@
   "expo": {
     "name": "Mimonie",
     "slug": "mimonie",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "mimonie",
     "userInterfaceStyle": "automatic",
     "developmentClient": {
       "silentLaunch": true
     },
     "ios": {
-      "buildNumber": "2",
+      "buildNumber": "3",
       "supportsTablet": true,
-      "bundleIdentifier": "com.femiolubosi.mimonie"
+      "bundleIdentifier": "com.femiolubosi.mimonie",
+      "associatedDomains": ["applinks:mimonie.net"]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
       },
-      "package": "com.femiolubosi.mimonie"
+      "package": "com.femiolubosi.mimonie",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            {
+              "scheme": "https",
+              "host": "mimonie.net",
+              "pathPrefix": "/"
+            }
+          ]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
