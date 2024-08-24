@@ -53,7 +53,7 @@ const Mimonie = () => {
 
   useEffect(() => {
     fetchUserContributions(currentUser.userId, setContributions);
-    console.log('just');
+
     const fetchAndHandleDeepLink = (url) => {
       const { path, queryParams } = Linking.parse(url);
 
