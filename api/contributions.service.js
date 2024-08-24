@@ -1,6 +1,5 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
-import { debounce } from 'lodash';
 
 // const debouncedSetContributions = debounce((setContributions, data) => {
 //   setContributions(data);
@@ -10,6 +9,7 @@ import { debounce } from 'lodash';
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
     await DataStore.start();
+    // await DataStore.clear();
 
     // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
@@ -23,26 +23,26 @@ export const fetchUserContributions = async (userId, setContributions) => {
     setContributions(sorted);
 
     // Set up real-time subscription
-    const subscription = DataStore.observe(Contribution).subscribe(
-      async (msg) => {
-        if (
-          msg.opType === 'INSERT' ||
-          msg.opType === 'UPDATE' ||
-          msg.opType === 'DELETE'
-        ) {
-          const updatedContributions = await DataStore.query(
-            Contribution,
-            (c) => c.participant_ids.contains(userId)
-          );
-          const sortedUpdated = updatedContributions.sort((a, b) =>
-            a.createdAt > b.createdAt ? -1 : 1
-          );
-          setContributions(sortedUpdated);
-        }
-      }
-    );
+    // const subscription = DataStore.observe(Contribution).subscribe(
+    //   async (msg) => {
+    //     if (
+    //       msg.opType === 'INSERT' ||
+    //       msg.opType === 'UPDATE' ||
+    //       msg.opType === 'DELETE'
+    //     ) {
+    //       const updatedContributions = await DataStore.query(
+    //         Contribution,
+    //         (c) => c.participant_ids.contains(userId)
+    //       );
+    //       const sortedUpdated = updatedContributions.sort((a, b) =>
+    //         a.createdAt > b.createdAt ? -1 : 1
+    //       );
+    //       setContributions(sortedUpdated);
+    //     }
+    //   }
+    // );
 
-    return () => subscription.unsubscribe();
+    return sorted;
   } catch (error) {
     console.error('Error fetching user contributions:', error);
   }
