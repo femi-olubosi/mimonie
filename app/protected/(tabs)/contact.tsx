@@ -30,6 +30,7 @@ const Contact = () => {
     currentUser,
   } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
+  const [foundUsers, setFoundUsers] = useState(null);
 
   useEffect(() => {
     fetchAllUsers(setAllUsers);
@@ -48,11 +49,26 @@ const Contact = () => {
     }
   };
 
+  useEffect(() => {
+    const checkAvailable = myContacts
+      ?.map((contact) => {
+        const res = findMatchingUser(allUsers, contact.phoneNumbers);
+        // return contact;
+        return res?.found ? contact : null;
+      })
+      ?.filter((e) => e);
+
+    setFoundUsers(checkAvailable);
+  }, [allUsers]);
+
+  console.log('found', foundUsers);
+
   const renderContact = ({ item }) => {
     const contactDetails = item.phoneNumbers;
 
-    const { found, userProfile } = findMatchingUser(allUsers, contactDetails);
-    console.log(userProfile, found);
+    // const { found, userProfile } = findMatchingUser(allUsers, contactDetails);
+    const res = findMatchingUser(allUsers, contactDetails);
+
     const connections = {
       userId: userProfile?.userId,
       name: userProfile?.name,
@@ -74,7 +90,7 @@ const Contact = () => {
         </View>
 
         <View style={{}}>
-          {found ? (
+          {res?.found ? (
             <Pressable
               style={{
                 paddingHorizontal: 4,
@@ -137,8 +153,10 @@ const Contact = () => {
         />
       </View>
       <FlatList
-        data={filteredContacts}
-        keyExtractor={(item) => item.id}
+        data={
+          foundUsers ? [...foundUsers, ...filteredContacts] : filteredContacts
+        }
+        keyExtractor={(item, idx) => idx.toString()}
         renderItem={renderContact}
       />
     </SafeAreaView>
