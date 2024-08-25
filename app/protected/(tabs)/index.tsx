@@ -139,7 +139,7 @@ export default function HomeScreen() {
         />
         <ScrollView contentContainerStyle={{}}>
           <Cards contributions={contributions} />
-          <Options />
+          <Options userProfile={userProfile} />
           <Advert />
           <View
             style={{ paddingHorizontal: 20, backgroundColor: 'white', flex: 1 }}
