@@ -17,7 +17,7 @@ import {
 import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
 import * as Device from 'expo-device';
-import { fetchCurrUser } from '../../api/user.service';
+import { fetchCurrUser, updateUserProfile } from '../../api/user.service';
 import { createNotification } from '../../api/notifications.service';
 
 const DeviceVerification = () => {
@@ -34,10 +34,16 @@ const DeviceVerification = () => {
       });
 
       await fetchCurrUser(setCurrentUser);
+      const device = {
+        device_id: Device.osInternalBuildId || null,
+        device_name: Device.deviceName || null,
+        device_brand: Device.brand || null,
+      };
+      await updateUserProfile(device, currentUser);
       await createNotification(
         {
-          title: 'Phone Verification Completed',
-          content: `Thank you for verifying your phone number`,
+          title: 'Verification Completed',
+          content: `Your phone number is verified and your device is registered`,
           type: 'verification',
           userId: currentUser.userId,
           read: false,
@@ -46,7 +52,7 @@ const DeviceVerification = () => {
       );
       Alert.alert(
         'Success',
-        `Your phone number has been verified successfully.`,
+        `Your phone number is verified and your device is registered`,
         [
           {
             text: 'Continue',
@@ -82,8 +88,11 @@ const DeviceVerification = () => {
             paddingHorizontal: 20,
           }}
         >
-          <Text style={[styles.title, { marginBottom: 40 }]}>
+          <Text style={[styles.title, { marginBottom: 10 }]}>
             Verification Code
+          </Text>
+          <Text style={{ marginBottom: 40 }}>
+            A code has been sent to your phone number
           </Text>
           <View>
             <Text style={styles.label}>Code</Text>
