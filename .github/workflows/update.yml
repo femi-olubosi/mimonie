@@ -37,4 +37,4 @@ jobs:
         run: eas update --auto
 
       - name: Update Production
-        run: npm run prod
+        run: eas update --branch production
