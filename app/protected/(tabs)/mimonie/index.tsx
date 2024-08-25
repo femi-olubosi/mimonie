@@ -5,11 +5,10 @@ import {
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
@@ -28,8 +27,6 @@ const Mimonie = () => {
   const router = useRouter();
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
-  const [text, setText] = useState('');
-  const [text1, setText1] = useState('');
 
   const handleSearchContribution = async (searchTerm) => {
     setIsLoading(true);

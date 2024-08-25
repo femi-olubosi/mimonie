@@ -36,7 +36,7 @@ import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
 import { get } from 'aws-amplify/api';
 import { searchTree } from '../../../utils/searchTree';
-import { createNotification } from '../../../api/notifications.service';
+import { createNotification } from '@/api/notifications.service';
 import {
   isNameAndDobIncluded,
   isNameIncluded,
@@ -237,7 +237,7 @@ const Account = () => {
                 marginTop: 10,
               }}
             >
-              {currentUser?.phone_number}
+              {userProfile?.phone_number}
             </Text>
           </View>
         </View>

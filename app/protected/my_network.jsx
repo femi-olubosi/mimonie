@@ -20,26 +20,42 @@ import { useGlobalContext } from '../../store/StoreContext';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
-  const { currentUser, setUserProfile, userProfile } = useGlobalContext();
+  const { currentUser, setUserProfile, userProfile, setIsLoading } =
+    useGlobalContext();
   const [parsedConnect, setParsedConnect] = useState([]);
 
+  useEffect(() => {
+    fetchUserProfile(setUserProfile, currentUser);
+  }, []);
+
   const handleRemoveRequest = async (data) => {
+    setIsLoading(true);
     try {
       await rejectConnectionRequest(data, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleConnectRequest = async (data) => {
-    if (activeTab === 1) {
-      await removeConnection(data, userProfile);
-    } else if (activeTab === 2) {
-      await acceptConnectionRequest(data, userProfile);
+    setIsLoading(true);
+    try {
+      if (activeTab === 1) {
+        await removeConnection(data, userProfile);
+      } else if (activeTab === 2) {
+        await acceptConnectionRequest(data, userProfile);
+      }
+    } catch (error) {
+      console.error('Error handling connection request:', error);
+    } finally {
+      await fetchUserProfile(setUserProfile, currentUser);
+      setIsLoading(false);
     }
   };
-
+  console.log('user', userProfile);
   useEffect(() => {
     const safeParseJSON = (data, fallback) => {
       try {
@@ -49,7 +65,7 @@ const connect = () => {
       }
     };
 
-    if (userProfile.connections) {
+    if (userProfile?.connections) {
       const parsedData = safeParseJSON(userProfile?.connections, []);
       setParsedConnect(parsedData);
     }
@@ -187,7 +203,7 @@ const connect = () => {
         <FlatList
           data={activeTab === 1 ? myConnections : pendingConnections}
           renderItem={renderConnectionItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, idx) => idx.toString()}
         />
       </View>
     </PageView>

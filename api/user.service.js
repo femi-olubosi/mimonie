@@ -77,7 +77,22 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
       c.userId.eq(currentUser.userId)
     );
     setUserProfile(userProfile[0]);
-    return userProfile[0];
+
+    // Set up real-time subscription
+    const subscription = DataStore.observe(UserProfile).subscribe(
+      async (msg) => {
+        if (msg.opType === 'UPDATE') {
+          const updatedProfile = await DataStore.query(UserProfile, (c) =>
+            c.userId.eq(currentUser.userId)
+          );
+
+          setUserProfile(updatedProfile[0]);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+    // return userProfile[0];
   } catch (error) {
     console.error('Error fetching user user profile:', error);
     return [];

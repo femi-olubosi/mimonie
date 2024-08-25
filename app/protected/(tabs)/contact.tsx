@@ -67,7 +67,6 @@ const Contact = () => {
       console.error(error);
     }
   };
-  console.log('user', userProfile);
 
   useEffect(() => {
     const safeParseJSON = (data, fallback) => {
@@ -80,12 +79,9 @@ const Contact = () => {
 
     if (userProfile) {
       const parsedData = safeParseJSON(userProfile?.connections, []);
-      console.log('...', parsedData);
       setParsed(parsedData);
     }
   }, [userProfile]);
-
-  console.log('parsed', parsedData);
 
   useEffect(() => {
     const checkAvailable =
@@ -121,13 +117,13 @@ const Contact = () => {
 
     const requested = parsedData?.find(
       (e) =>
-        e?.phone_number === res?.userProfile?.phone_number ||
+        e?.phone_number === res?.userProfile?.phone_number &&
         e?.status === 'pending'
     );
 
     const connected = parsedData?.find(
       (e) =>
-        e?.phone_number === res?.userProfile?.phone_number ||
+        e?.phone_number === res?.userProfile?.phone_number &&
         e?.status === 'accepted'
     );
 
@@ -156,10 +152,10 @@ const Contact = () => {
                   paddingVertical: 6,
                   borderRadius: 4,
                   borderWidth: 1,
-                  borderColor: Colors.pri,
+                  borderColor: requested ? '#ecb753' : Colors.pri,
                 }}
                 onPress={() => {
-                  if (requested) {
+                  if (requested || connected) {
                     return;
                   }
                   handleRequestConnect(connections);
@@ -168,7 +164,7 @@ const Contact = () => {
                 <Text
                   style={{
                     fontSize: 8,
-                    color: Colors.pri,
+                    color: requested ? '#ecb753' : Colors.pri,
                   }}
                 >
                   {requested ? 'Pending' : connected ? 'Connected' : 'Connect'}

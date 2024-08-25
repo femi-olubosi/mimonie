@@ -52,7 +52,7 @@ export const updateUserConnections = async (newConnection, userProfile) => {
   }
 };
 
-export const removeConnection = async (data, userProfile) => {
+const saveUpdatedProfiles = async (data, userProfile) => {
   try {
     const currUserProfile = await DataStore.query(UserProfile, (c) =>
       c.userId.eq(userProfile.userId)
@@ -65,33 +65,41 @@ export const removeConnection = async (data, userProfile) => {
       throw new Error('User profile not found');
     }
 
-    const updatedConnections = currUserProfile.connections.filter(
+    const currentConnections = JSON.parse(
+      currUserProfile[0].connections || '[]'
+    );
+    const otherConnections = JSON.parse(
+      otherUserProfile[0].connections || '[]'
+    );
+
+    const updatedConnections = currentConnections.filter(
       (connection) => connection.userId !== data.userId
     );
-    const updatedOtherConnections = otherUserProfile.connections.map(
-      (connection) => {
-        if (connection.userId === userProfile.userId) {
-          connection.status = 'removed';
-        }
-        return connection;
-      }
+
+    // Filter out the pending connection request from the other user's connections
+    const updatedOtherConnections = otherConnections.filter(
+      (connection) => connection.userId !== userProfile.userId
     );
 
     await Promise.all([
       DataStore.save(
         UserProfile.copyOf(currUserProfile[0], (updated) => {
-          updated.connections = updatedConnections;
+          updated.connections = JSON.stringify(updatedConnections);
         })
       ),
       DataStore.save(
         UserProfile.copyOf(otherUserProfile[0], (updated) => {
-          updated.connections = updatedOtherConnections;
+          updated.connections = JSON.stringify(updatedOtherConnections);
         })
       ),
     ]);
   } catch (error) {
     console.error('Error removing connection request:', error);
   }
+};
+
+export const removeConnection = async (data, userProfile) => {
+  await saveUpdatedProfiles(data, userProfile);
 };
 
 export const acceptConnectionRequest = async (data, userProfile) => {
@@ -107,118 +115,29 @@ export const acceptConnectionRequest = async (data, userProfile) => {
       throw new Error('User profile not found');
     }
 
-    const updatedConnections = currentUserProfile[0].connections.map(
-      (connection) => {
-        if (connection.userId === data.userId) {
-          connection.status = 'accepted';
-        }
-        return connection;
-      }
-    );
-    const updatedOtherConnections = otherUserProfile[0].connections.map(
-      (connection) => {
-        if (connection.userId === userProfile.userId) {
-          connection.status = 'accepted';
-        }
-        return connection;
-      }
-    );
-
-    await Promise.all([
-      DataStore.save(
-        UserProfile.copyOf(currentUserProfile[0], (updated) => {
-          updated.connections = updatedConnections;
-        })
-      ),
-      DataStore.save(
-        UserProfile.copyOf(otherUserProfile[0], (updated) => {
-          updated.connections = updatedOtherConnections;
-        })
-      ),
-    ]);
-  } catch (error) {
-    console.error('Error accepting connection request:', error);
-  }
-};
-
-export const rejectConnectionRequest = async (data, userProfile) => {
-  try {
-    const currUserProfile = await DataStore.query(UserProfile, (c) =>
-      c.userId.eq(userProfile.userId)
-    );
-    const otherUserProfile = await DataStore.query(UserProfile, (c) =>
-      c.userId.eq(data.userId)
-    );
-
-    if (!currUserProfile || !otherUserProfile) {
-      throw new Error('User profile not found');
-    }
-
-    const updatedConnections = currUserProfile[0].connections.filter(
-      (connection) => connection.userId !== data.userId
-    );
-    const updatedOtherConnections = otherUserProfile[0].connections.map(
-      (connection) => {
-        if (connection.userId === userProfile.userId) {
-          connection.status = 'rejected';
-        }
-        return connection;
-      }
-    );
-
-    await Promise.all([
-      DataStore.save(
-        UserProfile.copyOf(currUserProfile[0], (updated) => {
-          updated.connections = updatedConnections;
-        })
-      ),
-      DataStore.save(
-        UserProfile.copyOf(otherUserProfile[0], (updated) => {
-          updated.connections = updatedOtherConnections;
-        })
-      ),
-    ]);
-  } catch (error) {
-    console.error('Error rejecting connection request:', error);
-  }
-};
-
-export const undoRequest = async (data, userProfile) => {
-  try {
-    // Fetch the current user's profile and the other user's profile based on user IDs
-    const currUserProfile = await DataStore.query(UserProfile, (c) =>
-      c.userId.eq(userProfile.userId)
-    );
-    const otherUserProfile = await DataStore.query(UserProfile, (c) =>
-      c.userId.eq(data.userId)
-    );
-
-    if (!currUserProfile || !otherUserProfile) {
-      throw new Error('User profile not found');
-    }
-
-    // Parse connections JSON strings into arrays
     const currentConnections = JSON.parse(
-      currUserProfile[0].connections || '[]'
+      currentUserProfile[0].connections || '[]'
     );
     const otherConnections = JSON.parse(
       otherUserProfile[0].connections || '[]'
     );
 
-    // Filter out the pending connection request from the current user's connections
-    const updatedConnections = currentConnections.filter(
-      (connection) => connection.userId !== data.userId
-    );
+    const updatedConnections = currentConnections.map((connection) => {
+      if (connection.userId === data.userId) {
+        connection.status = 'accepted';
+      }
+      return connection;
+    });
+    const updatedOtherConnections = otherConnections.map((connection) => {
+      if (connection.userId === userProfile.userId) {
+        connection.status = 'accepted';
+      }
+      return connection;
+    });
 
-    // Filter out the pending connection request from the other user's connections
-    const updatedOtherConnections = otherConnections.filter(
-      (connection) => connection.userId !== userProfile.userId
-    );
-
-    // Save the updated user profiles, converting connections back to JSON strings
     await Promise.all([
       DataStore.save(
-        UserProfile.copyOf(currUserProfile[0], (updated) => {
+        UserProfile.copyOf(currentUserProfile[0], (updated) => {
           updated.connections = JSON.stringify(updatedConnections);
         })
       ),
@@ -228,9 +147,15 @@ export const undoRequest = async (data, userProfile) => {
         })
       ),
     ]);
-
-    console.log('Connection request successfully undone.');
   } catch (error) {
-    console.error('Error undoing connection request:', error);
+    console.error('Error accepting connection request:', error);
   }
+};
+
+export const rejectConnectionRequest = async (data, userProfile) => {
+  await saveUpdatedProfiles(data, userProfile);
+};
+
+export const undoRequest = async (data, userProfile) => {
+  await saveUpdatedProfiles(data, userProfile);
 };
