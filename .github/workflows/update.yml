@@ -35,3 +35,6 @@ jobs:
 
       - name: Publish update
         run: eas update --auto
+
+      - name: Update Production
+        run: npm run prod
