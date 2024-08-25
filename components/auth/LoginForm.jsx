@@ -21,7 +21,11 @@ import {
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
+import {
+  fetchAuthUserProfile,
+  fetchCurrUser,
+  fetchUserProfile,
+} from '../../api/user.service';
 import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
 import { convertToAWSDate } from '../../utils/toAWSDate';
@@ -67,34 +71,37 @@ const LoginForm = (props) => {
         }
       }
       const user = await fetchCurrUser(setCurrentUser);
-      const profile = await fetchUserProfile(setUserProfile, user);
+      const profile = await fetchAuthUserProfile(setUserProfile, user);
 
       await fetchUserNotification(user.userId, setNotifications);
-      // if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
-      //   Alert.alert(
-      //     'Device Mismatch',
-      //     `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
-      //     [
-      //       {
-      //         text: 'Cancel',
-      //         onPress: () => signOut(),
-      //         style: 'cancel',
-      //       },
-      //       {
-      //         text: 'Register',
-      //         onPress: async () => {
-      //           await sendUserAttributeVerificationCode({
-      //             userAttributeKey: 'phone_number',
-      //           });
-      //           router.push('/protected/device_verify');
-      //         },
-      //       },
-      //     ],
-      //     { cancelable: false }
-      //   );
-      //   return;
-      // }
-
+      if (
+        profile?.device_id &&
+        profile?.device_id !== Device.osInternalBuildId
+      ) {
+        Alert.alert(
+          'Device Mismatch',
+          `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Register',
+              onPress: async () => {
+                await sendUserAttributeVerificationCode({
+                  userAttributeKey: 'phone_number',
+                });
+                router.push('/protected/device_verify');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
+      console.log({ profile });
       if (!profile?.name) {
         router.push('/protected/complete_profile');
         return;

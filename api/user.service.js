@@ -99,6 +99,23 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
   }
 };
 
+export const fetchAuthUserProfile = async (setUserProfile, currentUser) => {
+  try {
+    // await DataStore.clear();
+    await DataStore.start();
+    // Fetch contributions where the user is a participant
+    const userProfile = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(currentUser.userId)
+    );
+    setUserProfile(userProfile[0]);
+
+    return userProfile[0];
+  } catch (error) {
+    console.error('Error fetching user user profile:', error);
+    return [];
+  }
+};
+
 export const createUserProfile = async (
   userId,
   { device_id, device_name, device_brand }
