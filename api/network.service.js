@@ -14,31 +14,35 @@ export const updateUserConnections = async (newConnection, userProfile) => {
       throw new Error('User profile not found');
     }
 
-    // Create a new connection object
+    const currentConnections = JSON.parse(
+      currentUserProfile[0].connections || '[]'
+    );
+    const otherConnections = JSON.parse(
+      newConnectionProfile[0].connections || '[]'
+    );
 
-    // Update connections for both profiles
+    currentConnections.push(newConnection);
+
+    otherConnections.push({
+      userId: userProfile?.userId,
+      name: userProfile?.name,
+      phone_number: userProfile?.phone_number,
+      email: userProfile?.email,
+      occupation: userProfile?.occupation,
+      verified: userProfile.is_nin_verified && userProfile.is_bvn_verified,
+      status: 'pending',
+      type: 'request',
+    });
+
     await Promise.all([
       DataStore.save(
         UserProfile.copyOf(currentUserProfile[0], (updated) => {
-          updated.connections = [...updated.connections, newConnection];
+          updated.connections = JSON.stringify(currentConnections);
         })
       ),
       DataStore.save(
         UserProfile.copyOf(newConnectionProfile[0], (updated) => {
-          updated.connections = [
-            ...updated.connections,
-            {
-              userId: userProfile.userId,
-              name: userProfile.name,
-              phone_number: userProfile.phone_number,
-              email: userProfile.email,
-              occupation: userProfile.occupation,
-              verified:
-                userProfile.is_nin_verified && userProfile.is_bvn_verified,
-              status: 'pending',
-              type: 'request',
-            },
-          ];
+          updated.connections = JSON.stringify(otherConnections);
         })
       ),
     ]);
@@ -176,5 +180,57 @@ export const rejectConnectionRequest = async (data, userProfile) => {
     ]);
   } catch (error) {
     console.error('Error rejecting connection request:', error);
+  }
+};
+
+export const undoRequest = async (data, userProfile) => {
+  try {
+    // Fetch the current user's profile and the other user's profile based on user IDs
+    const currUserProfile = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(userProfile.userId)
+    );
+    const otherUserProfile = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(data.userId)
+    );
+
+    if (!currUserProfile || !otherUserProfile) {
+      throw new Error('User profile not found');
+    }
+
+    // Parse connections JSON strings into arrays
+    const currentConnections = JSON.parse(
+      currUserProfile[0].connections || '[]'
+    );
+    const otherConnections = JSON.parse(
+      otherUserProfile[0].connections || '[]'
+    );
+
+    // Filter out the pending connection request from the current user's connections
+    const updatedConnections = currentConnections.filter(
+      (connection) => connection.userId !== data.userId
+    );
+
+    // Filter out the pending connection request from the other user's connections
+    const updatedOtherConnections = otherConnections.filter(
+      (connection) => connection.userId !== userProfile.userId
+    );
+
+    // Save the updated user profiles, converting connections back to JSON strings
+    await Promise.all([
+      DataStore.save(
+        UserProfile.copyOf(currUserProfile[0], (updated) => {
+          updated.connections = JSON.stringify(updatedConnections);
+        })
+      ),
+      DataStore.save(
+        UserProfile.copyOf(otherUserProfile[0], (updated) => {
+          updated.connections = JSON.stringify(updatedOtherConnections);
+        })
+      ),
+    ]);
+
+    console.log('Connection request successfully undone.');
+  } catch (error) {
+    console.error('Error undoing connection request:', error);
   }
 };
