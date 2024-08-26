@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   Pressable,
+  Alert,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { PageView } from '@/components/Reusable';
@@ -33,6 +34,21 @@ const connect = () => {
     try {
       await rejectConnectionRequest(data, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
+
+      Alert.alert(
+        'Connection rejected',
+        '',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Fetch user profile again when "OK" is pressed
+              fetchUserProfile(setUserProfile, currentUser);
+            },
+          },
+        ],
+        { cancelable: false } // Make the alert non-cancelable
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -45,8 +61,36 @@ const connect = () => {
     try {
       if (activeTab === 1) {
         await removeConnection(data, userProfile);
+        Alert.alert(
+          'Connection removed',
+          '',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Fetch user profile again when "OK" is pressed
+                fetchUserProfile(setUserProfile, currentUser);
+              },
+            },
+          ],
+          { cancelable: false } // Make the alert non-cancelable
+        );
       } else if (activeTab === 2) {
         await acceptConnectionRequest(data, userProfile);
+        Alert.alert(
+          'Connection accepted',
+          '',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Fetch user profile again when "OK" is pressed
+                fetchUserProfile(setUserProfile, currentUser);
+              },
+            },
+          ],
+          { cancelable: false } // Make the alert non-cancelable
+        );
       }
     } catch (error) {
       console.error('Error handling connection request:', error);
@@ -55,7 +99,7 @@ const connect = () => {
       setIsLoading(false);
     }
   };
-  console.log('user', userProfile);
+
   useEffect(() => {
     const safeParseJSON = (data, fallback) => {
       try {
