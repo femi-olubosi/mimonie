@@ -35,7 +35,6 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { notificationIcon } from '@/utils/notificationsIcon';
 import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
-import { isLoading } from 'expo-font';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
@@ -53,6 +52,7 @@ export default function HomeScreen() {
     userProfile,
     setNotifications,
     notifications,
+    isLoading,
     userActivities,
     setUserActivities,
   } = useGlobalContext();
