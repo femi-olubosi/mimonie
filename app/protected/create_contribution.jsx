@@ -116,7 +116,8 @@ const CreateContribution = () => {
     setContactVisible(true);
     setModalVisible(false);
   };
-  const isVerified = userProfile.is_nin_verified && userProfile.is_bvn_verified;
+  const isVerified =
+    userProfile?.is_nin_verified && userProfile?.is_bvn_verified;
 
   return (
     <PageView title={'Create Contribution'}>

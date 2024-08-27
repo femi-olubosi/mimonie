@@ -34,7 +34,7 @@ import {
 } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { notificationIcon } from '@/utils/notificationsIcon';
-import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
+import { sendUserAttributeVerificationCode, signOut } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
@@ -67,9 +67,9 @@ export default function HomeScreen() {
   }, [currentUser]);
 
   useEffect(() => {
-    setIsLoading(true);
+    // setIsLoading(true);
     if (userProfile) {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   }, [userProfile]);
 
@@ -98,29 +98,35 @@ export default function HomeScreen() {
     }, [userProfile])
   );
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (currentUser.phone_number_verified !== 'true' && !alertShown) {
-        setAlertShown(true);
-        Alert.alert(
-          'Verification',
-          'Please Verify your phone number',
-          [
-            {
-              text: 'Verify Now',
-              onPress: async () => {
-                await sendUserAttributeVerificationCode({
-                  userAttributeKey: 'phone_number',
-                });
-                router.push('/protected/device_verify');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      }
-    }
-  }, [currentUser, alertShown, isLoading]);
+  // useEffect(() => {
+  //   if (!isLoading && currentUser && !alertShown) {
+  //     if (!currentUser.phone_number_verified) {
+  //       setAlertShown(true);
+  //       Alert.alert(
+  //         'Verification',
+  //         'Please verify your phone number',
+  //         [
+  //           {
+  //             text: 'Verify Now',
+  //             onPress: async () => {
+  //               await sendUserAttributeVerificationCode({
+  //                 userAttributeKey: 'phone_number',
+  //               });
+  //               router.push('/protected/device_verify');
+  //             },
+  //           },
+  //           {
+  //             text: 'Later',
+  //             onPress: () => {
+  //               signOut();
+  //             },
+  //           },
+  //         ],
+  //         { cancelable: false }
+  //       );
+  //     }
+  //   }
+  // }, [currentUser, alertShown, isLoading]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>

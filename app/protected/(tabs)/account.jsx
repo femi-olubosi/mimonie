@@ -158,18 +158,18 @@ const Account = () => {
           );
         }
       };
-      if (!userProfile.is_nin_verified) {
+      if (!userProfile?.is_nin_verified) {
         getSmileStatus();
       }
       // if (!userProfile.is_bvn_verified) {
-      if (userProfile.verification_in_progress) {
+      if (userProfile?.verification_in_progress) {
         fetchCustomer();
       }
     }, [
-      userProfile.is_bvn_verified,
-      userProfile.is_nin_verified,
-      userProfile.subaccount_code,
-      userProfile.verification_in_progress,
+      userProfile?.is_bvn_verified,
+      userProfile?.is_nin_verified,
+      userProfile?.subaccount_code,
+      userProfile?.verification_in_progress,
     ])
   );
 
@@ -285,7 +285,7 @@ const Account = () => {
                       ) : (
                         <View
                           style={{
-                            backgroundColor: userProfile.is_nin_verified
+                            backgroundColor: userProfile?.is_nin_verified
                               ? 'green'
                               : 'red',
                             paddingHorizontal: 4,
@@ -300,7 +300,7 @@ const Account = () => {
                               color: 'white',
                             }}
                           >
-                            {userProfile.is_nin_verified
+                            {userProfile?.is_nin_verified
                               ? 'Verified'
                               : 'Not Verified'}
                           </Text>
@@ -331,7 +331,7 @@ const Account = () => {
                       ) : (
                         <View
                           style={{
-                            backgroundColor: userProfile.is_bvn_verified
+                            backgroundColor: userProfile?.is_bvn_verified
                               ? 'green'
                               : 'red',
                             paddingHorizontal: 4,
@@ -345,12 +345,33 @@ const Account = () => {
                               color: 'white',
                             }}
                           >
-                            {userProfile.is_bvn_verified
+                            {userProfile?.is_bvn_verified
                               ? 'Verified'
                               : 'Not Verified'}
                           </Text>
                         </View>
                       )}
+                    </View>
+                  ) : null}
+                  {item.extra && item.title === 'Contribution Invites' ? (
+                    <View style={{ marginLeft: 5 }}>
+                      <View
+                        style={{
+                          backgroundColor: 'red',
+                          paddingHorizontal: 4,
+                          paddingVertical: 2,
+                          borderRadius: 5,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontSize: 10,
+                            color: 'white',
+                          }}
+                        >
+                          {userProfile?.invites?.length || 0}
+                        </Text>
+                      </View>
                     </View>
                   ) : null}
                 </View>
@@ -493,11 +514,12 @@ const menuItems = [
     icon: <AntDesign name="idcard" size={24} color="black" />,
     route: '/protected/cards',
   },
-  // {
-  //   title: 'Contributions Invites',
-  //   icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
-  //   route: '/invites',
-  // },
+  {
+    title: 'Contribution Invites',
+    icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
+    route: '/protected/my_invites',
+    extra: true,
+  },
   {
     title: 'Privacy & Security',
     icon: <MaterialIcons name="security" size={24} color="black" />,

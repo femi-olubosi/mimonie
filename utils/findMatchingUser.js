@@ -14,7 +14,7 @@ export const findMatchingUser = (users, contactDetails) => {
   for (const contact of contactDetails) {
     // Ensure contact has a valid number
     if (typeof contact.number !== 'string') {
-      console.error('Invalid contact number:', contact.number);
+      // console.error('Invalid contact number:', contact.number);
       continue; // Skip to the next contact if number is not a string
     }
 
@@ -29,7 +29,7 @@ export const findMatchingUser = (users, contactDetails) => {
     for (const user of users) {
       // Ensure user has a valid phone_number
       if (typeof user.phone_number !== 'string') {
-        console.error('Invalid user phone number:', user.phone_number);
+        // console.error('Invalid user phone number:', user.phone_number);
         continue; // Skip to the next user if phone_number is not a string
       }
 

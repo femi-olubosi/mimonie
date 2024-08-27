@@ -108,6 +108,7 @@ const Contact = () => {
       name: res?.userProfile?.name,
       phone_number: res?.userProfile?.phone_number,
       email: res?.userProfile?.email,
+      invites: res?.userProfile?.invites,
       occupation: res?.userProfile?.occupation,
       verified:
         res?.userProfile?.is_nin_verified && res?.userProfile?.is_bvn_verified,

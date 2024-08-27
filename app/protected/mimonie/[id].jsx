@@ -38,6 +38,7 @@ import { naira } from '@/constants/Currency';
 import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
 import { calculateDifference } from '@/api/payment.service';
+import { updateInvite } from '../../../api/invite.service';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -65,7 +66,7 @@ const ContributionDetails = () => {
     if (!userProfile.auth_url) {
       Alert.alert(
         'Sorry!!',
-        'You cannot create contribution at the moment. Add a card to continue'
+        'You cannot create/join contribution at the moment. Add a card to continue'
       );
       return;
     }
@@ -84,7 +85,7 @@ const ContributionDetails = () => {
         userProfile,
         setContributions
       );
-
+      await updateInvite(userProfile.userId, contribution.invite_link);
       Alert.alert(
         'Success',
         'You have successfully joined the contribution',

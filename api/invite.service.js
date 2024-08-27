@@ -1,3 +1,5 @@
+import { DataStore } from 'aws-amplify/datastore';
+import { Contribution, UserProfile } from '../src/models';
 import * as SMS from 'expo-sms';
 import { Alert } from 'react-native';
 
@@ -37,5 +39,73 @@ export const sendInvite = async (contact) => {
     console.log(result);
   } else {
     Alert.alert('SMS is not available on this device');
+  }
+};
+
+export const fetchInviteContributions = async (inviteLinks) => {
+  try {
+    await DataStore.start();
+
+    const allContributions = await DataStore.query(Contribution);
+
+    // Filter contributions based on invite_links array
+    const filteredContributions = allContributions.filter((contribution) =>
+      inviteLinks.includes(contribution.invite_link)
+    );
+
+    // Sort the filtered contributions by creation date
+    const sorted = filteredContributions.sort((a, b) =>
+      a.createdAt > b.createdAt ? -1 : 1
+    );
+
+    return sorted;
+  } catch (error) {
+    console.error('Error fetching user contributions:', error);
+  }
+};
+
+export const sendUserInvite = async (userId, invite_link) => {
+  try {
+    const invitee = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(userId)
+    );
+
+    if (!invitee[0]) {
+      throw new Error('User profile not found');
+    }
+
+    DataStore.save(
+      UserProfile.copyOf(invitee[0], (updated) => {
+        updated.invites.push(invite_link);
+      })
+    );
+  } catch (error) {
+    console.error('Error updating user invite:', error);
+    throw error;
+  }
+};
+
+export const updateInvite = async (userId, invite_link) => {
+  try {
+    const invitee = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(userId)
+    );
+
+    if (!invitee[0]) {
+      throw new Error('User profile not found');
+    }
+    const currentInvites = invitee[0].invites || [];
+    const updatedInvites = currentInvites.filter(
+      (link) => link !== invite_link
+    );
+
+    DataStore.save(
+      UserProfile.copyOf(invitee[0], (updated) => {
+        updated.invites = updatedInvites;
+      })
+    );
+  } catch (error) {
+    console.error('Error updating user invite:', error);
+    throw error;
   }
 };

@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import {
+  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -9,19 +10,60 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGlobalContext } from '../store/StoreContext';
 import { Colors } from '../constants/Colors';
-import { FontAwesome } from '@expo/vector-icons';
-import { sendSMSInvite } from '../api/invite.service';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import { sendUserInvite } from '../api/invite.service';
+import { fetchUserProfile } from '../api/user.service';
 
 const ContactModal = ({ visible, setVisible, invite_link }) => {
   const [contactSearch, setContactSearch] = useState('');
-  const { myContacts } = useGlobalContext();
+  const { userProfile, setUserProfile, currentUser } = useGlobalContext();
+  const [parsedConnect, setParsedConnect] = useState([]);
+  const [selected, setSelected] = useState([]);
 
   const handleSendInvite = async (item) => {
-    await sendSMSInvite(item, invite_link);
+    console.log(
+      'object',
+      selected.includes(item.userId),
+      item?.invites?.includes(invite_link)
+    );
+
+    if (!item.verified) {
+      Alert.alert('Yo!!', `${item?.name} is not verified`);
+      return;
+    }
+    if (
+      selected.includes(item.userId) ||
+      item?.invites?.includes(invite_link)
+    ) {
+      Alert.alert(
+        'Yo!!',
+        `${item?.name} is already invited to this contribution`
+      );
+      return;
+    }
+
+    await sendUserInvite(item.userId, invite_link);
+    await fetchUserProfile(setUserProfile, currentUser);
+    setSelected((prev) => [...prev, item.userId]);
   };
+  console.log(selected);
+  useEffect(() => {
+    const safeParseJSON = (data, fallback) => {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return fallback;
+      }
+    };
+
+    if (userProfile?.connections) {
+      const parsedData = safeParseJSON(userProfile?.connections, []);
+      setParsedConnect(parsedData);
+    }
+  }, [userProfile]);
 
   const renderContact = ({ item }) => {
     return (
@@ -35,14 +77,19 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
             <Text style={styles.contactName}>{item.name}</Text>
           </View>
         </View>
-        <Text style={styles.inviteText}>Invite</Text>
+        {selected.includes(item.userId) ||
+        item?.invites?.includes(invite_link) ? (
+          <AntDesign name="checkcircleo" size={24} color="green" />
+        ) : (
+          <Text style={styles.inviteText}>Invite</Text>
+        )}
       </TouchableOpacity>
     );
   };
 
   const filteredContacts =
-    myContacts && Array.isArray(myContacts)
-      ? myContacts.filter(
+    parsedConnect && Array.isArray(parsedConnect)
+      ? parsedConnect.filter(
           (e) =>
             e.name &&
             typeof e.name === 'string' &&
@@ -83,7 +130,7 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
 
           <FlatList
             data={filteredContacts}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item, idx) => idx.toString()}
             renderItem={renderContact}
           />
           <View style={{ paddingVertical: 20 }}>
@@ -97,6 +144,7 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
               }}
               onPress={() => {
                 setVisible(false);
+                setSelected([]);
                 router.push('/protected/mimonie');
               }}
             >

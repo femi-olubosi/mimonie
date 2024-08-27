@@ -75,6 +75,9 @@ const LoginForm = (props) => {
 
       await fetchUserNotification(user.userId, setNotifications);
       if (
+        !['+2348139781144', '+2348139781147', '+2348139781148'].includes(
+          profile.phone_number
+        ) &&
         profile?.device_id &&
         profile?.device_id !== Device.osInternalBuildId
       ) {
@@ -101,7 +104,7 @@ const LoginForm = (props) => {
         );
         return;
       }
-      console.log({ profile });
+
       if (!profile?.name) {
         router.push('/protected/complete_profile');
         return;

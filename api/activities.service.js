@@ -25,9 +25,9 @@ export const fetchUserActivities = async (userId, setUserActivities) => {
     // const subscription = DataStore.observe(UserActivity).subscribe(
     //   async (msg) => {
     //     if (
-    //       msg.opType === 'INSERT' ||
-    //       msg.opType === 'UPDATE' ||
-    //       msg.opType === 'DELETE'
+    // msg.opType === 'INSERT' ||
+    // msg.opType === 'UPDATE' ||
+    // msg.opType === 'DELETE'
     //     ) {
     //       const updatedActivities = await DataStore.query(UserActivity, (c) =>
     //         c.userId.eq(userId)

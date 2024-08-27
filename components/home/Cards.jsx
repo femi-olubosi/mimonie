@@ -163,7 +163,7 @@ const Cards = ({ contributions }) => {
                   <Text
                     style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
                   >
-                    {item.status === 'commpleted' ? (
+                    {item.status === 'completed' ? (
                       'Completed'
                     ) : done ? (
                       'Completed your part'

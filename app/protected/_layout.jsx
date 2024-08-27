@@ -180,6 +180,7 @@ const ProtectedContent = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="flow" options={{ headerShown: false }} />
+            <Stack.Screen name="my_invites" options={{ headerShown: false }} />
             <Stack.Screen name="my_network" options={{ headerShown: false }} />
           </Stack>
         </Authenticator>
