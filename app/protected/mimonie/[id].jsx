@@ -39,6 +39,7 @@ import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
 import { calculateDifference } from '@/api/payment.service';
 import { updateInvite } from '../../../api/invite.service';
+import { safeParseJSON } from '../../../utils/safeJSON';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -127,14 +128,6 @@ const ContributionDetails = () => {
   const startDate = new Date(contribution?.start_date);
 
   useEffect(() => {
-    const safeParseJSON = (data, fallback) => {
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        return fallback;
-      }
-    };
-
     if (contribution) {
       const parsedData = safeParseJSON(contribution?.participant, []);
       setParsed(parsedData);

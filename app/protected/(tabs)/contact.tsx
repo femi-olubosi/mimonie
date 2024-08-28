@@ -22,6 +22,9 @@ import { fetchAllUsers } from '@/api/admin.service';
 import { findMatchingUser } from '@/utils/findMatchingUser';
 import { undoRequest, updateUserConnections } from '@/api/network.service';
 import { fetchUserProfile } from '@/api/user.service';
+import { UserProfile } from '@/src/models';
+import { DataStore } from 'aws-amplify/datastore';
+import { safeParseJSON } from '@/utils/safeJSON';
 
 const Contact = () => {
   const {
@@ -69,19 +72,22 @@ const Contact = () => {
   };
 
   useEffect(() => {
-    const safeParseJSON = (data, fallback) => {
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        return fallback;
+    const fetchProfile = async () => {
+      const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+      if (profile) {
+        const parsedData = safeParseJSON(profile?.connections, []);
+        setParsed(parsedData);
       }
     };
 
-    if (userProfile) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsed(parsedData);
-    }
-  }, [userProfile]);
+    fetchProfile();
+
+    const subscription = DataStore.observe(UserProfile).subscribe(() =>
+      fetchProfile()
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
     const checkAvailable =
@@ -250,8 +256,8 @@ const Contact = () => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
-                setModalVisible(false);
                 fetchUserProfile(setUserProfile, currentUser);
+                setModalVisible(false);
               }}
             >
               <Text style={styles.modalButtonText}>OK</Text>
