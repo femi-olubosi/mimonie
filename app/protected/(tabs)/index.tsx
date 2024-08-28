@@ -20,6 +20,7 @@ import {
   fetchCurrUser,
   fetchUserProfile,
   updateUserProfile,
+  fetchAuthUserProfile,
 } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
@@ -62,9 +63,15 @@ export default function HomeScreen() {
     fetchCurrUser(setCurrentUser);
   }, []);
 
-  useEffect(() => {
-    fetchUserProfile(setUserProfile, currentUser);
-  }, [currentUser]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAuthUserProfile(setUserProfile, currentUser);
+    }, [currentUser])
+  );
+
+  // useEffect(() => {
+  //   fetchUserProfile(setUserProfile, currentUser);
+  // }, [currentUser]);
 
   useEffect(() => {
     // setIsLoading(true);

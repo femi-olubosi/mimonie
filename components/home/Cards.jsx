@@ -213,7 +213,7 @@ export default Cards;
 const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   const updateMe =
     contribution?.current_count !== currentParticipant?.index &&
-    currentParticipant?.last_payment_round < contribution?.current_count;
+    currentParticipant?.last_successful_round < contribution?.current_count;
 
   const getNextContributionDay = () => {
     if (contribution?.status === 'open') {
