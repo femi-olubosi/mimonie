@@ -21,11 +21,7 @@ import {
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
-import {
-  fetchAuthUserProfile,
-  fetchCurrUser,
-  fetchUserProfile,
-} from '../../api/user.service';
+import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
 import { convertToAWSDate } from '../../utils/toAWSDate';
@@ -71,7 +67,7 @@ const LoginForm = (props) => {
         }
       }
       const user = await fetchCurrUser(setCurrentUser);
-      const profile = await fetchAuthUserProfile(setUserProfile, user);
+      const profile = await fetchUserProfile(setUserProfile, user);
 
       await fetchUserNotification(user.userId, setNotifications);
       if (

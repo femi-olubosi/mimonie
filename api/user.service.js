@@ -7,18 +7,6 @@ import { downloadData, uploadData } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 
-const debounce = (func, delay) => {
-  let timeoutId;
-  return function (...args) {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-};
-
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
   const attribute = await fetchUserAttributes();
@@ -80,41 +68,6 @@ export const updateAttributes = async (data) => {
   });
 };
 
-// export const fetchUserProfile = async (setUserProfile, currentUser) => {
-//   try {
-//     // Ensure DataStore is started
-//     await DataStore.start();
-
-//     // Fetch initial user profile
-//     const userProfile = await DataStore.query(UserProfile, (c) =>
-//       c.userId.eq(currentUser.userId)
-//     );
-//     setUserProfile(userProfile[0]);
-
-//     // Set up real-time subscription with debouncing
-//     const subscription = DataStore.observe(UserProfile).subscribe(
-//       async (msg) => {
-//         if (
-//           msg.opType === 'INSERT' ||
-//           msg.opType === 'UPDATE' ||
-//           msg.opType === 'DELETE'
-//         ) {
-//           const updatedProfile = await DataStore.query(UserProfile, (c) =>
-//             c.userId.eq(currentUser.userId)
-//           );
-//           setUserProfile(updatedProfile[0]);
-//         }
-//       }
-//     );
-
-//     return () => subscription.unsubscribe();
-//     // return userProfile[0];
-//   } catch (error) {
-//     console.error('Error fetching user profile:', error);
-//     return [];
-//   }
-// };
-
 export const fetchUserProfile = async (setUserProfile, currentUser) => {
   try {
     // await DataStore.clear();
@@ -124,23 +77,6 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
       c.userId.eq(currentUser.userId)
     );
     setUserProfile(userProfile[0]);
-    return userProfile[0];
-  } catch (error) {
-    console.error('Error fetching user user profile:', error);
-    return [];
-  }
-};
-
-export const fetchAuthUserProfile = async (setUserProfile, currentUser) => {
-  try {
-    // await DataStore.clear();
-    await DataStore.start();
-    // Fetch contributions where the user is a participant
-    const userProfile = await DataStore.query(UserProfile, (c) =>
-      c.userId.eq(currentUser.userId)
-    );
-    setUserProfile(userProfile[0]);
-
     return userProfile[0];
   } catch (error) {
     console.error('Error fetching user user profile:', error);

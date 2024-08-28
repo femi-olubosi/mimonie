@@ -117,6 +117,7 @@ export default function HomeScreen() {
     );
     return () => subscription.unsubscribe();
   }, [userProfile]);
+
   // useEffect(() => {
   //   if (!isLoading && currentUser && !alertShown) {
   //     if (!currentUser.phone_number_verified) {

@@ -55,7 +55,6 @@ const Account = () => {
     userProfile,
     setUserProfile,
     setNotifications,
-    myContacts,
   } = useGlobalContext();
   const [profilePicture, setProfilePicture] = useState('');
   const [logoutModal, setLogoutModal] = useState(false);
