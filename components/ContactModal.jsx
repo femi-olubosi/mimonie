@@ -70,20 +70,6 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
     );
     return () => subscription.unsubscribe();
   }, [currentUser]);
-  // useEffect(() => {
-  //   const safeParseJSON = (data, fallback) => {
-  //     try {
-  //       return JSON.parse(data);
-  //     } catch (e) {
-  //       return fallback;
-  //     }
-  //   };
-
-  //   if (userProfile?.connections) {
-  //     const parsedData = safeParseJSON(userProfile?.connections, []);
-  //     setParsedConnect(parsedData);
-  //   }
-  // }, [userProfile]);
 
   const renderContact = ({ item }) => {
     return (
