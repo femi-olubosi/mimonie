@@ -18,16 +18,14 @@ import {
 } from '@/api/network.service';
 import { fetchUserProfile } from '@/api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
+import { UserProfile } from '@/src/models';
+import { DataStore } from 'aws-amplify/datastore';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
   const { currentUser, setUserProfile, userProfile, setIsLoading } =
     useGlobalContext();
   const [parsedConnect, setParsedConnect] = useState([]);
-
-  useEffect(() => {
-    fetchUserProfile(setUserProfile, currentUser);
-  }, []);
 
   const handleRemoveRequest = async (data) => {
     setIsLoading(true);
@@ -42,12 +40,11 @@ const connect = () => {
           {
             text: 'OK',
             onPress: () => {
-              // Fetch user profile again when "OK" is pressed
               fetchUserProfile(setUserProfile, currentUser);
             },
           },
         ],
-        { cancelable: false } // Make the alert non-cancelable
+        { cancelable: false }
       );
     } catch (error) {
       console.error(error);
@@ -101,19 +98,31 @@ const connect = () => {
   };
 
   useEffect(() => {
-    const safeParseJSON = (data, fallback) => {
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        return fallback;
+    const fetchProfile = async () => {
+      const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+      // Safe JSON parsing function
+      const safeParseJSON = (data, fallback) => {
+        try {
+          return JSON.parse(data);
+        } catch (e) {
+          return fallback;
+        }
+      };
+
+      if (profile) {
+        const parsedData = safeParseJSON(profile?.connections, []);
+        setParsedConnect(parsedData);
       }
     };
 
-    if (userProfile?.connections) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsedConnect(parsedData);
-    }
-  }, [userProfile]);
+    fetchProfile();
+
+    const subscription = DataStore.observe(UserProfile).subscribe(() =>
+      fetchProfile()
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
 
   const myConnections = parsedConnect?.filter((e) => e.status === 'accepted');
   const pendingConnections = parsedConnect?.filter(

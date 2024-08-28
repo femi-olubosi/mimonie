@@ -16,6 +16,9 @@ import { Colors } from '../constants/Colors';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { sendUserInvite } from '../api/invite.service';
 import { fetchUserProfile } from '../api/user.service';
+import { safeParseJSON } from '@/utils/safeJSON';
+import { UserProfile } from '@/src/models';
+import { DataStore } from 'aws-amplify/datastore';
 
 const ContactModal = ({ visible, setVisible, invite_link }) => {
   const [contactSearch, setContactSearch] = useState('');
@@ -49,21 +52,24 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
     await fetchUserProfile(setUserProfile, currentUser);
     setSelected((prev) => [...prev, item.userId]);
   };
-  console.log(selected);
+
   useEffect(() => {
-    const safeParseJSON = (data, fallback) => {
-      try {
-        return JSON.parse(data);
-      } catch (e) {
-        return fallback;
+    const fetchProfile = async () => {
+      const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+      if (profile) {
+        const parsedData = safeParseJSON(profile?.connections, []);
+        setParsedConnect(parsedData);
       }
     };
 
-    if (userProfile?.connections) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsedConnect(parsedData);
-    }
-  }, [userProfile]);
+    fetchProfile();
+
+    const subscription = DataStore.observe(UserProfile).subscribe(() =>
+      fetchProfile()
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
 
   const renderContact = ({ item }) => {
     return (

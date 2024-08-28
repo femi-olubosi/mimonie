@@ -1,13 +1,10 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
 
-// Fetch user contributions and set up real-time updates
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
     await DataStore.start();
-    // await DataStore.clear();
 
-    // Fetch contributions where the user is a participant
     const userContributions = await DataStore.query(Contribution, (c) =>
       c.participant_ids.contains(userId)
     );
@@ -18,27 +15,7 @@ export const fetchUserContributions = async (userId, setContributions) => {
 
     setContributions(sorted);
 
-    // Set up real-time subscription
-    // const subscription = DataStore.observe(Contribution).subscribe(
-    //   async (msg) => {
-    //     if (
-    //       msg.opType === 'INSERT' ||
-    //       msg.opType === 'UPDATE' ||
-    //       msg.opType === 'DELETE'
-    //     ) {
-    //       const updatedContributions = await DataStore.query(
-    //         Contribution,
-    //         (c) => c.participant_ids.contains(userId)
-    //       );
-    //       const sortedUpdated = updatedContributions.sort((a, b) =>
-    //         a.createdAt > b.createdAt ? -1 : 1
-    //       );
-    //       setContributions(sortedUpdated);
-    //     }
-    //   }
-    // );
     return sorted;
-    // return () => subscription.unsubscribe();
   } catch (error) {
     console.error('Error fetching user contributions:', error);
   }

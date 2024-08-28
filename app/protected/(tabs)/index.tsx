@@ -8,6 +8,7 @@ import {
   Text,
   Pressable,
   Alert,
+  Modal,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -20,13 +21,13 @@ import {
   fetchCurrUser,
   fetchUserProfile,
   updateUserProfile,
-  fetchAuthUserProfile,
 } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
+import { DataStore } from 'aws-amplify/datastore';
 
 import {
   FontAwesome,
@@ -34,12 +35,17 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { notificationIcon } from '@/utils/notificationsIcon';
-import { sendUserAttributeVerificationCode, signOut } from 'aws-amplify/auth';
+import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
 import { fetchUserActivities } from '@/api/activities.service';
+import {
+  Contribution,
+  UserActivity,
+  UserNotifications,
+  UserProfile,
+} from '@/src/models';
 
 export default function HomeScreen() {
   const {
@@ -63,20 +69,18 @@ export default function HomeScreen() {
     fetchCurrUser(setCurrentUser);
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchAuthUserProfile(setUserProfile, currentUser);
-    }, [currentUser])
-  );
-
-  // useEffect(() => {
-  //   fetchUserProfile(setUserProfile, currentUser);
-  // }, [currentUser]);
+  useEffect(() => {
+    fetchUserProfile(setUserProfile, currentUser);
+    const subscription = DataStore.observe(UserProfile).subscribe(() =>
+      fetchUserProfile(setUserProfile, currentUser)
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
-    // setIsLoading(true);
+    setIsLoading(true);
     if (userProfile) {
-      // setIsLoading(false);
+      setIsLoading(false);
     }
   }, [userProfile]);
 
@@ -86,24 +90,33 @@ export default function HomeScreen() {
     })();
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchUserContributions(currentUser?.userId, setContributions);
-    }, [currentUser])
-  );
+  useEffect(() => {
+    fetchUserContributions(currentUser?.userId, setContributions);
+    const subscription = DataStore.observe(Contribution).subscribe(() =>
+      fetchUserContributions(currentUser?.userId, setContributions)
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
     fetchUserNotification(currentUser?.userId, setNotifications);
+    const subscription = DataStore.observe(UserNotifications).subscribe(() =>
+      fetchUserNotification(currentUser?.userId, setNotifications)
+    );
+    return () => subscription.unsubscribe();
   }, [currentUser]);
 
-  useFocusEffect(
-    useCallback(() => {
-      const fetchActivities = async () => {
-        await fetchUserActivities(userProfile?.userId, setUserActivities);
-      };
-      fetchActivities();
-    }, [userProfile])
-  );
+  useEffect(() => {
+    const fetchActivities = async () => {
+      await fetchUserActivities(userProfile?.userId, setUserActivities);
+    };
+    fetchActivities();
+
+    const subscription = DataStore.observe(UserActivity).subscribe(() =>
+      fetchActivities()
+    );
+    return () => subscription.unsubscribe();
+  }, [userProfile]);
 
   // useEffect(() => {
   //   if (!isLoading && currentUser && !alertShown) {
