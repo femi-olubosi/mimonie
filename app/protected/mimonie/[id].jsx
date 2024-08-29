@@ -209,6 +209,7 @@ const ContributionDetails = () => {
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ rowGap: 8, paddingBottom: 10 }}
+              nestedScrollEnabled={true}
             >
               {parsed?.map((eN, id) => {
                 return (
