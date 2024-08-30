@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,37 +9,38 @@ import {
   Alert,
   Platform,
   Pressable,
-} from 'react-native';
+} from "react-native";
 import {
   useRouter,
   useLocalSearchParams,
   router,
   useFocusEffect,
-} from 'expo-router';
-import * as Linking from 'expo-linking';
-import { PageView, SkeletonLoader } from '@/components/Reusable';
-import { useGlobalContext } from '../../../store/StoreContext';
+} from "expo-router";
+import * as Linking from "expo-linking";
+import { PageView, SkeletonLoader } from "@/components/Reusable";
+import { useGlobalContext } from "../../../store/StoreContext";
 import {
   fetchUserContributions,
   findContributionByID,
   joinContribution,
   updateContribution,
   findContributionByInviteLink,
-} from '@/api/contributions.service';
+} from "@/api/contributions.service";
 import {
   AntDesign,
+  Feather,
   FontAwesome,
   Fontisto,
   MaterialCommunityIcons,
-} from '@expo/vector-icons';
-import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
-import { statusCheck } from '@/utils/statusCheck';
-import { naira } from '@/constants/Currency';
-import { Colors } from '@/constants/Colors';
-import ContactModal from '@/components/ContactModal';
-import { calculateDifference } from '@/api/payment.service';
-import { updateInvite } from '../../../api/invite.service';
-import { safeParseJSON } from '../../../utils/safeJSON';
+} from "@expo/vector-icons";
+import { capitalizeFirstLetter } from "@/utils/capitalizeFirstLetter";
+import { statusCheck } from "@/utils/statusCheck";
+import { naira } from "@/constants/Currency";
+import { Colors } from "@/constants/Colors";
+import ContactModal from "@/components/ContactModal";
+import { calculateDifference } from "@/api/payment.service";
+import { updateInvite } from "../../../api/invite.service";
+import { safeParseJSON } from "../../../utils/safeJSON";
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -62,19 +63,19 @@ const ContributionDetails = () => {
 
   const handleJoinContribution = async () => {
     if (!userProfile.is_bvn_verified) {
-      Alert.alert('Please verify your bvn');
+      Alert.alert("Please verify your bvn");
       return;
     }
 
     if (!userProfile.is_nin_verified) {
-      Alert.alert('Please verify your identity');
+      Alert.alert("Please verify your identity");
       return;
     }
 
     if (!userProfile.auth_url) {
       Alert.alert(
-        'Sorry!!',
-        'You cannot create/join contribution at the moment. Add a card to continue'
+        "Sorry!!",
+        "You cannot create/join contribution at the moment. Add a card to continue"
       );
       return;
     }
@@ -82,7 +83,7 @@ const ContributionDetails = () => {
     if (
       parsed.some((participant) => participant.userId === currentUser.userId)
     ) {
-      Alert.alert('Error', 'You are already a member of this contribution');
+      Alert.alert("Error", "You are already a member of this contribution");
       return;
     }
 
@@ -95,18 +96,18 @@ const ContributionDetails = () => {
       );
       await updateInvite(userProfile.userId, contribution.invite_link);
       Alert.alert(
-        'Success',
-        'You have successfully joined the contribution',
+        "Success",
+        "You have successfully joined the contribution",
         [
           {
-            text: 'OK',
+            text: "OK",
             onPress: () => router.back(),
           },
         ],
         { cancelable: false }
       );
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
     }
   };
 
@@ -114,15 +115,15 @@ const ContributionDetails = () => {
     setIsLoading(true);
     try {
       const date = new Date();
-      const start_date = date.toLocaleDateString('en-CA');
+      const start_date = date.toLocaleDateString("en-CA");
 
       const res = await updateContribution(contribution?.id, {
         start_date: start_date,
-        status: 'running',
+        status: "running",
       });
       await findContributionByID(id, setContribution);
       Alert.alert(
-        'Contribution Started Successfully',
+        "Contribution Started Successfully",
         `${res.name} contribution updated successfully}`
       );
     } catch (error) {
@@ -141,10 +142,10 @@ const ContributionDetails = () => {
     }
   }, [contribution]);
 
-  const next = parsed?.find((e) => e.status !== 'received');
+  const next = parsed?.find((e) => e.status !== "received");
 
   return (
-    <PageView title={'Contribution Details'}>
+    <PageView title={"Contribution Details"}>
       <View style={styles.container}>
         {loading ? (
           <View style={{ rowGap: 6 }}>
@@ -182,7 +183,7 @@ const ContributionDetails = () => {
                 <Text style={styles.value}>
                   {contribution?.start_date
                     ? startDate.toLocaleDateString()
-                    : 'Not running'}
+                    : "Not running"}
                 </Text>
               </View>
 
@@ -191,13 +192,13 @@ const ContributionDetails = () => {
                 <View
                   style={{
                     backgroundColor: statusCheck(contribution?.status),
-                    alignSelf: 'flex-start',
+                    alignSelf: "flex-start",
                     paddingVertical: 4,
                     paddingHorizontal: 10,
                     borderRadius: 8,
                   }}
                 >
-                  <Text style={[styles.value, { color: 'white' }]}>
+                  <Text style={[styles.value, { color: "white" }]}>
                     {capitalizeFirstLetter(contribution?.status)}
                   </Text>
                 </View>
@@ -207,14 +208,14 @@ const ContributionDetails = () => {
                 <Text style={styles.label}>Amount</Text>
                 <Text style={styles.value}>
                   {naira}
-                  {new Intl.NumberFormat('en-US').format(contribution?.amount)}
+                  {new Intl.NumberFormat("en-US").format(contribution?.amount)}
                 </Text>
               </View>
               <View style={styles.detailContainer}>
                 <Text style={styles.label}>Target</Text>
                 <Text style={styles.value}>
                   {naira}
-                  {new Intl.NumberFormat('en-US').format(contribution?.target)}
+                  {new Intl.NumberFormat("en-US").format(contribution?.target)}
                 </Text>
               </View>
 
@@ -225,72 +226,125 @@ const ContributionDetails = () => {
               <View
                 style={[
                   {
-                    minHeight: 85,
-                    // maxHeight: 120,
+                    // minHeight: 85,
                     marginBottom: 16,
-                    paddingHorizontal: 20,
-                    paddingTop: 20,
-                    backgroundColor: 'white',
+                    backgroundColor: "white",
                     borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: '#E5E7EB',
                   },
                 ]}
               >
                 <Text style={styles.label}>Contributors</Text>
                 <ScrollView
                   showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ rowGap: 8, paddingBottom: 10 }}
+                  contentContainerStyle={{ columnGap: 8, paddingBottom: 10 }}
                   nestedScrollEnabled={true}
+                  horizontal={true}
                 >
                   {parsed?.map((eN, id) => {
                     return (
                       <View
                         key={id}
                         style={{
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
+                          justifyContent: "center",
+                          height: 100,
+                          minWidth: 200,
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: "#E5E7EB",
+                          backgroundColor: "white",
+                          paddingHorizontal: 8,
+                          rowGap: 10,
+                          shadowColor: "gray",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.25,
+                          shadowRadius: 3.84,
+                          elevation: 5,
                         }}
                       >
                         <View
                           style={{
-                            flexDirection: 'row',
+                            flexDirection: "row",
                             columnGap: 10,
-                            alignItems: 'center',
+                            alignItems: "center",
                           }}
                         >
-                          <FontAwesome name="user-circle-o" color={'gray'} />
-
-                          <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
-                          {eN.status === 'received' ? (
-                            <Fontisto
-                              name="checkbox-active"
-                              size={14}
-                              color="green"
+                          <View>
+                            {/* {eN.picture ? (
+                              <Image
+                                source={{ uri: eN.picture }}
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  objectFit: "contain",
+                                }}
+                              />
+                            ) :  */}
+                            <Feather
+                              name="image"
+                              color={"gray"}
+                              size={40}
+                              style={{
+                                padding: 0,
+                                margin: 0,
+                              }}
                             />
-                          ) : eN.status === 'in progress' ? (
-                            <MaterialCommunityIcons
-                              name="progress-check"
-                              size={14}
-                              color="#ecb753"
-                            />
-                          ) : (
-                            <AntDesign
-                              name="minussquareo"
-                              size={14}
-                              color="gray"
-                            />
-                          )}
-                          {next?.userId === eN.userId ? (
-                            <Text
-                              style={{ color: 'lightgreen', fontFamily: 'ir' }}
-                            >
-                              Next
-                            </Text>
-                          ) : null}
+                            {/* )} */}
+                          </View>
+                          <View style={{ rowGap: 4 }}>
+                            <Text style={{ fontFamily: "ir" }}>{eN.name}</Text>
+                            <View>
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  columnGap: 6,
+                                  alignItems: "center",
+                                }}
+                              >
+                                <Text>{capitalizeFirstLetter(eN.status)}</Text>
+                                {eN.status === "received" ? (
+                                  <Fontisto
+                                    name="checkbox-active"
+                                    size={14}
+                                    color="green"
+                                  />
+                                ) : eN.status === "in progress" ? (
+                                  <MaterialCommunityIcons
+                                    name="progress-check"
+                                    size={14}
+                                    color="#ecb753"
+                                  />
+                                ) : (
+                                  <AntDesign
+                                    name="minussquareo"
+                                    size={14}
+                                    color="gray"
+                                  />
+                                )}
+                                {next?.userId === eN.userId ? (
+                                  <Text
+                                    style={{
+                                      color: "lightgreen",
+                                      fontFamily: "ir",
+                                    }}
+                                  >
+                                    Next
+                                  </Text>
+                                ) : null}
+                              </View>
+                            </View>
+                            {/* <Text style={{ fontFamily: "ir" }}>{id + 1}</Text> */}
+                          </View>
                         </View>
-                        <Text style={{ fontFamily: 'ir' }}>{id + 1}</Text>
+                        {eN.last_successfull_round <
+                        contribution?.current_count ? (
+                          <Text style={{ fontSize: 10 }}>
+                            Note: {"Missed last contribution"}
+                          </Text>
+                        ) : (
+                          <Text style={{ fontSize: 10 }}>
+                            Note: {"In good standing"}
+                          </Text>
+                        )}
                       </View>
                     );
                   })}
@@ -304,8 +358,8 @@ const ContributionDetails = () => {
                 <Text style={styles.label}>User role</Text>
                 <Text style={styles.value}>
                   {contribution?.owner === userProfile?.name
-                    ? 'Creator'
-                    : 'invitee'}
+                    ? "Creator"
+                    : "invitee"}
                 </Text>
               </View>
               <View style={styles.detailContainer}>
@@ -320,8 +374,8 @@ const ContributionDetails = () => {
                 style={styles.fab}
                 onPress={() => {
                   if (
-                    contribution?.status === 'running' ||
-                    contribution?.status === 'completed'
+                    contribution?.status === "running" ||
+                    contribution?.status === "completed"
                   ) {
                     // Do nothing or handle if needed
                   } else if (
@@ -340,17 +394,17 @@ const ContributionDetails = () => {
                 }}
               >
                 <Text style={styles.fabText}>
-                  {contribution?.status === 'completed'
-                    ? 'Completed'
-                    : contribution?.status === 'running'
-                    ? 'Running'
+                  {contribution?.status === "completed"
+                    ? "Completed"
+                    : contribution?.status === "running"
+                    ? "Running"
                     : parsed?.length === contribution?.num_of_month &&
                       contribution?.owner === userProfile?.name
-                    ? 'Start'
+                    ? "Start"
                     : parsed?.length !== contribution?.num_of_month &&
                       contribution?.owner === userProfile?.name
-                    ? 'Invite'
-                    : 'Join'}
+                    ? "Invite"
+                    : "Join"}
                 </Text>
               </Pressable>
             )}
@@ -368,36 +422,36 @@ const ContributionDetails = () => {
 
 const NextContributionDay = ({ contribution, parsed }) => {
   const getNextContributionDay = () => {
-    if (contribution?.status === 'open') {
-      return 'Not running';
+    if (contribution?.status === "open") {
+      return "Not running";
     }
 
-    if (contribution?.status === 'completed') {
-      return 'Completed';
+    if (contribution?.status === "completed") {
+      return "Completed";
     }
 
     if (
       contribution?.current_count !== 0 &&
       contribution?.current_count >= parsed.length
     ) {
-      return '-';
+      return "-";
     }
 
     const today = new Date();
     let nextContributionDay;
 
     switch (contribution?.variant) {
-      case 'days':
+      case "days":
         nextContributionDay = new Date(today);
         nextContributionDay.setDate(today.getDate() + 1);
         break;
-      case 'weeks':
+      case "weeks":
         nextContributionDay = new Date(today);
         nextContributionDay.setDate(
           today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)
         );
         break;
-      case 'months':
+      case "months":
         nextContributionDay = new Date(
           today.getFullYear(),
           today.getMonth(),
@@ -408,14 +462,14 @@ const NextContributionDay = ({ contribution, parsed }) => {
         }
         break;
       default:
-        nextContributionDay = 'Invalid contribution period';
+        nextContributionDay = "Invalid contribution period";
     }
 
-    return typeof nextContributionDay === 'string'
+    return typeof nextContributionDay === "string"
       ? nextContributionDay
-      : nextContributionDay.toLocaleDateString('en-US', {
-          day: 'numeric',
-          month: 'long',
+      : nextContributionDay.toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
         });
   };
 
@@ -430,48 +484,48 @@ const NextContributionDay = ({ contribution, parsed }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     paddingHorizontal: 20,
     paddingTop: 20,
   },
   detailContainer: {
     marginBottom: 16,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: "#E5E7EB",
   },
   label: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
     marginBottom: 8,
-    fontFamily: 'ir',
+    fontFamily: "ir",
   },
   value: {
     fontSize: 16,
-    color: '#1F2937',
-    fontFamily: 'isb',
+    color: "#1F2937",
+    fontFamily: "isb",
   },
   errorText: {
     fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     minWidth: 60,
     minHeight: 60,
     padding: 4,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: Colors.pri,
     bottom: 10,
     right: 10,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.5,
         shadowRadius: 2,
@@ -482,8 +536,8 @@ const styles = StyleSheet.create({
     }),
   },
   fabText: {
-    color: 'white',
-    fontFamily: 'im', // Ensure this font is loaded in your project
+    color: "white",
+    fontFamily: "im", // Ensure this font is loaded in your project
   },
 });
 
