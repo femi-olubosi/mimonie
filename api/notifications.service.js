@@ -13,27 +13,7 @@ export const fetchUserNotification = async (userId, setNotifications) => {
 
     setNotifications(sorted);
 
-    // Set up real-time subscription
-    const subscription = DataStore.observe(UserNotifications).subscribe(
-      async (msg) => {
-        if (
-          msg.opType === 'INSERT' ||
-          msg.opType === 'UPDATE' ||
-          msg.opType === 'DELETE'
-        ) {
-          const updatedNotifications = await DataStore.query(
-            UserNotifications,
-            (c) => c.or((c) => [c.userId.eq(userId), c.global.eq(true)])
-          );
-          const sortedUpdated = updatedNotifications.sort((a, b) =>
-            a.createdAt > b.createdAt ? -1 : 1
-          );
-          setNotifications(sortedUpdated);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return sorted;
   } catch (error) {
     console.error('Error fetching user notifications:', error);
     return [];

@@ -247,7 +247,7 @@ const processContributions = async () => {
               userId: participant.userId,
               type: 'contribution',
               amount: contribution.amount,
-              description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. Please fund your account`,
+              description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. ${flow?.data?.gateway_response}`,
             });
             allPaymentsSuccessful = false;
           }

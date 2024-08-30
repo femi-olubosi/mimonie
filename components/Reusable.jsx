@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Animated,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -196,6 +197,44 @@ export const PageView = ({
   );
 };
 
+export const SkeletonLoader = ({ width, height, borderRadius = 4 }) => {
+  const opacity = new Animated.Value(0.3);
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+
+    return () => loop.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View
+      style={[
+        styles.skeleton,
+        {
+          width,
+          height,
+          borderRadius,
+          opacity,
+        },
+      ]}
+    />
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -256,5 +295,9 @@ const styles = StyleSheet.create({
     padding: 10,
     color: 'gray',
     textAlign: 'center',
+  },
+  skeleton: {
+    backgroundColor: '#E0E0E0',
+    marginVertical: 8,
   },
 });

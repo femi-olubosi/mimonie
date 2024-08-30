@@ -17,7 +17,7 @@ import {
   useFocusEffect,
 } from 'expo-router';
 import * as Linking from 'expo-linking';
-import { PageView } from '@/components/Reusable';
+import { PageView, SkeletonLoader } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
 import {
   fetchUserContributions,
@@ -48,9 +48,16 @@ const ContributionDetails = () => {
   const [visible, setVisible] = useState(false);
   const [contribution, setContribution] = useState({});
   const [parsed, setParsed] = useState([]);
+  const [loading, setLoading] = useState(true); // Add a loading state
 
   useEffect(() => {
-    findContributionByID(id, setContribution);
+    const fetchContribution = async () => {
+      setLoading(true);
+      await findContributionByID(id, setContribution);
+      setLoading(false);
+    };
+
+    fetchContribution();
   }, [id]);
 
   const handleJoinContribution = async () => {
@@ -139,179 +146,215 @@ const ContributionDetails = () => {
   return (
     <PageView title={'Contribution Details'}>
       <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Name</Text>
-            <Text style={styles.value}>{contribution?.name}</Text>
-          </View>
-
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Date Started</Text>
-            <Text style={styles.value}>
-              {contribution?.start_date
-                ? startDate.toLocaleDateString()
-                : 'Not running'}
-            </Text>
-          </View>
-
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Status</Text>
-            <View
-              style={{
-                backgroundColor: statusCheck(contribution?.status),
-                alignSelf: 'flex-start',
-                paddingVertical: 4,
-                paddingHorizontal: 10,
-                borderRadius: 8,
-              }}
-            >
-              <Text style={[styles.value, { color: 'white' }]}>
-                {capitalizeFirstLetter(contribution?.status)}
-              </Text>
+        {loading ? (
+          <View style={{ rowGap: 6 }}>
+            <View style={{ marginVertical: 10 }}>
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
+            </View>
+            <View style={{ marginVertical: 10 }}>
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
+            </View>
+            <View style={{ marginVertical: 10 }}>
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
+            </View>
+            <View style={{ marginVertical: 10 }}>
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
             </View>
           </View>
+        ) : (
+          <>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Name</Text>
+                <Text style={styles.value}>{contribution?.name}</Text>
+              </View>
 
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Amount</Text>
-            <Text style={styles.value}>
-              {naira}
-              {new Intl.NumberFormat('en-US').format(contribution?.amount)}
-            </Text>
-          </View>
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Target</Text>
-            <Text style={styles.value}>
-              {naira}
-              {new Intl.NumberFormat('en-US').format(contribution?.target)}
-            </Text>
-          </View>
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Date Started</Text>
+                <Text style={styles.value}>
+                  {contribution?.start_date
+                    ? startDate.toLocaleDateString()
+                    : 'Not running'}
+                </Text>
+              </View>
 
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Number of Contributors</Text>
-            <Text style={styles.value}>{parsed.length}</Text>
-          </View>
-          <View
-            style={[
-              {
-                minHeight: 85,
-                maxHeight: 120,
-                marginBottom: 16,
-                paddingHorizontal: 20,
-                paddingTop: 20,
-                backgroundColor: 'white',
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-              },
-            ]}
-          >
-            <Text style={styles.label}>Contributors</Text>
-            <ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ rowGap: 8, paddingBottom: 10 }}
-              nestedScrollEnabled={true}
-            >
-              {parsed?.map((eN, id) => {
-                return (
-                  <View
-                    key={id}
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        columnGap: 10,
-                        alignItems: 'center',
-                      }}
-                    >
-                      <FontAwesome name="user-circle-o" color={'gray'} />
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Status</Text>
+                <View
+                  style={{
+                    backgroundColor: statusCheck(contribution?.status),
+                    alignSelf: 'flex-start',
+                    paddingVertical: 4,
+                    paddingHorizontal: 10,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text style={[styles.value, { color: 'white' }]}>
+                    {capitalizeFirstLetter(contribution?.status)}
+                  </Text>
+                </View>
+              </View>
 
-                      <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
-                      {eN.status === 'received' ? (
-                        <Fontisto
-                          name="checkbox-active"
-                          size={14}
-                          color="green"
-                        />
-                      ) : eN.status === 'in progress' ? (
-                        <MaterialCommunityIcons
-                          name="progress-check"
-                          size={14}
-                          color="#ecb753"
-                        />
-                      ) : (
-                        <AntDesign name="minussquareo" size={14} color="gray" />
-                      )}
-                      {next?.userId === eN.userId ? (
-                        <Text style={{ color: 'lightgreen', fontFamily: 'ir' }}>
-                          Next
-                        </Text>
-                      ) : null}
-                    </View>
-                    <Text style={{ fontFamily: 'ir' }}>{id + 1}</Text>
-                  </View>
-                );
-              })}
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Amount</Text>
+                <Text style={styles.value}>
+                  {naira}
+                  {new Intl.NumberFormat('en-US').format(contribution?.amount)}
+                </Text>
+              </View>
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Target</Text>
+                <Text style={styles.value}>
+                  {naira}
+                  {new Intl.NumberFormat('en-US').format(contribution?.target)}
+                </Text>
+              </View>
+
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Number of Contributors</Text>
+                <Text style={styles.value}>{parsed.length}</Text>
+              </View>
+              <View
+                style={[
+                  {
+                    minHeight: 85,
+                    // maxHeight: 120,
+                    marginBottom: 16,
+                    paddingHorizontal: 20,
+                    paddingTop: 20,
+                    backgroundColor: 'white',
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#E5E7EB',
+                  },
+                ]}
+              >
+                <Text style={styles.label}>Contributors</Text>
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ rowGap: 8, paddingBottom: 10 }}
+                  nestedScrollEnabled={true}
+                >
+                  {parsed?.map((eN, id) => {
+                    return (
+                      <View
+                        key={id}
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            columnGap: 10,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <FontAwesome name="user-circle-o" color={'gray'} />
+
+                          <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
+                          {eN.status === 'received' ? (
+                            <Fontisto
+                              name="checkbox-active"
+                              size={14}
+                              color="green"
+                            />
+                          ) : eN.status === 'in progress' ? (
+                            <MaterialCommunityIcons
+                              name="progress-check"
+                              size={14}
+                              color="#ecb753"
+                            />
+                          ) : (
+                            <AntDesign
+                              name="minussquareo"
+                              size={14}
+                              color="gray"
+                            />
+                          )}
+                          {next?.userId === eN.userId ? (
+                            <Text
+                              style={{ color: 'lightgreen', fontFamily: 'ir' }}
+                            >
+                              Next
+                            </Text>
+                          ) : null}
+                        </View>
+                        <Text style={{ fontFamily: 'ir' }}>{id + 1}</Text>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+              <NextContributionDay
+                contribution={contribution}
+                parsed={parsed}
+              />
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>User role</Text>
+                <Text style={styles.value}>
+                  {contribution?.owner === userProfile?.name
+                    ? 'Creator'
+                    : 'invitee'}
+                </Text>
+              </View>
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Owner</Text>
+                <Text style={styles.value}>{contribution?.owner}</Text>
+              </View>
             </ScrollView>
-          </View>
-          <NextContributionDay contribution={contribution} parsed={parsed} />
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>User role</Text>
-            <Text style={styles.value}>
-              {contribution?.owner === userProfile?.name
-                ? 'Creator'
-                : 'invitee'}
-            </Text>
-          </View>
-          <View style={styles.detailContainer}>
-            <Text style={styles.label}>Owner</Text>
-            <Text style={styles.value}>{contribution?.owner}</Text>
-          </View>
-        </ScrollView>
-        {parsed.some(
-          (participant) => participant.userId === currentUser.userId
-        ) && contribution?.owner !== userProfile?.name ? null : (
-          <Pressable
-            style={styles.fab}
-            onPress={() => {
-              if (
-                contribution?.status === 'running' ||
-                contribution?.status === 'completed'
-              ) {
-                // Do nothing or handle if needed
-              } else if (
-                parsed?.length === contribution?.num_of_month &&
-                contribution?.owner === userProfile?.name
-              ) {
-                handleStartContribution();
-              } else if (
-                parsed?.length !== contribution?.num_of_month &&
-                contribution?.owner === userProfile?.name
-              ) {
-                setVisible(!visible);
-              } else {
-                handleJoinContribution();
-              }
-            }}
-          >
-            <Text style={styles.fabText}>
-              {contribution?.status === 'completed'
-                ? 'Completed'
-                : contribution?.status === 'running'
-                ? 'Running'
-                : parsed?.length === contribution?.num_of_month &&
-                  contribution?.owner === userProfile?.name
-                ? 'Start'
-                : parsed?.length !== contribution?.num_of_month &&
-                  contribution?.owner === userProfile?.name
-                ? 'Invite'
-                : 'Join'}
-            </Text>
-          </Pressable>
+            {parsed.some(
+              (participant) => participant.userId === currentUser.userId
+            ) && contribution?.owner !== userProfile?.name ? null : (
+              <Pressable
+                style={styles.fab}
+                onPress={() => {
+                  if (
+                    contribution?.status === 'running' ||
+                    contribution?.status === 'completed'
+                  ) {
+                    // Do nothing or handle if needed
+                  } else if (
+                    parsed?.length === contribution?.num_of_month &&
+                    contribution?.owner === userProfile?.name
+                  ) {
+                    handleStartContribution();
+                  } else if (
+                    parsed?.length !== contribution?.num_of_month &&
+                    contribution?.owner === userProfile?.name
+                  ) {
+                    setVisible(!visible);
+                  } else {
+                    handleJoinContribution();
+                  }
+                }}
+              >
+                <Text style={styles.fabText}>
+                  {contribution?.status === 'completed'
+                    ? 'Completed'
+                    : contribution?.status === 'running'
+                    ? 'Running'
+                    : parsed?.length === contribution?.num_of_month &&
+                      contribution?.owner === userProfile?.name
+                    ? 'Start'
+                    : parsed?.length !== contribution?.num_of_month &&
+                      contribution?.owner === userProfile?.name
+                    ? 'Invite'
+                    : 'Join'}
+                </Text>
+              </Pressable>
+            )}
+          </>
         )}
       </View>
       <ContactModal
