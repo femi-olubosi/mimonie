@@ -269,26 +269,28 @@ const ContributionDetails = () => {
                           }}
                         >
                           <View>
-                            {/* {eN.picture ? (
+                            {eN.picture ? (
                               <Image
                                 source={{ uri: eN.picture }}
                                 style={{
-                                  width: 40,
-                                  height: 40,
-                                  objectFit: "contain",
+                                  width: 50,
+                                  height: 50,
+                                  borderRadius: 8,
+                                  backgroundColor: "#E5E7EB",
+                                  objectFit: "cover",
                                 }}
                               />
-                            ) :  */}
-                            <Feather
-                              name="image"
-                              color={"gray"}
-                              size={40}
-                              style={{
-                                padding: 0,
-                                margin: 0,
-                              }}
-                            />
-                            {/* )} */}
+                            ) : (
+                              <Feather
+                                name="image"
+                                color={"gray"}
+                                size={40}
+                                style={{
+                                  padding: 0,
+                                  margin: 0,
+                                }}
+                              />
+                            )}
                           </View>
                           <View style={{ rowGap: 4 }}>
                             <Text style={{ fontFamily: "ir" }}>{eN.name}</Text>
