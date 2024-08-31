@@ -337,10 +337,10 @@ const ContributionDetails = () => {
                             {/* <Text style={{ fontFamily: "ir" }}>{id + 1}</Text> */}
                           </View>
                         </View>
-                        {eN.status !== "in progress" &&
-                        eN.last_successful_round <
+                        {eN?.status !== "in progress" &&
+                        eN?.last_successful_round <
                           contribution?.current_count ? (
-                          <Text style={{ fontSize: 10, color: red }}>
+                          <Text style={{ fontSize: 10, color: "red" }}>
                             Attention: {"Missed last contribution"}
                           </Text>
                         ) : (
