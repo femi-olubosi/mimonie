@@ -10,7 +10,7 @@ const CopyLink = ({ inviteLink }) => {
     const jsCode = `
       (function() {
         const textArea = document.createElement('textarea');
-        textArea.value = '${inviteLink}';
+        textArea.value = 'https://mimonie.net/protected/mimonie/${inviteLink}';
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand('copy');
