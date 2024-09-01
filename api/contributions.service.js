@@ -195,25 +195,11 @@ export const findContributionByID = async (id, setContribution) => {
     const contributions = await DataStore.query(Contribution, (c) =>
       c.id.eq(id)
     );
-
     setContribution(contributions[0]);
 
     // Set up real-time subscription
-    const subscription = DataStore.observe(Contribution, id).subscribe(
-      async (msg) => {
-        if (msg.opType === 'UPDATE') {
-          const updatedContributions = await DataStore.query(
-            Contribution,
-            (c) => c.id.eq(id)
-          );
 
-          setContribution(updatedContributions[0]);
-        }
-      }
-    );
-
-    // Return a cleanup function to unsubscribe
-    return () => subscription.unsubscribe();
+    return contributions[0];
   } catch (error) {
     console.error('Error fetching user contributions:', error);
     return [];

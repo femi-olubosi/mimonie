@@ -18,6 +18,7 @@ import { getContributionGroups } from '../../api/groups.service';
 import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
 import { ErrorCheck } from '../../utils/errorCheck';
+import CopyLink from '../../components/CopyLink';
 
 const dateOption = [
   'en-US',
@@ -167,7 +168,7 @@ const CreateContribution = () => {
               style={styles.input}
               value={contributionName}
               onChangeText={setContributionName}
-              placeholder="Enter Contribution Name"
+              placeholder='Enter Contribution Name'
             />
           </View>
 
@@ -196,7 +197,7 @@ const CreateContribution = () => {
         </TouchableOpacity>
 
         <Modal
-          animationType="slide"
+          animationType='slide'
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
@@ -213,6 +214,8 @@ const CreateContribution = () => {
               <Pressable style={styles.inviteLink} onPress={handleInvite}>
                 <Text>Click to invite friends</Text>
               </Pressable>
+              <Text style={{ marginBottom: 12 }}>Or</Text>
+              <CopyLink inviteLink={newContribution.id} />
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={() => {
@@ -228,7 +231,7 @@ const CreateContribution = () => {
         <ContactModal
           visible={contactVisible}
           setVisible={setContactVisible}
-          invite_link={newContribution.invite_link}
+          invite_link={newContribution.id}
         />
       </View>
     </PageView>
