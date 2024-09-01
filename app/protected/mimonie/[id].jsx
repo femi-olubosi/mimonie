@@ -147,7 +147,7 @@ const ContributionDetails = () => {
   const next = parsed?.find((e) => e.status !== 'received');
 
   return (
-    <PageView title={'Contribution Details'}>
+    <PageView title={'Contribution Details'} route={'protected/mimonie'}>
       <View style={styles.container}>
         {loading ? (
           <View style={{ rowGap: 6 }}>
