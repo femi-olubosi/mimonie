@@ -152,24 +152,24 @@ const ContributionDetails = () => {
         {loading ? (
           <View style={{ rowGap: 6 }}>
             <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width='100%' height={20} />
-              <SkeletonLoader width='60%' height={20} />
-              <SkeletonLoader width='80%' height={20} />
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
             </View>
             <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width='100%' height={20} />
-              <SkeletonLoader width='60%' height={20} />
-              <SkeletonLoader width='80%' height={20} />
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
             </View>
             <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width='100%' height={20} />
-              <SkeletonLoader width='60%' height={20} />
-              <SkeletonLoader width='80%' height={20} />
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
             </View>
             <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width='100%' height={20} />
-              <SkeletonLoader width='60%' height={20} />
-              <SkeletonLoader width='80%' height={20} />
+              <SkeletonLoader width="100%" height={20} />
+              <SkeletonLoader width="60%" height={20} />
+              <SkeletonLoader width="80%" height={20} />
             </View>
           </View>
         ) : (
@@ -285,7 +285,7 @@ const ContributionDetails = () => {
                               />
                             ) : (
                               <Feather
-                                name='image'
+                                name="image"
                                 color={'gray'}
                                 size={40}
                                 style={{
@@ -308,21 +308,21 @@ const ContributionDetails = () => {
                                 <Text>{capitalizeFirstLetter(eN.status)}</Text>
                                 {eN.status === 'received' ? (
                                   <Fontisto
-                                    name='checkbox-active'
+                                    name="checkbox-active"
                                     size={14}
-                                    color='green'
+                                    color="green"
                                   />
                                 ) : eN.status === 'in progress' ? (
                                   <MaterialCommunityIcons
-                                    name='progress-check'
+                                    name="progress-check"
                                     size={14}
-                                    color='#ecb753'
+                                    color="#ecb753"
                                   />
                                 ) : (
                                   <AntDesign
-                                    name='minussquareo'
+                                    name="minussquareo"
                                     size={14}
-                                    color='gray'
+                                    color="gray"
                                   />
                                 )}
                                 {next?.userId === eN.userId ? (

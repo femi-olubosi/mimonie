@@ -168,7 +168,7 @@ const CreateContribution = () => {
               style={styles.input}
               value={contributionName}
               onChangeText={setContributionName}
-              placeholder='Enter Contribution Name'
+              placeholder="Enter Contribution Name"
             />
           </View>
 
@@ -197,7 +197,7 @@ const CreateContribution = () => {
         </TouchableOpacity>
 
         <Modal
-          animationType='slide'
+          animationType="slide"
           transparent={true}
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}

@@ -78,14 +78,14 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
         onPress={() => handleSendInvite(item)}
       >
         <View style={styles.contactInfo}>
-          <FontAwesome name='user-circle-o' size={24} color='gray' />
+          <FontAwesome name="user-circle-o" size={24} color="gray" />
           <View style={{ rowGap: 2 }}>
             <Text style={styles.contactName}>{item.name}</Text>
           </View>
         </View>
         {selected.includes(item.userId) ||
         item?.invites?.includes(invite_link) ? (
-          <AntDesign name='checkcircleo' size={24} color='green' />
+          <AntDesign name="checkcircleo" size={24} color="green" />
         ) : (
           <Text style={styles.inviteText}>Invite</Text>
         )}
@@ -105,7 +105,7 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
 
   return (
     <Modal
-      animationType='slide'
+      animationType="slide"
       transparent={true}
       visible={visible}
       onRequestClose={() => setVisible(false)}
@@ -130,7 +130,7 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
               style={styles.inputSearch}
               value={contactSearch}
               onChangeText={setContactSearch}
-              placeholder='Search Contact'
+              placeholder="Search Contact"
             />
           </View>
 

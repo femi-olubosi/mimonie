@@ -39,7 +39,7 @@ const CopyLink = ({ inviteLink }) => {
         }}
       >
         <Text style={{ color: 'black' }}>Copy link</Text>
-        <Feather name='copy' size={14} color='black' />
+        <Feather name="copy" size={14} color="black" />
       </TouchableOpacity>
 
       {/* Hidden WebView for Clipboard Access */}

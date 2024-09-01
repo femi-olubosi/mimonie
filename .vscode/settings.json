@@ -8,6 +8,6 @@
     "amplify/backend/amplify-meta.json": true,
     "amplify/backend/awscloudformation": true
   },
-  "prettier.jsxSingleQuote": true,
+  "prettier.jsxSingleQuote": false,
   "prettier.singleQuote": true
 }
