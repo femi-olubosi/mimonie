@@ -82,6 +82,7 @@ const CreateContribution = () => {
       target: selectedValue.target,
       amount: selectedValue.amount,
       num_of_month: selectedValue.num_of_month,
+      variant: selectedValue.variant,
     };
     if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
       return;

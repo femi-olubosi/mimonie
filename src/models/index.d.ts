@@ -274,6 +274,7 @@ type EagerContributionGroups = {
   readonly name: string;
   readonly num_of_month?: number | null;
   readonly Contributions?: (Contribution | null)[] | null;
+  readonly variant: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -294,6 +295,7 @@ type LazyContributionGroups = {
   readonly name: string;
   readonly num_of_month?: number | null;
   readonly Contributions: AsyncCollection<Contribution>;
+  readonly variant: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

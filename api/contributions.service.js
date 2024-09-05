@@ -60,7 +60,7 @@ export const createContribution = async (
         num_of_month: details.num_of_month,
         status: 'open',
         current_count: 0,
-        variant: 'days',
+        variant: details.variant,
       })
     );
     setContributions((prev) => [...prev, newContribution]);
