@@ -122,7 +122,7 @@ export default function HomeScreen() {
     if (!isLoading && !userProfile?.phone_verified) {
       router.push('/protected/login_verify');
     }
-  }, [userProfile?.phone_verified]);
+  }, [userProfile]);
 
   // useEffect(() => {
   //   if (!isLoading && currentUser && !alertShown) {
