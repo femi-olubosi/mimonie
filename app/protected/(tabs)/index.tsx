@@ -59,11 +59,9 @@ export default function HomeScreen() {
     userProfile,
     setNotifications,
     notifications,
-    isLoading,
     userActivities,
     setUserActivities,
   } = useGlobalContext();
-  const [alertShown, setAlertShown] = useState(false);
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -118,41 +116,18 @@ export default function HomeScreen() {
     return () => subscription.unsubscribe();
   }, [userProfile]);
 
-  useEffect(() => {
-    if (!isLoading && !userProfile?.phone_verified) {
-      router.push('/protected/login_verify');
-    }
-  }, [userProfile]);
-
   // useEffect(() => {
-  //   if (!isLoading && currentUser && !alertShown) {
-  //     if (!currentUser.phone_number_verified) {
-  //       setAlertShown(true);
-  //       Alert.alert(
-  //         'Verification',
-  //         'Please verify your phone number',
-  //         [
-  //           {
-  //             text: 'Verify Now',
-  //             onPress: async () => {
-  //               await sendUserAttributeVerificationCode({
-  //                 userAttributeKey: 'phone_number',
-  //               });
-  //               router.push('/protected/device_verify');
-  //             },
-  //           },
-  //           {
-  //             text: 'Later',
-  //             onPress: () => {
-  //               signOut();
-  //             },
-  //           },
-  //         ],
-  //         { cancelable: false }
-  //       );
+  //   const fetchProfile = async () => {
+  //     const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+  //     if (!profile.phone_verified) {
+  //       router.push('/protected/login_verify');
   //     }
+  //   };
+  //   if (currentUser) {
+  //     fetchProfile();
   //   }
-  // }, [currentUser, alertShown, isLoading]);
+  // }, [currentUser]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>
