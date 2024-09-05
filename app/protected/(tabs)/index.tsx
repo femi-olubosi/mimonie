@@ -1,14 +1,10 @@
 import {
-  Image,
-  StyleSheet,
   Platform,
   ScrollView,
   SafeAreaView,
   View,
   Text,
   Pressable,
-  Alert,
-  Modal,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -16,12 +12,8 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect, useState, useCallback } from 'react';
-import {
-  fetchCurrUser,
-  fetchUserProfile,
-  updateUserProfile,
-} from '@/api/user.service';
+import { useEffect } from 'react';
+import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';

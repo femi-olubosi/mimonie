@@ -43,6 +43,7 @@ import { calculateDifference } from '@/api/payment.service';
 import { updateInvite } from '../../../api/invite.service';
 import { safeParseJSON } from '../../../utils/safeJSON';
 import CopyLink from '../../../components/CopyLink';
+import { fetchUserProfile } from '../../../api/user.service';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -52,6 +53,7 @@ const ContributionDetails = () => {
   const [contribution, setContribution] = useState({});
   const [parsed, setParsed] = useState([]);
   const [loading, setLoading] = useState(true); // Add a loading state
+  const [ownerProfile, setOwnerProfile] = useState({});
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -62,6 +64,12 @@ const ContributionDetails = () => {
 
     fetchContribution();
   }, [id]);
+
+  useEffect(() => {
+    fetchUserProfile(setOwnerProfile, {
+      userId: contribution?.participant_ids?.[0],
+    });
+  }, [contribution]);
 
   const handleJoinContribution = async () => {
     if (!userProfile.is_bvn_verified) {
@@ -79,6 +87,13 @@ const ContributionDetails = () => {
         'Sorry!!',
         'You cannot create/join contribution at the moment. Add a card to continue'
       );
+      return;
+    }
+
+    const parsedData = safeParseJSON(ownerProfile?.connections, []);
+
+    if (!parsedData.find((e) => e.userId === userProfile.userId)) {
+      Alert.alert('Error joining', 'You are not connected to this user');
       return;
     }
 
