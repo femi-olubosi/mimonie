@@ -435,7 +435,7 @@ const ContributionDetails = () => {
       <ContactModal
         visible={visible}
         setVisible={setVisible}
-        invite_link={contribution?.invite_link}
+        invite_link={contribution?.id}
       />
     </PageView>
   );

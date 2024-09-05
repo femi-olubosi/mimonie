@@ -44,20 +44,17 @@ export const sendInvite = async (contact) => {
 
 export const fetchInviteContributions = async (inviteLinks) => {
   try {
-    await DataStore.start();
-
     const allContributions = await DataStore.query(Contribution);
 
-    // Filter contributions based on invite_links array
     const filteredContributions = allContributions.filter((contribution) =>
-      inviteLinks.includes(contribution.invite_link)
+      inviteLinks.includes(contribution.id)
     );
 
     // Sort the filtered contributions by creation date
     const sorted = filteredContributions.sort((a, b) =>
       a.createdAt > b.createdAt ? -1 : 1
     );
-
+    console.log('sorted', sorted);
     return sorted;
   } catch (error) {
     console.error('Error fetching user contributions:', error);
