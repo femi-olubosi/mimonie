@@ -19,25 +19,29 @@ import { Link, router } from 'expo-router';
 import * as Device from 'expo-device';
 import { fetchCurrUser, updateUserProfile } from '../../api/user.service';
 import { createNotification } from '../../api/notifications.service';
+import { PhoneAuthProvider } from 'firebase/auth';
 
 const DeviceVerification = () => {
-  const { setIsLoading, setCurrentUser, currentUser, setNotifications } =
-    useGlobalContext();
+  const {
+    setIsLoading,
+    setCurrentUser,
+    currentUser,
+    setNotifications,
+    confirmationResult,
+  } = useGlobalContext();
   const [code, setCode] = useState(0);
 
   const handleVerify = async () => {
     setIsLoading(true);
     try {
-      await confirmUserAttribute({
-        userAttributeKey: 'phone_number',
-        confirmationCode: code,
-      });
+      const credential = PhoneAuthProvider.credential(confirmationResult, code);
 
       await fetchCurrUser(setCurrentUser);
       const device = {
         device_id: Device.osInternalBuildId || null,
         device_name: Device.deviceName || null,
         device_brand: Device.brand || null,
+        phone_verified: true,
       };
       await updateUserProfile(device, currentUser);
       await createNotification(
@@ -70,11 +74,12 @@ const DeviceVerification = () => {
   };
 
   const handleResend = async () => {
-    const res = await sendUserAttributeVerificationCode({
-      userAttributeKey: 'phone_number',
-    });
+    router.push('/login_verify');
+    // const res = await sendUserAttributeVerificationCode({
+    //   userAttributeKey: 'phone_number',
+    // });
 
-    console.log({ res });
+    // console.log({ res });
   };
 
   return (

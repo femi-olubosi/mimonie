@@ -375,6 +375,13 @@ export const schema = {
                     "attributes": [],
                     "isArrayNullable": true
                 },
+                "phone_verified": {
+                    "name": "phone_verified",
+                    "isArray": false,
+                    "type": "Boolean",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -828,5 +835,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "fc9fe9190d831759babf3bd5d7560ce8"
+    "version": "cef0d1ba72bf95803fdaa7382ccca034"
 };

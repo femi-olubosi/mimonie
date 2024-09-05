@@ -118,6 +118,12 @@ export default function HomeScreen() {
     return () => subscription.unsubscribe();
   }, [userProfile]);
 
+  useEffect(() => {
+    if (!isLoading && !userProfile?.phone_verified) {
+      router.push('/protected/login_verify');
+    }
+  }, [userProfile?.phone_verified]);
+
   // useEffect(() => {
   //   if (!isLoading && currentUser && !alertShown) {
   //     if (!currentUser.phone_number_verified) {

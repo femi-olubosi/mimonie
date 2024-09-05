@@ -113,6 +113,7 @@ type EagerUserProfile = {
   readonly device_brand?: string | null;
   readonly verification_in_progress_id?: boolean | null;
   readonly connections?: (string | null)[] | null;
+  readonly phone_verified?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -148,6 +149,7 @@ type LazyUserProfile = {
   readonly device_brand?: string | null;
   readonly verification_in_progress_id?: boolean | null;
   readonly connections?: (string | null)[] | null;
+  readonly phone_verified?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

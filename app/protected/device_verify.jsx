@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
-import DeviceVerification from '../../components/auth/DeviceVerification';
+import DeviceVerification from '@/components/auth/DeviceVerification';
 
 const device_verify = () => {
   return (
@@ -11,5 +11,3 @@ const device_verify = () => {
 };
 
 export default device_verify;
-
-const styles = StyleSheet.create({});

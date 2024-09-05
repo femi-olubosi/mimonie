@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   TextInput,
   StyleSheet,
@@ -24,7 +24,6 @@ import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
-import { convertToAWSDate } from '../../utils/toAWSDate';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -40,6 +39,10 @@ const LoginForm = (props) => {
     userProfile,
     setNotifications,
   } = useGlobalContext();
+
+  // useEffect(() => {
+  //   setIsLoading(false);
+  // }, []);
 
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
@@ -70,6 +73,29 @@ const LoginForm = (props) => {
       const profile = await fetchUserProfile(setUserProfile, user);
 
       await fetchUserNotification(user.userId, setNotifications);
+
+      if (!profile?.phone_verified) {
+        Alert.alert(
+          'Phone Number is not verified',
+          `Please verify your phone number to continue`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Okay',
+              onPress: async () => {
+                router.push('/protected/login_verify');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
+
       if (
         !['+2348139781144', '+2348139781147', '+2348139781148'].includes(
           profile.phone_number
@@ -89,10 +115,11 @@ const LoginForm = (props) => {
             {
               text: 'Register',
               onPress: async () => {
-                await sendUserAttributeVerificationCode({
-                  userAttributeKey: 'phone_number',
-                });
-                router.push('/protected/device_verify');
+                // await sendUserAttributeVerificationCode({
+                //   userAttributeKey: 'phone_number',
+                // });
+
+                router.push('/protected/login_verify');
               },
             },
           ],

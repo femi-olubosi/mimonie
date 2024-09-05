@@ -1,128 +1,69 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  TextInput,
-  Button,
-  Image,
   StyleSheet,
-  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Text,
+  Alert,
 } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import Container from '../../components/Container';
-import One from '../../components/identity/One';
-import SelfieCapture from '../../components/identity/Three';
-import DocumentCapture from '../../components/identity/Four';
-import Setup from '../../components/identity/Two';
 import { PageView } from '../../components/Reusable';
+import { useFirebaseLogin } from '../../captch';
+import { useGlobalContext } from '@/store/StoreContext';
+import { app, auth } from '../../firebase';
+import { router } from 'expo-router';
 
 const DocumentIdentification = () => {
-  const [selfie, setSelfie] = useState(null);
-  const [idCard, setIdCard] = useState(null);
-  const [status, setStatus] = useState('');
-  const [step, setStep] = useState(1);
+  const { recaptcha, sendOtp } = useFirebaseLogin({
+    auth: auth,
+    firebaseConfig: app.options,
+  });
+  const [phone, setPhone] = useState('');
+  const { setIsLoading, setConfirmationResult } = useGlobalContext();
 
-  const pickImage = async (setImage) => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setImage(result.uri);
+  const sendVerification = async () => {
+    if (phone.length < 7) {
+      Alert.alert('Invalid', 'Please enter a valid phone number');
+      return;
     }
-  };
 
-  const handleSubmit = async () => {
-    // Implement API request logic here
-    setStatus('Processing...');
+    setIsLoading(true);
     try {
-      const timestamp = new Date().toISOString();
-      const signature = 'your_calculated_signature'; // Replace with your method to calculate the signature
-      const smileClientId = 'your_smile_client_id'; // Replace with your Smile ID client ID
+      const code = await sendOtp(phone);
 
-      const response = await fetch(
-        'https://testapi.smileidentity.com/v1/upload',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            callback_url: callbackUrl,
-            model_parameters: {},
-            partner_params: {
-              job_id: jobId,
-              job_type: 1,
-              user_id: userId,
-            },
-            signature: signature,
-            smile_client_id: smileClientId,
-            source_sdk_version: '1.0.0',
-            source_sdk: 'rest_api',
-            timestamp: timestamp,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok) {
-        setStatus('Upload URL received. Uploading images...');
-        await uploadImages(data.upload_url);
-      } else {
-        setStatus(`Error: ${data.error}`);
-      }
+      setConfirmationResult(code);
+      router.push('/protected/device_verify');
     } catch (error) {
-      setStatus(`Error: ${error.message}`);
+      console.error('Verification failed:', error);
+      Alert.alert('Verification failed', 'Invalid phone number format');
     }
-  };
-
-  const uploadImages = async (uploadUrl) => {
-    try {
-      let formData = new FormData();
-      formData.append('file', {
-        uri: selfie,
-        name: 'selfie.jpg',
-        type: 'image/jpeg',
-      });
-      formData.append('file', {
-        uri: idCard,
-        name: 'idcard.jpg',
-        type: 'image/jpeg',
-      });
-
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.ok) {
-        setStatus('Images uploaded successfully!');
-      } else {
-        setStatus('Failed to upload images.');
-      }
-    } catch (error) {
-      setStatus(`Error: ${error.message}`);
-    }
+    setIsLoading(false);
   };
 
   return (
     <PageView title={'Identification'}>
       <View style={{ flex: 1, paddingHorizontal: 20, paddingVertical: 40 }}>
-        {step === 1 ? (
-          <One setStep={setStep} />
-        ) : step === 2 ? (
-          <Setup />
-        ) : step === 3 ? (
-          <SelfieCapture setStep={setStep} />
-        ) : (
-          <DocumentCapture setStep={setStep} />
-        )}
+        <TextInput
+          style={{
+            paddingHorizontal: 10,
+            borderWidth: 1,
+            padding: 10,
+            marginBottom: 20,
+          }}
+          placeholder="Enter your phone number"
+          value={phone}
+          onChangeText={setPhone}
+          autoCapitalize="none"
+          keyboardType="phone-pad"
+        />
+        <View style={{ backgroundColor: 'red' }}>{recaptcha}</View>
+
+        <TouchableOpacity
+          onPress={sendVerification}
+          style={{ backgroundColor: 'red', padding: 10 }}
+        >
+          <Text>Send OTP</Text>
+        </TouchableOpacity>
       </View>
     </PageView>
   );

@@ -20,6 +20,7 @@ const StoreProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [userActivities, setUserActivities] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   DataStore.start();
 
@@ -58,6 +59,8 @@ const StoreProvider = ({ children }) => {
     setUserActivities,
     allUsers,
     setAllUsers,
+    confirmationResult,
+    setConfirmationResult,
   };
 
   return (
