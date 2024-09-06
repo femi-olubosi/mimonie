@@ -3,7 +3,7 @@ import {
   fetchUserAttributes,
   updateUserAttributes,
 } from 'aws-amplify/auth';
-import { downloadData, uploadData } from 'aws-amplify/storage';
+import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 
@@ -23,28 +23,73 @@ export const uploadFile = async (file, type) => {
 
   try {
     const uploadPath = ({ identityId }) =>
-      `protected/${identityId}/${type}/${fileName}`;
+      `public/${identityId}/${type}/${fileName}`;
 
     await uploadData({
       path: uploadPath,
+      level: 'public',
       data: file,
-    }).result;
-
-    const { body, eTag } = await downloadData({
-      path: uploadPath,
       options: {
-        onProgress: (event) => {
-          console.log(event.transferredBytes);
+        bucket: {
+          bucketName: 'mimonies3storageb7338-dev',
         },
       },
     }).result;
-    const text = await body.text();
-    const blob = await body.blob();
-    return text;
+    console.log('yes');
+    // const { body, eTag } = await downloadData({
+    //   path: uploadPath,
+    //   level: 'public',
+
+    //   options: {
+
+    //     onProgress: (event) => {
+    //       console.log(event.transferredBytes);
+    //     },
+    //   },
+    // }).result;
+
+    const linkToStorageFile = await getUrl({
+      path: uploadPath,
+      options: {
+        bucket: 'mimonies3storageb7338-dev',
+        validateObjectExistence: true,
+        useAccelerateEndpoint: true,
+      },
+    });
+    // const text = await body.text();
+    // const blob = await body.blob();
+    // return text;
+    console.log('link', linkToStorageFile);
+    return linkToStorageFile.url.toString();
   } catch (error) {
     console.error('Error uploading or getting file URL:', error);
   }
 };
+
+// export const uploadFile = async (file, type) => {
+//   const date = Date.now();
+//   const fileName = `${date}.jpg`;
+
+//   try {
+//     const uploadPath = ({ identityId }) => `${identityId}/${type}/${fileName}`;
+
+//     await uploadData({
+//       path: uploadPath,
+//       data: file,
+//     }).result;
+
+//     // Generate a presigned URL
+//     const signedUrl = await getSignedUrl({
+//       Bucket: 'your-bucket-name',
+//       Key: uploadPath,
+//       Expires: 60 * 60, // 1 hour
+//     });
+
+//     return signedUrl;
+//   } catch (error) {
+//     console.error('Error uploading or getting file URL:', error);
+//   }
+// };
 
 export const updateAttributes = async (data) => {
   const {

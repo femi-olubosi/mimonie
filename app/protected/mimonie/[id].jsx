@@ -111,7 +111,7 @@ const ContributionDetails = () => {
         userProfile,
         setContributions
       );
-      await updateInvite(userProfile.userId, contribution.invite_link);
+      await updateInvite(userProfile.userId, contribution.id);
       Alert.alert(
         'Success',
         'You have successfully joined the contribution',
