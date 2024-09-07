@@ -153,7 +153,6 @@ export default function HomeScreen() {
   //   if (currentUser) {
   //     fetchProfile();
   //   }
-  // clg
   // }, [currentUser]);
 
   return (
