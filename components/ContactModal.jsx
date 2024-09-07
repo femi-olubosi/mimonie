@@ -19,6 +19,7 @@ import { fetchUserProfile } from '../api/user.service';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
+// import { triggerNotificationForUser } from '../api/pushNotification.service';
 
 const ContactModal = ({ visible, setVisible, invite_link }) => {
   const [contactSearch, setContactSearch] = useState('');
@@ -51,6 +52,12 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
     await sendUserInvite(item.userId, invite_link);
     await fetchUserProfile(setUserProfile, currentUser);
     setSelected((prev) => [...prev, item.userId]);
+
+    await triggerNotificationForUser(
+      item.push_token,
+      'Contribution Invite',
+      `You have been invited to join a contribution`
+    );
   };
 
   useEffect(() => {

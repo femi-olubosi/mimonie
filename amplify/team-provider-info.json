@@ -48,6 +48,9 @@
       "storage": {
         "mimonieS3Storage": {},
         "dynamoc73ffc4d": {}
+      },
+      "analytics": {
+        "mimonieNotification": {}
       }
     }
   }

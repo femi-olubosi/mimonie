@@ -1,5 +1,13 @@
 {
   "aws_project_region": "us-west-2",
+  "aws_mobile_analytics_app_id": "58dfdadcea384961a36f6e90132c23b3",
+  "aws_mobile_analytics_app_region": "us-west-2",
+  "Analytics": {
+    "AWSPinpoint": {
+      "appId": "58dfdadcea384961a36f6e90132c23b3",
+      "region": "us-west-2"
+    }
+  },
   "aws_cloud_logic_custom": [
     {
       "name": "api37a1ef7a",

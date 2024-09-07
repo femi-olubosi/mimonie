@@ -114,6 +114,7 @@ type EagerUserProfile = {
   readonly verification_in_progress_id?: boolean | null;
   readonly connections?: (string | null)[] | null;
   readonly phone_verified?: boolean | null;
+  readonly push_token?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -150,6 +151,7 @@ type LazyUserProfile = {
   readonly verification_in_progress_id?: boolean | null;
   readonly connections?: (string | null)[] | null;
   readonly phone_verified?: boolean | null;
+  readonly push_token?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

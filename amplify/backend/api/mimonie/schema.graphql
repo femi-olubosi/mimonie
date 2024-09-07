@@ -46,6 +46,7 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   verification_in_progress_id: Boolean
   connections: [AWSJSON]
   phone_verified: Boolean
+  push_token: String
 }
 
 type UserCardDetails @model @auth(rules: [{allow: public}]) {

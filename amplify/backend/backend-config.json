@@ -1,4 +1,10 @@
 {
+  "analytics": {
+    "mimonieNotification": {
+      "providerPlugin": "awscloudformation",
+      "service": "Pinpoint"
+    }
+  },
   "api": {
     "api37a1ef7a": {
       "dependsOn": [

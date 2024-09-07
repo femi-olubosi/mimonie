@@ -1,0 +1,21 @@
+{
+    "appName": "mimonieNotification",
+    "roleName": "pinpointLambdaRole51b90af2",
+    "cloudformationPolicyName": "cloudformationPolicy51b90af2",
+    "cloudWatchPolicyName": "cloudWatchPolicy51b90af2",
+    "pinpointPolicyName": "pinpointPolicy51b90af2",
+    "authPolicyName": "pinpoint_amplify_51b90af2",
+    "unauthPolicyName": "pinpoint_amplify_51b90af2",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}

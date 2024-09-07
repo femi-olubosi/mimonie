@@ -25,6 +25,10 @@ import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { DataStore } from 'aws-amplify/datastore';
+import {
+  registerForPushNotificationsAsync,
+  savePushToken,
+} from '@/api/pushNotification.service';
 
 import {
   FontAwesome,
@@ -32,10 +36,7 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import {
-  sendUserAttributeVerificationCode,
-  updateUserAttributes,
-} from 'aws-amplify/auth';
+import { updateUserAttributes } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
@@ -140,6 +141,22 @@ export default function HomeScreen() {
     if (currentUser?.picture) {
       checkExpiry();
     }
+  }, [currentUser]);
+
+  useEffect(() => {
+    const registerPushToken = async () => {
+      try {
+        const pushToken = await registerForPushNotificationsAsync();
+
+        if (pushToken && currentUser) {
+          await savePushToken(currentUser, pushToken);
+        }
+      } catch (error) {
+        console.log('Failed to get push token:', error);
+      }
+    };
+
+    registerPushToken();
   }, [currentUser]);
 
   // useEffect(() => {
