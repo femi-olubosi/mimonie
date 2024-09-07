@@ -164,7 +164,6 @@ const ContributionDetails = () => {
 
   useEffect(() => {
     const fetchImageUrls = async () => {
-      setLoading(true);
       const urls = {};
       for (const eN of parsed) {
         if (eN.userId) {
@@ -172,9 +171,7 @@ const ContributionDetails = () => {
         }
       }
       setImageUrls(urls);
-      setLoading(false);
     };
-
     fetchImageUrls();
   }, [parsed]);
 

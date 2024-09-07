@@ -131,6 +131,9 @@ export default function HomeScreen() {
         });
         setProfilePicture(link);
         await fetchCurrUser(setCurrentUser);
+      } else {
+        console.log('link not expired');
+        setProfilePicture(currentUser?.picture);
       }
     };
 
@@ -165,7 +168,7 @@ export default function HomeScreen() {
       >
         <ProfileView
           name={userProfile?.name}
-          picture={profilePicture}
+          picture={profilePicture || currentUser.picture}
           notifications={notifications}
         />
         <ScrollView contentContainerStyle={{}}>
