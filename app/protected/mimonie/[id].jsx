@@ -43,7 +43,7 @@ import { calculateDifference } from '@/api/payment.service';
 import { updateInvite } from '../../../api/invite.service';
 import { safeParseJSON } from '../../../utils/safeJSON';
 import CopyLink from '../../../components/CopyLink';
-import { fetchUserProfile } from '../../../api/user.service';
+import { downloadUrl, fetchUserProfile } from '../../../api/user.service';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =
@@ -52,8 +52,9 @@ const ContributionDetails = () => {
   const [visible, setVisible] = useState(false);
   const [contribution, setContribution] = useState({});
   const [parsed, setParsed] = useState([]);
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
   const [ownerProfile, setOwnerProfile] = useState({});
+  const [imageUrls, setImageUrls] = useState({});
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -160,6 +161,22 @@ const ContributionDetails = () => {
   }, [contribution]);
 
   const next = parsed?.find((e) => e.status !== 'received');
+
+  useEffect(() => {
+    const fetchImageUrls = async () => {
+      setLoading(true);
+      const urls = {};
+      for (const eN of parsed) {
+        if (eN.userId) {
+          urls[eN.userId] = await downloadUrl(eN.userId);
+        }
+      }
+      setImageUrls(urls);
+      setLoading(false);
+    };
+
+    fetchImageUrls();
+  }, [parsed]);
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -287,9 +304,9 @@ const ContributionDetails = () => {
                           }}
                         >
                           <View>
-                            {eN.picture ? (
+                            {imageUrls[eN.userId] ? (
                               <Image
-                                source={{ uri: eN.picture }}
+                                source={{ uri: imageUrls[eN.userId] }}
                                 style={{
                                   width: 50,
                                   height: 50,

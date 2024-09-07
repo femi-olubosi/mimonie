@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import Button from '../../../components/Button';
+import Button from '@/components/Button';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { imagePicker } from '@/utils/ImagePicker';
 import {
@@ -29,14 +29,16 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
 import { updateUserAttributes } from 'aws-amplify/auth';
 import {
+  downloadFile,
+  downloadUrl,
   fetchCurrUser,
   fetchUserProfile,
   updateUserProfile,
-} from '../../../api/user.service';
+} from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
 import { get } from 'aws-amplify/api';
-import { searchTree } from '../../../utils/searchTree';
+import { searchTree } from '@/utils/searchTree';
 import { createNotification } from '@/api/notifications.service';
 import {
   isNameAndDobIncluded,
@@ -56,8 +58,10 @@ const Account = () => {
     userProfile,
     setUserProfile,
     setNotifications,
+    profilePicture,
+    setProfilePicture,
   } = useGlobalContext();
-  const [profilePicture, setProfilePicture] = useState('');
+
   const [logoutModal, setLogoutModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -73,19 +77,19 @@ const Account = () => {
         throw new Error('No file selected');
       }
 
-      setProfilePicture(file);
       setIsLoading(true);
-      const fileText = await uploadFile(file, 'profile');
-      if (!fileText) {
+      await uploadFile(file, userProfile?.userId);
+      const url = await downloadUrl(userProfile.userId);
+
+      if (!url) {
         throw new Error('Failed to upload file');
       }
+      setProfilePicture(url);
       await updateUserAttributes({
         userAttributes: {
-          picture: fileText,
+          picture: url,
         },
       });
-
-      await updateUserProfile({ picture: fileText }, currentUser);
       await fetchCurrUser(setCurrentUser);
     } catch (error) {
       console.error('Error handling profile picture:', error);

@@ -13,7 +13,12 @@ import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useEffect } from 'react';
-import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
+import {
+  checkLinkExpiry,
+  downloadUrl,
+  fetchCurrUser,
+  fetchUserProfile,
+} from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
@@ -27,7 +32,10 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
-import { sendUserAttributeVerificationCode } from 'aws-amplify/auth';
+import {
+  sendUserAttributeVerificationCode,
+  updateUserAttributes,
+} from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
@@ -53,6 +61,8 @@ export default function HomeScreen() {
     notifications,
     userActivities,
     setUserActivities,
+    setProfilePicture,
+    profilePicture,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -108,6 +118,27 @@ export default function HomeScreen() {
     return () => subscription.unsubscribe();
   }, [userProfile]);
 
+  useEffect(() => {
+    const checkExpiry = async () => {
+      const res = await checkLinkExpiry(currentUser?.picture);
+      if (res) {
+        console.log('link expired', res);
+        const link = await downloadUrl(currentUser.userId);
+        await updateUserAttributes({
+          userAttributes: {
+            picture: link || '',
+          },
+        });
+        setProfilePicture(link);
+        await fetchCurrUser(setCurrentUser);
+      }
+    };
+
+    if (currentUser?.picture) {
+      checkExpiry();
+    }
+  }, [currentUser]);
+
   // useEffect(() => {
   //   const fetchProfile = async () => {
   //     const profile = await fetchUserProfile(setUserProfile, currentUser);
@@ -119,6 +150,7 @@ export default function HomeScreen() {
   //   if (currentUser) {
   //     fetchProfile();
   //   }
+  // clg
   // }, [currentUser]);
 
   return (
@@ -133,7 +165,7 @@ export default function HomeScreen() {
       >
         <ProfileView
           name={userProfile?.name}
-          picture={currentUser?.picture}
+          picture={profilePicture}
           notifications={notifications}
         />
         <ScrollView contentContainerStyle={{}}>

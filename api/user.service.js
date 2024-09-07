@@ -6,6 +6,7 @@ import {
 import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
+import { Storage } from 'aws-amplify';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
@@ -17,16 +18,13 @@ export const fetchCurrUser = async (setCurrentUser) => {
   return user;
 };
 
-export const uploadFile = async (file, type) => {
-  const date = Date.now();
-  const fileName = `${date}.jpg`;
-
+export const uploadFile = async (file, userId) => {
+  const uploadPath = `public/profile/${userId}-profile.jpg`;
   try {
-    const uploadPath = `public/${fileName}`;
     const response = await fetch(file);
     const img = await response.blob();
 
-    await uploadData({
+    const res = await uploadData({
       path: uploadPath,
       data: img,
       options: {
@@ -35,13 +33,50 @@ export const uploadFile = async (file, type) => {
       },
     }).result;
 
+    return res;
+  } catch (error) {
+    console.error('Error uploading or getting file URL:', error);
+  }
+};
+
+export const downloadFile = async (userId) => {
+  const uploadPath = `public/profile/${userId}-profile.jpg`;
+  try {
+    const { body } = await downloadData({
+      path: uploadPath,
+    }).result;
+
+    const imageBlob = await body.blob();
+
+    return URL.createObjectURL(imageBlob);
+  } catch (e) {}
+};
+
+export const downloadUrl = async (userId) => {
+  try {
+    const uploadPath = `public/profile/${userId}-profile.jpg`;
     const linkToStorageFile = await getUrl({
       path: uploadPath,
+      expires: 604800,
     });
 
     return linkToStorageFile.url.toString();
+  } catch (err) {
+    console.error('Error downloading file:', err);
+    return null;
+  }
+};
+
+export const checkLinkExpiry = async (link) => {
+  try {
+    const response = await fetch(link);
+    return response.status === 403;
   } catch (error) {
-    console.error('Error uploading or getting file URL:', error);
+    if (error.name === 'HTTPError' && error.status === 403) {
+      return true;
+    }
+    console.error('Error checking link expiration:', error);
+    return false;
   }
 };
 
