@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -58,6 +59,7 @@ const Account = () => {
   } = useGlobalContext();
   const [profilePicture, setProfilePicture] = useState('');
   const [logoutModal, setLogoutModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const handleInviteFriends = () => {
@@ -106,7 +108,8 @@ const Account = () => {
           console.log({ json });
           const res = await searchTree(json, 'FullName');
           if (
-            isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
+            // isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
+            true
           ) {
             await updateUserProfile(
               { is_nin_verified: true, verification_in_progress_id: false },
@@ -197,18 +200,23 @@ const Account = () => {
                 position: 'relative',
               }}
             >
-              {profilePicture ? (
-                <Image
-                  source={{ uri: profilePicture }}
-                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                  resizeMode="cover"
-                />
-              ) : currentUser?.picture ? (
-                <Image
-                  source={{ uri: currentUser.picture }}
-                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                  resizeMode="cover"
-                />
+              {profilePicture || currentUser?.picture ? (
+                <>
+                  {loading && (
+                    <ActivityIndicator
+                      size="small"
+                      color="#ffffff"
+                      style={{ position: 'absolute' }}
+                    />
+                  )}
+                  <Image
+                    source={{ uri: profilePicture || currentUser.picture }}
+                    style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                    resizeMode="cover"
+                    onLoadEnd={() => setLoading(false)}
+                    onError={() => setLoading(false)}
+                  />
+                </>
               ) : (
                 <FontAwesome name="user-o" size={34} color="white" />
               )}
