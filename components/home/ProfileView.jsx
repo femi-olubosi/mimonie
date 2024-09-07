@@ -1,10 +1,18 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, { useState } from 'react';
 import { Colors } from '@/constants/Colors';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const ProfileView = ({ name, picture, notifications }) => {
+  const [loading, setLoading] = useState(true);
   return (
     <View
       style={{
@@ -31,10 +39,21 @@ const ProfileView = ({ name, picture, notifications }) => {
           }}
         >
           {picture ? (
-            <Image
-              source={{ uri: picture }}
-              style={{ width: 50, height: 50, borderRadius: 25 }}
-            />
+            <>
+              {loading && (
+                <ActivityIndicator
+                  size="small"
+                  color="#ffffff"
+                  style={{ position: 'absolute' }}
+                />
+              )}
+              <Image
+                source={{ uri: picture }}
+                style={{ width: 50, height: 50, borderRadius: 25 }}
+                onLoadEnd={() => setLoading(false)}
+                onError={() => setLoading(false)}
+              />
+            </>
           ) : (
             <FontAwesome
               name="user-o"
