@@ -46,6 +46,10 @@ import {
   UserNotifications,
   UserProfile,
 } from '@/src/models';
+import {
+  registerForPushNotificationsAsync,
+  savePushToken,
+} from '@/api/pushNotification.service';
 
 export default function HomeScreen() {
   const {
@@ -140,6 +144,22 @@ export default function HomeScreen() {
     if (currentUser?.picture) {
       checkExpiry();
     }
+  }, [currentUser]);
+
+  useEffect(() => {
+    const registerPushToken = async () => {
+      try {
+        const pushToken = await registerForPushNotificationsAsync();
+
+        if (pushToken && currentUser) {
+          await savePushToken(currentUser, pushToken);
+        }
+      } catch (error) {
+        console.log('Failed to get push token:', error);
+      }
+    };
+
+    registerPushToken();
   }, [currentUser]);
 
   // useEffect(() => {

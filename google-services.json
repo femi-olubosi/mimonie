@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "115769961743",
+    "project_id": "mimonie-69c72",
+    "storage_bucket": "mimonie-69c72.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115769961743:android:43be813335043c16b6a27a",
+        "android_client_info": {
+          "package_name": "com.femiolubosi.mimonie"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgnaSvZzxmXqJJEDEqWots_YeFiov2vx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

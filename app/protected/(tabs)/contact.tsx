@@ -25,6 +25,7 @@ import { fetchUserProfile } from '@/api/user.service';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 import { safeParseJSON } from '@/utils/safeJSON';
+import { triggerNotificationForUser } from '@/api/pushNotification.service';
 
 const Contact = () => {
   const {
@@ -54,6 +55,11 @@ const Contact = () => {
     try {
       await updateUserConnections(connections, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
+      await triggerNotificationForUser(
+        connections.push_token,
+        'Connect Request',
+        `You have a connection request from ${userProfile.name}`
+      );
       setModalVisible(true);
     } catch (error) {
       console.error(error);
@@ -116,6 +122,7 @@ const Contact = () => {
       email: res?.userProfile?.email,
       invites: res?.userProfile?.invites,
       occupation: res?.userProfile?.occupation,
+      push_token: res?.userProfile?.push_token,
       verified:
         res?.userProfile?.is_nin_verified && res?.userProfile?.is_bvn_verified,
       status: 'pending',
