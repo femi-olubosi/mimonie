@@ -44,6 +44,7 @@ import { updateInvite } from '../../../api/invite.service';
 import { safeParseJSON } from '../../../utils/safeJSON';
 import CopyLink from '../../../components/CopyLink';
 import { downloadUrl, fetchUserProfile } from '../../../api/user.service';
+import { triggerNotificationForUser } from '@/api/pushNotification.service';
 
 const ContributionDetails = () => {
   const { setContributions, currentUser, userProfile, setIsLoading } =

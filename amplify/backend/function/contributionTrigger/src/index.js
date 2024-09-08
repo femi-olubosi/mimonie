@@ -1,3 +1,4 @@
+const { Expo } = require('expo-server-sdk');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
   DynamoDBDocumentClient,
@@ -6,98 +7,47 @@ const {
 } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 
+// Expo push notification setup
+let expo = new Expo();
+
+// Create a new DynamoDB client
 const dynamoDB = new DynamoDBClient({ region: 'us-west-2' });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
 
+// DynamoDB table names
 const contributionTableName = 'Contribution-d4itlx42uzhtrctybtkmaxruya-dev';
 const userActivityTableName = 'UserActivity-d4itlx42uzhtrctybtkmaxruya-dev';
-const PAYSTACK_SECRET_KEY_LIVE = process.env.PAYSTACK_SECRET_KEY_LIVE;
 
-const https = require('https');
-
-const makePaystackRequest = async (endpoint, method, data) => {
-  const url = `https://api.paystack.co${endpoint}`;
-  const headers = {
-    Authorization: `Bearer ${PAYSTACK_SECRET_KEY_LIVE}`,
-    'Content-Type': 'application/json',
-  };
-
-  const options = {
-    method,
-    headers,
-    hostname: 'api.paystack.co',
-    path: endpoint,
-    port: 443,
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(data);
-          if (!res.statusCode || res.statusCode >= 400) {
-            throw new Error(result.message || 'Something went wrong');
-          }
-          resolve(result);
-        } catch (error) {
-          reject(error);
-        }
-      });
-    });
-
-    req.on('error', (error) => {
-      reject(error);
-    });
-
-    if (method === 'POST' || method === 'PUT') {
-      req.write(JSON.stringify(data));
-    }
-
-    req.end();
-  });
-};
-
-// Function to calculate the difference based on variant
-const calculateDifference = (startDate, variant) => {
-  const start = new Date(startDate);
-  const now = new Date();
-  let difference;
-
-  switch (variant) {
-    case 'days':
-      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-      break;
-    case 'weeks':
-      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-      break;
-    case 'months':
-      difference =
-        (now.getFullYear() - start.getFullYear()) * 12 +
-        now.getMonth() -
-        start.getMonth();
-      break;
-    default:
-      difference = 0;
+// Function to send push notifications
+const sendNotification = async (pushToken, title, body, data = {}) => {
+  if (!Expo.isExpoPushToken(pushToken)) {
+    console.error(`Push token ${pushToken} is not a valid Expo push token`);
+    return;
   }
 
-  return difference;
+  const message = {
+    to: pushToken,
+    sound: 'default',
+    title: title,
+    body: body,
+    data: data,
+  };
+
+  try {
+    const ticketChunk = await expo.sendPushNotificationsAsync([message]);
+    console.log('Notification sent:', ticketChunk);
+  } catch (error) {
+    console.error('Error sending notification:', error);
+  }
 };
 
-// Function to fetch contributions
+// Helper functions to interact with DynamoDB
 const fetchRunningContributions = async () => {
   const params = {
     TableName: contributionTableName,
     FilterExpression: '#status = :status',
-    ExpressionAttributeNames: {
-      '#status': 'status',
-    },
-    ExpressionAttributeValues: {
-      ':status': 'running',
-    },
+    ExpressionAttributeNames: { '#status': 'status' },
+    ExpressionAttributeValues: { ':status': 'running' },
   };
 
   try {
@@ -109,7 +59,6 @@ const fetchRunningContributions = async () => {
   }
 };
 
-// Function to save user activity
 const saveUserActivity = async (activity) => {
   const timestamp = new Date().toISOString();
   const params = {
@@ -132,7 +81,6 @@ const saveUserActivity = async (activity) => {
   }
 };
 
-// Function to update contributions
 const updateContribution = async (contribution) => {
   const params = {
     TableName: contributionTableName,
@@ -147,58 +95,27 @@ const updateContribution = async (contribution) => {
   }
 };
 
-// Function to charge and split payment
-const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
-  const data = {
-    email: payer.email,
-    amount: `${amount * 100}`,
-    authorization_code: payer.auth_url,
-    subaccount: subaccount_code,
-    transaction_charge: 500,
-    metadata: JSON.stringify({
-      custom_fields: [
-        {
-          display_name: 'Purpose',
-          variable_name: 'purpose',
-          value: 'Contribution',
-        },
-      ],
-    }),
-  };
-  return await makePaystackRequest(
-    '/transaction/charge_authorization',
-    'POST',
-    data
-  );
-};
-
-// Main processing function
+// Main contribution processing logic
 const processContributions = async () => {
   try {
     const contributions = await fetchRunningContributions();
 
     for (const contribution of contributions) {
-      // Calculate the difference based on the variant
       const currentCount = calculateDifference(
         contribution.start_date,
         contribution.variant
       );
 
-      // Stop updating current_count if it equals num_of_month - 1
       if (contribution.current_count !== contribution.num_of_month) {
         contribution.current_count = currentCount;
       }
 
       await updateContribution(contribution);
 
-      // Convert currently_at to an integer if it is not already
       const currentAt = parseInt(contribution.currently_at) || 0;
-
-      // Skip if currently_at matches currentCount or if currentCount is 0 (same day as start date)
       if (currentAt === currentCount || currentCount === 0) continue;
 
       const participants = contribution?.participant;
-
       const inProgressParticipant = participants[0].find(
         (p) => p.status === 'in progress'
       );
@@ -222,6 +139,7 @@ const processContributions = async () => {
             participant.last_successful_round = currentCount;
             paymentsProcessed = true;
 
+            // Save successful payment activity
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
@@ -230,6 +148,14 @@ const processContributions = async () => {
               description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
             });
 
+            // Send notification to the debited participant
+            await sendNotification(
+              participant?.pushToken,
+              'Payment Successful',
+              `You successfully paid ${inProgressParticipant.name} for ${contribution.name}`
+            );
+
+            // Save collection activity for the receiver
             await saveUserActivity({
               id: uuidv4(),
               userId: inProgressParticipant.userId,
@@ -238,10 +164,18 @@ const processContributions = async () => {
               description: `Received payment from ${participant.name} for ${contribution.name}`,
             });
 
-            // Update and save the contribution after each successful payment
+            // Send notification to the credited participant
+            await sendNotification(
+              inProgressParticipant?.pushToken,
+              'Payment Received',
+              `You received payment from ${participant.name} for ${contribution.name}`
+            );
+
+            // Update and save contribution
             contribution.participant = participants;
             await updateContribution(contribution);
           } else {
+            // Save failed payment activity
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
@@ -249,6 +183,14 @@ const processContributions = async () => {
               amount: contribution.amount,
               description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. ${flow?.data?.gateway_response}`,
             });
+
+            // Send notification for failed payment
+            await sendNotification(
+              participant?.pushToken,
+              'Payment Failed',
+              `Your payment to ${inProgressParticipant.name} for ${contribution.name} failed.`
+            );
+
             allPaymentsSuccessful = false;
           }
         }
@@ -263,10 +205,6 @@ const processContributions = async () => {
           description: `Final collection for ${contribution.name}`,
         });
 
-        for (const participant of participants[0]) {
-          participant.last_successful_round = currentCount;
-        }
-
         inProgressParticipant.status = 'received';
 
         const nextParticipant = participants[0].find(
@@ -279,13 +217,12 @@ const processContributions = async () => {
         const allReceived = participants[0].every(
           (participant) => participant.status === 'received'
         );
-
-        contribution.participant = participants;
         if (allReceived) {
           contribution.status = 'completed';
         }
 
         contribution.currently_at = currentCount;
+        contribution.participant = participants;
 
         await updateContribution(contribution);
       }

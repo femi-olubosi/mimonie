@@ -37,6 +37,7 @@ export const createContribution = async (
     subaccount_code: userProfile.subaccount_code,
     email: currentUser.email,
     last_successful_round: 0,
+    push_token: userProfile.push_token,
     status: 'in progress',
   };
 
@@ -149,6 +150,7 @@ export const joinContribution = async (
       auth_url: userProfile.auth_url,
       subaccount_code: userProfile.subaccount_code,
       last_successful_round: 0,
+      push_token: userProfile.push_token,
       status: 'pending',
     };
 
