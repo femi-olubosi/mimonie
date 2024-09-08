@@ -1,3 +1,4 @@
+const { Expo } = require('expo-server-sdk');
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
   DynamoDBDocumentClient,
@@ -5,6 +6,8 @@ const {
   PutCommand,
 } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
+
+let expo = new Expo();
 
 const dynamoDB = new DynamoDBClient({ region: 'us-west-2' });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
@@ -87,6 +90,28 @@ const calculateDifference = (startDate, variant) => {
   return difference;
 };
 
+// Function to send a push notification
+const sendNotification = async (pushToken, title, body, data = {}) => {
+  if (!Expo.isExpoPushToken(pushToken)) {
+    console.error(`Push token ${pushToken} is not a valid Expo push token`);
+    return;
+  }
+
+  const message = {
+    to: pushToken,
+    sound: 'default',
+    title: title,
+    body: body,
+    data: data,
+  };
+
+  try {
+    const ticketChunk = await expo.sendPushNotificationsAsync([message]);
+    console.log('Notification sent:', ticketChunk);
+  } catch (error) {
+    console.error('Error sending notification:', error);
+  }
+};
 // Function to fetch contributions
 const fetchRunningContributions = async () => {
   const params = {
@@ -230,6 +255,13 @@ const processContributions = async () => {
               description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
             });
 
+            // Send notification to the debited participant
+            await sendNotification(
+              participant?.push_token,
+              'Payment Successful',
+              `You successfully paid ${inProgressParticipant.name} for ${contribution.name}`
+            );
+
             await saveUserActivity({
               id: uuidv4(),
               userId: inProgressParticipant.userId,
@@ -237,6 +269,13 @@ const processContributions = async () => {
               amount: contribution.amount,
               description: `Received payment from ${participant.name} for ${contribution.name}`,
             });
+
+            // Send notification to the credited participant
+            await sendNotification(
+              inProgressParticipant?.push_token,
+              'Payment Received',
+              `You received payment from ${participant.name} for ${contribution.name}`
+            );
 
             // Update and save the contribution after each successful payment
             contribution.participant = participants;
@@ -249,6 +288,14 @@ const processContributions = async () => {
               amount: contribution.amount,
               description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. ${flow?.data?.gateway_response}`,
             });
+
+            // Send notification for failed payment
+            await sendNotification(
+              participant?.push_token,
+              'Payment Failed',
+              `Your payment to ${inProgressParticipant.name} for ${contribution.name} failed.`
+            );
+
             allPaymentsSuccessful = false;
           }
         }
