@@ -20,6 +20,7 @@ import { fetchUserProfile } from '@/api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
+import { triggerNotificationForUser } from '@/api/pushNotification.service';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -74,6 +75,11 @@ const connect = () => {
         );
       } else if (activeTab === 2) {
         await acceptConnectionRequest(data, userProfile);
+        await triggerNotificationForUser(
+          data.push_token,
+          'Connect Request Accepted',
+          `${userProfile.name} accepted your connect request`
+        );
         Alert.alert(
           'Connection accepted',
           '',
