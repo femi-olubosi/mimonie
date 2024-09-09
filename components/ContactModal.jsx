@@ -95,8 +95,7 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
         item?.invites?.includes(invite_link) ? (
           <AntDesign name="checkcircleo" size={24} color="green" />
         ) : (
-          // <Text style={styles.inviteText}>Invite</Text>
-          <Text style={styles.inviteText}>{item?.push_token}</Text>
+          <Text style={styles.inviteText}>Invite</Text>
         )}
       </TouchableOpacity>
     );
