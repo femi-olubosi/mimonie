@@ -186,6 +186,7 @@ const ProtectedContent = () => {
             <Stack.Screen name="flow" options={{ headerShown: false }} />
             <Stack.Screen name="my_invites" options={{ headerShown: false }} />
             <Stack.Screen name="my_network" options={{ headerShown: false }} />
+            <Stack.Screen name="faq" options={{ headerShown: false }} />
           </Stack>
         </Authenticator>
       </View>

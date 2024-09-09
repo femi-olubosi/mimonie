@@ -80,7 +80,7 @@ const Options = ({ userProfile }) => {
           alignItems: 'center',
         }}
         // onPress={tryNow}
-        // onPress={() => router.push('/login_verify')}
+        onPress={() => router.push('/protected/faq')}
       >
         <AntDesign name="question" size={25} color="black" />
         <Text style={{ fontSize: 14, fontFamily: 'im' }}>Help/FAQ</Text>
