@@ -22,7 +22,7 @@ const faq = () => {
       <View style={{ padding: 20 }}>
         <ScrollView style={styles.container}>
           <Text style={styles.header}>Frequently Asked Questions</Text>
-          {faqData.map((item, index) => (
+          {/* {faqData.map((item, index) => (
             <View key={index} style={styles.faqItem}>
               <TouchableOpacity
                 style={styles.questionRow}
@@ -40,6 +40,14 @@ const faq = () => {
                   <Text style={styles.answerText}>{item.answer}</Text>
                 </View>
               )}
+            </View>
+          ))} */}
+          {faqData.map((item, index) => (
+            <View key={index} style={styles.faqItem}>
+              <Text style={styles.question}>
+                {index + 1}. {item.question}
+              </Text>
+              <Text style={styles.answer}>{item.answer}</Text>
             </View>
           ))}
         </ScrollView>
@@ -85,5 +93,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     lineHeight: 22,
+  },
+  faqItem: {
+    marginBottom: 15,
+  },
+  question: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 15,
+  },
+  answer: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 5,
+    lineHeight: 20,
   },
 });
