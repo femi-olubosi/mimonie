@@ -29,6 +29,7 @@ export const updateUserConnections = async (newConnection, userProfile) => {
       phone_number: userProfile?.phone_number,
       email: userProfile?.email,
       occupation: userProfile?.occupation,
+      push_token: userProfile?.push_token,
       verified: userProfile.is_nin_verified && userProfile.is_bvn_verified,
       status: 'pending',
       type: 'request',

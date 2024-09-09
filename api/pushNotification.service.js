@@ -66,6 +66,31 @@ export async function savePushToken(currentUser, pushToken) {
 }
 
 // Function to send push notification with custom details
+// export async function sendCustomPushNotification(
+//   expoPushToken,
+//   title,
+//   body,
+//   data = {}
+// ) {
+//   const message = {
+//     to: expoPushToken,
+//     sound: 'default',
+//     title,
+//     body,
+//     data,
+//   };
+
+//   await fetch('https://exp.host/--/api/v2/push/send', {
+//     method: 'POST',
+//     headers: {
+//       Accept: 'application/json',
+//       'Accept-encoding': 'gzip, deflate',
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(message),
+//   });
+// }
+
 export async function sendCustomPushNotification(
   expoPushToken,
   title,
@@ -80,27 +105,63 @@ export async function sendCustomPushNotification(
     data,
   };
 
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Accept-encoding': 'gzip, deflate',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(message),
-  });
+  try {
+    const response = await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message),
+    });
+
+    // Check if the response was successful
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        `Error sending notification: ${response.status} - ${errorData.error}`
+      );
+    }
+
+    // If everything is fine, log or return success
+    const result = await response.json();
+    console.log('Notification sent successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Error in sendCustomPushNotification:', error.message);
+    throw error; // Rethrow the error to be caught by the caller
+  }
 }
 
 // Function to trigger a push notification to a specific user
+// export async function triggerNotificationForUser(
+//   expoPushToken,
+//   title,
+//   body,
+//   data = {}
+// ) {
+//   if (expoPushToken) {
+//     await sendCustomPushNotification(expoPushToken, title, body, data);
+//   } else {
+//     throw new Error('Expo Push Token not available');
+//   }
+// }
+
 export async function triggerNotificationForUser(
   expoPushToken,
   title,
   body,
   data = {}
 ) {
-  if (expoPushToken) {
-    await sendCustomPushNotification(expoPushToken, title, body, data);
-  } else {
-    throw new Error('Expo Push Token not available');
+  try {
+    if (expoPushToken) {
+      await sendCustomPushNotification(expoPushToken, title, body, data);
+    } else {
+      throw new Error('Expo Push Token not available');
+    }
+  } catch (error) {
+    console.error('Error in triggerNotificationForUser:', error.message);
+    // Optionally, you can handle the error further here
   }
 }

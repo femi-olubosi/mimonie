@@ -76,7 +76,7 @@ const connect = () => {
       } else if (activeTab === 2) {
         await acceptConnectionRequest(data, userProfile);
         await triggerNotificationForUser(
-          data.push_token,
+          data?.push_token,
           'Connect Request Accepted',
           `${userProfile.name} accepted your connect request`
         );

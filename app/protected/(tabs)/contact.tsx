@@ -56,7 +56,7 @@ const Contact = () => {
       await updateUserConnections(connections, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
       await triggerNotificationForUser(
-        connections.push_token,
+        connections?.push_token,
         'Connect Request',
         `You have a connection request from ${userProfile.name}`
       );
@@ -67,7 +67,7 @@ const Contact = () => {
       setIsLoading(false);
     }
   };
-
+  console.log('all', allUsers);
   const handleRemoveRequest = async (data) => {
     try {
       await undoRequest(data, userProfile);
@@ -114,7 +114,7 @@ const Contact = () => {
     const contactDetails = item?.phoneNumbers;
 
     const res = findMatchingUser(allUsers, contactDetails);
-
+    console.log({ res });
     const connections = {
       userId: res?.userProfile?.userId,
       name: res?.userProfile?.name,
