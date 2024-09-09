@@ -57,7 +57,17 @@
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
-      ]
+      ],
+      "expo-notifications",
+      {
+        "icon": "./assets/logo/mimonie-notification.png",
+        "color": "#006EBD",
+        "defaultChannel": "default",
+        "sounds": [
+          "./assets/sound/notification-sound1.wav",
+          "./assets/sound/notification-sound2.wav"
+        ]
+      }
     ],
     "experiments": {
       "typedRoutes": true
