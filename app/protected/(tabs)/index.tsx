@@ -12,7 +12,7 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   checkLinkExpiry,
   downloadUrl,
@@ -25,7 +25,8 @@ import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { DataStore } from 'aws-amplify/datastore';
-
+import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 import {
   FontAwesome,
   MaterialCommunityIcons,
@@ -161,6 +162,23 @@ export default function HomeScreen() {
 
     registerPushToken();
   }, [currentUser]);
+
+  const responseListener = useRef();
+
+  useEffect(() => {
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const inviteLink =
+          response.notification.request.content.data.invite_link;
+        if (inviteLink) {
+          Linking.openURL(inviteLink);
+        }
+      });
+    return () => {
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
 
   // useEffect(() => {
   //   const fetchProfile = async () => {

@@ -56,7 +56,8 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
     await triggerNotificationForUser(
       item?.push_token,
       'Contribution Invite',
-      `You have been invited to join a contribution`
+      `You have been invited to join a contribution`,
+      { invite_link }
     );
   };
 

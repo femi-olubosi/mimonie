@@ -43,7 +43,9 @@ const Contact = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
+    setIsLoading(true);
     fetchAllUsers(setAllUsers);
+    setIsLoading(false);
   }, []);
 
   const handleInvite = async (item) => {
