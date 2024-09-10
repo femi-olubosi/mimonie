@@ -79,6 +79,7 @@ const Bvn = () => {
           bank_details: {
             bank_code: selectedValue.value,
             account_number: accountNumber,
+            bvn,
           },
         },
         currentUser

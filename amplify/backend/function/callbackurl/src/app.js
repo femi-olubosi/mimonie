@@ -13,30 +13,24 @@ const {
   GetCommand,
   PutCommand,
   QueryCommand,
+  UpdateCommand,
   ScanCommand,
 } = require('@aws-sdk/lib-dynamodb');
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
 const bodyParser = require('body-parser');
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 
 const ddbClient = new DynamoDBClient({ region: process.env.TABLE_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
 let tableName = 'dynamoc73ffc4d';
-// let tableName = 'Contribution-d4itlx42uzhtrctybtkmaxruya';
+let profileTableName = 'UserProfile-d4itlx42uzhtrctybtkmaxruya-dev';
+
 if (process.env.ENV && process.env.ENV !== 'NONE') {
   tableName = tableName + '-' + process.env.ENV;
 }
-
-const userIdPresent = false; // TODO: update in case is required to use that definition
-const partitionKeyName = 'userId';
-const partitionKeyType = 'S';
-const sortKeyName = '';
-const hasSortKey = sortKeyName !== '';
 const path = '/smileid-callback';
-const UNAUTH = 'UNAUTH';
-const hashKeyPath = '/:' + partitionKeyName;
-const sortKeyPath = hasSortKey ? '/:' + sortKeyName : '';
 
 // declare a new express app
 const app = express();
@@ -104,38 +98,123 @@ app.post(path, async function (req, res) {
   }
 });
 
-/**************************************
- * HTTP remove method to delete object *
- ***************************************/
+const saveUserNotification = async (notification) => {
+  const timestamp = new Date().toISOString();
+  const params = {
+    TableName: userNotificationTableName,
+    Item: {
+      ...notification,
+      _lastChangedAt: new Date().getTime(),
+      _version: 1,
+      __typename: 'UserNotifications',
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    },
+  };
 
-// Add a new route for Smile Identity callback
-// app.post('/smileid-callback', async function (req, res) {
-//   let responseMessage = 'Callback received';
+  try {
+    await ddbDocClient.send(new PutCommand(params));
+  } catch (err) {
+    console.error('Error saving user notification:', err);
+    throw new Error('Could not save user notification');
+  }
+};
 
-//   try {
-//     const kycResponse = req.body;
-//     console.log('Smile Identity Callback:', kycResponse);
+// Helper function to get user profile by customer_code
+const getUserProfile = async (customerCode) => {
+  const params = {
+    TableName: profileTableName,
+    Key: { customer_code: customerCode },
+  };
 
-//     const params = {
-//       TableName: tableName,
-//       Item: kycResponse,
-//     };
+  try {
+    const { Item: userProfile } = await ddbDocClient.send(
+      new GetCommand(params)
+    );
+    return userProfile;
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    throw new Error('Could not fetch user profile');
+  }
+};
 
-//     await ddbDocClient.send(new PutCommand(params));
-//     responseMessage = 'KYC data stored successfully';
-//   } catch (error) {
-//     console.error('Error storing KYC response:', error);
-//     responseMessage = error || 'Error storing KYC response';
-//   }
+// Route to handle Paystack webhook
+app.post('/paystack-mimonie-hook', async (req, res) => {
+  try {
+    const { event: eventType, data: response } = req.body;
+    const customerCode = response.customer_code;
 
-//   res.status(200).json({ message: responseMessage });
-// });
+    let isBvnVerified = false;
+    let notificationTitle = '';
+    let notificationContent = response.reason || '';
+
+    // Handle Paystack verification success and failure events
+    if (eventType === 'customeridentification.success') {
+      isBvnVerified = true;
+      notificationTitle = 'BVN Verified';
+    } else if (eventType === 'customeridentification.failed') {
+      isBvnVerified = false;
+      notificationTitle = 'Verification Failed';
+    } else {
+      return res.status(400).json({ error: 'Unknown event type' });
+    }
+
+    // Fetch the user's profile to get userId
+    const userProfile = await getUserProfile(customerCode);
+
+    if (!userProfile || !userProfile.userId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userId = userProfile.userId;
+
+    // Prepare DynamoDB update parameters for the profile table
+    const updateParams = {
+      TableName: profileTableName,
+      Key: { customer_code: customerCode },
+      UpdateExpression:
+        'SET is_bvn_verified = :isBvnVerified, verification_in_progress = :verificationInProgress',
+      ExpressionAttributeValues: {
+        ':isBvnVerified': isBvnVerified,
+        ':verificationInProgress': false, // Set to false as the verification process is complete
+      },
+      ReturnValues: 'UPDATED_NEW',
+    };
+
+    // Execute the update command to update user verification status
+    const updateResponse = await ddbDocClient.send(
+      new UpdateCommand(updateParams)
+    );
+
+    // Prepare notification details
+    const notificationDetails = {
+      id: uuidv4(),
+      userId,
+      type: 'verification',
+      title: notificationTitle,
+      read: false,
+      content: notificationContent,
+    };
+
+    // Save the notification
+    await saveUserNotification(notificationDetails);
+
+    // Return success response
+    res.json({
+      success:
+        'BVN verification status updated and notification saved successfully!',
+      updatedAttributes: updateResponse.Attributes,
+    });
+  } catch (error) {
+    console.error('Error processing Paystack webhook:', error);
+    res
+      .status(500)
+      .json({ error: 'Internal Server Error', details: error.message });
+  }
+});
 
 app.listen(3000, function () {
   console.log('App started');
 });
 
-// Export the app object. When executing the application local this does nothing. However,
-// to port it to AWS Lambda we will create a wrapper around that will load the app from
-// this file
 module.exports = app;
