@@ -65,26 +65,73 @@ const makePaystackRequest = async (endpoint, method, data) => {
 };
 
 // Function to calculate the difference based on variant
+// const calculateDifference = (startDate, variant) => {
+//   const start = new Date(startDate);
+//   const now = new Date();
+//   let difference;
+
+//   switch (variant) {
+//     case 'days':
+//       difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+//       break;
+//     case 'weeks':
+//       difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+//       break;
+//     case 'months':
+//       difference =
+//         (now.getFullYear() - start.getFullYear()) * 12 +
+//         now.getMonth() -
+//         start.getMonth();
+//       break;
+//     default:
+//       difference = 0;
+//   }
+
+//   return difference;
+// };
+
 const calculateDifference = (startDate, variant) => {
   const start = new Date(startDate);
   const now = new Date();
   let difference;
 
-  switch (variant) {
-    case 'days':
-      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-      break;
-    case 'weeks':
+  if (variant === 'weeks') {
+    // Weekly contribution logic: first deduction the next day, then every week on the same weekday
+    const startDay = start.getDay();
+    const currentDay = now.getDay();
+
+    if (now.getDate() === start.getDate() + 1) {
+      difference = 1; // First deduction happens the next day
+    } else {
+      // Calculate the difference in weeks
       difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-      break;
-    case 'months':
-      difference =
-        (now.getFullYear() - start.getFullYear()) * 12 +
-        now.getMonth() -
-        start.getMonth();
-      break;
-    default:
-      difference = 0;
+
+      // Adjust if the current day is not past the start day to ensure it's on the same weekday
+      if (currentDay < startDay) {
+        difference -= 1;
+      }
+    }
+  } else if (variant === 'months') {
+    // Monthly contribution logic: always deduct on the 28th of the month
+    const startYear = start.getFullYear();
+    const startMonth = start.getMonth();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const daysInCurrentMonth = new Date(
+      currentYear,
+      currentMonth + 1,
+      0
+    ).getDate();
+
+    if (now.getDate() >= 28 || now.getDate() === daysInCurrentMonth) {
+      difference = (currentYear - startYear) * 12 + currentMonth - startMonth; // Number of months since start
+    } else {
+      difference = 0; // If it's not yet the 28th, don't process any deduction
+    }
+  } else {
+    // Default case for daily or unsupported variants
+    difference = 0;
   }
 
   return difference;
