@@ -24,12 +24,20 @@ import { triggerNotificationForUser } from '@/api/pushNotification.service';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
-  const { currentUser, setUserProfile, userProfile, setIsLoading } =
-    useGlobalContext();
-  const [parsedConnect, setParsedConnect] = useState([]);
+  const {
+    currentUser,
+    setUserProfile,
+    userProfile,
+    setIsLoading,
+    parsed,
+    setParsed,
+  } = useGlobalContext();
 
   const handleRemoveRequest = async (data) => {
-    setIsLoading(true);
+    // setIsLoading(true);
+    setParsed((prevData) =>
+      prevData.filter((item) => item.phone_number !== data.phone_number)
+    );
     try {
       await rejectConnectionRequest(data, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
@@ -55,9 +63,12 @@ const connect = () => {
   };
 
   const handleConnectRequest = async (data) => {
-    setIsLoading(true);
+    // setIsLoading(true);
     try {
       if (activeTab === 1) {
+        setParsed((prevData) =>
+          prevData.filter((item) => item.phone_number !== data.phone_number)
+        );
         await removeConnection(data, userProfile);
         Alert.alert(
           'Connection removed',
@@ -74,6 +85,13 @@ const connect = () => {
           { cancelable: false } // Make the alert non-cancelable
         );
       } else if (activeTab === 2) {
+        setParsed((prevData) =>
+          prevData.map((item) =>
+            item.phone_number === data.phone_number
+              ? { ...item, status: 'accepted' }
+              : item
+          )
+        );
         await acceptConnectionRequest(data, userProfile);
         await triggerNotificationForUser(
           data?.push_token,
@@ -103,35 +121,8 @@ const connect = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const profile = await fetchUserProfile(setUserProfile, currentUser);
-
-      // Safe JSON parsing function
-      const safeParseJSON = (data, fallback) => {
-        try {
-          return JSON.parse(data);
-        } catch (e) {
-          return fallback;
-        }
-      };
-
-      if (profile) {
-        const parsedData = safeParseJSON(profile?.connections, []);
-        setParsedConnect(parsedData);
-      }
-    };
-
-    fetchProfile();
-
-    const subscription = DataStore.observe(UserProfile).subscribe(() =>
-      fetchProfile()
-    );
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
-
-  const myConnections = parsedConnect?.filter((e) => e.status === 'accepted');
-  const pendingConnections = parsedConnect?.filter(
+  const myConnections = parsed?.filter((e) => e.status === 'accepted');
+  const pendingConnections = parsed?.filter(
     (e) => e.type === 'request' && e.status === 'pending'
   );
 

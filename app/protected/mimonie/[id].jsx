@@ -46,8 +46,13 @@ import CopyLink from '../../../components/CopyLink';
 import { downloadUrl, fetchUserProfile } from '../../../api/user.service';
 
 const ContributionDetails = () => {
-  const { setContributions, currentUser, userProfile, setIsLoading } =
-    useGlobalContext();
+  const {
+    setContributions,
+    currentUser,
+    userProfile,
+    setIsLoading,
+    setInviteArray,
+  } = useGlobalContext();
   const { id } = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
   const [contribution, setContribution] = useState({});
@@ -112,6 +117,7 @@ const ContributionDetails = () => {
         userProfile,
         setContributions
       );
+      setInviteArray((prev) => prev.filer((e) => e.id !== contribution.id));
       await updateInvite(userProfile.userId, contribution.id);
       Alert.alert(
         'Success',

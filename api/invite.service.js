@@ -54,7 +54,6 @@ export const fetchInviteContributions = async (inviteLinks) => {
     const sorted = filteredContributions.sort((a, b) =>
       a.createdAt > b.createdAt ? -1 : 1
     );
-    console.log('sorted', sorted);
     return sorted;
   } catch (error) {
     console.error('Error fetching user contributions:', error);

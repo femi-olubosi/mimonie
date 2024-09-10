@@ -51,6 +51,7 @@ import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
+import render from '@/components/Render';
 
 export default function HomeScreen() {
   const {
@@ -179,6 +180,8 @@ export default function HomeScreen() {
         Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
+
+  render(userProfile);
 
   // useEffect(() => {
   //   const fetchProfile = async () => {

@@ -36,10 +36,12 @@ const Contact = () => {
     setUserProfile,
     currentUser,
     setIsLoading,
+    parsed,
+    setParsed,
   } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
   const [foundUsers, setFoundUsers] = useState(null);
-  const [parsedData, setParsed] = useState([]);
+  const [] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
@@ -53,8 +55,17 @@ const Contact = () => {
   };
 
   const handleRequestConnect = async (connections: {}) => {
-    setIsLoading(true);
+    setParsed((prevData) => [
+      ...prevData,
+      {
+        ...connections,
+        status: 'pending',
+      },
+    ]);
+
+    // setIsLoading(true);
     try {
+      // Perform the backend operation
       await updateUserConnections(connections, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
       await triggerNotificationForUser(
@@ -65,37 +76,36 @@ const Contact = () => {
       setModalVisible(true);
     } catch (error) {
       console.error(error);
+      // Optional: You could undo the local state change if the backend fails
     } finally {
       setIsLoading(false);
     }
   };
-  console.log('all', allUsers);
-  const handleRemoveRequest = async (data) => {
+
+  const handleRemoveRequest = async (data: {}) => {
+    setParsed((prevData) =>
+      prevData.filter((e) => e?.phone_number !== data?.phone_number)
+    );
+
+    // setIsLoading(true);
     try {
+      // Perform the backend operation
       await undoRequest(data, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
     } catch (error) {
       console.error(error);
+      // Optional: You could revert the local state change if the backend fails
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const profile = await fetchUserProfile(setUserProfile, currentUser);
-
-      if (profile) {
-        const parsedData = safeParseJSON(profile?.connections, []);
-        setParsed(parsedData);
-      }
-    };
-
-    fetchProfile();
-
-    const subscription = DataStore.observe(UserProfile).subscribe(() =>
-      fetchProfile()
-    );
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
+    if (userProfile) {
+      const parsedData = safeParseJSON(userProfile?.connections, []);
+      setParsed(parsedData);
+    }
+  }, []);
 
   useEffect(() => {
     const checkAvailable =
@@ -103,7 +113,6 @@ const Contact = () => {
         ? myContacts
             ?.map((contact) => {
               const res = findMatchingUser(allUsers, contact.phoneNumbers);
-              // return contact;
               return res?.found ? contact : null;
             })
             ?.filter((e) => e)
@@ -116,7 +125,6 @@ const Contact = () => {
     const contactDetails = item?.phoneNumbers;
 
     const res = findMatchingUser(allUsers, contactDetails);
-    console.log({ res });
     const connections = {
       userId: res?.userProfile?.userId,
       name: res?.userProfile?.name,
@@ -131,13 +139,13 @@ const Contact = () => {
       type: 'user',
     };
 
-    const requested = parsedData?.find(
+    const requested = parsed?.find(
       (e) =>
         e?.phone_number === res?.userProfile?.phone_number &&
         e?.status === 'pending'
     );
 
-    const connected = parsedData?.find(
+    const connected = parsed?.find(
       (e) =>
         e?.phone_number === res?.userProfile?.phone_number &&
         e?.status === 'accepted'
