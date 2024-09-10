@@ -394,6 +394,7 @@ const ContributionDetails = () => {
               <NextContributionDay
                 contribution={contribution}
                 parsed={parsed}
+                userProfile={userProfile}
               />
               <View style={styles.detailContainer}>
                 <Text style={styles.label}>User role</Text>
@@ -461,68 +462,7 @@ const ContributionDetails = () => {
   );
 };
 
-// const NextContributionDay = ({ contribution, parsed }) => {
-//   const getNextContributionDay = () => {
-//     if (contribution?.status === 'open') {
-//       return 'Not running';
-//     }
-
-//     if (contribution?.status === 'completed') {
-//       return 'Completed';
-//     }
-
-//     if (
-//       contribution?.current_count !== 0 &&
-//       contribution?.current_count >= parsed.length
-//     ) {
-//       return '-';
-//     }
-
-//     const today = new Date();
-//     let nextContributionDay;
-
-//     switch (contribution?.variant) {
-//       case 'days':
-//         nextContributionDay = new Date(today);
-//         nextContributionDay.setDate(today.getDate() + 1);
-//         break;
-//       case 'weeks':
-//         nextContributionDay = new Date(today);
-//         nextContributionDay.setDate(
-//           today.getDate() + ((1 + 7 - today.getDay()) % 7 || 7)
-//         );
-//         break;
-//       case 'months':
-//         nextContributionDay = new Date(
-//           today.getFullYear(),
-//           today.getMonth(),
-//           28
-//         );
-//         if (today.getDate() > 28) {
-//           nextContributionDay.setMonth(today.getMonth() + 1);
-//         }
-//         break;
-//       default:
-//         nextContributionDay = 'Invalid contribution period';
-//     }
-
-//     return typeof nextContributionDay === 'string'
-//       ? nextContributionDay
-//       : nextContributionDay.toLocaleDateString('en-US', {
-//           day: 'numeric',
-//           month: 'long',
-//         });
-//   };
-
-//   return (
-//     <View style={styles.detailContainer}>
-//       <Text style={styles.label}>Next Contribution Day</Text>
-//       <Text style={styles.value}>{getNextContributionDay()}</Text>
-//     </View>
-//   );
-// };
-
-const NextContributionDay = ({ contribution, parsed }) => {
+const NextContributionDay = ({ contribution, parsed, userProfile }) => {
   const getNextContributionDay = () => {
     if (contribution?.status === 'open') {
       return 'Not running';
@@ -542,42 +482,77 @@ const NextContributionDay = ({ contribution, parsed }) => {
     const today = new Date();
     let nextContributionDay;
 
+    const parseDate = (dateString) => {
+      if (!dateString) return null;
+      const [year, month, day] = dateString.split('-');
+      return new Date(year, month - 1, day);
+    };
+
+    const currentParticipant = parsed?.find(
+      (participant) => participant.userId === userProfile.userId
+    );
+
+    if (currentParticipant?.status === 'in progress') {
+      switch (contribution?.variant) {
+        case 'days':
+          nextContributionDay = new Date(today);
+          nextContributionDay.setDate(today.getDate() + 2);
+          break;
+
+        case 'weeks':
+          const startDay = parseDate(contribution?.start_date);
+          nextContributionDay = new Date(today);
+
+          if (today.toDateString() === startDay.toDateString()) {
+            nextContributionDay.setDate(today.getDate() + 8);
+          } else {
+            nextContributionDay.setDate(today.getDate() + 7);
+          }
+          break;
+
+        case 'months':
+          nextContributionDay = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            28
+          );
+
+          if (today.getDate() > 28) {
+            nextContributionDay.setMonth(today.getMonth() + 1);
+          }
+
+          nextContributionDay.setMonth(nextContributionDay.getMonth() + 1);
+          break;
+
+        default:
+          nextContributionDay = 'Invalid contribution period';
+      }
+
+      return typeof nextContributionDay === 'string'
+        ? nextContributionDay
+        : nextContributionDay.toLocaleDateString('en-US', {
+            day: 'numeric',
+            month: 'long',
+          });
+    }
+
     switch (contribution?.variant) {
       case 'days':
-        // Daily: Next contribution is always the next day
         nextContributionDay = new Date(today);
         nextContributionDay.setDate(today.getDate() + 1);
         break;
-
       case 'weeks':
-        const startDay = new Date(contribution.start_date); // Contribution start date
-        const firstContributionDay = new Date(startDay);
-        firstContributionDay.setDate(startDay.getDate() + 1); // First deduction the next day
+        const startDay = parseDate(contribution?.start_date);
 
-        if (today.getTime() === startDay.getTime()) {
-          nextContributionDay = firstContributionDay; // First deduction is the next day
-        } else {
-          // Calculate the next contribution day based on the weekday of the start date
-          const startDayOfWeek = startDay.getDay(); // Get the day of the week for the start date
-          const todayDayOfWeek = today.getDay(); // Get the day of the week for today
-
-          // Calculate the difference between today and the next occurrence of the start weekday
-          let daysUntilNextContribution;
-          if (todayDayOfWeek >= startDayOfWeek) {
-            daysUntilNextContribution = 7 - (todayDayOfWeek - startDayOfWeek);
-          } else {
-            daysUntilNextContribution = startDayOfWeek - todayDayOfWeek;
-          }
-
+        if (today.toDateString() === startDay.toDateString()) {
           nextContributionDay = new Date(today);
-          nextContributionDay.setDate(
-            today.getDate() + daysUntilNextContribution
-          );
+          nextContributionDay.setDate(today.getDate() + 1);
+        } else {
+          nextContributionDay = new Date(today);
+          nextContributionDay.setDate(today.getDate() + 7);
         }
         break;
-
       case 'months':
-        // Monthly: Always deduct on the 28th of the month
         nextContributionDay = new Date(
           today.getFullYear(),
           today.getMonth(),
@@ -587,7 +562,6 @@ const NextContributionDay = ({ contribution, parsed }) => {
           nextContributionDay.setMonth(today.getMonth() + 1);
         }
         break;
-
       default:
         nextContributionDay = 'Invalid contribution period';
     }

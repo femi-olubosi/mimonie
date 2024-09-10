@@ -52,6 +52,7 @@ import {
   savePushToken,
 } from '@/api/pushNotification.service';
 import render from '@/components/Render';
+import { fetchInviteContributions } from '@/api/invite.service';
 
 export default function HomeScreen() {
   const {
@@ -69,6 +70,7 @@ export default function HomeScreen() {
     setUserActivities,
     setProfilePicture,
     profilePicture,
+    setInviteArray,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -181,7 +183,16 @@ export default function HomeScreen() {
     };
   }, []);
 
-  render(userProfile);
+  useEffect(() => {
+    const fetchContributions = async () => {
+      const fetchedContributions = await fetchInviteContributions(
+        userProfile?.invites
+      );
+      setInviteArray(fetchedContributions);
+    };
+
+    fetchContributions();
+  }, [userProfile?.invites]);
 
   // useEffect(() => {
   //   const fetchProfile = async () => {
@@ -212,7 +223,7 @@ export default function HomeScreen() {
           notifications={notifications}
         />
         <ScrollView contentContainerStyle={{}}>
-          <Cards contributions={contributions} />
+          <Cards contributions={contributions} userProfile={userProfile} />
           <Options userProfile={userProfile} />
           <Advert />
           <View

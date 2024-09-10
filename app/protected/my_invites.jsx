@@ -5,7 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '@/store/StoreContext';
 import { Colors } from '../../constants/Colors';
@@ -13,12 +13,21 @@ import { naira } from '@/constants/Currency';
 import { statusCheck } from '@/utils/statusCheck';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { router } from 'expo-router';
-import render from '@/components/Render';
+import { fetchInviteContributions } from '../../api/invite.service';
 
 const my_invites = () => {
-  const { inviteArray, userProfile } = useGlobalContext();
+  const { inviteArray, setInviteArray, userProfile } = useGlobalContext();
 
-  render(userProfile);
+  useEffect(() => {
+    const fetchContributions = async () => {
+      const fetchedContributions = await fetchInviteContributions(
+        userProfile?.invites
+      );
+      setInviteArray(fetchedContributions);
+    };
+
+    fetchContributions();
+  }, [userProfile?.invites]);
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);

@@ -95,16 +95,20 @@ const calculateDifference = (startDate, variant) => {
   const now = new Date();
   let difference;
 
-  if (variant === 'weeks') {
+  if (variant === 'days') {
+    // Daily contribution logic: calculate difference in days
+    difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  } else if (variant === 'weeks') {
     // Weekly contribution logic: first deduction the next day, then every week on the same weekday
     const startDay = start.getDay();
     const currentDay = now.getDay();
 
+    // First deduction happens the next day
     if (now.getDate() === start.getDate() + 1) {
-      difference = 1; // First deduction happens the next day
+      difference = 1;
     } else {
       // Calculate the difference in weeks
-      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
 
       // Adjust if the current day is not past the start day to ensure it's on the same weekday
       if (currentDay < startDay) {
@@ -130,7 +134,7 @@ const calculateDifference = (startDate, variant) => {
       difference = 0; // If it's not yet the 28th, don't process any deduction
     }
   } else {
-    // Default case for daily or unsupported variants
+    // Default case for unsupported variants
     difference = 0;
   }
 

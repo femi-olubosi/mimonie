@@ -25,7 +25,7 @@ const StoreProvider = ({ children }) => {
   const [inviteArray, setInviteArray] = useState([]);
   const [parsed, setParsed] = useState([]);
 
-  DataStore.start();
+  // DataStore.start();
 
   const toggleMode = () => {
     setIsDarkMode((prevMode) => !prevMode);
