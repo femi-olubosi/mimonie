@@ -109,7 +109,7 @@ const Account = () => {
 
           const { body } = await restOperation.response;
           const json = await body.json();
-          console.log({ json });
+
           const res = await searchTree(json, 'FullName');
           if (
             // isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
@@ -139,8 +139,8 @@ const Account = () => {
       const fetchCustomer = async () => {
         const res = await getPaystackCustomer(userProfile.customer_code);
 
-        // if (res.data.identified) {
-        if (true) {
+        if (res.data.identified) {
+          // if (true) {
           const subacc = await createSubAccount(userProfile);
 
           await updateUserProfile(
