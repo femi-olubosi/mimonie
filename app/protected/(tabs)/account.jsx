@@ -47,6 +47,7 @@ import {
 import {
   createSubAccount,
   getPaystackCustomer,
+  verifyBVN,
 } from '../../../api/payment.service';
 
 const Account = () => {
@@ -136,47 +137,11 @@ const Account = () => {
           console.log('GET call failed: ', JSON.parse(e.response.body));
         }
       }
-      const fetchCustomer = async () => {
-        const res = await getPaystackCustomer(userProfile.customer_code);
 
-        if (res.data.identified) {
-          // if (true) {
-          const subacc = await createSubAccount(userProfile);
-
-          await updateUserProfile(
-            {
-              is_bvn_verified: true,
-              verification_in_progress: false,
-              subaccount_code: subacc.data.subaccount_code,
-            },
-            currentUser
-          );
-          await fetchUserProfile(setUserProfile, currentUser);
-          await createNotification(
-            {
-              title: 'Verification Completed',
-              content: `Your BVN verification is complete and approved`,
-              type: 'verification',
-              userId: currentUser.userId,
-              read: false,
-            },
-            setNotifications
-          );
-        }
-      };
       if (!userProfile?.is_nin_verified) {
         getSmileStatus();
       }
-      // if (!userProfile.is_bvn_verified) {
-      if (userProfile?.verification_in_progress) {
-        fetchCustomer();
-      }
-    }, [
-      userProfile?.is_bvn_verified,
-      userProfile?.is_nin_verified,
-      userProfile?.subaccount_code,
-      userProfile?.verification_in_progress,
-    ])
+    }, [userProfile?.is_nin_verified])
   );
 
   return (
@@ -241,6 +206,7 @@ const Account = () => {
             <Text style={{ color: '#424856', fontSize: 18, fontFamily: 'er' }}>
               {userProfile?.name}
             </Text>
+
             <Text
               style={{
                 color: '#424856',
@@ -540,5 +506,10 @@ const menuItems = [
     title: 'Support',
     icon: <MaterialIcons name="support-agent" size={24} color="black" />,
     route: '/support',
+  },
+  {
+    title: 'Settings',
+    icon: <AntDesign name="setting" size={24} color="black" />,
+    route: '/protected/settings',
   },
 ];

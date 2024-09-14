@@ -24,7 +24,7 @@
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-684e493436497157364e-build.zip"
+          "s3Key": "amplify-builds/callbackurl-717a6e46582f38497074-build.zip"
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
@@ -34,6 +34,11 @@
         "contributionNotifications": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
           "s3Key": "amplify-builds/contributionNotifications-7177577864665066386c-build.zip"
+        },
+        "verification": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/verification-7a395333737963574d79-build.zip",
+          "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         }
       },
       "auth": {
@@ -43,7 +48,8 @@
         "api37a1ef7a": {},
         "mimonie": {},
         "userInfo": {},
-        "callback": {}
+        "callback": {},
+        "verification": {}
       },
       "storage": {
         "mimonieS3Storage": {},

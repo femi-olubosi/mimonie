@@ -15,6 +15,11 @@
       "name": "userInfo",
       "endpoint": "https://530fccgcb6.execute-api.us-west-2.amazonaws.com/dev",
       "region": "us-west-2"
+    },
+    {
+      "name": "verification",
+      "endpoint": "https://7ztr2o8z30.execute-api.us-west-2.amazonaws.com/dev",
+      "region": "us-west-2"
     }
   ],
   "aws_appsync_graphqlEndpoint": "https://we5nakk36bcwhkp7zxlaju4rea.appsync-api.us-west-2.amazonaws.com/graphql",

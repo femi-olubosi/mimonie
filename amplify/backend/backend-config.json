@@ -62,6 +62,20 @@
       ],
       "providerPlugin": "awscloudformation",
       "service": "API Gateway"
+    },
+    "verification": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "verification"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
     }
   },
   "auth": {
@@ -134,6 +148,12 @@
       "service": "Lambda"
     },
     "userInfo": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "verification": {
       "build": true,
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
@@ -226,6 +246,30 @@
         {
           "category": "function",
           "resourceName": "userInfo"
+        }
+      ]
+    },
+    "AMPLIFY_function_verification_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "verification"
+        }
+      ]
+    },
+    "AMPLIFY_function_verification_paystackSecretKeyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "verification"
+        }
+      ]
+    },
+    "AMPLIFY_function_verification_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "verification"
         }
       ]
     }
