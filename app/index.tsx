@@ -5,30 +5,30 @@ import { useEffect, useState } from 'react';
 import { Modal, View, StyleSheet, Text, Pressable } from 'react-native';
 
 const index = () => {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  async function onFetchUpdateAsync() {
-    try {
-      const update = await Updates.checkForUpdateAsync();
+  // const [updateAvailable, setUpdateAvailable] = useState(false);
+  // async function onFetchUpdateAsync() {
+  //   try {
+  //     const update = await Updates.checkForUpdateAsync();
 
-      if (update.isAvailable) {
-        setUpdateAvailable(true);
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync();
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  //     if (update.isAvailable) {
+  //       setUpdateAvailable(true);
+  //       await Updates.fetchUpdateAsync();
+  //       await Updates.reloadAsync();
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // }
 
-  useEffect(() => {
-    if (!__DEV__) {
-      onFetchUpdateAsync();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!__DEV__) {
+  //     onFetchUpdateAsync();
+  //   }
+  // }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.pri }}>
-      {updateAvailable ? (
+      {/* {updateAvailable ? (
         <View style={styles.centeredView}>
           <Modal
             animationType="slide"
@@ -61,9 +61,9 @@ const index = () => {
             </View>
           </Modal>
         </View>
-      ) : (
-        <Redirect href={'/protected'} />
-      )}
+      ) : ( */}
+      <Redirect href={'/protected'} />
+      {/* )} */}
     </View>
   );
 };

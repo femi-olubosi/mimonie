@@ -24,6 +24,7 @@ const StoreProvider = ({ children }) => {
   const [profilePicture, setProfilePicture] = useState('');
   const [inviteArray, setInviteArray] = useState([]);
   const [parsed, setParsed] = useState([]);
+  const [hideValues, setHideValues] = useState(false);
 
   // DataStore.start();
 
@@ -70,6 +71,8 @@ const StoreProvider = ({ children }) => {
     setInviteArray,
     parsed,
     setParsed,
+    hideValues,
+    setHideValues,
   };
 
   return (

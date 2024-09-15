@@ -12,6 +12,7 @@ import { Colors } from '@/constants/Colors';
 import { Entypo, FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
+import Hide from '@/components/Hide';
 
 const safeParseJSON = (data, fallback) => {
   try {
@@ -22,7 +23,7 @@ const safeParseJSON = (data, fallback) => {
 };
 
 const Cards = ({ contributions }) => {
-  const { userProfile } = useGlobalContext();
+  const { userProfile, hideValues } = useGlobalContext();
 
   return (
     <ThemedView style={styles.container}>
@@ -105,7 +106,11 @@ const Cards = ({ contributions }) => {
                     >
                       Target:{' '}
                       <FontAwesome6 name="naira-sign" size={12} color="white" />
-                      {item.target.toLocaleString('en-US')}
+                      {hideValues ? (
+                        <Hide />
+                      ) : (
+                        <>{item.target.toLocaleString('en-US')}</>
+                      )}
                     </Text>
                     <Text
                       style={[
@@ -134,24 +139,40 @@ const Cards = ({ contributions }) => {
                     >
                       {currentParticipant?.contributions} contribution(s) so far
                     </Text>
-                    <Text
-                      style={[
-                        styles.text,
-                        {
-                          fontSize: 32,
-                          fontFamily: 'esb',
-                          color: 'white',
-                        },
-                      ]}
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        columnGap: 4,
+                      }}
                     >
-                      <FontAwesome6 name="naira-sign" size={28} />
-                      {(
-                        currentParticipant?.contributions * item.amount || 0
-                      ).toLocaleString('en-US', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </Text>
+                      <FontAwesome6
+                        name="naira-sign"
+                        size={28}
+                        color={'white'}
+                      />
+                      <Text
+                        style={[
+                          styles.text,
+                          {
+                            fontSize: 32,
+                            fontFamily: 'esb',
+                            color: 'white',
+                          },
+                        ]}
+                      >
+                        {hideValues ? (
+                          <Hide size={14} />
+                        ) : (
+                          (
+                            currentParticipant?.contributions * item.amount || 0
+                          ).toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        )}
+                      </Text>
+                    </View>
                   </View>
                   <Text
                     style={[

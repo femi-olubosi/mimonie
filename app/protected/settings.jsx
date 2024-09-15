@@ -36,7 +36,8 @@ const triggerAccountDeletion = () => {
 };
 
 const Settings = () => {
-  const { currentUser, userProfile } = useGlobalContext();
+  const { currentUser, userProfile, hideValues, setHideValues } =
+    useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [externalProfileViewEnabled, setExternalProfileViewEnabled] =
@@ -120,15 +121,12 @@ const Settings = () => {
           />
         </View>
 
-        {/* Allow External Profile View */}
+        {/* Hide Contribution Values */}
         <View style={styles.setting}>
-          <Text style={styles.settingText}>
-            Allow External View of Profile Picture
-          </Text>
+          <Text style={styles.settingText}>Hide Contribution Values</Text>
           <Switch
-            onValueChange={toggleExternalProfileView}
-            value={externalProfileViewEnabled}
-            disabled
+            onValueChange={() => setHideValues(!hideValues)}
+            value={hideValues}
           />
         </View>
 
@@ -150,10 +148,10 @@ const Settings = () => {
         {/* Delete Account */}
         <TouchableOpacity
           style={styles.setting}
-          onPress={triggerAccountDeletion}
+          // onPress={triggerAccountDeletion}
         >
           <Text style={[styles.settingText, { color: 'red' }]}>
-            Delete Account
+            Request Account Deletion
           </Text>
         </TouchableOpacity>
       </View>

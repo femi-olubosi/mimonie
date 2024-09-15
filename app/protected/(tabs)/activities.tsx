@@ -8,9 +8,11 @@ import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { naira } from '@/constants/Currency';
 import { formatTimestamp } from '@/utils/formatTimestamp';
+import Hide from '@/components/Hide';
 
 const Activities = () => {
-  const { userProfile, userActivities, setUserActivities } = useGlobalContext();
+  const { userProfile, userActivities, setUserActivities, hideValues } =
+    useGlobalContext();
 
   useEffect(() => {
     (async () => {
@@ -88,10 +90,14 @@ const Activities = () => {
             }}
           >
             {naira}
-            {item.amount.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            {hideValues ? (
+              <Hide color={item.type === 'collection' ? 'green' : 'red'} />
+            ) : (
+              item.amount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
+            )}
           </Text>
           <Text style={{ fontSize: 10, color: 'gray' }}>
             {formatTimestamp(item.createdAt)}

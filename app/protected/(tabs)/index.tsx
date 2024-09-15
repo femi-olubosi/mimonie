@@ -53,6 +53,7 @@ import {
 } from '@/api/pushNotification.service';
 import render from '@/components/Render';
 import { fetchInviteContributions } from '@/api/invite.service';
+import Hide from '@/components/Hide';
 
 export default function HomeScreen() {
   const {
@@ -71,6 +72,7 @@ export default function HomeScreen() {
     setProfilePicture,
     profilePicture,
     setInviteArray,
+    hideValues,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -343,10 +345,18 @@ export default function HomeScreen() {
                           }}
                         >
                           {naira}
-                          {item.amount.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
+                          {hideValues ? (
+                            <Hide
+                              color={
+                                item.type === 'collection' ? 'green' : 'red'
+                              }
+                            />
+                          ) : (
+                            item.amount.toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          )}
                         </Text>
                         <Text style={{ fontSize: 10, color: 'gray' }}>
                           {formatTimestamp(item.createdAt)}

@@ -22,26 +22,6 @@ const faq = () => {
       <View style={{ padding: 20 }}>
         <ScrollView style={styles.container}>
           <Text style={styles.header}>Frequently Asked Questions</Text>
-          {/* {faqData.map((item, index) => (
-            <View key={index} style={styles.faqItem}>
-              <TouchableOpacity
-                style={styles.questionRow}
-                onPress={() => toggleExpand(index)}
-              >
-                <Text style={styles.questionText}>{item.question}</Text>
-                <Feather
-                  name={expandedIndex === index ? 'chevron-up' : 'chevron-down'}
-                  size={20}
-                  color="#333"
-                />
-              </TouchableOpacity>
-              {expandedIndex === index && (
-                <View style={styles.answerContainer}>
-                  <Text style={styles.answerText}>{item.answer}</Text>
-                </View>
-              )}
-            </View>
-          ))} */}
           {faqData.map((item, index) => (
             <View key={index} style={styles.faqItem}>
               <Text style={styles.question}>

@@ -44,6 +44,7 @@ import { updateInvite } from '../../../api/invite.service';
 import { safeParseJSON } from '../../../utils/safeJSON';
 import CopyLink from '../../../components/CopyLink';
 import { downloadUrl, fetchUserProfile } from '../../../api/user.service';
+import Hide from '@/components/Hide';
 
 const ContributionDetails = () => {
   const {
@@ -52,6 +53,7 @@ const ContributionDetails = () => {
     userProfile,
     setIsLoading,
     setInviteArray,
+    hideValues,
   } = useGlobalContext();
   const { id } = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
@@ -246,14 +248,22 @@ const ContributionDetails = () => {
                 <Text style={styles.label}>Amount</Text>
                 <Text style={styles.value}>
                   {naira}
-                  {new Intl.NumberFormat('en-US').format(contribution?.amount)}
+                  {hideValues ? (
+                    <Hide color={'black'} />
+                  ) : (
+                    new Intl.NumberFormat('en-US').format(contribution?.amount)
+                  )}
                 </Text>
               </View>
               <View style={styles.detailContainer}>
                 <Text style={styles.label}>Target</Text>
                 <Text style={styles.value}>
                   {naira}
-                  {new Intl.NumberFormat('en-US').format(contribution?.target)}
+                  {hideValues ? (
+                    <Hide color={'black'} />
+                  ) : (
+                    new Intl.NumberFormat('en-US').format(contribution?.target)
+                  )}
                 </Text>
               </View>
 
