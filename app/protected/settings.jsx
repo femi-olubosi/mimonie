@@ -98,7 +98,7 @@ const Settings = () => {
       try {
         const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
-          setUpdateAvailable(true); // Set update available flag
+          setUpdateAvailable(true);
         }
       } catch (error) {
         console.error('Error checking for updates: ', error);
@@ -249,7 +249,9 @@ const Settings = () => {
           <Text style={styles.settingText}>
             Update App{' '}
             {updateAvailable && (
-              <Text style={styles.updateAvailable}> - Update Available</Text>
+              <View style={styles.update}>
+                <Text style={styles.updateAvailable}> Update</Text>
+              </View>
             )}
           </Text>
           {loading && <ActivityIndicator size="small" color="#007aff" />}
@@ -289,8 +291,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   updateAvailable: {
-    color: 'green',
+    color: 'white',
     fontWeight: 'bold',
+    fontSize: 12,
+    fontFamily: 'ir',
+  },
+  update: {
+    backgroundColor: 'red',
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonText: {
     color: 'white',
