@@ -113,8 +113,8 @@ const Account = () => {
 
           const res = await searchTree(json, 'FullName');
           if (
-            // isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
-            true
+            isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
+            // true
           ) {
             await updateUserProfile(
               { is_nin_verified: true, verification_in_progress_id: false },
