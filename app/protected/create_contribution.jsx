@@ -29,6 +29,12 @@ const dateOption = [
   },
 ];
 
+const variantOptions = [
+  { label: 'Daily', value: 'days' },
+  { label: 'Weekly', value: 'weeks' },
+  { label: 'Monthly', value: 'months' },
+];
+
 const CreateContribution = () => {
   const [contributionName, setContributionName] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -36,6 +42,8 @@ const CreateContribution = () => {
   const [selectedValue, setSelectedValue] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newContribution, setNewContribution] = useState({});
+  const [contributionType, setContributionType] = useState('group');
+  const [variant, setVariant] = useState('');
 
   const [date, setDate] = useState(new Date());
   const {
@@ -82,7 +90,7 @@ const CreateContribution = () => {
       target: selectedValue.target,
       amount: selectedValue.amount,
       num_of_month: selectedValue.num_of_month,
-      variant: selectedValue.variant,
+      variant: variant,
     };
     if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
       return;
@@ -158,44 +166,168 @@ const CreateContribution = () => {
             </Text>
           </View>
         ) : null}
-        <Text style={styles.instructions}>
+        {/* <Text style={styles.instructions}>
           Create a contribution schedule and invite friends to join
-        </Text>
-
-        <View style={{ rowGap: 20 }}>
-          <View style={{ rowGap: 14 }}>
-            <Text style={styles.label}>Contribution Name</Text>
-            <TextInput
-              style={styles.input}
-              value={contributionName}
-              onChangeText={setContributionName}
-              placeholder="Enter Contribution Name"
-            />
-          </View>
-
-          <View style={{ rowGap: 14 }}>
-            <Text style={styles.label}>Group Category</Text>
-            <SelectInput
-              options={groupNameAndValue}
-              selectedValue={selectedValue}
-              setSelectedValue={setSelectedValue}
-              defaultValue={selectedValue?.label}
-            />
+        </Text> */}
+        <View style={{ marginVertical: 20 }}>
+          <Text style={styles.instructions}>
+            Choose your contribution type:
+          </Text>
+          <View style={styles.switchContainer}>
+            <TouchableOpacity
+              style={[
+                styles.switchButton,
+                contributionType === 'group' && styles.activeButton,
+              ]}
+              onPress={() => setContributionType('group')}
+            >
+              <Text
+                style={[
+                  styles.switchText,
+                  { color: contributionType === 'group' ? 'white' : 'black' },
+                ]}
+              >
+                Group Contribution
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.switchButton,
+                contributionType === 'personal' && styles.activeButton,
+              ]}
+              onPress={() => setContributionType('personal')}
+            >
+              <Text
+                style={[
+                  styles.switchText,
+                  {
+                    color: contributionType === 'personal' ? 'white' : 'black',
+                  },
+                ]}
+              >
+                Personal Contribution
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.button,
-            {
-              backgroundColor: isVerified ? Colors.pri : 'gray',
-            },
-          ]}
-          disabled={!isVerified}
-          onPress={handleConfirm}
-        >
-          <Text style={styles.buttonText}>Confirm</Text>
-        </TouchableOpacity>
+        {contributionType === 'group' ? (
+          <View style={{ rowGap: 20 }}>
+            <View style={{ rowGap: 14 }}>
+              <Text style={styles.label}>Contribution Name</Text>
+              <TextInput
+                style={styles.input}
+                value={contributionName}
+                onChangeText={setContributionName}
+                placeholder="Enter Contribution Name"
+              />
+            </View>
+
+            <View style={{ rowGap: 14 }}>
+              <Text style={styles.label}>Group Category</Text>
+              <SelectInput
+                options={groupNameAndValue}
+                selectedValue={selectedValue}
+                setSelectedValue={setSelectedValue}
+                defaultValue={selectedValue?.label}
+              />
+            </View>
+            <View style={{ rowGap: 14 }}>
+              <Text style={styles.label}>Contribution Variant</Text>
+              <SelectInput
+                options={variantOptions}
+                selectedValue={variant}
+                setSelectedValue={setVariant}
+                defaultValue={variant}
+              />
+            </View>
+          </View>
+        ) : (
+          <View style={{ rowGap: 20 }}>
+            <View style={{ rowGap: 14 }}>
+              <Text style={styles.label}>Contribution Name</Text>
+              <TextInput
+                style={styles.input}
+                value={contributionName}
+                onChangeText={setContributionName}
+                placeholder="Enter Contribution Name"
+              />
+            </View>
+
+            {userProfile?.dva?.enabled ? (
+              <>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Amount</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter Amount"
+                    keyboardType="numeric"
+                    value={selectedValue.amount}
+                    onChangeText={(val) =>
+                      setSelectedValue({ ...selectedValue, amount: val })
+                    }
+                  />
+                </View>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Target</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter Target"
+                    keyboardType="numeric"
+                    value={selectedValue.target}
+                    onChangeText={(val) =>
+                      setSelectedValue({ ...selectedValue, target: val })
+                    }
+                  />
+                </View>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Variant</Text>
+                  <SelectInput
+                    options={variantOptions}
+                    selectedValue={variant}
+                    setSelectedValue={setVariant}
+                    defaultValue={variant}
+                  />
+                </View>
+              </>
+            ) : (
+              <Pressable
+                onPress={() => router.push('/protected/settings')}
+                style={styles.warningContainer}
+              >
+                <Text style={styles.warningText}>
+                  You have not enabled personal contribution.{' '}
+                  <Text style={styles.linkText}>Enable Now</Text>
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
+
+        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              {
+                backgroundColor:
+                  !isVerified ||
+                  !contributionType ||
+                  (!userProfile.recipient_code &&
+                    contributionType === 'personal')
+                    ? 'gray'
+                    : Colors.pri,
+              },
+            ]}
+            disabled={
+              !isVerified ||
+              !contributionType ||
+              (!userProfile.recipient_code && contributionType === 'personal')
+            }
+            onPress={handleConfirm}
+          >
+            <Text style={styles.buttonText}>Confirm</Text>
+          </TouchableOpacity>
+        </View>
 
         <Modal
           animationType="slide"
@@ -239,6 +371,137 @@ const CreateContribution = () => {
   );
 };
 
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     backgroundColor: 'white',
+//     padding: 20,
+//   },
+//   instructions: {
+//     fontSize: 14,
+//     color: '#6B7280',
+//     marginBottom: 20,
+//   },
+//   label: {
+//     fontSize: 15,
+//     color: '#1F2937',
+//     fontFamily: 'ir',
+//   },
+//   input: {
+//     backgroundColor: 'white',
+//     borderRadius: 12,
+//     borderWidth: 1,
+//     borderColor: '#9095A1',
+//     padding: 12,
+//     height: 53,
+//   },
+//   inputSearch: {
+//     backgroundColor: 'white',
+//     borderRadius: 12,
+//     borderWidth: 1,
+//     borderColor: '#9095A1',
+//     padding: 12,
+//     height: 40,
+//     width: '90%',
+//     alignSelf: 'center',
+//   },
+//   button: {
+//     borderRadius: 12,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     marginTop: 100,
+//     height: 44,
+//   },
+//   buttonText: {
+//     color: 'white',
+//     fontSize: 16,
+//     fontWeight: 'bold',
+//   },
+//   modalContainer: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     backgroundColor: 'rgba(0,0,0,0.5)',
+//   },
+//   modalContainerContact: {
+//     flex: 1,
+//     justifyContent: 'flex-end',
+//     alignItems: 'center',
+//     backgroundColor: 'rgba(0,0,0,0.5)',
+//   },
+//   modalView: {
+//     width: '80%',
+//     backgroundColor: 'white',
+//     borderRadius: 8,
+//     padding: 20,
+//     alignItems: 'center',
+//     elevation: 5,
+//   },
+//   modalViewContact: {
+//     width: '95%',
+//     height: '85%',
+//     backgroundColor: 'white',
+//     borderRadius: 8,
+//     paddingVertical: 20,
+//     elevation: 5,
+//   },
+//   modalTitle: {
+//     fontSize: 16,
+//     fontFamily: 'isb',
+//     marginBottom: 10,
+//     textAlign: 'center',
+//   },
+//   modalText: {
+//     fontSize: 16,
+//     color: '#6B7280',
+//     textAlign: 'center',
+//     marginBottom: 20,
+//   },
+//   inviteLink: {
+//     fontSize: 14,
+//     color: '#2563EB',
+//     marginBottom: 20,
+//     textAlign: 'center',
+//   },
+//   modalButton: {
+//     backgroundColor: '#1F2937',
+//     borderRadius: 8,
+//     padding: 12,
+//     alignItems: 'center',
+//     justifyContent: 'center',
+//     width: '100%',
+//   },
+//   modalButtonText: {
+//     color: 'white',
+//     fontSize: 16,
+//     fontWeight: 'bold',
+//   },
+//   contactContainer: {
+//     flexDirection: 'row',
+//     justifyContent: 'space-between',
+//     alignItems: 'center',
+//     padding: 20,
+//     borderBottomWidth: 1,
+//     borderBottomColor: '#ccc',
+//   },
+//   contactInfo: {
+//     flexDirection: 'row',
+//     alignItems: 'center',
+//     columnGap: 10,
+//   },
+
+//   contactName: {
+//     fontSize: 14,
+//     fontFamily: 'ir',
+//   },
+//   phoneNumber: {
+//     color: 'blue',
+//   },
+//   inviteText: {
+//     color: 'green',
+//   },
+// });
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -263,15 +526,26 @@ const styles = StyleSheet.create({
     padding: 12,
     height: 53,
   },
-  inputSearch: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#9095A1',
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 20,
+    columnGap: 20,
+  },
+  switchButton: {
     padding: 12,
-    height: 40,
-    width: '90%',
-    alignSelf: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    backgroundColor: '#f4f4f4',
+  },
+  activeButton: {
+    backgroundColor: Colors.pri,
+    borderColor: Colors.pri,
+  },
+  switchText: {
+    color: '#1F2937',
+    fontFamily: 'isb',
   },
   button: {
     borderRadius: 12,
@@ -291,26 +565,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  modalContainerContact: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
   modalView: {
     width: '80%',
     backgroundColor: 'white',
     borderRadius: 8,
     padding: 20,
     alignItems: 'center',
-    elevation: 5,
-  },
-  modalViewContact: {
-    width: '95%',
-    height: '85%',
-    backgroundColor: 'white',
-    borderRadius: 8,
-    paddingVertical: 20,
     elevation: 5,
   },
   modalTitle: {
@@ -344,29 +604,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  contactContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+  warningContainer: {
+    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+    padding: 10,
+    borderRadius: 8,
   },
-  contactInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    columnGap: 10,
-  },
-
-  contactName: {
-    fontSize: 14,
+  warningText: {
+    color: 'red',
+    textAlign: 'center',
     fontFamily: 'ir',
+    fontSize: 12,
   },
-  phoneNumber: {
-    color: 'blue',
-  },
-  inviteText: {
-    color: 'green',
+  linkText: {
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
   },
 });
 

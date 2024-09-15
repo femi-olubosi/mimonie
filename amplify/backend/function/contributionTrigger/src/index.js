@@ -64,59 +64,26 @@ const makePaystackRequest = async (endpoint, method, data) => {
   });
 };
 
-// Function to calculate the difference based on variant
-// const calculateDifference = (startDate, variant) => {
-//   const start = new Date(startDate);
-//   const now = new Date();
-//   let difference;
-
-//   switch (variant) {
-//     case 'days':
-//       difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
-//       break;
-//     case 'weeks':
-//       difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-//       break;
-//     case 'months':
-//       difference =
-//         (now.getFullYear() - start.getFullYear()) * 12 +
-//         now.getMonth() -
-//         start.getMonth();
-//       break;
-//     default:
-//       difference = 0;
-//   }
-
-//   return difference;
-// };
-
 const calculateDifference = (startDate, variant) => {
   const start = new Date(startDate);
   const now = new Date();
   let difference;
 
   if (variant === 'days') {
-    // Daily contribution logic: calculate difference in days
     difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
   } else if (variant === 'weeks') {
-    // Weekly contribution logic: first deduction the next day, then every week on the same weekday
-    const startDay = start.getDay();
-    const currentDay = now.getDay();
+    const startDayOfWeek = start.getDay();
+    const daysUntilFirstWednesday = (3 - startDayOfWeek + 7) % 7;
+    const firstWednesday = new Date(start);
+    firstWednesday.setDate(start.getDate() + daysUntilFirstWednesday);
 
-    // First deduction happens the next day
-    if (now.getDate() === start.getDate() + 1) {
-      difference = 1;
+    if (now < firstWednesday) {
+      difference = 0;
     } else {
-      // Calculate the difference in weeks
-      difference = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
-
-      // Adjust if the current day is not past the start day to ensure it's on the same weekday
-      if (currentDay < startDay) {
-        difference -= 1;
-      }
+      difference =
+        Math.floor((now - firstWednesday) / (1000 * 60 * 60 * 24 * 7)) + 1;
     }
   } else if (variant === 'months') {
-    // Monthly contribution logic: always deduct on the 28th of the month
     const startYear = start.getFullYear();
     const startMonth = start.getMonth();
     const currentYear = now.getFullYear();

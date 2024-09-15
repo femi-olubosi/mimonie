@@ -1,3 +1,15 @@
+type PersonalContribution @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  status: String
+  variant: String
+  amount: Int
+  target: Int
+  last_successful_contribution: String
+  currently_at: Int
+  extra: AWSJSON
+}
+
 type UserActivity @model @auth(rules: [{allow: public}]) {
   id: ID!
   type: String
@@ -47,6 +59,8 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   connections: [AWSJSON]
   phone_verified: Boolean
   push_token: String
+  dva: AWSJSON
+  extra: AWSJSON
 }
 
 type UserCardDetails @model @auth(rules: [{allow: public}]) {

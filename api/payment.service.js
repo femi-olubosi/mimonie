@@ -210,11 +210,6 @@ export const processContributions = async () => {
   }
 };
 
-export const testTrigger = () => {
-  console.log('triggered');
-  return 'Triggered';
-};
-
 export const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
   const data = {
     email: payer.email,
@@ -429,4 +424,12 @@ export const deleteCards = async (id, setUserCards, currentUser) => {
   } catch (error) {
     console.error(`Error deleting card with ID ${id}:`, error);
   }
+};
+
+export const createDedicatedVirtualAccount = async (customer_code) => {
+  const data = {
+    preferred_bank: 'wema-bank',
+    customer: customer_code,
+  };
+  return await makePaystackRequest('/dedicated_account', 'POST', data);
 };

@@ -15,6 +15,9 @@ import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
+import { createDedicatedVirtualAccount } from '@/api/payment.service';
+import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
+import { router } from 'expo-router';
 
 const triggerAccountDeletion = () => {
   Alert.alert(
@@ -35,15 +38,59 @@ const triggerAccountDeletion = () => {
   );
 };
 
+const data = {
+  bank: {
+    name: 'Wema Bank',
+    id: 20,
+    slug: 'wema-bank',
+  },
+  account_name: 'MOUNTSPIRALNI/ABDURROHEEM SHERIFDEEN',
+  account_number: '9320275000',
+  assigned: true,
+  currency: 'NGN',
+  metadata: null,
+  active: true,
+  id: 24222125,
+  created_at: '2024-08-06T12:08:15.000Z',
+  updated_at: '2024-09-15T20:25:08.000Z',
+  assignment: {
+    integration: 1216711,
+    assignee_id: 172124958,
+    assignee_type: 'Customer',
+    expired: false,
+    account_type: 'PAY-WITH-TRANSFER-RECURRING',
+    assigned_at: '2024-09-15T20:25:08.850Z',
+    expired_at: null,
+    assignment_expires_at: null,
+  },
+  customer: {
+    id: 172124958,
+    first_name: 'Sherif-deen',
+    last_name: 'Abdur-roheem',
+    email: 'abdurroheemsherifdeen@gmail.com',
+    customer_code: 'CUS_c2lbp8636b1qowo',
+    phone: '+2348139781147',
+    metadata: {},
+    risk_action: 'default',
+    international_format_phone: '+2348139781147',
+  },
+};
 const Settings = () => {
-  const { currentUser, userProfile, hideValues, setHideValues } =
-    useGlobalContext();
+  const {
+    currentUser,
+    userProfile,
+    setUserProfile,
+    hideValues,
+    setHideValues,
+    setIsLoading,
+  } = useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [externalProfileViewEnabled, setExternalProfileViewEnabled] =
     useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [pCEnable, setPCEnable] = useState(false);
 
   useEffect(() => {
     // Check for app updates
@@ -83,18 +130,67 @@ const Settings = () => {
   const toggleExternalProfileView = () =>
     setExternalProfileViewEnabled(!externalProfileViewEnabled);
 
-  // Handle app update when user clicks the Update App button
   const triggerAppUpdate = async () => {
     try {
-      setIsLoading(true); // Show loader during update
+      setLoading(true);
       const update = await Updates.fetchUpdateAsync();
       if (update.isNew) {
-        await Updates.reloadAsync(); // Reload the app with the new update
+        await Updates.reloadAsync();
       }
     } catch (error) {
       console.error('Error fetching update: ', error);
     } finally {
-      setIsLoading(false); // Hide loader after update process
+      setIsLoading(false);
+    }
+  };
+
+  const handleEnablePersonalContribution = async () => {
+    setIsLoading(true);
+
+    if (pCEnable) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { data: response } = await createDedicatedVirtualAccount(
+        userProfile.customer_code
+      );
+
+      const toStore = {
+        account_number: response.account_number,
+        account_name: response.account_name,
+        bank_name: response.bank.name,
+        bank_slug: response.bank.slug,
+        bank_id: response.bank.id,
+        account_type: response.assignment.account_type,
+        enabled: true,
+      };
+
+      const res = await updateUserProfile({ dva: toStore }, currentUser);
+      await fetchUserProfile(setUserProfile, currentUser);
+      setPCEnable(true);
+      setIsLoading(false);
+
+      Alert.alert(
+        'Success',
+        'Personal contribution enabled successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => console.log('OK Pressed'),
+          },
+          {
+            text: 'Create Contribution',
+            onPress: () => router.push('/protected/create_contribution'),
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      console.error('Error creating personal contribution:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -129,6 +225,20 @@ const Settings = () => {
             value={hideValues}
           />
         </View>
+        {/* Enable personal contribution */}
+        <View style={styles.setting}>
+          <View>
+            <Text style={styles.settingText}>Enable Personal Contribution</Text>
+            <Text style={{ fontSize: 10, fontFamily: 'ir' }}>
+              You will not be able to disable it again until after 3 months
+            </Text>
+          </View>
+          <Switch
+            onValueChange={handleEnablePersonalContribution}
+            value={userProfile?.dva?.enabled || pCEnable}
+            disabled={userProfile?.dva?.enabled || pCEnable}
+          />
+        </View>
 
         {/* Update App - Show an indicator if update is available */}
         <TouchableOpacity
@@ -142,7 +252,7 @@ const Settings = () => {
               <Text style={styles.updateAvailable}> - Update Available</Text>
             )}
           </Text>
-          {isLoading && <ActivityIndicator size="small" color="#007aff" />}
+          {loading && <ActivityIndicator size="small" color="#007aff" />}
         </TouchableOpacity>
 
         {/* Delete Account */}

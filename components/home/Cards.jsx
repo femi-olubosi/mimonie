@@ -243,6 +243,20 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
     contribution?.current_count !== currentParticipant?.index &&
     currentParticipant?.last_successful_round < contribution?.current_count;
 
+  const parseDate = (dateString) => {
+    if (!dateString) return null;
+    const [year, month, day] = dateString.split('-');
+    return new Date(year, month - 1, day);
+  };
+
+  const getNextWednesday = (date) => {
+    const dayOfWeek = date.getDay();
+    const daysUntilNextWednesday = (3 - dayOfWeek + 7) % 7 || 7; // 3 corresponds to Wednesday (0 = Sunday)
+    const nextWednesday = new Date(date);
+    nextWednesday.setDate(date.getDate() + daysUntilNextWednesday);
+    return nextWednesday;
+  };
+
   const getNextContributionDay = () => {
     if (contribution?.status === 'open') {
       return 'Not running';
@@ -263,21 +277,12 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
     if (currentParticipant?.status === 'in progress') {
       switch (contribution?.variant) {
         case 'days':
-          // Skip this day and show the next contribution day
           nextContributionDay = new Date(today);
           nextContributionDay.setDate(today.getDate() + 2); // Day after tomorrow
           break;
 
         case 'weeks':
-          const startDay = parseDate(contribution?.start_date);
-          const startDayOfWeek = startDay.getDay();
-          nextContributionDay = new Date(today);
-
-          if (today.toDateString() === startDay.toDateString()) {
-            nextContributionDay.setDate(today.getDate() + 8);
-          } else {
-            nextContributionDay.setDate(today.getDate() + 7);
-          }
+          nextContributionDay = getNextWednesday(today);
           break;
 
         case 'months':
@@ -316,19 +321,7 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
         break;
 
       case 'weeks':
-        const startDay = parseDate(contribution?.start_date);
-        const startDayOfWeek = startDay.getDay();
-        if (today.toDateString() === startDay.toDateString()) {
-          nextContributionDay = new Date(today);
-          nextContributionDay.setDate(today.getDate() + 1); // First deduction is the next day
-        } else {
-          nextContributionDay = new Date(today);
-          const daysUntilNextContribution =
-            (startDayOfWeek - today.getDay() + 7) % 7 || 7;
-          nextContributionDay.setDate(
-            today.getDate() + daysUntilNextContribution
-          );
-        }
+        nextContributionDay = getNextWednesday(today); // Calculate the next Wednesday
         break;
 
       case 'months':
@@ -373,118 +366,33 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   );
 };
 
-// const NextContributionDay = ({ contribution, done, currentParticipant }) => {
-//   const updateMe =
-//     contribution?.current_count !== currentParticipant?.index &&
-//     currentParticipant?.last_successful_round < contribution?.current_count;
-
-//   const getNextContributionDay = () => {
-//     if (contribution?.status === 'open') {
-//       return 'Not running';
-//     }
-
-//     if (contribution?.status === 'completed') {
-//       return 'Completed';
-//     }
-
-//     if (done) {
-//       return '-';
-//     }
-
-//     if (updateMe) {
-//       return 'Today (Please fund your card)';
-//     }
-
-//     const today = new Date();
-//     let nextContributionDay;
-
-//     switch (contribution?.variant) {
-//       case 'days':
-//         nextContributionDay = new Date(today);
-//         nextContributionDay.setDate(today.getDate() + 1);
-//         break;
-//       case 'weeks':
-//         const startDay = parseDate(contribution?.start_date);
-
-//         const startDayOfWeek = startDay.getDay();
-//         if (today.toDateString() === startDay.toDateString()) {
-//           nextContributionDay = new Date(today);
-//           nextContributionDay.setDate(today.getDate() + 1); // First deduction is the next day
-//         } else {
-//           nextContributionDay = new Date(today);
-//           const daysUntilNextContribution =
-//             (startDayOfWeek - today.getDay() + 7) % 7 || 7;
-//           nextContributionDay.setDate(
-//             today.getDate() + daysUntilNextContribution
-//           );
-//         }
-//         break;
-//       case 'months':
-//         nextContributionDay = new Date(
-//           today.getFullYear(),
-//           today.getMonth(),
-//           28
-//         );
-//         if (today.getDate() > 28) {
-//           nextContributionDay.setMonth(today.getMonth() + 1);
-//         }
-//         break;
-//       default:
-//         nextContributionDay = 'Invalid contribution period';
-//     }
-
-//     return typeof nextContributionDay === 'string'
-//       ? nextContributionDay
-//       : nextContributionDay.toLocaleDateString('en-US', {
-//           day: 'numeric',
-//           month: 'long',
-//         });
-//   };
-
-//   return (
-//     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-//       <Text
-//         style={[
-//           styles.text,
-//           {
-//             fontSize: 10,
-//             fontFamily: 'ir',
-//             color: updateMe ? '#FF7F7F' : 'white',
-//           },
-//         ]}
-//       >
-//         Due Date: {getNextContributionDay()}
-//       </Text>
-//       {updateMe && <Entypo name="back-in-time" size={10} color="#FF7F7F" />}
-//     </View>
-//   );
-// };
-
 const getCollectionDate = (startDate, participantIndex, variant) => {
   const start = parseDate(startDate);
   let collectionDate;
 
   switch (variant) {
     case 'days':
+      // Collection day is simply X days after the start, where X = participantIndex
       collectionDate = new Date(start);
       collectionDate.setDate(start.getDate() + participantIndex);
       break;
+
     case 'weeks':
+      // Calculate the next Wednesday after start date
       collectionDate = new Date(start);
-      const startDayOfWeek = start.getDay();
-      if (participantIndex === 1) {
-        collectionDate.setDate(start.getDate() + 1);
-      } else {
-        collectionDate.setDate(
-          start.getDate() + participantIndex * 7 - startDayOfWeek + 1
-        );
-      }
+      const daysUntilNextWednesday = (3 - collectionDate.getDay() + 7) % 7 || 7;
+      collectionDate.setDate(
+        start.getDate() + daysUntilNextWednesday + (participantIndex - 1) * 7
+      );
       break;
+
     case 'months':
+      // Collection day is always on the 28th of the following months
       collectionDate = new Date(start);
       collectionDate.setMonth(start.getMonth() + participantIndex);
       collectionDate.setDate(28);
       break;
+
     default:
       collectionDate = 'Invalid contribution period';
   }
@@ -496,48 +404,6 @@ const getCollectionDate = (startDate, participantIndex, variant) => {
       })
     : collectionDate;
 };
-
-// const getCollectionDate = (startDate, participantIndex, variant) => {
-//   const start = new Date(startDate);
-//   let collectionDate;
-
-//   switch (variant) {
-//     case 'days':
-//       collectionDate = new Date(start);
-//       collectionDate.setDate(start.getDate() + participantIndex); // Daily: add participant index days
-//       break;
-
-//     case 'weeks':
-//       // First contribution happens the next day after the start date
-//       if (participantIndex === 0) {
-//         collectionDate = new Date(start);
-//         collectionDate.setDate(start.getDate() + 1); // First deduction the next day
-//       } else {
-//         // Subsequent contributions follow the same day of the week
-//         collectionDate = new Date(start);
-//         collectionDate.setDate(
-//           start.getDate() + participantIndex * 7 - start.getDay() + 1
-//         );
-//       }
-//       break;
-
-//     case 'months':
-//       collectionDate = new Date(start);
-//       collectionDate.setMonth(start.getMonth() + participantIndex); // Monthly: add participant index months
-//       collectionDate.setDate(28); // Always 28th of the month
-//       break;
-
-//     default:
-//       collectionDate = 'Invalid contribution period';
-//   }
-
-//   return collectionDate instanceof Date
-//     ? collectionDate.toLocaleDateString('en-US', {
-//         day: 'numeric',
-//         month: 'long',
-//       })
-//     : collectionDate;
-// };
 
 const styles = StyleSheet.create({
   container: {

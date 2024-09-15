@@ -6,6 +6,48 @@ import { LazyLoading, LazyLoadingDisabled, AsyncCollection } from "@aws-amplify/
 
 
 
+type EagerPersonalContribution = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<PersonalContribution, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly name?: string | null;
+  readonly status?: string | null;
+  readonly variant?: string | null;
+  readonly amount?: number | null;
+  readonly target?: number | null;
+  readonly last_successful_contribution?: string | null;
+  readonly currently_at?: number | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyPersonalContribution = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<PersonalContribution, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly name?: string | null;
+  readonly status?: string | null;
+  readonly variant?: string | null;
+  readonly amount?: number | null;
+  readonly target?: number | null;
+  readonly last_successful_contribution?: string | null;
+  readonly currently_at?: number | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type PersonalContribution = LazyLoading extends LazyLoadingDisabled ? EagerPersonalContribution : LazyPersonalContribution
+
+export declare const PersonalContribution: (new (init: ModelInit<PersonalContribution>) => PersonalContribution) & {
+  copyOf(source: PersonalContribution, mutator: (draft: MutableModel<PersonalContribution>) => MutableModel<PersonalContribution> | void): PersonalContribution;
+}
+
 type EagerUserActivity = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<UserActivity, 'id'>;
@@ -115,6 +157,8 @@ type EagerUserProfile = {
   readonly connections?: (string | null)[] | null;
   readonly phone_verified?: boolean | null;
   readonly push_token?: string | null;
+  readonly dva?: string | null;
+  readonly extra?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -152,6 +196,8 @@ type LazyUserProfile = {
   readonly connections?: (string | null)[] | null;
   readonly phone_verified?: boolean | null;
   readonly push_token?: string | null;
+  readonly dva?: string | null;
+  readonly extra?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

@@ -498,25 +498,56 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
       return new Date(year, month - 1, day);
     };
 
+    const getNextWednesday = (date) => {
+      const dayOfWeek = date.getDay();
+      const daysUntilNextWednesday = (3 - dayOfWeek + 7) % 7 || 7;
+      const nextWednesday = new Date(date);
+      nextWednesday.setDate(date.getDate() + daysUntilNextWednesday);
+      return nextWednesday;
+    };
+
+    // Check if the participant is collecting this period
+    const isReceivingDay = (participant) => {
+      return (
+        participant?.status === 'in progress' &&
+        contribution?.variant === 'days'
+      );
+    };
+
+    const isReceivingWeek = (participant) => {
+      return (
+        participant?.status === 'in progress' &&
+        contribution?.variant === 'weeks'
+      );
+    };
+
+    const isReceivingMonth = (participant) => {
+      return (
+        participant?.status === 'in progress' &&
+        contribution?.variant === 'months'
+      );
+    };
+
     const currentParticipant = parsed?.find(
       (participant) => participant.userId === userProfile.userId
     );
 
+    // Handling contribution types based on variant (days, weeks, months)
     if (currentParticipant?.status === 'in progress') {
       switch (contribution?.variant) {
         case 'days':
           nextContributionDay = new Date(today);
           nextContributionDay.setDate(today.getDate() + 2);
+          if (isReceivingDay(currentParticipant)) {
+            nextContributionDay.setDate(nextContributionDay.getDate() + 1); // Skip receiving day
+          }
           break;
 
         case 'weeks':
           const startDay = parseDate(contribution?.start_date);
-          nextContributionDay = new Date(today);
-
-          if (today.toDateString() === startDay.toDateString()) {
-            nextContributionDay.setDate(today.getDate() + 8);
-          } else {
-            nextContributionDay.setDate(today.getDate() + 7);
+          nextContributionDay = getNextWednesday(today);
+          if (isReceivingWeek(currentParticipant)) {
+            nextContributionDay.setDate(nextContributionDay.getDate() + 7); // Skip receiving week
           }
           break;
 
@@ -526,12 +557,12 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
             today.getMonth(),
             28
           );
-
           if (today.getDate() > 28) {
             nextContributionDay.setMonth(today.getMonth() + 1);
           }
-
-          nextContributionDay.setMonth(nextContributionDay.getMonth() + 1);
+          if (isReceivingMonth(currentParticipant)) {
+            nextContributionDay.setMonth(nextContributionDay.getMonth() + 1); // Skip receiving month
+          }
           break;
 
         default:
@@ -546,22 +577,17 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
           });
     }
 
+    // Default case for next contribution when not "in progress"
     switch (contribution?.variant) {
       case 'days':
         nextContributionDay = new Date(today);
         nextContributionDay.setDate(today.getDate() + 1);
         break;
-      case 'weeks':
-        const startDay = parseDate(contribution?.start_date);
 
-        if (today.toDateString() === startDay.toDateString()) {
-          nextContributionDay = new Date(today);
-          nextContributionDay.setDate(today.getDate() + 1);
-        } else {
-          nextContributionDay = new Date(today);
-          nextContributionDay.setDate(today.getDate() + 7);
-        }
+      case 'weeks':
+        nextContributionDay = getNextWednesday(today);
         break;
+
       case 'months':
         nextContributionDay = new Date(
           today.getFullYear(),
@@ -572,6 +598,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
           nextContributionDay.setMonth(today.getMonth() + 1);
         }
         break;
+
       default:
         nextContributionDay = 'Invalid contribution period';
     }
