@@ -1,5 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { Redirect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import * as Updates from 'expo-updates';
 import { useEffect, useState } from 'react';
 import { Modal, View, StyleSheet, Text, Pressable } from 'react-native';

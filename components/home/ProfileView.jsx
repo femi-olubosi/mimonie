@@ -11,7 +11,7 @@ import { Colors } from '@/constants/Colors';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-const ProfileView = ({ name, picture, notifications }) => {
+const ProfileView = ({ name, picture, notifications, priText }) => {
   const [loading, setLoading] = useState(true);
   return (
     <View
@@ -58,12 +58,12 @@ const ProfileView = ({ name, picture, notifications }) => {
             <FontAwesome
               name="user-o"
               size={16}
-              color="white"
+              color={priText}
               onPress={() => router.navigate('/protected/account')}
             />
           )}
         </View>
-        <Text style={{ fontSize: 20, fontWeight: 'er' }}>
+        <Text style={{ fontSize: 20, fontWeight: 'er', color: priText }}>
           Hi, {name?.split(' ')[0]}
         </Text>
       </View>
@@ -72,7 +72,7 @@ const ProfileView = ({ name, picture, notifications }) => {
         onPress={() => router.push('/protected/notifications')}
         style={{ position: 'relative' }}
       >
-        <Ionicons name="notifications-outline" size={24} color={'black'} />
+        <Ionicons name="notifications-outline" size={24} color={priText} />
         <View
           style={{
             borderRadius: 100,

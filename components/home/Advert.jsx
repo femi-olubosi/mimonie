@@ -1,16 +1,15 @@
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
+import { ThemeColors } from '@/constants/Colors';
 
 const Advert = () => {
+  const {priBg} = ThemeColors()
   return (
-    // <View style={{}}>
     <View
       style={{
-        // height: 120,
         width: '100%',
         padding: 20,
-        backgroundColor: 'white',
-        // alignItems: 'center',
+        backgroundColor: priBg,
       }}
     >
       <Image
@@ -18,7 +17,6 @@ const Advert = () => {
         style={{ width: '100%', borderRadius: 15, objectFit: 'fill' }}
       />
     </View>
-    // </View>
   );
 };
 

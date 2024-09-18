@@ -285,7 +285,7 @@ const CreateContribution = () => {
                     options={variantOptions}
                     selectedValue={variant}
                     setSelectedValue={setVariant}
-                    defaultValue={variant}
+                    defaultValue={variant.value}
                   />
                 </View>
               </>
@@ -376,6 +376,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'white',
     padding: 20,
+    overflow: 'hidden'
   },
   instructions: {
     fontSize: 14,

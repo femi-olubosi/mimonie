@@ -49,6 +49,7 @@ import {
   getPaystackCustomer,
   verifyBVN,
 } from '../../../api/payment.service';
+import { ThemeColors } from '../../../constants/Colors';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -66,7 +67,7 @@ const Account = () => {
   const [logoutModal, setLogoutModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
+const {priBg, priText, secBg} = ThemeColors()
   const handleInviteFriends = () => {
     router.push('/protected/contact');
   };
@@ -234,7 +235,7 @@ const Account = () => {
             </Text>
           </View>
         </View>
-        <View style={{ backgroundColor: 'white', flex: 1 }}>
+        <View style={{ backgroundColor: priBg, flex: 1 }}>
           <ScrollView
             contentContainerStyle={{
               padding: 20,
@@ -253,7 +254,7 @@ const Account = () => {
                   }}
                 >
                   {item.icon}
-                  <Text style={styles.itemText}>{item.title}</Text>
+                  <Text style={[styles.itemText, {color: priText}]}>{item.title}</Text>
                   {item.extra && item.title === 'Verify Identity' ? (
                     <View style={{ marginLeft: 5 }}>
                       {userProfile?.verification_in_progress_id ? (
@@ -367,7 +368,7 @@ const Account = () => {
                     </View>
                   ) : null}
                 </View>
-                <Ionicons name="chevron-forward" size={24} color="black" />
+                <Ionicons name="chevron-forward" size={24} color={priText} />
               </TouchableOpacity>
             ))}
             <View

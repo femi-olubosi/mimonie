@@ -9,7 +9,7 @@ import { DataStore } from 'aws-amplify/datastore';
 const StoreContext = createContext();
 
 const StoreProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [emailVeri, setEmailVeri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
@@ -41,7 +41,8 @@ const StoreProvider = ({ children }) => {
   }, [currentUser]);
 
   const value = {
-    isDarkMode,
+    darkMode,
+    setDarkMode,
     toggleMode,
     isLoading,
     setIsLoading,

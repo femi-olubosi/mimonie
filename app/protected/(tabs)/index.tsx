@@ -55,6 +55,7 @@ import render from '@/components/Render';
 import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
 import { safeParseJSON } from '@/utils/safeJSON';
+import { ThemeColors } from '@/constants/Colors';
 
 export default function HomeScreen() {
   const {
@@ -76,6 +77,8 @@ export default function HomeScreen() {
     hideValues,
     setParsed
   } = useGlobalContext();
+
+  const {priBg, secBg, priText} = ThemeColors()
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -219,26 +222,27 @@ export default function HomeScreen() {
   // }, [currentUser]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FAFAFB' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: secBg }}>
       <StatusBar style="dark" />
       <ThemedView
         style={{
           flex: 1,
           paddingTop: Platform.OS === 'ios' ? 0 : Constants.statusBarHeight,
-          backgroundColor: '#FAFAFB',
+          backgroundColor: secBg,
         }}
       >
         <ProfileView
           name={userProfile?.name}
           picture={profilePicture || currentUser.picture}
           notifications={notifications}
+          priText={priText}
         />
         <ScrollView contentContainerStyle={{}}>
           <Cards contributions={contributions} userProfile={userProfile} />
-          <Options userProfile={userProfile} />
+          <Options userProfile={userProfile} priText={priText}/>
           <Advert />
           <View
-            style={{ paddingHorizontal: 20, backgroundColor: 'white', flex: 1 }}
+            style={{ paddingHorizontal: 20, backgroundColor: priBg, flex: 1 }}
           >
             <View
               style={{
@@ -247,7 +251,7 @@ export default function HomeScreen() {
                 alignItems: 'center',
               }}
             >
-              <Text style={{ fontFamily: 'esb', fontSize: 20 }}>
+              <Text style={{ fontFamily: 'esb', fontSize: 20, color: priText }}>
                 Recent Activities
               </Text>
               <Pressable
@@ -273,7 +277,7 @@ export default function HomeScreen() {
             <View
               style={{
                 flex: 1,
-                backgroundColor: 'white',
+                backgroundColor: priBg,
                 justifyContent: 'center',
                 alignItems: 'center',
                 gap: 20,

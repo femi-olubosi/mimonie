@@ -6,17 +6,18 @@ import {
   MaterialCommunityIcons,
   Entypo,
 } from '@expo/vector-icons';
-import { Colors } from '@/constants/Colors';
+import { Colors, ThemeColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Platform, View } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const {priBg} = ThemeColors()
 
   return (
     <Tabs
       screenOptions={() => ({
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].pri,
+        tabBarActiveTintColor: Colors.pri,
         tabBarInactiveTintColor: '#565D6D',
         headerShown: false,
         tabBarStyle: {
@@ -26,6 +27,7 @@ export default function TabLayout() {
           alignItems: 'center',
           justifyContent: 'center',
           paddingBottom: Platform.OS === 'android' ? 10 : 25,
+          backgroundColor: priBg
         },
       })}
     >

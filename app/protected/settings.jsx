@@ -89,6 +89,8 @@ const Settings = () => {
     hideValues,
     setHideValues,
     setIsLoading,
+    setDarkMode,
+    darkMode
   } = useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -128,7 +130,7 @@ const Settings = () => {
     }
   };
 
-  const toggleDarkMode = () => setDarkModeEnabled(!darkModeEnabled);
+  const toggleDarkMode = () => setDarkMode(!darkMode);
 
   const triggerAppUpdate = async () => {
     try {
@@ -234,7 +236,7 @@ const Settings = () => {
           <Text style={styles.settingText}>Dark Mode</Text>
           <Switch
             onValueChange={toggleDarkMode}
-            value={darkModeEnabled}
+            value={darkMode}
             disabled
           />
         </View>
