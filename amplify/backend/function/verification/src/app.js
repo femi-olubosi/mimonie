@@ -183,6 +183,13 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
     const { event: eventType, data: response } = req.body;
     const customerCode = response.customer_code;
 
+    const userProfile = await getUserProfile(customerCode);
+
+    if (!userProfile || !userProfile.userId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    let subaccountCode = null;
     let isBvnVerified = false;
     let notificationTitle = '';
     let notificationContent = response.reason || 'Verification Completed';
@@ -191,6 +198,8 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
     if (eventType === 'customeridentification.success') {
       isBvnVerified = true;
       notificationTitle = 'BVN Verified';
+      const subAcc = await createSubAccount(userProfile);
+      subaccountCode = subAcc.data.subaccount_code;
     } else if (eventType === 'customeridentification.failed') {
       isBvnVerified = false;
       notificationTitle = 'Verification Failed';
@@ -198,28 +207,18 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
       return res.status(400).json({ error: 'Unknown event type' });
     }
 
-    // Fetch the user's profile to get userId
-    const userProfile = await getUserProfile(customerCode);
-
-    // Create subaccount
-    const subAcc = await createSubAccount(userProfile);
-
-    if (!userProfile || !userProfile.userId) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
     const userId = userProfile.userId;
 
     // Prepare DynamoDB update parameters for the profile table, including subaccount_code
     const updateParams = {
       TableName: profileTableName,
-      Key: { id: userProfile.id }, // Ensure 'id' is the primary key
+      Key: { id: userProfile.id },
       UpdateExpression:
         'SET is_bvn_verified = :isBvnVerified, verification_in_progress = :verificationInProgress, subaccount_code = :subaccountCode',
       ExpressionAttributeValues: {
         ':isBvnVerified': isBvnVerified,
         ':verificationInProgress': false,
-        ':subaccountCode': subAcc.data.subaccount_code, // Update with subaccount_code
+        ':subaccountCode': subaccountCode,
       },
       ReturnValues: 'UPDATED_NEW',
     };

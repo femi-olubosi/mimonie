@@ -8,6 +8,7 @@ import {
   Modal,
   Pressable,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
@@ -43,7 +44,7 @@ const CreateContribution = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [newContribution, setNewContribution] = useState({});
   const [contributionType, setContributionType] = useState('group');
-  const [variant, setVariant] = useState('');
+  const [variant, setVariant] = useState({});
 
   const [date, setDate] = useState(new Date());
   const {
@@ -90,7 +91,7 @@ const CreateContribution = () => {
       target: selectedValue.target,
       amount: selectedValue.amount,
       num_of_month: selectedValue.num_of_month,
-      variant: variant,
+      variant: variant.value,
     };
     if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
       return;
@@ -132,6 +133,7 @@ const CreateContribution = () => {
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
+        <ScrollView>
         {!isVerified ? (
           <View
             style={{
@@ -166,9 +168,6 @@ const CreateContribution = () => {
             </Text>
           </View>
         ) : null}
-        {/* <Text style={styles.instructions}>
-          Create a contribution schedule and invite friends to join
-        </Text> */}
         <View style={{ marginVertical: 20 }}>
           <Text style={styles.instructions}>
             Choose your contribution type:
@@ -238,7 +237,7 @@ const CreateContribution = () => {
                 options={variantOptions}
                 selectedValue={variant}
                 setSelectedValue={setVariant}
-                defaultValue={variant}
+                defaultValue={variant.value}
               />
             </View>
           </View>
@@ -303,6 +302,7 @@ const CreateContribution = () => {
             )}
           </View>
         )}
+        </ScrollView>
 
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <TouchableOpacity
@@ -370,137 +370,6 @@ const CreateContribution = () => {
     </PageView>
   );
 };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: 'white',
-//     padding: 20,
-//   },
-//   instructions: {
-//     fontSize: 14,
-//     color: '#6B7280',
-//     marginBottom: 20,
-//   },
-//   label: {
-//     fontSize: 15,
-//     color: '#1F2937',
-//     fontFamily: 'ir',
-//   },
-//   input: {
-//     backgroundColor: 'white',
-//     borderRadius: 12,
-//     borderWidth: 1,
-//     borderColor: '#9095A1',
-//     padding: 12,
-//     height: 53,
-//   },
-//   inputSearch: {
-//     backgroundColor: 'white',
-//     borderRadius: 12,
-//     borderWidth: 1,
-//     borderColor: '#9095A1',
-//     padding: 12,
-//     height: 40,
-//     width: '90%',
-//     alignSelf: 'center',
-//   },
-//   button: {
-//     borderRadius: 12,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     marginTop: 100,
-//     height: 44,
-//   },
-//   buttonText: {
-//     color: 'white',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-//   modalContainer: {
-//     flex: 1,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: 'rgba(0,0,0,0.5)',
-//   },
-//   modalContainerContact: {
-//     flex: 1,
-//     justifyContent: 'flex-end',
-//     alignItems: 'center',
-//     backgroundColor: 'rgba(0,0,0,0.5)',
-//   },
-//   modalView: {
-//     width: '80%',
-//     backgroundColor: 'white',
-//     borderRadius: 8,
-//     padding: 20,
-//     alignItems: 'center',
-//     elevation: 5,
-//   },
-//   modalViewContact: {
-//     width: '95%',
-//     height: '85%',
-//     backgroundColor: 'white',
-//     borderRadius: 8,
-//     paddingVertical: 20,
-//     elevation: 5,
-//   },
-//   modalTitle: {
-//     fontSize: 16,
-//     fontFamily: 'isb',
-//     marginBottom: 10,
-//     textAlign: 'center',
-//   },
-//   modalText: {
-//     fontSize: 16,
-//     color: '#6B7280',
-//     textAlign: 'center',
-//     marginBottom: 20,
-//   },
-//   inviteLink: {
-//     fontSize: 14,
-//     color: '#2563EB',
-//     marginBottom: 20,
-//     textAlign: 'center',
-//   },
-//   modalButton: {
-//     backgroundColor: '#1F2937',
-//     borderRadius: 8,
-//     padding: 12,
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//     width: '100%',
-//   },
-//   modalButtonText: {
-//     color: 'white',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-//   contactContainer: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     padding: 20,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#ccc',
-//   },
-//   contactInfo: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     columnGap: 10,
-//   },
-
-//   contactName: {
-//     fontSize: 14,
-//     fontFamily: 'ir',
-//   },
-//   phoneNumber: {
-//     color: 'blue',
-//   },
-//   inviteText: {
-//     color: 'green',
-//   },
-// });
 
 const styles = StyleSheet.create({
   container: {

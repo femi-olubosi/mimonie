@@ -37,7 +37,7 @@
         },
         "verification": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/verification-7a395333737963574d79-build.zip",
+          "s3Key": "amplify-builds/verification-6e786754774c4e672b6b-build.zip",
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         }
       },

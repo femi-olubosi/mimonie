@@ -135,17 +135,10 @@ export const createUserProfile = async (
 
 export const updateUserProfile = async (updatedData, currentUser) => {
   try {
-    // Fetch the existing user profile
     const userProfile = await DataStore.query(UserProfile, (c) =>
       c.userId.eq(currentUser.userId)
     );
 
-    // const data = {
-    //   ...updatedData,
-    // };
-
-    // Update the profile with new data
-    console.log(updatedData);
     const updatedProfile = await DataStore.save(
       UserProfile.copyOf(userProfile[0], (updated) => {
         Object.assign(updated, updatedData);

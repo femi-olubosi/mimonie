@@ -433,3 +433,109 @@ export const createDedicatedVirtualAccount = async (customer_code) => {
   };
   return await makePaystackRequest('/dedicated_account', 'POST', data);
 };
+
+export const fetchTransferRecipient = async (account_number) => {
+  const { data: recipients } = await makePaystackRequest('/transferrecipient');
+
+  const dvaRecipient = recipients.find(
+    (recipient) => recipient.details.account_number === account_number
+  );
+  if (!dvaRecipient) {
+    throw new Error('DVA recipient not found');
+  }
+  return dvaRecipient.recipient_code;
+};
+
+export const createTransferRecipientForDVA = async (details) => {
+  const data = {
+    type: 'nuban',
+    name: details.account_name,
+    account_number: details.account_number,
+    bank_code: '035',
+    currency: 'NGN',
+  };
+  const response = await makePaystackRequest(
+    '/transferrecipient',
+    'POST',
+    data
+  );
+  return response.data.recipient_code;
+};
+
+export const createTransferRecipientForBank = async (userProfile) => {
+  const data = {
+    type: 'nuban',
+    name: userProfile.name,
+    account_number: userProfile.bank_details.account_number,
+    bank_code: userProfile.bank_details.bank_code,
+    currency: 'NGN',
+  };
+  const response = await makePaystackRequest(
+    '/transferrecipient',
+    'POST',
+    data
+  );
+  return response.data.recipient_code;
+};
+
+export const fetchTransferRecipients = async (account_number) => {
+  return await makePaystackRequest('/transferrecipient');
+};
+
+export const chargeAndTransferToDva = async (
+  customer,
+  dvaRecipientCode,
+  amount
+) => {
+  const data = {
+    email: customer.email,
+    amount: `${amount * 100}`,
+    authorization_code: customer.auth_url,
+    metadata: JSON.stringify({
+      custom_fields: [
+        {
+          display_name: 'Purpose',
+          variable_name: 'purpose',
+          value: 'Personal Contribution',
+        },
+      ],
+    }),
+  };
+
+  try {
+    const { data: chargeResponse } = await makePaystackRequest(
+      '/transaction/charge_authorization',
+      'POST',
+      data
+    );
+    console.log('chargeResponse', chargeResponse);
+    if (chargeResponse.status !== 'success') {
+      throw new Error('Card charge failed');
+    }
+
+    const transferData = {
+      source: 'balance',
+      amount: `${amount * 100}`,
+      recipient: dvaRecipientCode,
+      reason: 'Transfer to DVA for contribution',
+    };
+
+    const { data: transferResponse } = await makePaystackRequest(
+      '/transfer',
+      'POST',
+      transferData
+    );
+    console.log('transferResponse', transferResponse);
+    if (transferResponse.status !== 'success') {
+      throw new Error('Transfer to DVA failed');
+    }
+
+    return {
+      chargeResponse,
+      transferResponse,
+    };
+  } catch (error) {
+    console.error('Error charging card and transferring to DVA:', error);
+    throw error;
+  }
+};

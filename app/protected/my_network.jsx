@@ -180,6 +180,7 @@ const connect = () => {
       </View>
     </View>
   );
+  
 
   return (
     <PageView title={'My Network'}>

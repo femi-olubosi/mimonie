@@ -54,6 +54,7 @@ import {
 import render from '@/components/Render';
 import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
+import { safeParseJSON } from '@/utils/safeJSON';
 
 export default function HomeScreen() {
   const {
@@ -73,6 +74,7 @@ export default function HomeScreen() {
     profilePicture,
     setInviteArray,
     hideValues,
+    setParsed
   } = useGlobalContext();
 
   useEffect(() => {
@@ -195,6 +197,13 @@ export default function HomeScreen() {
 
     fetchContributions();
   }, [userProfile?.invites]);
+
+  useEffect(() => {
+    if (userProfile) {
+      const parsedData = safeParseJSON(userProfile?.connections, []);
+      setParsed(parsedData);
+    }
+  }, [userProfile]);
 
   // useEffect(() => {
   //   const fetchProfile = async () => {

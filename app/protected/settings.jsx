@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '@/store/StoreContext';
-import * as Updates from 'expo-updates'; // Import Updates from Expo
+import * as Updates from 'expo-updates';
 import {
   registerForPushNotificationsAsync,
   savePushToken,
@@ -18,6 +18,12 @@ import {
 import { createDedicatedVirtualAccount } from '@/api/payment.service';
 import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 import { router } from 'expo-router';
+import {
+  chargeAndTransferToDva,
+  createTransferRecipientForBank,
+  createTransferRecipientForDVA,
+  fetchTransferRecipients,
+} from '../../api/payment.service';
 
 const triggerAccountDeletion = () => {
   Alert.alert(
@@ -86,14 +92,11 @@ const Settings = () => {
   } = useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-  const [externalProfileViewEnabled, setExternalProfileViewEnabled] =
-    useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pCEnable, setPCEnable] = useState(false);
 
   useEffect(() => {
-    // Check for app updates
     const checkForUpdates = async () => {
       try {
         const update = await Updates.checkForUpdateAsync();
@@ -108,7 +111,6 @@ const Settings = () => {
     checkForUpdates();
   }, []);
 
-  // Toggle functions
   const toggleNotifications = async () => {
     setNotificationsEnabled(!notificationsEnabled);
     if (!notificationsEnabled) {
@@ -127,8 +129,6 @@ const Settings = () => {
   };
 
   const toggleDarkMode = () => setDarkModeEnabled(!darkModeEnabled);
-  const toggleExternalProfileView = () =>
-    setExternalProfileViewEnabled(!externalProfileViewEnabled);
 
   const triggerAppUpdate = async () => {
     try {
@@ -157,6 +157,12 @@ const Settings = () => {
         userProfile.customer_code
       );
 
+      const customerRecipientCode = await createTransferRecipientForBank(
+        userProfile
+      );
+
+      const dvaRecipientCode = await createTransferRecipientForDVA(response);
+
       const toStore = {
         account_number: response.account_number,
         account_name: response.account_name,
@@ -164,10 +170,12 @@ const Settings = () => {
         bank_slug: response.bank.slug,
         bank_id: response.bank.id,
         account_type: response.assignment.account_type,
+        dva_recipient_code: dvaRecipientCode,
+        customer_recipient_code: customerRecipientCode,
         enabled: true,
       };
 
-      const res = await updateUserProfile({ dva: toStore }, currentUser);
+      await updateUserProfile({ dva: toStore }, currentUser);
       await fetchUserProfile(setUserProfile, currentUser);
       setPCEnable(true);
       setIsLoading(false);
@@ -176,10 +184,7 @@ const Settings = () => {
         'Success',
         'Personal contribution enabled successfully!',
         [
-          {
-            text: 'OK',
-            onPress: () => console.log('OK Pressed'),
-          },
+          { text: 'OK', onPress: () => console.log('OK Pressed') },
           {
             text: 'Create Contribution',
             onPress: () => router.push('/protected/create_contribution'),
@@ -189,6 +194,23 @@ const Settings = () => {
       );
     } catch (error) {
       console.error('Error creating personal contribution:', error);
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const payment = async () => {
+    setIsLoading(true);
+    try {
+      const res = await chargeAndTransferToDva(
+        { email: userProfile.email, auth_url: userProfile.auth_url },
+        userProfile.dva.dva_recipient_code,
+        50
+      );
+      console.log('outer respons', res);
+    } catch (error) {
+      console.log('error respons', error);
     } finally {
       setIsLoading(false);
     }
@@ -236,7 +258,8 @@ const Settings = () => {
           <Switch
             onValueChange={handleEnablePersonalContribution}
             value={userProfile?.dva?.enabled || pCEnable}
-            disabled={userProfile?.dva?.enabled || pCEnable}
+            // disabled={userProfile?.dva?.enabled || pCEnable}
+            disabled
           />
         </View>
 
@@ -261,6 +284,7 @@ const Settings = () => {
         <TouchableOpacity
           style={styles.setting}
           // onPress={triggerAccountDeletion}
+          onPress={payment}
         >
           <Text style={[styles.settingText, { color: 'red' }]}>
             Request Account Deletion
