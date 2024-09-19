@@ -75,10 +75,10 @@ export default function HomeScreen() {
     profilePicture,
     setInviteArray,
     hideValues,
-    setParsed
+    setParsed,
   } = useGlobalContext();
 
-  const {priBg, secBg, priText} = ThemeColors()
+  const { priBg, secBg, priText } = ThemeColors();
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -239,7 +239,7 @@ export default function HomeScreen() {
         />
         <ScrollView contentContainerStyle={{}}>
           <Cards contributions={contributions} userProfile={userProfile} />
-          <Options userProfile={userProfile} priText={priText}/>
+          <Options userProfile={userProfile} priText={priText} />
           <Advert />
           <View
             style={{ paddingHorizontal: 20, backgroundColor: priBg, flex: 1 }}

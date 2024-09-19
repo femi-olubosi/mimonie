@@ -207,3 +207,19 @@ export const findContributionByID = async (id, setContribution) => {
     return [];
   }
 };
+
+export const fetchAllUserContributions = async () => {
+  try {
+    await DataStore.start();
+
+    const userContributions = await DataStore.query(Contribution)
+
+    const sorted = userContributions.sort((a, b) =>
+      a.createdAt > b.createdAt ? -1 : 1
+    );
+
+    return sorted;
+  } catch (error) {
+    console.error('Error fetching user contributions:', error);
+  }
+};

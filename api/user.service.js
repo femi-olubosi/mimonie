@@ -151,3 +151,18 @@ export const updateUserProfile = async (updatedData, currentUser) => {
     throw error;
   }
 };
+
+export const fetchAllUserProfile = async () => {
+  try {
+    // await DataStore.clear();
+    await DataStore.start();
+    // Fetch contributions where the user is a participant
+    const userProfile = await DataStore.query(UserProfile
+    );
+
+    return userProfile;
+  } catch (error) {
+    console.error('Error fetching user user profile:', error);
+    return [];
+  }
+};

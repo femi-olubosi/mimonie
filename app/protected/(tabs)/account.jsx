@@ -67,7 +67,7 @@ const Account = () => {
   const [logoutModal, setLogoutModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-const {priBg, priText, secBg} = ThemeColors()
+  const { priBg, priText, secBg } = ThemeColors();
   const handleInviteFriends = () => {
     router.push('/protected/contact');
   };
@@ -241,136 +241,154 @@ const {priBg, priText, secBg} = ThemeColors()
               padding: 20,
             }}
           >
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.itemContainer}
-                onPress={() => router.push(item.route)}
-              >
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.icon}
-                  <Text style={[styles.itemText, {color: priText}]}>{item.title}</Text>
-                  {item.extra && item.title === 'Verify Identity' ? (
-                    <View style={{ marginLeft: 5 }}>
-                      {userProfile?.verification_in_progress_id ? (
-                        <View
-                          style={{
-                            backgroundColor: '#ecb753',
-                            paddingHorizontal: 4,
-                            paddingVertical: 2,
-                            borderRadius: 5,
-                          }}
-                        >
-                          <Text
+            {menuItems.map((item, index) => {
+              // Check if the menu item has authorizedUser array and if the current user is authorized to view it
+              const isAuthorized =
+                !item.authorizedUser ||
+                item.authorizedUser.includes(userProfile.userId);
+
+              // Only render the item if the user is authorized
+              if (isAuthorized) {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.itemContainer}
+                    onPress={() => router.push(item.route)}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {item.icon}
+                      <Text style={[styles.itemText, { color: priText }]}>
+                        {item.title}
+                      </Text>
+                      {item.extra && item.title === 'Verify Identity' ? (
+                        <View style={{ marginLeft: 5 }}>
+                          {userProfile?.verification_in_progress_id ? (
+                            <View
+                              style={{
+                                backgroundColor: '#ecb753',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'black',
+                                }}
+                              >
+                                Pending
+                              </Text>
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                backgroundColor: userProfile?.is_nin_verified
+                                  ? 'green'
+                                  : 'red',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                                marginLeft: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'white',
+                                }}
+                              >
+                                {userProfile?.is_nin_verified
+                                  ? 'Verified'
+                                  : 'Not Verified'}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ) : null}
+                      {item.extra && item.title === 'Verify BVN' ? (
+                        <View style={{ marginLeft: 5 }}>
+                          {userProfile?.verification_in_progress ? (
+                            <View
+                              style={{
+                                backgroundColor: '#ecb753',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'black',
+                                }}
+                              >
+                                Pending
+                              </Text>
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                backgroundColor: userProfile?.is_bvn_verified
+                                  ? 'green'
+                                  : 'red',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'white',
+                                }}
+                              >
+                                {userProfile?.is_bvn_verified
+                                  ? 'Verified'
+                                  : 'Not Verified'}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ) : null}
+                      {item.extra && item.title === 'Contribution Invites' ? (
+                        <View style={{ marginLeft: 5 }}>
+                          <View
                             style={{
-                              fontSize: 10,
-                              color: 'black',
+                              backgroundColor: 'red',
+                              paddingHorizontal: 4,
+                              paddingVertical: 2,
+                              borderRadius: 5,
                             }}
                           >
-                            Pending
-                          </Text>
+                            <Text
+                              style={{
+                                fontSize: 10,
+                                color: 'white',
+                              }}
+                            >
+                              {userProfile?.invites?.length || 0}
+                            </Text>
+                          </View>
                         </View>
-                      ) : (
-                        <View
-                          style={{
-                            backgroundColor: userProfile?.is_nin_verified
-                              ? 'green'
-                              : 'red',
-                            paddingHorizontal: 4,
-                            paddingVertical: 2,
-                            borderRadius: 5,
-                            marginLeft: 5,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 10,
-                              color: 'white',
-                            }}
-                          >
-                            {userProfile?.is_nin_verified
-                              ? 'Verified'
-                              : 'Not Verified'}
-                          </Text>
-                        </View>
-                      )}
+                      ) : null}
                     </View>
-                  ) : null}
-                  {item.extra && item.title === 'Verify BVN' ? (
-                    <View style={{ marginLeft: 5 }}>
-                      {userProfile?.verification_in_progress ? (
-                        <View
-                          style={{
-                            backgroundColor: '#ecb753',
-                            paddingHorizontal: 4,
-                            paddingVertical: 2,
-                            borderRadius: 5,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 10,
-                              color: 'black',
-                            }}
-                          >
-                            Pending
-                          </Text>
-                        </View>
-                      ) : (
-                        <View
-                          style={{
-                            backgroundColor: userProfile?.is_bvn_verified
-                              ? 'green'
-                              : 'red',
-                            paddingHorizontal: 4,
-                            paddingVertical: 2,
-                            borderRadius: 5,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 10,
-                              color: 'white',
-                            }}
-                          >
-                            {userProfile?.is_bvn_verified
-                              ? 'Verified'
-                              : 'Not Verified'}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  ) : null}
-                  {item.extra && item.title === 'Contribution Invites' ? (
-                    <View style={{ marginLeft: 5 }}>
-                      <View
-                        style={{
-                          backgroundColor: 'red',
-                          paddingHorizontal: 4,
-                          paddingVertical: 2,
-                          borderRadius: 5,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 10,
-                            color: 'white',
-                          }}
-                        >
-                          {userProfile?.invites?.length || 0}
-                        </Text>
-                      </View>
-                    </View>
-                  ) : null}
-                </View>
-                <Ionicons name="chevron-forward" size={24} color={priText} />
-              </TouchableOpacity>
-            ))}
+                    <Ionicons
+                      name="chevron-forward"
+                      size={24}
+                      color={priText}
+                    />
+                  </TouchableOpacity>
+                );
+              }
+
+              return null; // Do not render if not authorized
+            })}
             <View
               style={{
                 flex: 1,
@@ -527,5 +545,14 @@ const menuItems = [
     title: 'Settings',
     icon: <AntDesign name="setting" size={24} color="black" />,
     route: '/protected/settings',
+  },
+  {
+    authorizedUser: [
+      '1831b390-4051-707e-e882-01ce028e7735',
+      '089153d0-70d1-7084-dc69-f41032bfaefb',
+    ],
+    title: 'Admin',
+    icon: <AntDesign name="home" size={24} color="black" />,
+    route: '/protected/admin',
   },
 ];
