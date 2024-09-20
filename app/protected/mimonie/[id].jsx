@@ -54,6 +54,7 @@ const ContributionDetails = () => {
     setIsLoading,
     setInviteArray,
     hideValues,
+    isLoading,
   } = useGlobalContext();
   const { id } = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
@@ -113,6 +114,7 @@ const ContributionDetails = () => {
     }
 
     try {
+      setIsLoading(true);
       await joinContribution(
         contribution.id,
         currentUser,
@@ -121,6 +123,7 @@ const ContributionDetails = () => {
       );
       setInviteArray((prev) => prev.filer((e) => e.id !== contribution.id));
       await updateInvite(userProfile.userId, contribution.id);
+      setIsLoading(false);
       Alert.alert(
         'Success',
         'You have successfully joined the contribution',
@@ -134,6 +137,8 @@ const ContributionDetails = () => {
       );
     } catch (error) {
       Alert.alert('Error', error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -211,7 +216,64 @@ const ContributionDetails = () => {
           </View>
         ) : (
           <>
-            <CopyLink inviteLink={contribution.id} />
+            <View
+              style={{
+                flexDirection: 'row',
+                columnGap: 20,
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                marginBottom: 10,
+              }}
+            >
+              {(parsed.some(
+                (participant) => participant.userId === currentUser.userId
+              ) &&
+                contribution?.owner !== userProfile?.name) ||
+              ['completed', 'running'].includes(contribution.status) ? null : (
+                <Pressable
+                  style={styles.fab}
+                  onPress={() => {
+                    if (
+                      contribution?.status === 'running' ||
+                      contribution?.status === 'completed'
+                    ) {
+                      // Do nothing or handle if needed
+                    } else if (
+                      parsed?.length === contribution?.num_of_month &&
+                      contribution?.owner === userProfile?.name
+                    ) {
+                      handleStartContribution();
+                    } else if (
+                      parsed?.length !== contribution?.num_of_month &&
+                      contribution?.owner === userProfile?.name
+                    ) {
+                      setVisible(!visible);
+                    } else {
+                      handleJoinContribution();
+                    }
+                  }}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.fabText}>
+                    {isLoading
+                      ? 'Joining ...'
+                      : contribution?.status === 'completed'
+                      ? 'Completed'
+                      : contribution?.status === 'running'
+                      ? 'Running'
+                      : parsed?.length === contribution?.num_of_month &&
+                        contribution?.owner === userProfile?.name
+                      ? 'Start'
+                      : parsed?.length !== contribution?.num_of_month &&
+                        contribution?.owner === userProfile?.name
+                      ? 'Invite'
+                      : 'Join'}
+                  </Text>
+                </Pressable>
+              )}
+              <CopyLink inviteLink={contribution.id} />
+            </View>
+
             <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.detailContainer}>
                 <Text style={styles.label}>Name</Text>
@@ -235,7 +297,7 @@ const ContributionDetails = () => {
                     alignSelf: 'flex-start',
                     paddingVertical: 4,
                     paddingHorizontal: 10,
-                    borderRadius: 8,
+                    borderRadius: 4,
                   }}
                 >
                   <Text style={[styles.value, { color: 'white' }]}>
@@ -419,47 +481,6 @@ const ContributionDetails = () => {
                 <Text style={styles.value}>{contribution?.owner}</Text>
               </View>
             </ScrollView>
-            {parsed.some(
-              (participant) => participant.userId === currentUser.userId
-            ) && contribution?.owner !== userProfile?.name ? null : (
-              <Pressable
-                style={styles.fab}
-                onPress={() => {
-                  if (
-                    contribution?.status === 'running' ||
-                    contribution?.status === 'completed'
-                  ) {
-                    // Do nothing or handle if needed
-                  } else if (
-                    parsed?.length === contribution?.num_of_month &&
-                    contribution?.owner === userProfile?.name
-                  ) {
-                    handleStartContribution();
-                  } else if (
-                    parsed?.length !== contribution?.num_of_month &&
-                    contribution?.owner === userProfile?.name
-                  ) {
-                    setVisible(!visible);
-                  } else {
-                    handleJoinContribution();
-                  }
-                }}
-              >
-                <Text style={styles.fabText}>
-                  {contribution?.status === 'completed'
-                    ? 'Completed'
-                    : contribution?.status === 'running'
-                    ? 'Running'
-                    : parsed?.length === contribution?.num_of_month &&
-                      contribution?.owner === userProfile?.name
-                    ? 'Start'
-                    : parsed?.length !== contribution?.num_of_month &&
-                      contribution?.owner === userProfile?.name
-                    ? 'Invite'
-                    : 'Join'}
-                </Text>
-              </Pressable>
-            )}
           </>
         )}
       </View>
@@ -651,16 +672,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   fab: {
-    position: 'absolute',
-    minWidth: 60,
-    minHeight: 60,
-    padding: 4,
-    borderRadius: 30,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.pri,
-    bottom: 10,
-    right: 10,
     ...Platform.select({
       ios: {
         shadowColor: '#000',

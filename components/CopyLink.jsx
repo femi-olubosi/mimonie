@@ -22,14 +22,13 @@ const CopyLink = ({ inviteLink }) => {
   };
 
   return (
-    <View style={{ height: 50 }}>
+    <View style={{ maxHeight: 50 }}>
       <TouchableOpacity
         onPress={handleCopy}
         style={{
           alignSelf: 'flex-end',
           paddingHorizontal: 10,
           paddingVertical: 8,
-          marginBottom: 10,
           borderRadius: 4,
           borderWidth: 1,
           borderColor: '#E5E7EB',
