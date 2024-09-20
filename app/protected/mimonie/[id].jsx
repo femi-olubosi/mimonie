@@ -495,6 +495,7 @@ const ContributionDetails = () => {
 
 const NextContributionDay = ({ contribution, parsed, userProfile }) => {
   const getNextContributionDay = () => {
+    // Check contribution status
     if (contribution?.status === 'open') {
       return 'Not running';
     }
@@ -513,12 +514,14 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     const today = new Date();
     let nextContributionDay;
 
+    // Helper function to parse date string
     const parseDate = (dateString) => {
       if (!dateString) return null;
       const [year, month, day] = dateString.split('-');
       return new Date(year, month - 1, day);
     };
 
+    // Calculate next Wednesday from the current date
     const getNextWednesday = (date) => {
       const dayOfWeek = date.getDay();
       const daysUntilNextWednesday = (3 - dayOfWeek + 7) % 7 || 7;
@@ -527,7 +530,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
       return nextWednesday;
     };
 
-    // Check if the participant is collecting this period
+    // Check if participant is receiving this period
     const isReceivingDay = (participant) => {
       return (
         participant?.status === 'in progress' &&
@@ -549,6 +552,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
       );
     };
 
+    // Find the current participant from the parsed list
     const currentParticipant = parsed?.find(
       (participant) => participant.userId === userProfile.userId
     );
@@ -598,7 +602,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
           });
     }
 
-    // Default case for next contribution when not "in progress"
+    // Default case for next contribution when participant is not "in progress"
     switch (contribution?.variant) {
       case 'days':
         nextContributionDay = new Date(today);
@@ -639,6 +643,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
