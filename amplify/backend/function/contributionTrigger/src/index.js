@@ -64,7 +64,7 @@ const makePaystackRequest = async (endpoint, method, data) => {
   });
 };
 
-const calculateDifference = (startDate, variant) => {
+const calculateDifference = (startDate, variant, contribution_id) => {
   const start = new Date(startDate);
   const now = new Date();
   let difference;
@@ -72,16 +72,29 @@ const calculateDifference = (startDate, variant) => {
   if (variant === 'days') {
     difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
   } else if (variant === 'weeks') {
-    const startDayOfWeek = start.getDay();
-    const daysUntilFirstWednesday = (3 - startDayOfWeek + 7) % 7;
-    const firstWednesday = new Date(start);
-    firstWednesday.setDate(start.getDate() + daysUntilFirstWednesday);
+    // const startDayOfWeek = start.getDay();
+    // const daysUntilFirstWednesday = (3 - startDayOfWeek + 7) % 7;
+    // const firstWednesday = new Date(start);
+    // firstWednesday.setDate(start.getDate() + daysUntilFirstWednesday);
 
-    if (now < firstWednesday) {
+    // if (now < firstWednesday) {
+    //   difference = 0;
+    // } else {
+    //   difference =
+    //     Math.floor((now - firstWednesday) / (1000 * 60 * 60 * 24 * 7)) + 1;
+    // }
+    const startDayOfWeek = start.getDay();
+
+    const targetDayOfWeek = contribution_id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; 
+    const daysUntilFirstTargetDay = (targetDayOfWeek - startDayOfWeek + 7) % 7;
+    const firstTargetDay = new Date(start);
+    firstTargetDay.setDate(start.getDate() + daysUntilFirstTargetDay);
+
+    if (now < firstTargetDay) {
       difference = 0;
     } else {
       difference =
-        Math.floor((now - firstWednesday) / (1000 * 60 * 60 * 24 * 7)) + 1;
+        Math.floor((now - firstTargetDay) / (1000 * 60 * 60 * 24 * 7)) + 1;
     }
   } else if (variant === 'months') {
     const startYear = start.getFullYear();
@@ -224,7 +237,8 @@ const processContributions = async () => {
       // Calculate the difference based on the variant
       const currentCount = calculateDifference(
         contribution.start_date,
-        contribution.variant
+        contribution.variant,
+        contribution.id
       );
 
       // Stop updating current_count if it equals num_of_month - 1

@@ -124,7 +124,8 @@ const Cards = ({ contributions }) => {
                         : getCollectionDate(
                             item.start_date,
                             currentParticipant?.index,
-                            item.variant
+                            item.variant,
+                            item.id
                           )}
                     </Text>
                   </View>
@@ -249,12 +250,12 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
     return new Date(year, month - 1, day);
   };
 
-  const getNextWednesday = (date) => {
+  const getNextDayOfWeek = (date, targetDay) => {
     const dayOfWeek = date.getDay();
-    const daysUntilNextWednesday = (3 - dayOfWeek + 7) % 7 || 7; // 3 corresponds to Wednesday (0 = Sunday)
-    const nextWednesday = new Date(date);
-    nextWednesday.setDate(date.getDate() + daysUntilNextWednesday);
-    return nextWednesday;
+    const daysUntilNextDay = (targetDay - dayOfWeek + 7) % 7 || 7;
+    const nextDay = new Date(date);
+    nextDay.setDate(date.getDate() + daysUntilNextDay);
+    return nextDay;
   };
 
   const getNextContributionDay = () => {
@@ -273,6 +274,10 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
     const today = new Date();
     let nextContributionDay;
 
+    // Determine the target day of the week: Wednesday if specific ID, Monday otherwise
+    const targetDayOfWeek =
+      contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; // 3 for Wednesday, 1 for Monday
+
     // If currentParticipant is 'in progress', calculate the next round day after the current round
     if (currentParticipant?.status === 'in progress') {
       switch (contribution?.variant) {
@@ -282,7 +287,7 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
           break;
 
         case 'weeks':
-          nextContributionDay = getNextWednesday(today);
+          nextContributionDay = getNextDayOfWeek(today, targetDayOfWeek); // Use dynamic day
           break;
 
         case 'months':
@@ -321,7 +326,7 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
         break;
 
       case 'weeks':
-        nextContributionDay = getNextWednesday(today); // Calculate the next Wednesday
+        nextContributionDay = getNextDayOfWeek(today, targetDayOfWeek); // Use dynamic day
         break;
 
       case 'months':
@@ -366,9 +371,13 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   );
 };
 
-const getCollectionDate = (startDate, participantIndex, variant) => {
+
+const getCollectionDate = (startDate, participantIndex, variant, contribution_id) => {
   const start = parseDate(startDate);
   let collectionDate;
+
+  // Determine the target day of the week: Wednesday if specific ID, Monday otherwise
+  const targetDayOfWeek = contribution_id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; // 3 for Wednesday, 1 for Monday
 
   switch (variant) {
     case 'days':
@@ -378,11 +387,11 @@ const getCollectionDate = (startDate, participantIndex, variant) => {
       break;
 
     case 'weeks':
-      // Calculate the next Wednesday after start date
+      // Calculate the next Monday or Wednesday after start date
       collectionDate = new Date(start);
-      const daysUntilNextWednesday = (3 - collectionDate.getDay() + 7) % 7 || 7;
+      const daysUntilNextDay = (targetDayOfWeek - collectionDate.getDay() + 7) % 7 || 7;
       collectionDate.setDate(
-        start.getDate() + daysUntilNextWednesday + (participantIndex - 1) * 7
+        start.getDate() + daysUntilNextDay + (participantIndex - 1) * 7
       );
       break;
 
@@ -404,6 +413,7 @@ const getCollectionDate = (startDate, participantIndex, variant) => {
       })
     : collectionDate;
 };
+
 
 const styles = StyleSheet.create({
   container: {

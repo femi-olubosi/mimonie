@@ -28,7 +28,7 @@
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/contributionTrigger-7831664b36682b7a594c-build.zip",
+          "s3Key": "amplify-builds/contributionTrigger-683743307a426b437244-build.zip",
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         },
         "contributionNotifications": {

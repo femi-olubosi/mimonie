@@ -225,11 +225,11 @@ const ContributionDetails = () => {
                 marginBottom: 10,
               }}
             >
-              {(parsed.some(
+              {(parsed?.some(
                 (participant) => participant.userId === currentUser.userId
               ) &&
                 contribution?.owner !== userProfile?.name) ||
-              ['completed', 'running'].includes(contribution.status) ? null : (
+              ['completed', 'running']?.includes(contribution?.status) ? null : (
                 <Pressable
                   style={styles.fab}
                   onPress={() => {
