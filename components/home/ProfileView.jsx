@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { Colors } from '@/constants/Colors';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const ProfileView = ({ name, picture, notifications, priText }) => {
@@ -68,29 +68,34 @@ const ProfileView = ({ name, picture, notifications, priText }) => {
         </Text>
       </View>
       {/* <Ionicons name="notifications-outline" size={24} color="black" /> */}
-      <TouchableOpacity
-        onPress={() => router.push('/protected/notifications')}
-        style={{ position: 'relative' }}
+      <View
+        style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center' }}
       >
-        <Ionicons name="notifications-outline" size={24} color={priText} />
-        <View
-          style={{
-            borderRadius: 100,
-            width: 15,
-            height: 15,
-            backgroundColor: 'red',
-            position: 'absolute',
-            top: -5,
-            right: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
+        <Feather name="help-circle" size={24} color="black" />
+        <TouchableOpacity
+          onPress={() => router.push('/protected/notifications')}
+          style={{ position: 'relative' }}
         >
-          <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
-            {notifications?.filter((e) => !e.read).length || 0}
-          </Text>
-        </View>
-      </TouchableOpacity>
+          <Ionicons name="notifications-outline" size={24} color={priText} />
+          <View
+            style={{
+              borderRadius: 100,
+              width: 15,
+              height: 15,
+              backgroundColor: 'red',
+              position: 'absolute',
+              top: -5,
+              right: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
+              {notifications?.filter((e) => !e.read).length || 0}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
