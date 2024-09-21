@@ -30,7 +30,7 @@ const StoreProvider = ({ children }) => {
   // DataStore.start();
 
   const toggleMode = () => {
-    setIsDarkMode((prevMode) => !prevMode);
+    setDarkMode((prevMode) => !prevMode);
   };
 
   useEffect(() => {
