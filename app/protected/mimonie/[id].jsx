@@ -121,7 +121,7 @@ const ContributionDetails = () => {
         userProfile,
         setContributions
       );
-      setInviteArray((prev) => prev.filer((e) => e.id !== contribution.id));
+      setInviteArray((prev) => prev.filter((e) => e.id !== contribution.id));
       await updateInvite(userProfile.userId, contribution.id);
       setIsLoading(false);
       Alert.alert(
@@ -495,7 +495,6 @@ const ContributionDetails = () => {
 
 const NextContributionDay = ({ contribution, parsed, userProfile }) => {
   const getNextContributionDay = () => {
-    // Check contribution status
     if (contribution?.status === 'open') {
       return 'Not running';
     }
@@ -514,23 +513,27 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     const today = new Date();
     let nextContributionDay;
 
-    // Helper function to parse date string
     const parseDate = (dateString) => {
       if (!dateString) return null;
       const [year, month, day] = dateString.split('-');
       return new Date(year, month - 1, day);
     };
 
-    // Calculate next Wednesday from the current date
-    const getNextWednesday = (date) => {
+    // Dynamic function to get the next target day of the week
+    const getNextTargetDay = (date, targetDay) => {
       const dayOfWeek = date.getDay();
-      const daysUntilNextWednesday = (3 - dayOfWeek + 7) % 7 || 7;
-      const nextWednesday = new Date(date);
-      nextWednesday.setDate(date.getDate() + daysUntilNextWednesday);
-      return nextWednesday;
+      const daysUntilNextDay = (targetDay - dayOfWeek + 7) % 7 || 7;
+      const nextTargetDay = new Date(date);
+      nextTargetDay.setDate(date.getDate() + daysUntilNextDay);
+      return nextTargetDay;
     };
 
-    // Check if participant is receiving this period
+    // Dynamic target day based on contribution_id
+    const getTargetDayOfWeek = () => {
+      return contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; // 3 = Wednesday, 1 = Monday
+    };
+
+    // Check if the participant is collecting this period
     const isReceivingDay = (participant) => {
       return (
         participant?.status === 'in progress' &&
@@ -552,7 +555,6 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
       );
     };
 
-    // Find the current participant from the parsed list
     const currentParticipant = parsed?.find(
       (participant) => participant.userId === userProfile.userId
     );
@@ -569,8 +571,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
           break;
 
         case 'weeks':
-          const startDay = parseDate(contribution?.start_date);
-          nextContributionDay = getNextWednesday(today);
+          nextContributionDay = getNextTargetDay(today, getTargetDayOfWeek()); // Use dynamic day
           if (isReceivingWeek(currentParticipant)) {
             nextContributionDay.setDate(nextContributionDay.getDate() + 7); // Skip receiving week
           }
@@ -602,7 +603,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
           });
     }
 
-    // Default case for next contribution when participant is not "in progress"
+    // Default case for next contribution when not "in progress"
     switch (contribution?.variant) {
       case 'days':
         nextContributionDay = new Date(today);
@@ -610,7 +611,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
         break;
 
       case 'weeks':
-        nextContributionDay = getNextWednesday(today);
+        nextContributionDay = getNextTargetDay(today, getTargetDayOfWeek()); // Use dynamic day
         break;
 
       case 'months':
@@ -643,7 +644,6 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {

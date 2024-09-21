@@ -244,11 +244,11 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
     contribution?.current_count !== currentParticipant?.index &&
     currentParticipant?.last_successful_round < contribution?.current_count;
 
-  const parseDate = (dateString) => {
-    if (!dateString) return null;
-    const [year, month, day] = dateString.split('-');
-    return new Date(year, month - 1, day);
-  };
+  // const parseDate = (dateString) => {
+  //   if (!dateString) return null;
+  //   const [year, month, day] = dateString.split('-');
+  //   return new Date(year, month - 1, day);
+  // };
 
   const getNextDayOfWeek = (date, targetDay) => {
     const dayOfWeek = date.getDay();
