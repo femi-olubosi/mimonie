@@ -273,7 +273,7 @@ export default function HomeScreen() {
           priText={priText}
         />
         <ScrollView contentContainerStyle={{}}>
-          <Cards contributions={contributions} userProfile={userProfile} />
+          <Cards contributions={contributions}/>
           <Options userProfile={userProfile} priText={priText} />
           <Advert />
           <View
