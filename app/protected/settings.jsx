@@ -90,11 +90,12 @@ const Settings = () => {
     setHideValues,
     setIsLoading,
     setDarkMode,
-    darkMode
+    darkMode,
+    updateAvailable,
+    setUpdateAvailable,
   } = useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pCEnable, setPCEnable] = useState(false);
 
@@ -142,7 +143,7 @@ const Settings = () => {
     } catch (error) {
       console.error('Error fetching update: ', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -234,11 +235,7 @@ const Settings = () => {
         {/* Dark Mode Toggle */}
         <View style={styles.setting}>
           <Text style={styles.settingText}>Dark Mode</Text>
-          <Switch
-            onValueChange={toggleDarkMode}
-            value={darkMode}
-            disabled
-          />
+          <Switch onValueChange={toggleDarkMode} value={darkMode} disabled />
         </View>
 
         {/* Hide Contribution Values */}

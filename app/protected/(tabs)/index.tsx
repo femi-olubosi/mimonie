@@ -5,6 +5,8 @@ import {
   View,
   Text,
   Pressable,
+  Modal,
+  StyleSheet,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -55,7 +57,8 @@ import render from '@/components/Render';
 import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
 import { safeParseJSON } from '@/utils/safeJSON';
-import { ThemeColors } from '@/constants/Colors';
+import { Colors, ThemeColors } from '@/constants/Colors';
+import * as Updates from 'expo-updates';
 
 export default function HomeScreen() {
   const {
@@ -76,6 +79,8 @@ export default function HomeScreen() {
     setInviteArray,
     hideValues,
     setParsed,
+    updateAvailable,
+    setUpdateAvailable,
   } = useGlobalContext();
 
   const { priBg, secBg, priText } = ThemeColors();
@@ -207,6 +212,36 @@ export default function HomeScreen() {
       setParsed(parsedData);
     }
   }, [userProfile]);
+
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          setUpdateAvailable(true);
+        }
+      } catch (error) {
+        console.error('Error checking for updates: ', error);
+      }
+    };
+
+    checkForUpdates();
+  }, []);
+
+  const triggerAppUpdate = async () => {
+    try {
+      setUpdateAvailable(false)
+      setIsLoading(true);
+      const update = await Updates.fetchUpdateAsync();
+      if (update.isNew) {
+        await Updates.reloadAsync();
+      }
+    } catch (error) {
+      console.error('Error fetching update: ', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // useEffect(() => {
   //   const fetchProfile = async () => {
@@ -382,7 +417,97 @@ export default function HomeScreen() {
             </View>
           </View>
         </ScrollView>
+        {updateAvailable && (
+          <View style={styles.centeredView}>
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={updateAvailable}
+              onRequestClose={() => {
+                setUpdateAvailable(false);
+              }}
+            >
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <Text style={styles.modalText}>Update Available!</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      columnGap: 40,
+                      marginTop: 40,
+                    }}
+                  >
+                    <Pressable
+                      style={[styles.button, styles.buttonClose]}
+                      onPress={() => setUpdateAvailable(!updateAvailable)}
+                    >
+                      <Text style={styles.textStyle}>Not now</Text>
+                    </Pressable>
+                    <Pressable
+                      style={[styles.button, styles.buttonUpdate]}
+                      onPress={triggerAppUpdate}
+                    >
+                      <Text style={styles.textStyle}>Update</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          </View>
+        )}
       </ThemedView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  button: {
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    elevation: 2,
+  },
+  buttonOpen: {
+    backgroundColor: '#F194FF',
+  },
+  buttonClose: {
+    backgroundColor: 'red',
+  },
+
+  buttonUpdate: {
+    backgroundColor: Colors.pri,
+  },
+
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+    fontFamily: 'isb',
+    fontSize: 16,
+  },
+});

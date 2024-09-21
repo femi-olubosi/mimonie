@@ -25,6 +25,7 @@ const StoreProvider = ({ children }) => {
   const [inviteArray, setInviteArray] = useState([]);
   const [parsed, setParsed] = useState([]);
   const [hideValues, setHideValues] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(true);
 
   // DataStore.start();
 
@@ -74,6 +75,8 @@ const StoreProvider = ({ children }) => {
     setParsed,
     hideValues,
     setHideValues,
+    updateAvailable,
+    setUpdateAvailable,
   };
 
   return (
