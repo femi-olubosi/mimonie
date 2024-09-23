@@ -10,6 +10,7 @@ import {
   Platform,
   Pressable,
   TouchableOpacity,
+  RefreshControl,
 } from 'react-native';
 import {
   useRouter,
@@ -61,6 +62,7 @@ const ContributionDetails = () => {
   const [contribution, setContribution] = useState({});
   const [parsed, setParsed] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
   const [imageUrls, setImageUrls] = useState({});
 
@@ -229,7 +231,9 @@ const ContributionDetails = () => {
                 (participant) => participant.userId === currentUser.userId
               ) &&
                 contribution?.owner !== userProfile?.name) ||
-              ['completed', 'running']?.includes(contribution?.status) ? null : (
+              ['completed', 'running']?.includes(
+                contribution?.status
+              ) ? null : (
                 <Pressable
                   style={styles.fab}
                   onPress={() => {
@@ -274,7 +278,21 @@ const ContributionDetails = () => {
               <CopyLink inviteLink={contribution.id} />
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={async () => {
+                    setRefreshing(true);
+                    await findContributionByID(id, setContribution);
+                    setRefreshing(false);
+                  }}
+                  tintColor={Colors.pri}
+                  colors={[Colors.pri]}
+                />
+              }
+            >
               <View style={styles.detailContainer}>
                 <Text style={styles.label}>Name</Text>
                 <Text style={styles.value}>{contribution?.name}</Text>
@@ -530,7 +548,9 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
 
     // Dynamic target day based on contribution_id
     const getTargetDayOfWeek = () => {
-      return contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; // 3 = Wednesday, 1 = Monday
+      return contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac'
+        ? 3
+        : 1; // 3 = Wednesday, 1 = Monday
     };
 
     // Check if the participant is collecting this period

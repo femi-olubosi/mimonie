@@ -67,7 +67,6 @@ const ProfileView = ({ name, picture, notifications, priText }) => {
           Hi, {name?.split(' ')[0]}
         </Text>
       </View>
-      {/* <Ionicons name="notifications-outline" size={24} color="black" /> */}
       <View
         style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center' }}
       >
