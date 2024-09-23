@@ -69,9 +69,11 @@ const LoginForm = (props) => {
           return;
         }
       }
+      // await DataStore.start()
       const user = await fetchCurrUser(setCurrentUser);
+      console.log('user', user);
       const profile = await fetchUserProfile(setUserProfile, user);
-
+console.log('profile', profile);
       await fetchUserNotification(user.userId, setNotifications);
 
       // if (!profile?.phone_verified) {
@@ -98,14 +100,14 @@ const LoginForm = (props) => {
 
       if (
         !['+2348139781144', '+2348139781147', '+2348139781148'].includes(
-          profile.phone_number
+          profile?.phone_number
         ) &&
         profile?.device_id &&
         profile?.device_id !== Device.osInternalBuildId
       ) {
         Alert.alert(
           'Device Mismatch',
-          `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
+          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
           [
             {
               text: 'Cancel',
