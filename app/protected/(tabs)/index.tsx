@@ -7,6 +7,7 @@ import {
   Pressable,
   Modal,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -84,6 +85,17 @@ export default function HomeScreen() {
   } = useGlobalContext();
 
   const { priBg, secBg, priText } = ThemeColors();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchCurrUser(setCurrentUser);
+    await fetchUserProfile(setUserProfile, currentUser);
+    await fetchUserContributions(currentUser?.userId, setContributions);
+    await fetchUserNotification(currentUser?.userId, setNotifications);
+    await fetchUserActivities(userProfile?.userId, setUserActivities);
+    setRefreshing(false);
+  };
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -230,7 +242,7 @@ export default function HomeScreen() {
 
   const triggerAppUpdate = async () => {
     try {
-      setUpdateAvailable(false)
+      setUpdateAvailable(false);
       setIsLoading(true);
       const update = await Updates.fetchUpdateAsync();
       if (update.isNew) {
@@ -272,8 +284,13 @@ export default function HomeScreen() {
           notifications={notifications}
           priText={priText}
         />
-        <ScrollView contentContainerStyle={{}}>
-          <Cards contributions={contributions}/>
+        <ScrollView
+          contentContainerStyle={{}}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          <Cards contributions={contributions} />
           <Options userProfile={userProfile} priText={priText} />
           <Advert />
           <View
