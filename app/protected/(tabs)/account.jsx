@@ -50,6 +50,7 @@ import {
   verifyBVN,
 } from '../../../api/payment.service';
 import { ThemeColors } from '../../../constants/Colors';
+import { DataStore } from 'aws-amplify/datastore';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -68,6 +69,7 @@ const Account = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const { priBg, priText, secBg } = ThemeColors();
+
   const handleInviteFriends = () => {
     router.push('/protected/contact');
   };
@@ -145,19 +147,19 @@ const Account = () => {
     }, [userProfile?.is_nin_verified])
   );
 
-  const trigIt = async () => {
-    const res = await verifyBVN(
-      { bvn: '22297888716', accountNumber: '0119786212', bank_code: '058' },
-      {
-        name: 'Sylvester Isiwu',
-        customer_code: 'CUS_ujfcucaz3jom13l',
-      }
-    );
+  // const trigIt = async () => {
+  //   const res = await verifyBVN(
+  //     { bvn: '22297888716', accountNumber: '0119786212', bank_code: '058' },
+  //     {
+  //       name: 'Sylvester Isiwu',
+  //       customer_code: 'CUS_ujfcucaz3jom13l',
+  //     }
+  //   );
 
-    // const res = await getPaystackCustomer('CUS_ujfcucaz3jom13l');
+  //   // const res = await getPaystackCustomer('CUS_ujfcucaz3jom13l');
 
-    console.log(res);
-  };
+  //   console.log(res);
+  // };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -229,7 +231,6 @@ const Account = () => {
                 fontFamily: 'ir',
                 marginTop: 10,
               }}
-              onPress={trigIt}
             >
               {userProfile?.phone_number}
             </Text>
@@ -463,7 +464,6 @@ const Account = () => {
                 title={'Confirm Log Out'}
                 color={'red'}
                 onPress={() => {
-                  // setLogoutModal(false);
                   signOut();
                 }}
                 outline={false}

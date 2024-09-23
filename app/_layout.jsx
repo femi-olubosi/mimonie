@@ -6,7 +6,7 @@ import { Amplify } from 'aws-amplify';
 import amplifyconfig from '../src/amplifyconfiguration.json';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
-import { fetchAuthSession } from 'aws-amplify/auth';
+import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import '@azure/core-asynciterator-polyfill';
 Amplify.configure(amplifyconfig);
 
@@ -27,12 +27,38 @@ function RootLayout() {
 
   const [isSignedIn, setIsSignedIn] = useState(null);
 
+  // useEffect(() => {
+  //   const checkAuthStatus = async () => {
+  //     try {
+  //       const session = await fetchAuthSession();
+  //       setIsSignedIn(!!session.tokens.accessToken);
+  //     } catch (error) {
+  //       setIsSignedIn(false);
+  //     } finally {
+  //       setIsSplashVisible(false);
+  //     }
+  //   };
+
+  //   checkAuthStatus();
+  // }, []);
+
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const session = await fetchAuthSession();
+        // Fetch the session but do not force a refresh
+        const session = await fetchAuthSession({ forceRefresh: false });
+        console.log('session', session)
+        const tokenExpiry = session?.tokens?.accessToken?.payload?.exp;
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        // Check if the token has expired
+        if (!tokenExpiry || currentTime > tokenExpiry) {
+          throw new Error('Token has expired');
+        }
+
         setIsSignedIn(!!session.tokens.accessToken);
       } catch (error) {
+        await signOut();
         setIsSignedIn(false);
       } finally {
         setIsSplashVisible(false);
@@ -42,18 +68,6 @@ function RootLayout() {
     checkAuthStatus();
   }, []);
 
-  useEffect(() => {}, []);
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setIsSplashVisible(false);
-  //   }, 3000);
-
-  //   return () => clearTimeout(timer);
-  // }, []);
-
-  // if (isSplashVisible) {
-  //   return <SplashScreen />;
-  // }
 
   return (
     <>
