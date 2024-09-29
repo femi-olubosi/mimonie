@@ -132,23 +132,19 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserNotification(currentUser?.userId, setNotifications);
-    const subscription = DataStore.observe(UserNotifications).subscribe(() =>
-      fetchUserNotification(currentUser?.userId, setNotifications)
-    );
-    return () => subscription.unsubscribe();
+    // const subscription = DataStore.observe(UserNotifications).subscribe(() =>
+    //   fetchUserNotification(currentUser?.userId, setNotifications)
+    // );
+    // return () => subscription.unsubscribe();
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchActivities = async () => {
-      await fetchUserActivities(userProfile?.userId, setUserActivities);
-    };
-    fetchActivities();
-
-    const subscription = DataStore.observe(UserActivity).subscribe(() =>
-      fetchActivities()
-    );
-    return () => subscription.unsubscribe();
-  }, [userProfile]);
+    fetchUserActivities(userProfile?.userId, setUserActivities)
+    // const subscription = DataStore.observe(UserActivity).subscribe(() =>
+    //   fetchUserActivities(userProfile?.userId, setUserActivities)
+    // );
+    // return () => subscription.unsubscribe();
+  }, [currentUser]);
 
   useEffect(() => {
     const checkExpiry = async () => {
