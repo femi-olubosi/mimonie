@@ -216,27 +216,27 @@ export default function HomeScreen() {
     fetchContributions();
   }, [userProfile?.invites]);
 
-  // useEffect(() => {
-  //   if (userProfile) {
-  //     const parsedData = safeParseJSON(userProfile?.connections, []);
-  //     setParsed(parsedData);
-  //   }
-  // }, [userProfile]);
+  useEffect(() => {
+    if (userProfile) {
+      const parsedData = safeParseJSON(userProfile?.connections, []);
+      setParsed(parsedData);
+    }
+  }, [userProfile]);
 
-  // useEffect(() => {
-  //   const checkForUpdates = async () => {
-  //     try {
-  //       const update = await Updates.checkForUpdateAsync();
-  //       if (update.isAvailable) {
-  //         setUpdateAvailable(true);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error checking for updates: ', error);
-  //     }
-  //   };
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          setUpdateAvailable(true);
+        }
+      } catch (error) {
+        console.error('Error checking for updates: ', error);
+      }
+    };
 
-  //   checkForUpdates();
-  // }, []);
+    checkForUpdates();
+  }, []);
 
   const triggerAppUpdate = async () => {
     try {
