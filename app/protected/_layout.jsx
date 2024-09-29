@@ -159,6 +159,10 @@ const ProtectedContent = () => {
               name="mimonie/[id]"
               options={{ headerShown: false }}
             />
+              <Stack.Screen
+              name="help/[slug]"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="create_contribution"
               options={{ headerShown: false }}
