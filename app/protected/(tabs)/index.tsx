@@ -214,27 +214,27 @@ export default function HomeScreen() {
     fetchContributions();
   }, [userProfile?.invites]);
 
-  useEffect(() => {
-    if (userProfile) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsed(parsedData);
-    }
-  }, [userProfile]);
+  // useEffect(() => {
+  //   if (userProfile) {
+  //     const parsedData = safeParseJSON(userProfile?.connections, []);
+  //     setParsed(parsedData);
+  //   }
+  // }, [userProfile]);
 
-  useEffect(() => {
-    const checkForUpdates = async () => {
-      try {
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          setUpdateAvailable(true);
-        }
-      } catch (error) {
-        console.error('Error checking for updates: ', error);
-      }
-    };
+  // useEffect(() => {
+  //   const checkForUpdates = async () => {
+  //     try {
+  //       const update = await Updates.checkForUpdateAsync();
+  //       if (update.isAvailable) {
+  //         setUpdateAvailable(true);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error checking for updates: ', error);
+  //     }
+  //   };
 
-    checkForUpdates();
-  }, []);
+  //   checkForUpdates();
+  // }, []);
 
   const triggerAppUpdate = async () => {
     try {
@@ -443,7 +443,7 @@ export default function HomeScreen() {
             >
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
-                  <Text style={styles.modalText}>Update Available!</Text>
+                  <Text style={styles.modalText}>Update Is Available!</Text>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -451,12 +451,6 @@ export default function HomeScreen() {
                       marginTop: 40,
                     }}
                   >
-                    <Pressable
-                      style={[styles.button, styles.buttonClose]}
-                      onPress={() => setUpdateAvailable(!updateAvailable)}
-                    >
-                      <Text style={styles.textStyle}>Not now</Text>
-                    </Pressable>
                     <Pressable
                       style={[styles.button, styles.buttonUpdate]}
                       onPress={triggerAppUpdate}
@@ -477,16 +471,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
-    margin: 20,
+    width: '100%',
+    height: 300,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -498,9 +493,11 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
     elevation: 2,
+    width: '90%',
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   buttonOpen: {
     backgroundColor: '#F194FF',
@@ -522,6 +519,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontFamily: 'isb',
-    fontSize: 16,
+    fontSize: 26,
   },
 });

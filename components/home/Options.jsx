@@ -82,7 +82,7 @@ const Options = ({ userProfile, priText }) => {
         onPress={() => router.push('/protected/faq')}
       >
         <AntDesign name="question" size={25} color={priText} />
-        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>Help/FAQ</Text>
+        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>FAQ</Text>
       </Pressable>
     </View>
   );
