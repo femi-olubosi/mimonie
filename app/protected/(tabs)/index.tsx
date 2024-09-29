@@ -253,7 +253,6 @@ export default function HomeScreen() {
     }
   };
 
-  console.log('object');
   // useEffect(() => {
   //   const fetchProfile = async () => {
   //     const profile = await fetchUserProfile(setUserProfile, currentUser);
