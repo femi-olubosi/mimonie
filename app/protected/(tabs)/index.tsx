@@ -8,6 +8,7 @@ import {
   Modal,
   StyleSheet,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -86,6 +87,7 @@ export default function HomeScreen() {
 
   const { priBg, secBg, priText } = ThemeColors();
   const [refreshing, setRefreshing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -139,7 +141,7 @@ export default function HomeScreen() {
   }, [currentUser]);
 
   useEffect(() => {
-    fetchUserActivities(userProfile?.userId, setUserActivities)
+    fetchUserActivities(userProfile?.userId, setUserActivities);
     // const subscription = DataStore.observe(UserActivity).subscribe(() =>
     //   fetchUserActivities(userProfile?.userId, setUserActivities)
     // );
@@ -214,27 +216,27 @@ export default function HomeScreen() {
     fetchContributions();
   }, [userProfile?.invites]);
 
-  useEffect(() => {
-    if (userProfile) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsed(parsedData);
-    }
-  }, [userProfile]);
+  // useEffect(() => {
+  //   if (userProfile) {
+  //     const parsedData = safeParseJSON(userProfile?.connections, []);
+  //     setParsed(parsedData);
+  //   }
+  // }, [userProfile]);
 
-  useEffect(() => {
-    const checkForUpdates = async () => {
-      try {
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          setUpdateAvailable(true);
-        }
-      } catch (error) {
-        console.error('Error checking for updates: ', error);
-      }
-    };
+  // useEffect(() => {
+  //   const checkForUpdates = async () => {
+  //     try {
+  //       const update = await Updates.checkForUpdateAsync();
+  //       if (update.isAvailable) {
+  //         setUpdateAvailable(true);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error checking for updates: ', error);
+  //     }
+  //   };
 
-    checkForUpdates();
-  }, []);
+  //   checkForUpdates();
+  // }, []);
 
   const triggerAppUpdate = async () => {
     try {
@@ -251,7 +253,6 @@ export default function HomeScreen() {
     }
   };
 
-  console.log('object')
   // useEffect(() => {
   //   const fetchProfile = async () => {
   //     const profile = await fetchUserProfile(setUserProfile, currentUser);
@@ -280,6 +281,7 @@ export default function HomeScreen() {
           picture={profilePicture || currentUser.picture}
           notifications={notifications}
           priText={priText}
+          setShowHelp={setShowHelp}
         />
         <ScrollView
           contentContainerStyle={{}}
@@ -431,44 +433,83 @@ export default function HomeScreen() {
             </View>
           </View>
         </ScrollView>
-        {updateAvailable && (
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={updateAvailable}
+          onRequestClose={() => {
+            setUpdateAvailable(false);
+          }}
+        >
           <View style={styles.centeredView}>
-            <Modal
-              animationType="slide"
-              transparent={true}
-              visible={updateAvailable}
-              onRequestClose={() => {
-                setUpdateAvailable(false);
-              }}
-            >
-              <View style={styles.centeredView}>
-                <View style={styles.modalView}>
-                  <Text style={styles.modalText}>Update Available!</Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      columnGap: 40,
-                      marginTop: 40,
-                    }}
-                  >
-                    <Pressable
-                      style={[styles.button, styles.buttonClose]}
-                      onPress={() => setUpdateAvailable(!updateAvailable)}
-                    >
-                      <Text style={styles.textStyle}>Not now</Text>
-                    </Pressable>
-                    <Pressable
-                      style={[styles.button, styles.buttonUpdate]}
-                      onPress={triggerAppUpdate}
-                    >
-                      <Text style={styles.textStyle}>Update</Text>
-                    </Pressable>
-                  </View>
-                </View>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText}>Update Is Available!</Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  columnGap: 40,
+                  marginTop: 40,
+                }}
+              >
+                <Pressable
+                  style={[styles.button, styles.buttonUpdate]}
+                  onPress={triggerAppUpdate}
+                >
+                  <Text style={styles.textStyle}>Update</Text>
+                </Pressable>
               </View>
-            </Modal>
+            </View>
           </View>
-        )}
+        </Modal>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={showHelp}
+          onRequestClose={() => {
+            setShowHelp(false);
+          }}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalView1}>
+              <Text style={styles.modalTitle}>Need Help?</Text>
+
+              {[
+                {
+                  label: 'Account Setup',
+                  route: `/protected/help/Account Help`,
+                },
+                {
+                  label: 'Managing Contributions',
+                  route: '/protected/help/Contributions Help',
+                },
+                {
+                  label: 'Verifications',
+                  route: '/protected/help/Verification Help',
+                },
+                {
+                  label: 'Troubleshooting',
+                  route: '/protected/help/Troubleshooting Help',
+                },
+              ].map((item, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.helpButton}
+                  onPress={() => {
+                    setShowHelp(false);
+                    router.push(item.route);
+                  }}
+                >
+                  <Text style={styles.modalText1}>{item.label}</Text>
+                </TouchableOpacity>
+              ))}
+
+              <TouchableOpacity onPress={() => setShowHelp(false)}>
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </ThemedView>
     </SafeAreaView>
   );
@@ -477,16 +518,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalView: {
-    margin: 20,
+    width: '100%',
+    height: 300,
     backgroundColor: 'white',
     borderRadius: 20,
-    padding: 35,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -498,9 +540,11 @@ const styles = StyleSheet.create({
   },
   button: {
     borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 24,
     elevation: 2,
+    width: '90%',
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   buttonOpen: {
     backgroundColor: '#F194FF',
@@ -522,6 +566,43 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: 'center',
     fontFamily: 'isb',
+    fontSize: 26,
+  },
+  modalText1: {
+    color: 'white',
     fontSize: 16,
+  },
+  closeText: {
+    fontSize: 16,
+    color: 'gray',
+    marginTop: 20,
+  },
+  helpButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.pri,
+    borderRadius: 8,
+    marginBottom: 15,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalView1: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
 });

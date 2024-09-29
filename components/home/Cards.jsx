@@ -36,6 +36,7 @@ const Cards = ({ contributions }) => {
             justifyContent: 'center',
             alignItems: 'center',
             rowGap: 20,
+            zIndex: 1
           }}
         >
           <Text style={{ textAlign: 'center', fontSize: 18, fontFamily: 'er' }}>
@@ -243,12 +244,6 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   const updateMe =
     contribution?.current_count !== currentParticipant?.index &&
     currentParticipant?.last_successful_round < contribution?.current_count;
-
-  // const parseDate = (dateString) => {
-  //   if (!dateString) return null;
-  //   const [year, month, day] = dateString.split('-');
-  //   return new Date(year, month - 1, day);
-  // };
 
   const getNextDayOfWeek = (date, targetDay) => {
     const dayOfWeek = date.getDay();

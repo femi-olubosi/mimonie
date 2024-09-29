@@ -147,20 +147,6 @@ const Account = () => {
     }, [userProfile?.is_nin_verified])
   );
 
-  // const trigIt = async () => {
-  //   const res = await verifyBVN(
-  //     { bvn: '22297888716', accountNumber: '0119786212', bank_code: '058' },
-  //     {
-  //       name: 'Sylvester Isiwu',
-  //       customer_code: 'CUS_ujfcucaz3jom13l',
-  //     }
-  //   );
-
-  //   // const res = await getPaystackCustomer('CUS_ujfcucaz3jom13l');
-
-  //   console.log(res);
-  // };
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
