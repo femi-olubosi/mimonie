@@ -8,7 +8,10 @@ import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
 import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import '@azure/core-asynciterator-polyfill';
+import Onboarding from './builder/Onboarding'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 Amplify.configure(amplifyconfig);
+
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -24,42 +27,20 @@ function RootLayout() {
   });
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-
-  const [isSignedIn, setIsSignedIn] = useState(null);
-
-  // useEffect(() => {
-  //   const checkAuthStatus = async () => {
-  //     try {
-  //       const session = await fetchAuthSession();
-  //       setIsSignedIn(!!session.tokens.accessToken);
-  //     } catch (error) {
-  //       setIsSignedIn(false);
-  //     } finally {
-  //       setIsSplashVisible(false);
-  //     }
-  //   };
-
-  //   checkAuthStatus();
-  // }, []);
+const [onboard, setOnboard] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Fetch the session but do not force a refresh
         const session = await fetchAuthSession({ forceRefresh: false });
-        console.log('session', session)
         const tokenExpiry = session?.tokens?.accessToken?.payload?.exp;
         const currentTime = Math.floor(Date.now() / 1000);
 
-        // Check if the token has expired
         if (!tokenExpiry || currentTime > tokenExpiry) {
           throw new Error('Token has expired');
         }
-
-        setIsSignedIn(!!session.tokens.accessToken);
       } catch (error) {
         await signOut();
-        setIsSignedIn(false);
       } finally {
         setIsSplashVisible(false);
       }
@@ -68,16 +49,26 @@ function RootLayout() {
     checkAuthStatus();
   }, []);
 
+  useEffect(() => {
+    const checkFirstTimeUser = async () => {
+      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
+      if (isFirstLaunch === null) {
+        setOnboard(true);
+        await AsyncStorage.setItem('hasLaunched', 'true');
+      }
+    };
+    checkFirstTimeUser();
+  }, [])
 
   return (
     <>
       {isSplashVisible ? (
         <SplashScreen />
+      ) : onboard ? (
+        <Onboarding setOnboard={setOnboard} />
       ) : (
         <StoreProvider>
-          {/* <SafeAreaProvider> */}
           <RootContent />
-          {/* </SafeAreaProvider> */}
         </StoreProvider>
       )}
     </>
