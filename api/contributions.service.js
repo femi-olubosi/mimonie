@@ -1,5 +1,8 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
+import { createNotification } from './notifications.service';
+import { triggerNotificationForUser } from './pushNotification.service';
+import { createUserActivity } from './activities.service';
 
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
@@ -212,7 +215,7 @@ export const fetchAllUserContributions = async () => {
   try {
     await DataStore.start();
 
-    const userContributions = await DataStore.query(Contribution)
+    const userContributions = await DataStore.query(Contribution);
 
     const sorted = userContributions.sort((a, b) =>
       a.createdAt > b.createdAt ? -1 : 1
@@ -221,5 +224,105 @@ export const fetchAllUserContributions = async () => {
     return sorted;
   } catch (error) {
     console.error('Error fetching user contributions:', error);
+  }
+};
+
+export const updateContributionForUser = async (contribution, userProfile) => {
+  const originalContribution = await DataStore.query(
+    Contribution,
+    contribution.id
+  );
+
+  if (!originalContribution) {
+    throw new Error('Contribution not found');
+  }
+
+  const participants = JSON.parse(originalContribution.participant);
+
+  const inProgressParticipant = participants.find(
+    (participant) => participant.status === 'in progress'
+  );
+  const updatedParticipants = participants.map((participant) =>
+    participant.userId === userProfile.userId
+      ? {
+          ...participant,
+          contributions: (participant.contributions || 0) + 1,
+          last_successful_round: originalContribution.current_count,
+        }
+      : participant
+  );
+
+  await triggerNotificationForUser(
+    userProfile?.push_token,
+    'Payment Successfull',
+    `You successfully paid ${inProgressParticipant.name} for ${contribution.name}`
+  );
+
+  await createUserActivity(userProfile.userId, {
+    type: 'contribution',
+    amount: contribution.amount,
+    description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
+  });
+
+  await triggerNotificationForUser(
+    inProgressParticipant?.push_token,
+    'Payment Received',
+    `You received payment from ${userProfile.name} for ${contribution.name}`
+  );
+
+  await createUserActivity(inProgressParticipant.userId, {
+    type: 'collection',
+    amount: contribution.amount,
+    description: `Received payment from ${userProfile.name} for ${contribution.name}`,
+  });
+
+  await DataStore.save(
+    Contribution.copyOf(originalContribution, (updated) => {
+      updated.participant = updatedParticipants;
+    })
+  );
+
+  const allPaid = updatedParticipants.every(
+    (participant) =>
+      participant.userId === inProgressParticipant.userId ||
+      participant.last_successful_round === originalContribution.current_count
+  );
+
+  if (allPaid) {
+    await createUserActivity(inProgressParticipant.userId, {
+      type: 'collection',
+      amount: contribution.amount * (participants.length),
+      description: `Final collection for ${contribution.name}`,
+    });
+
+    updatedParticipants.forEach((participant) => {
+      if (participant.userId === inProgressParticipant.userId) {
+        participant.status = 'received';
+        participant.contributions = (participant.contributions || 0) + 1;
+        participant.last_successful_round = originalContribution.current_count;
+      }
+    });
+
+    const nextParticipantIndex = updatedParticipants.findIndex(
+      (p) => p.status === 'pending'
+    );
+
+    if (nextParticipantIndex !== -1) {
+      updatedParticipants[nextParticipantIndex].status = 'in progress';
+    }
+
+    const allReceived = updatedParticipants.every(
+      (participant) => participant.status === 'received'
+    );
+
+    await DataStore.save(
+      Contribution.copyOf(originalContribution, (updated) => {
+        updated.participant = updatedParticipants;
+        updated.currently_at = originalContribution.current_count;
+        if (allReceived) {
+          updated.status = 'completed';
+        }
+      })
+    );
   }
 };

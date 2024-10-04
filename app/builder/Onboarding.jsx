@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 
-const Onboarding = ({setOnboard}) => {
+const Onboarding = ({ setOnboard }) => {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef(null);
@@ -50,13 +50,13 @@ const Onboarding = ({setOnboard}) => {
   };
 
   const handleSignIn = () => {
-    setOnboard(false)
+    setOnboard(false);
   };
 
   const renderOnboardingScreen = ({ item }) => (
     <View style={{ width: screenWidth }}>
       <View style={styles.imageContainer}>
-        <Image source={item.image} style={styles.image} />
+      <Image source={item.image} style={styles.image} />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
@@ -88,7 +88,7 @@ const Onboarding = ({setOnboard}) => {
 
   return (
     <View style={styles.container}>
-        <StatusBar hidden={true}/>
+      <StatusBar hidden={true} />
       <FlatList
         ref={flatListRef}
         data={onboardingScreens}
@@ -129,6 +129,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   textContainer: {
     flex: 1,
@@ -146,12 +148,13 @@ const styles = StyleSheet.create({
     fontFamily: 'ir',
     color: 'white',
     textAlign: 'left',
-    lineHeight: 24
+    lineHeight: 24,
   },
   indicatorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 30
   },
   indicator: {
     width: 80,

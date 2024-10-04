@@ -539,3 +539,22 @@ export const chargeAndTransferToDva = async (
     throw error;
   }
 };
+
+export const initiateBankTransfer = async (email, amount, subaccount_code, callback_url) => {
+  const data = {
+    email,
+    amount: amount * 100,
+    subaccount_code: subaccount_code,
+    currency: 'NGN',
+    channels: ['bank_transfer'],
+    callback_url
+  };
+
+  const result = await makePaystackRequest('/transaction/initialize', 'POST', data);
+  return result.data;
+};
+
+export const verifyTransfer = async (reference) => {
+  const result = await makePaystackRequest(`/transaction/verify/${reference}`, 'GET');
+  return result.data;
+};

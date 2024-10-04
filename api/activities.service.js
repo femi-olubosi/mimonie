@@ -20,3 +20,19 @@ export const fetchUserActivities = async (userId, setUserActivities) => {
     return [];
   }
 };
+
+export const createUserActivity = async (userId, activityData) => {
+  try {
+    const newActivity = new UserActivity({
+      userId: userId,
+      type: activityData.type,
+      amount: activityData.amount,
+      description: activityData.description,
+    });
+
+    await DataStore.save(newActivity);
+    return newActivity;
+  } catch (error) {
+    return null;
+  }
+};
