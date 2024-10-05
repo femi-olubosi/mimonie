@@ -18,7 +18,7 @@ import {
   joinContribution,
   updateContribution,
   updateContributionForUser,
-  fetchUserContributions
+  fetchUserContributions,
 } from '@/api/contributions.service';
 import {
   AntDesign,
@@ -36,10 +36,9 @@ import { safeParseJSON } from '@/utils/safeJSON';
 import CopyLink from '@/components/CopyLink';
 import { downloadUrl, fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
-import { initiateBankTransfer, verifyTransaction } from '@/api/payment.service';
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
 import { verifyTransfer } from '../../../api/payment.service';
+// import { Paystack } from 'react-native-paystack-webview';
+import { Paystack } from '@/paystackDev';
 
 const ContributionDetails = () => {
   const {
@@ -59,8 +58,8 @@ const ContributionDetails = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
   const [imageUrls, setImageUrls] = useState({});
-  const [paymentDetails, setPaymentDetails] = useState(null);
-  const [result, setResult] = useState(null);
+  const [autoStart, setAutoStart] = useState(false);
+  const paystackWebViewRef = useRef();
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -72,45 +71,36 @@ const ContributionDetails = () => {
     fetchContribution();
   }, [id]);
 
-  useEffect(() => {
-    const fetchPaymentDetails = async () => {
-      if (result?.type === 'cancel' && paymentDetails?.reference) {
-        try {
-          setIsLoading(true);
-
-          const verificationResponse = await verifyTransfer(paymentDetails?.reference);
-          if (verificationResponse?.status === 'success') {
-            await updateContributionForUser(contribution, userProfile);
-            await fetchUserContributions(currentUser?.userId, setContributions)
-            Alert.alert(
-              'Payment Successful',
-              'Your contribution has been updated',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => router.push('/protected/mimonie'),
-                },
-              ],
-              { cancelable: false }
-            );
-          } else {
-            Alert.alert('Payment Failed', 'Could not verify payment');
-          }
-
-          WebBrowser.dismissBrowser();
-        } catch (error) {
-          console.error('Error verifying transaction:', error);
-          Alert.alert('Error', 'Something went wrong while verifying payment');
-        } finally {
-          setIsLoading(false);
-          setPaymentDetails(null);
-          setResult(null);
-        }
+  const handleSuccess = async (res) => {
+    try {
+      setIsLoading(true);
+      const verificationResponse = await verifyTransfer(
+        res?.transactionRef?.reference
+      );
+      if (verificationResponse?.status === 'success') {
+        await updateContributionForUser(contribution, userProfile);
+        await fetchUserContributions(currentUser?.userId, setContributions);
+        Alert.alert(
+          'Payment Successful',
+          'Your contribution has been updated',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.push('/protected/mimonie'),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        Alert.alert('Payment Failed', 'Could not verify payment');
       }
-    };
-
-    fetchPaymentDetails();
-  }, [result, paymentDetails]);
+    } catch (error) {
+      console.error('Error verifying transaction:', error);
+      Alert.alert('Error', 'Something went wrong while verifying payment');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUserProfile(setOwnerProfile, {
@@ -203,27 +193,7 @@ const ContributionDetails = () => {
   };
 
   const handleInitiateTransfer = async () => {
-    setIsLoading(true);
-    const recipient = parsed.find(participant => participant.status === 'in progress');
-    try {
-      const res = await initiateBankTransfer(
-        userProfile.email,
-        contribution.amount,
-        recipient.subaccount_code,
-        'https://standard.paystack.co/close'
-      );
-      if (res) {
-        setPaymentDetails(res);
-        setIsLoading(false);
-        let result = await WebBrowser.openBrowserAsync(res.authorization_url);
-        setResult(result);
-      } else {
-        Alert.alert('Error', 'Could not initiate bank transfer');
-      }
-    } catch (error) {
-      console.error('Error initiating bank transfer:', error);
-      Alert.alert('Error', 'Something went wrong while initiating transfer');
-    }
+    setAutoStart(true);
   };
 
   const startDate = new Date(contribution?.start_date);
@@ -249,6 +219,10 @@ const ContributionDetails = () => {
     };
     fetchImageUrls();
   }, [parsed]);
+
+  const recipient = parsed?.find(
+    (participant) => participant.status === 'in progress'
+  );
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -300,7 +274,9 @@ const ContributionDetails = () => {
                 ].includes(userProfile.userId) && (
                   <Pressable
                     style={styles.fab}
-                    onPress={handleInitiateTransfer}
+                    onPress={() =>
+                      paystackWebViewRef.current.startTransaction()
+                    }
                   >
                     <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
                   </Pressable>
@@ -577,7 +553,6 @@ const ContributionDetails = () => {
                 <Text style={styles.value}>{contribution?.owner}</Text>
               </View>
             </ScrollView>
-            {}
           </>
         )}
       </View>
@@ -586,6 +561,32 @@ const ContributionDetails = () => {
         setVisible={setVisible}
         invite_link={contribution?.id}
       />
+      <Paystack
+        ref={paystackWebViewRef}
+        paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
+        amount={contribution?.amount}
+        billingEmail={userProfile.email}
+        firstName={userProfile.name}
+        activityIndicatorColor={Colors.pri}
+        subaccount={recipient?.subaccount_code}
+        channels={['bank_transfer']}
+        onCancel={(e) => {
+          // router.push(`/protected/mimonie/${id}`);
+        }}
+        onSuccess={(res) => {
+          setAutoStart(false);
+          handleSuccess(res);
+        }}
+      >
+        <View style={{ rowGap: 4 }}>
+          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
+            You are paying NGN {contribution.amount}
+          </Text>
+          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
+            for {contribution.name} contribution
+          </Text>
+        </View>
+      </Paystack>
     </PageView>
   );
 };

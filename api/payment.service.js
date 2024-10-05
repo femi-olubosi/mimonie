@@ -546,11 +546,12 @@ export const initiateBankTransfer = async (email, amount, subaccount_code, callb
     amount: amount * 100,
     subaccount_code: subaccount_code,
     currency: 'NGN',
-    channels: ['bank_transfer'],
+    channels: ['bank_transfer', 'bank', 'ussd', 'mobile_money'],
     callback_url
   };
 
   const result = await makePaystackRequest('/transaction/initialize', 'POST', data);
+  console.log('init', result);
   return result.data;
 };
 

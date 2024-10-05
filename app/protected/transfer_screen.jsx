@@ -1,61 +1,67 @@
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Alert, Dimensions, StyleSheet, View } from 'react-native';
 import React from 'react';
-import WebView from 'react-native-webview';
-import { verifyTransaction } from '@/api/payment.service';
-import { updateContributionForUser } from '@/api/contributions.service';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
+import { Paystack } from 'react-native-paystack-webview';
+import { verifyTransfer } from '@/api/payment.service';
+import {
+  updateContributionForUser,
+  fetchUserContributions
+} from '@/api/contributions.service';
+import { Colors } from '../../constants/Colors';
 
 const transfer_screen = () => {
-  const { paymentUrl, id } = useLocalSearchParams();
-  const { currentUser, userProfile, setIsLoading } = useGlobalContext();
+  const { id, amount, subaccount_code, contribution } = useLocalSearchParams();
+  const { userProfile, setIsLoading, setContributions, currentUser } = useGlobalContext();
 
-  const handleNavigationChange = async (navState) => {
-    const { url } = navState;
-
-    if (url.includes('reference')) {
-      const urlParams = new URLSearchParams(url.split('?')[1]);
-      const reference = urlParams.get('reference');
-
-      if (reference) {
-        console.log('Reference found:', reference);
-
-        try {
-          setIsLoading(true);
-          const verificationResponse = await verifyTransaction(
-            reference,
-            currentUser
-          );
-          if (verificationResponse.status === 'success') {
-            await updateContributionForUser(id, userProfile.userId);
-            router.push(`/protected/mimonie${id}`);
-          } else {
-            Alert.alert('Payment Failed', 'Could not verify payment');
-          }
-        } catch (error) {
-          console.error('Error verifying transaction:', error);
-          Alert.alert('Error', 'Something went wrong while verifying payment');
-        } finally {
-          setIsLoading(false);
-        }
+  const handleSuccess = async (res) => {
+    setIsLoading(true)
+    try {
+      const verificationResponse = await verifyTransfer(
+        res.transactionRef.reference,
+      );
+      if (verificationResponse?.status === 'success') {
+        await updateContributionForUser(contribution, userProfile);
+        await fetchUserContributions(currentUser?.userId, setContributions);
+        Alert.alert(
+          'Payment Successful',
+          'Your contribution has been updated',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.push(`/protected/mimonie/${id}`),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        Alert.alert('Payment Failed', 'Could not verify payment');
       }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsLoading(false)
     }
   };
 
   return (
     <PageView title={'Transfer'} route={`protected/mimonie/${id}`}>
-      <View style={styles.container}>
-        <WebView
-          source={{ uri: 'https://google.com' }}
-          style={styles.webview}
-          onLoadStart={() => setIsLoading(true)}
-          onLoadEnd={() => setIsLoading(false)}
-          onNavigationStateChange={handleNavigationChange}
-          onError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            Alert.alert('WebView error: ', nativeEvent.description);
+      <View style={{ flex: 1 }}>
+        <Paystack
+          paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
+          amount={amount}
+          billingEmail={userProfile.email}
+          activityIndicatorColor={Colors.pri}
+          subaccount={subaccount_code}
+          channels={['bank_transfer']}
+          onCancel={(e) => {
+            router.push(`/protected/mimonie/${id}`);
           }}
+          onSuccess={(res) => {
+            handleSuccess(res);
+          }}
+          autoStart={true}
         />
       </View>
     </PageView>
