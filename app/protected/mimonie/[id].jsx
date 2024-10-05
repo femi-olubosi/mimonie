@@ -37,7 +37,6 @@ import CopyLink from '@/components/CopyLink';
 import { downloadUrl, fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
 import { verifyTransfer } from '../../../api/payment.service';
-// import { Paystack } from 'react-native-paystack-webview';
 import { Paystack } from '@/paystackDev';
 
 const ContributionDetails = () => {
@@ -58,7 +57,6 @@ const ContributionDetails = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
   const [imageUrls, setImageUrls] = useState({});
-  const [autoStart, setAutoStart] = useState(false);
   const paystackWebViewRef = useRef();
 
   useEffect(() => {
@@ -192,10 +190,6 @@ const ContributionDetails = () => {
     }
   };
 
-  const handleInitiateTransfer = async () => {
-    setAutoStart(true);
-  };
-
   const startDate = new Date(contribution?.start_date);
 
   useEffect(() => {
@@ -261,28 +255,20 @@ const ContributionDetails = () => {
                 marginBottom: 10,
               }}
             >
-              {
-                //  parsed?.some(
-                //   (participant) =>
-                //     participant.status !== 'in progress' && participant.userId === currentUser.userId &&
-                //     participant?.last_successful_round <
-                //       contribution?.current_count
-                // ) && (
-                [
-                  '1831b390-4051-707e-e882-01ce028e7735',
-                  '089153d0-70d1-7084-dc69-f41032bfaefb',
-                ].includes(userProfile.userId) && (
-                  <Pressable
-                    style={styles.fab}
-                    onPress={() =>
-                      paystackWebViewRef.current.startTransaction()
-                    }
-                  >
-                    <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
-                  </Pressable>
-                )
-                // )
-              }
+              {parsed?.some(
+                (participant) =>
+                  participant.userId === currentUser.userId &&
+                  participant.status !== 'in progress' &&
+                  participant?.last_successful_round <
+                    contribution?.current_count
+              ) && (
+                <Pressable
+                  style={styles.fab}
+                  onPress={() => paystackWebViewRef.current.startTransaction()}
+                >
+                  <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
+                </Pressable>
+              )}
 
               {(parsed?.some(
                 (participant) => participant.userId === currentUser.userId
@@ -571,10 +557,9 @@ const ContributionDetails = () => {
         subaccount={recipient?.subaccount_code}
         channels={['bank_transfer']}
         onCancel={(e) => {
-          // router.push(`/protected/mimonie/${id}`);
+          console.log('cancelled');
         }}
         onSuccess={(res) => {
-          setAutoStart(false);
           handleSuccess(res);
         }}
       >

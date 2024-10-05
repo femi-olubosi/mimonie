@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Button from '@/components/Button';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { imagePicker } from '@/utils/ImagePicker';
@@ -20,7 +20,6 @@ import {
   Feather,
   FontAwesome,
   Ionicons,
-  MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
@@ -29,7 +28,6 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
 import { updateUserAttributes } from 'aws-amplify/auth';
 import {
-  downloadFile,
   downloadUrl,
   fetchCurrUser,
   fetchUserProfile,
@@ -44,14 +42,7 @@ import {
   isNameAndDobIncluded,
   isNameIncluded,
 } from '../../../utils/isNameIncluded';
-import {
-  createSubAccount,
-  getPaystackCustomer,
-  initiateBankTransfer,
-  verifyBVN,
-} from '../../../api/payment.service';
 import { ThemeColors } from '../../../constants/Colors';
-import { DataStore } from 'aws-amplify/datastore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Account = () => {
@@ -70,7 +61,7 @@ const Account = () => {
   const [logoutModal, setLogoutModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const { priBg, priText, secBg } = ThemeColors();
+  const { priBg, priText } = ThemeColors();
 
   const handleInviteFriends = () => {
     router.push('/protected/contact');
@@ -149,10 +140,6 @@ const Account = () => {
     }, [userProfile?.is_nin_verified])
   );
 
-  const handleTransfer = async()=> {
-    await initiateBankTransfer(userProfile.email, 100)
-  }
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
@@ -223,7 +210,6 @@ const Account = () => {
                 fontFamily: 'ir',
                 marginTop: 10,
               }}
-              onPress={handleTransfer}
             >
               {userProfile?.phone_number}
             </Text>
@@ -236,12 +222,9 @@ const Account = () => {
             }}
           >
             {menuItems.map((item, index) => {
-              // Check if the menu item has authorizedUser array and if the current user is authorized to view it
               const isAuthorized =
                 !item.authorizedUser ||
                 item.authorizedUser.includes(userProfile.userId);
-
-              // Only render the item if the user is authorized
               if (isAuthorized) {
                 return (
                   <TouchableOpacity
@@ -381,7 +364,7 @@ const Account = () => {
                 );
               }
 
-              return null; // Do not render if not authorized
+              return null;
             })}
             <View
               style={{
@@ -440,12 +423,10 @@ const Account = () => {
               borderTopRightRadius: 20,
             }}
           >
-            {/* <AntDesign name="logout" size={80} style={{ color: 'red' }} /> */}
             <Text style={{ fontSize: 25, color: 'black' }}>Log Out?</Text>
             <Text
               style={{
                 fontSize: 16,
-                // fontFamily: font.l,
                 color: 'gray',
                 textAlign: 'center',
               }}
@@ -457,8 +438,7 @@ const Account = () => {
                 title={'Confirm Log Out'}
                 color={'red'}
                 onPress={() => {
-                  AsyncStorage.clear(() => signOut())
-                  // signOut();
+                  signOut();
                 }}
                 outline={false}
                 styleOverride={{ width: '100%' }}
