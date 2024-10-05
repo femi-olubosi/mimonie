@@ -47,10 +47,12 @@ import {
 import {
   createSubAccount,
   getPaystackCustomer,
+  initiateBankTransfer,
   verifyBVN,
 } from '../../../api/payment.service';
 import { ThemeColors } from '../../../constants/Colors';
 import { DataStore } from 'aws-amplify/datastore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -147,6 +149,10 @@ const Account = () => {
     }, [userProfile?.is_nin_verified])
   );
 
+  const handleTransfer = async()=> {
+    await initiateBankTransfer(userProfile.email, 100)
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
@@ -217,6 +223,7 @@ const Account = () => {
                 fontFamily: 'ir',
                 marginTop: 10,
               }}
+              onPress={handleTransfer}
             >
               {userProfile?.phone_number}
             </Text>
@@ -450,7 +457,8 @@ const Account = () => {
                 title={'Confirm Log Out'}
                 color={'red'}
                 onPress={() => {
-                  signOut();
+                  AsyncStorage.clear(() => signOut())
+                  // signOut();
                 }}
                 outline={false}
                 styleOverride={{ width: '100%' }}

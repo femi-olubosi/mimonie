@@ -45,6 +45,7 @@ function Pay() {
         amount={'50.00'}
         billingEmail={currentUser.email}
         activityIndicatorColor={Colors.pri}
+        channels={["card"]}
         onCancel={(e) => {
           // handle response here
           router.push('/protected/cards');

@@ -142,10 +142,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserActivities(userProfile?.userId, setUserActivities);
-    // const subscription = DataStore.observe(UserActivity).subscribe(() =>
-    //   fetchUserActivities(userProfile?.userId, setUserActivities)
-    // );
-    // return () => subscription.unsubscribe();
+    const subscription = DataStore.observe(UserActivity).subscribe(() =>
+      fetchUserActivities(userProfile?.userId, setUserActivities)
+    );
+    return () => subscription.unsubscribe();
   }, [currentUser]);
 
   useEffect(() => {
@@ -445,6 +445,10 @@ export default function HomeScreen() {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={styles.modalText}>Update Is Available!</Text>
+              <Text style={{}}>
+                A new version of the app is available. Please download it now to
+                continue using the app.
+              </Text>
               <View
                 style={{
                   flexDirection: 'row',
@@ -526,7 +530,8 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 300,
     backgroundColor: 'white',
-    borderRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',

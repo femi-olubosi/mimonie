@@ -1,37 +1,28 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   Image,
   Alert,
   Platform,
   Pressable,
-  TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import {
-  useRouter,
-  useLocalSearchParams,
-  router,
-  useFocusEffect,
-} from 'expo-router';
-import * as Linking from 'expo-linking';
+import { useLocalSearchParams, router } from 'expo-router';
 import { PageView, SkeletonLoader } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
 import {
-  fetchUserContributions,
   findContributionByID,
   joinContribution,
   updateContribution,
-  findContributionByInviteLink,
+  updateContributionForUser,
+  fetchUserContributions,
 } from '@/api/contributions.service';
 import {
   AntDesign,
   Feather,
-  FontAwesome,
   Fontisto,
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
@@ -40,12 +31,14 @@ import { statusCheck } from '@/utils/statusCheck';
 import { naira } from '@/constants/Currency';
 import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
-import { calculateDifference } from '@/api/payment.service';
-import { updateInvite } from '../../../api/invite.service';
-import { safeParseJSON } from '../../../utils/safeJSON';
-import CopyLink from '../../../components/CopyLink';
-import { downloadUrl, fetchUserProfile } from '../../../api/user.service';
+import { updateInvite } from '@/api/invite.service';
+import { safeParseJSON } from '@/utils/safeJSON';
+import CopyLink from '@/components/CopyLink';
+import { downloadUrl, fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
+import { verifyTransfer } from '../../../api/payment.service';
+// import { Paystack } from 'react-native-paystack-webview';
+import { Paystack } from '@/paystackDev';
 
 const ContributionDetails = () => {
   const {
@@ -65,6 +58,8 @@ const ContributionDetails = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
   const [imageUrls, setImageUrls] = useState({});
+  const [autoStart, setAutoStart] = useState(false);
+  const paystackWebViewRef = useRef();
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -75,6 +70,37 @@ const ContributionDetails = () => {
 
     fetchContribution();
   }, [id]);
+
+  const handleSuccess = async (res) => {
+    try {
+      setIsLoading(true);
+      const verificationResponse = await verifyTransfer(
+        res?.transactionRef?.reference
+      );
+      if (verificationResponse?.status === 'success') {
+        await updateContributionForUser(contribution, userProfile);
+        await fetchUserContributions(currentUser?.userId, setContributions);
+        Alert.alert(
+          'Payment Successful',
+          'Your contribution has been updated',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.push('/protected/mimonie'),
+            },
+          ],
+          { cancelable: false }
+        );
+      } else {
+        Alert.alert('Payment Failed', 'Could not verify payment');
+      }
+    } catch (error) {
+      console.error('Error verifying transaction:', error);
+      Alert.alert('Error', 'Something went wrong while verifying payment');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUserProfile(setOwnerProfile, {
@@ -166,6 +192,10 @@ const ContributionDetails = () => {
     }
   };
 
+  const handleInitiateTransfer = async () => {
+    setAutoStart(true);
+  };
+
   const startDate = new Date(contribution?.start_date);
 
   useEffect(() => {
@@ -189,6 +219,10 @@ const ContributionDetails = () => {
     };
     fetchImageUrls();
   }, [parsed]);
+
+  const recipient = parsed?.find(
+    (participant) => participant.status === 'in progress'
+  );
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -227,6 +261,29 @@ const ContributionDetails = () => {
                 marginBottom: 10,
               }}
             >
+              {
+                //  parsed?.some(
+                //   (participant) =>
+                //     participant.status !== 'in progress' && participant.userId === currentUser.userId &&
+                //     participant?.last_successful_round <
+                //       contribution?.current_count
+                // ) && (
+                [
+                  '1831b390-4051-707e-e882-01ce028e7735',
+                  '089153d0-70d1-7084-dc69-f41032bfaefb',
+                ].includes(userProfile.userId) && (
+                  <Pressable
+                    style={styles.fab}
+                    onPress={() =>
+                      paystackWebViewRef.current.startTransaction()
+                    }
+                  >
+                    <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
+                  </Pressable>
+                )
+                // )
+              }
+
               {(parsed?.some(
                 (participant) => participant.userId === currentUser.userId
               ) &&
@@ -237,10 +294,7 @@ const ContributionDetails = () => {
                 <Pressable
                   style={styles.fab}
                   onPress={() => {
-                    if (
-                      contribution?.status === 'running' ||
-                      contribution?.status === 'completed'
-                    ) {
+                    if (contribution?.status === 'completed') {
                       // Do nothing or handle if needed
                     } else if (
                       parsed?.length === contribution?.num_of_month &&
@@ -507,6 +561,32 @@ const ContributionDetails = () => {
         setVisible={setVisible}
         invite_link={contribution?.id}
       />
+      <Paystack
+        ref={paystackWebViewRef}
+        paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
+        amount={contribution?.amount}
+        billingEmail={userProfile.email}
+        firstName={userProfile.name}
+        activityIndicatorColor={Colors.pri}
+        subaccount={recipient?.subaccount_code}
+        channels={['bank_transfer']}
+        onCancel={(e) => {
+          // router.push(`/protected/mimonie/${id}`);
+        }}
+        onSuccess={(res) => {
+          setAutoStart(false);
+          handleSuccess(res);
+        }}
+      >
+        <View style={{ rowGap: 4 }}>
+          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
+            You are paying NGN {contribution.amount}
+          </Text>
+          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
+            for {contribution.name} contribution
+          </Text>
+        </View>
+      </Paystack>
     </PageView>
   );
 };
@@ -717,7 +797,7 @@ const styles = StyleSheet.create({
   },
   fabText: {
     color: 'white',
-    fontFamily: 'im', // Ensure this font is loaded in your project
+    fontFamily: 'im',
   },
 });
 
