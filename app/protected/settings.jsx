@@ -156,24 +156,24 @@ const Settings = () => {
     }
 
     try {
-      const { data: response } = await createDedicatedVirtualAccount(
-        userProfile.customer_code
-      );
+      // const { data: response } = await createDedicatedVirtualAccount(
+      //   userProfile.customer_code
+      // );
 
       const customerRecipientCode = await createTransferRecipientForBank(
         userProfile
       );
 
-      const dvaRecipientCode = await createTransferRecipientForDVA(response);
+      // const dvaRecipientCode = await createTransferRecipientForDVA(response);
 
       const toStore = {
-        account_number: response.account_number,
-        account_name: response.account_name,
-        bank_name: response.bank.name,
-        bank_slug: response.bank.slug,
-        bank_id: response.bank.id,
-        account_type: response.assignment.account_type,
-        dva_recipient_code: dvaRecipientCode,
+        // account_number: response.account_number,
+        // account_name: response.account_name,
+        // bank_name: response.bank.name,
+        // bank_slug: response.bank.slug,
+        // bank_id: response.bank.id,
+        // account_type: response.assignment.account_type,
+        // dva_recipient_code: dvaRecipientCode,
         customer_recipient_code: customerRecipientCode,
         enabled: true,
       };

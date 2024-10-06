@@ -445,7 +445,7 @@ export default function HomeScreen() {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={styles.modalText}>Update Is Available!</Text>
-              <Text style={{}}>
+              <Text style={{marginHorizontal: 10}}>
                 A new version of the app is available. Please download it now to
                 continue using the app.
               </Text>

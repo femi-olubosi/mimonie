@@ -65,10 +65,65 @@ export const createContribution = async (
         status: 'open',
         current_count: 0,
         variant: details.variant,
+        type: 'group',
       })
     );
     setContributions((prev) => [...prev, newContribution]);
     console.log(newContribution);
+    return newContribution;
+  } catch (error) {
+    console.error('Error creating contribution group:', error);
+    throw error;
+  }
+};
+
+export const createPersonalContribution = async (
+  details,
+  setContributions,
+  currentUser,
+  userProfile
+) => {
+  const userObj = {
+    name: userProfile.name || currentUser.preferred_username,
+    picture: currentUser.picture,
+    index: 1,
+    userId: currentUser.userId,
+    contributions: 0,
+    auth_url: userProfile.auth_url,
+    subaccount_code: userProfile.subaccount_code,
+    recipient_code: userProfile.recipient_code,
+    email: currentUser.email,
+    last_successful_round: 0,
+    push_token: userProfile.push_token,
+    status: 'active',
+  };
+
+  const link = `https://mimonie.net/protected/mimonie?userId=${
+    currentUser.userId
+  }&contributionName=${details.contributionName.split(' ').join('')}`;
+
+  try {
+    const newContribution = await DataStore.save(
+      new Contribution({
+        name: details.contributionName,
+        title: details.contributionName,
+        category: details.groupName,
+        invite_link: link,
+        contributiongroupsID: details.groupId,
+        participant: [userObj],
+        participant_ids: [currentUser.userId],
+        owner: userProfile.name,
+        target: details.target,
+        amount: details.amount,
+        num_of_month: details.num_of_month,
+        status: 'running',
+        current_count: 0,
+        variant: details.variant,
+        start_date: details.start_date,
+        type: 'personal',
+      })
+    );
+    setContributions((prev) => [...prev, newContribution]);
     return newContribution;
   } catch (error) {
     console.error('Error creating contribution group:', error);
@@ -291,7 +346,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   if (allPaid) {
     await createUserActivity(inProgressParticipant.userId, {
       type: 'collection',
-      amount: contribution.amount * (participants.length),
+      amount: contribution.amount * participants.length,
       description: `Final collection for ${contribution.name}`,
     });
 
@@ -325,4 +380,47 @@ export const updateContributionForUser = async (contribution, userProfile) => {
       })
     );
   }
+};
+
+export const updatePersonalContribution = async (contribution, userProfile) => {
+  const originalContribution = await DataStore.query(
+    Contribution,
+    contribution.id
+  );
+
+  if (!originalContribution) {
+    throw new Error('Contribution not found');
+  }
+
+  const participants = JSON.parse(originalContribution.participant);
+  const participant = participants[0];
+
+  if (participant.userId !== userProfile.userId) {
+    throw new Error('User is not part of this contribution');
+  }
+
+  participant.contributions = (participant.contributions || 0) + 1;
+  participant.last_successful_round = originalContribution.current_count;
+
+  await triggerNotificationForUser(
+    userProfile?.push_token,
+    'Payment Successful',
+    `You successfully contributed to ${contribution.name}`
+  );
+
+  await createUserActivity(userProfile.userId, {
+    type: 'contribution',
+    amount: contribution.amount,
+    description: `You successfully contributed to ${contribution.name}`,
+  });
+
+  await DataStore.save(
+    Contribution.copyOf(originalContribution, (updated) => {
+      updated.participant = participants;
+      updated.currently_at = originalContribution.current_count;
+      if (participant.contributions >= originalContribution.num_of_month) {
+        updated.status = 'completed';
+      }
+    })
+  );
 };

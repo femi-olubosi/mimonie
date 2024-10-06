@@ -13,6 +13,7 @@ import { Entypo, FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import Hide from '@/components/Hide';
+import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 
 const safeParseJSON = (data, fallback) => {
   try {
@@ -36,7 +37,7 @@ const Cards = ({ contributions }) => {
             justifyContent: 'center',
             alignItems: 'center',
             rowGap: 20,
-            zIndex: 1
+            zIndex: 1,
           }}
         >
           <Text style={{ textAlign: 'center', fontSize: 18, fontFamily: 'er' }}>
@@ -58,6 +59,7 @@ const Cards = ({ contributions }) => {
         <FlatList
           data={contributions}
           renderItem={({ item }) => {
+            console.log('...', item.type);
             const participants = safeParseJSON(item?.participant, []);
             const currentParticipant = participants?.find(
               (e) => e.userId === userProfile?.userId
@@ -91,7 +93,7 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={{ fontSize: 12, color: 'white', fontFamily: 'im' }}
                     >
-                      Group: {item.category}
+                      Category: {item.category}
                     </Text>
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
@@ -126,7 +128,9 @@ const Cards = ({ contributions }) => {
                             item.start_date,
                             currentParticipant?.index,
                             item.variant,
-                            item.id
+                            item.id,
+                            item.num_of_month,
+                            item.type
                           )}
                     </Text>
                   </View>
@@ -202,11 +206,22 @@ const Cards = ({ contributions }) => {
                       </>
                     )}
                   </Text>
-                  <NextContributionDay
-                    contribution={item}
-                    done={done}
-                    currentParticipant={currentParticipant}
-                  />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <NextContributionDay
+                      contribution={item}
+                      done={done}
+                      currentParticipant={currentParticipant}
+                    />
+                    <Text style={[styles.text, { fontSize: 12 }]}>
+                      {capitalizeFirstLetter(item?.type)}
+                    </Text>
+                  </View>
                 </ThemedView>
 
                 <Image
@@ -366,39 +381,65 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
   );
 };
 
-
-const getCollectionDate = (startDate, participantIndex, variant, contribution_id) => {
-  const start = parseDate(startDate);
+const getCollectionDate = (
+  startDate,
+  participantIndex,
+  variant,
+  contribution_id,
+  num_of_month,
+  type
+) => {
+  const start = new Date(startDate);
   let collectionDate;
 
-  // Determine the target day of the week: Wednesday if specific ID, Monday otherwise
-  const targetDayOfWeek = contribution_id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; // 3 for Wednesday, 1 for Monday
+  const targetDayOfWeek =
+    contribution_id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1;
 
-  switch (variant) {
-    case 'days':
-      // Collection day is simply X days after the start, where X = participantIndex
-      collectionDate = new Date(start);
-      collectionDate.setDate(start.getDate() + participantIndex);
-      break;
+  if (type === 'personal') {
+    switch (variant) {
+      case 'days':
+        collectionDate = new Date(start);
+        collectionDate.setDate(start.getDate() + num_of_month);
+        break;
 
-    case 'weeks':
-      // Calculate the next Monday or Wednesday after start date
-      collectionDate = new Date(start);
-      const daysUntilNextDay = (targetDayOfWeek - collectionDate.getDay() + 7) % 7 || 7;
-      collectionDate.setDate(
-        start.getDate() + daysUntilNextDay + (participantIndex - 1) * 7
-      );
-      break;
+      case 'weeks':
+        collectionDate = new Date(start);
+        collectionDate.setDate(start.getDate() + num_of_month * 7);
+        break;
 
-    case 'months':
-      // Collection day is always on the 28th of the following months
-      collectionDate = new Date(start);
-      collectionDate.setMonth(start.getMonth() + participantIndex);
-      collectionDate.setDate(28);
-      break;
+      case 'months':
+        collectionDate = new Date(start);
+        collectionDate.setMonth(start.getMonth() + num_of_month);
+        break;
 
-    default:
-      collectionDate = 'Invalid contribution period';
+      default:
+        collectionDate = 'Invalid contribution period';
+    }
+  } else {
+    switch (variant) {
+      case 'days':
+        collectionDate = new Date(start);
+        collectionDate.setDate(start.getDate() + participantIndex);
+        break;
+
+      case 'weeks':
+        collectionDate = new Date(start);
+        const daysUntilNextDay =
+          (targetDayOfWeek - collectionDate.getDay() + 7) % 7 || 7;
+        collectionDate.setDate(
+          start.getDate() + daysUntilNextDay + (participantIndex - 1) * 7
+        );
+        break;
+
+      case 'months':
+        collectionDate = new Date(start);
+        collectionDate.setMonth(start.getMonth() + participantIndex);
+        collectionDate.setDate(28);
+        break;
+
+      default:
+        collectionDate = 'Invalid contribution period';
+    }
   }
 
   return collectionDate instanceof Date
@@ -408,7 +449,6 @@ const getCollectionDate = (startDate, participantIndex, variant, contribution_id
       })
     : collectionDate;
 };
-
 
 const styles = StyleSheet.create({
   container: {

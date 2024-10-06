@@ -1,5 +1,6 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution, UserActivity, UserCardDetails } from '../src/models';
+import { createUserActivity } from './activities.service';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
 const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
@@ -540,22 +541,144 @@ export const chargeAndTransferToDva = async (
   }
 };
 
-export const initiateBankTransfer = async (email, amount, subaccount_code, callback_url) => {
+export const initiateBankTransfer = async (
+  email,
+  amount,
+  subaccount_code,
+  callback_url
+) => {
   const data = {
     email,
     amount: amount * 100,
     subaccount_code: subaccount_code,
     currency: 'NGN',
     channels: ['bank_transfer', 'bank', 'ussd', 'mobile_money'],
-    callback_url
+    callback_url,
   };
 
-  const result = await makePaystackRequest('/transaction/initialize', 'POST', data);
+  const result = await makePaystackRequest(
+    '/transaction/initialize',
+    'POST',
+    data
+  );
   console.log('init', result);
   return result.data;
 };
 
 export const verifyTransfer = async (reference) => {
-  const result = await makePaystackRequest(`/transaction/verify/${reference}`, 'GET');
+  const result = await makePaystackRequest(
+    `/transaction/verify/${reference}`,
+    'GET'
+  );
   return result.data;
+};
+
+const transferToBank = async (recipient_code, amount, contribution) => {
+  const data = {
+    recipient: recipient_code,
+    amount: amount * 100,
+    source: "balance", 
+    reason: `${contribution.name} contribution payout`,
+  };
+
+  return await makePaystackRequest('/transfer', 'POST', data);
+};
+
+export const withdrawFunds = async (userId, contributionId) => {
+  try {
+    const contribution = await DataStore.query(Contribution, contributionId);
+
+    if (!contribution) {
+      throw new Error('Contribution not found');
+    }
+
+    const participants = JSON.parse(contribution.participant)[0];
+
+    const participant = participants.find((p) => p.userId === userId);
+
+    if (!participant) {
+      throw new Error('User is not part of this contribution');
+    }
+
+    const contributionBalance = participant.contributions * contribution.amount;
+
+    const isEarlyWithdrawal =
+      contribution.currently_at < contribution.num_of_month;
+    let penalty = 0;
+    let withdrawalAmount = contributionBalance;
+
+    if (isEarlyWithdrawal) {
+      // Apply a penalty (10%)
+      penalty = contributionBalance * 0.1;
+      withdrawalAmount = contributionBalance - penalty;
+
+      const flow = await transferToBank(
+        participant.recipient_code,
+        withdrawalAmount,
+        contribution
+      );
+
+      if (flow.data.status === 'pending') {
+        await createUserActivity(userId, {
+          type: 'collection',
+          amount: withdrawalAmount,
+          description: `Fund withdrawal processed for ${contribution.name}`,
+        });
+
+        await triggerNotificationForUser(
+          participant.push_token,
+          `Withdrawal Processed for ${contribution.name}`,
+          `You successfully withdrew all your funds from ${contribution.name}`
+        );
+
+        await createUserActivity(userId, {
+          type: 'deduction',
+          amount: penalty,
+          description: `Penalty of 10% applied for early withdrawal from ${contribution.name}`,
+        });
+
+        await triggerNotificationForUser(
+          participant.push_token,
+          'Penalty',
+          `Penalty of 10% applied for early withdrawal from ${contribution.name}`
+        );
+      } else {
+        return { success: false, message: flow.data.gateway_response };
+      }
+    } else {
+      const flow = await transferToBank(
+        participant.recipient_code,
+        withdrawalAmount,
+        contribution
+      );
+
+      if (flow.data.status === 'pending') {
+        await createUserActivity(userId, {
+          type: 'collection',
+          amount: withdrawalAmount,
+          description: `Fund withdrawal processed for ${contribution.name}`,
+        });
+
+        await triggerNotificationForUser(
+          participant.push_token,
+          `Withdrawal Processed for ${contribution.name}`,
+          `You successfully withdrew all your funds from ${contribution.name}`
+        );
+      } else {
+        return { success: false, message: flow.data.gateway_response };
+      }
+    }
+
+    await DataStore.save(
+      Contribution.copyOf(contribution, (updated) => {
+        updated.participant = participants;
+        updated.status = 'closed';
+      })
+    );
+
+    return { success: true, message: 'Withdrawal successful', penalty };
+  } catch (error) {
+    console.error('Error processing withdrawal:', error);
+    return { success: false, message: error.message };
+  }
 };
