@@ -159,6 +159,7 @@ type EagerUserProfile = {
   readonly push_token?: string | null;
   readonly dva?: string | null;
   readonly extra?: string | null;
+  readonly recipient_code?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -198,6 +199,7 @@ type LazyUserProfile = {
   readonly push_token?: string | null;
   readonly dva?: string | null;
   readonly extra?: string | null;
+  readonly recipient_code?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
