@@ -156,29 +156,17 @@ const Settings = () => {
     }
 
     try {
-      const { data: response } = await createDedicatedVirtualAccount(
-        userProfile.customer_code
-      );
 
       const customerRecipientCode = await createTransferRecipientForBank(
         userProfile
       );
 
-      const dvaRecipientCode = await createTransferRecipientForDVA(response);
-
       const toStore = {
-        account_number: response.account_number,
-        account_name: response.account_name,
-        bank_name: response.bank.name,
-        bank_slug: response.bank.slug,
-        bank_id: response.bank.id,
-        account_type: response.assignment.account_type,
-        dva_recipient_code: dvaRecipientCode,
         customer_recipient_code: customerRecipientCode,
         enabled: true,
       };
 
-      await updateUserProfile({ dva: toStore }, currentUser);
+      await updateUserProfile({ dva: toStore, recipient_code: customerRecipientCode }, currentUser);
       await fetchUserProfile(setUserProfile, currentUser);
       setPCEnable(true);
       setIsLoading(false);
@@ -198,22 +186,6 @@ const Settings = () => {
     } catch (error) {
       console.error('Error creating personal contribution:', error);
       setIsLoading(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const payment = async () => {
-    setIsLoading(true);
-    try {
-      const res = await chargeAndTransferToDva(
-        { email: userProfile.email, auth_url: userProfile.auth_url },
-        userProfile.dva.dva_recipient_code,
-        50
-      );
-      console.log('outer respons', res);
-    } catch (error) {
-      console.log('error respons', error);
     } finally {
       setIsLoading(false);
     }
@@ -250,15 +222,14 @@ const Settings = () => {
         <View style={styles.setting}>
           <View>
             <Text style={styles.settingText}>Enable Personal Contribution</Text>
-            <Text style={{ fontSize: 10, fontFamily: 'ir' }}>
+            {/* <Text style={{ fontSize: 10, fontFamily: 'ir' }}>
               You will not be able to disable it again until after 3 months
-            </Text>
+            </Text> */}
           </View>
           <Switch
             onValueChange={handleEnablePersonalContribution}
             value={userProfile?.dva?.enabled || pCEnable}
-            // disabled={userProfile?.dva?.enabled || pCEnable}
-            disabled
+            disabled={userProfile?.dva?.enabled || pCEnable}
           />
         </View>
 
@@ -283,7 +254,6 @@ const Settings = () => {
         <TouchableOpacity
           style={styles.setting}
           // onPress={triggerAccountDeletion}
-          onPress={payment}
         >
           <Text style={[styles.settingText, { color: 'red' }]}>
             Request Account Deletion

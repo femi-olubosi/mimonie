@@ -24,6 +24,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
 const { v4: uuidv4 } = require('uuid');
+const { Expo } = require('expo-server-sdk');
 // declare a new express app
 const app = express();
 app.use(bodyParser.json());
@@ -39,6 +40,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+let expo = new Expo();
 let profileTableName = 'UserProfile-d4itlx42uzhtrctybtkmaxruya-dev';
 let userNotificationTableName =
   'UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev';
@@ -110,6 +112,28 @@ app.get('/mimonie-bvn-verification/*', function (req, res) {
  * Example post method *
  ****************************/
 
+const sendNotification = async (pushToken, title, body, data = {}) => {
+  if (!Expo.isExpoPushToken(pushToken)) {
+    console.error(`Push token ${pushToken} is not a valid Expo push token`);
+    return;
+  }
+
+  const message = {
+    to: pushToken,
+    sound: 'default',
+    title: title,
+    body: body,
+    data: data,
+  };
+
+  try {
+    const ticketChunk = await expo.sendPushNotificationsAsync([message]);
+    console.log('Notification sent:', ticketChunk);
+  } catch (error) {
+    console.error('Error sending notification:', error);
+  }
+};
+
 const saveUserNotification = async (notification) => {
   const timestamp = new Date().toISOString();
   const params = {
@@ -134,13 +158,15 @@ const saveUserNotification = async (notification) => {
 
 // Helper function to get user profile by customer_code
 
-const getUserProfile = async (customerCode) => {
+const getUserProfile = async (customerCode, recipientCode) => {
   const params = {
     TableName: profileTableName,
-    FilterExpression: 'customer_code = :customerCode',
-    ExpressionAttributeValues: {
-      ':customerCode': customerCode,
-    },
+    FilterExpression: customerCode 
+      ? 'customer_code = :customerCode' 
+      : 'recipient_code = :recipientCode',
+    ExpressionAttributeValues: customerCode 
+      ? { ':customerCode': customerCode } 
+      : { ':recipientCode': recipientCode },
   };
 
   try {
@@ -182,8 +208,9 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
 
     const { event: eventType, data: response } = req.body;
     const customerCode = response.customer_code;
+    const recipientCode = response.recipient_code;
 
-    const userProfile = await getUserProfile(customerCode);
+    const userProfile = await getUserProfile(customerCode, recipientCode);
 
     if (!userProfile || !userProfile.userId) {
       return res.status(404).json({ error: 'User not found' });
@@ -195,6 +222,45 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
     let notificationContent = response.reason || 'Verification Completed';
 
     // Handle Paystack verification success and failure events
+
+    if(eventType === 'transfer.success') {
+      await sendNotification(
+        userProfile?.push_token,
+        'Payout Successful',
+        `You have received ${response.amount} for ${response.reason}`
+      );
+      const notificationDetails = {
+        id: uuidv4(),
+        userId,
+        type: 'payment',
+        title: 'Payout Successful',
+        read: false,
+        content: notificationContent,
+      };
+  
+      // Save the notification
+      await saveUserNotification(notificationDetails);
+      return
+    } else if(eventType === 'transfer.failed') {
+        await sendNotification(
+          userProfile?.push_token,
+          'Payout Failed',
+          `Error making ${response.amount} payout for ${response.reason}`
+        );
+        const notificationDetails = {
+          id: uuidv4(),
+          userId,
+          type: 'payment',
+          title: 'Payout Failed',
+          read: false,
+          content: notificationContent,
+        };
+    
+        // Save the notification
+        await saveUserNotification(notificationDetails);
+        return
+    }
+
     if (eventType === 'customeridentification.success') {
       isBvnVerified = true;
       notificationTitle = 'BVN Verified';

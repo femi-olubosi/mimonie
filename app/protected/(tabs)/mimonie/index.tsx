@@ -22,8 +22,7 @@ import { statusCheck } from '@/utils/statusCheck';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 
 const Mimonie = () => {
-  const { currentUser, contributions, setContributions, setIsLoading } =
-    useGlobalContext();
+  const { contributions, setIsLoading, userProfile } = useGlobalContext();
   const router = useRouter();
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
@@ -48,40 +47,6 @@ const Mimonie = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserContributions(currentUser.userId, setContributions);
-
-    const fetchAndHandleDeepLink = (url) => {
-      const { path, queryParams } = Linking.parse(url);
-
-      if (path === 'mimonie' || path === 'protected/mimonie') {
-        setContributionSearch(url);
-        handleSearchContribution(url);
-      }
-    };
-
-    const handleDeepLink = (event) => {
-      console.log('Deep link received:', event.url);
-      fetchAndHandleDeepLink(event.url);
-    };
-
-    // Check if the app was opened with a deep link initially
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        console.log('App opened with URL:', url);
-        fetchAndHandleDeepLink(url);
-      }
-    });
-
-    // Add listener for incoming links
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-
-    // Cleanup the listener when the component unmounts
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);
 
@@ -98,7 +63,7 @@ const Mimonie = () => {
           }}
         >
           <Text style={styles.contributionName}>{item.name}</Text>
-          <Text style={{ fontSize: 10 }}>{item.category}</Text>
+          <Text style={{ fontSize: 10 }}>{capitalizeFirstLetter(item.type)}</Text>
         </View>
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>
@@ -118,17 +83,13 @@ const Mimonie = () => {
             </Text>
           </View>
         </View>
-        {/* <View style={styles.contributionInfo}>
-          <Text style={styles.contributionAmount}>
-            Joined: {item.participant.length}
-          </Text>
-          <Text style={styles.contributionAmount}>Target: {item.target}</Text>
-        </View> */}
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>
             {createdAtDate.toLocaleDateString()}
           </Text>
-          <Text style={styles.contributionAmount}>By: {item.owner}</Text>
+          <Text style={styles.contributionAmount}>
+            By: {item.owner === userProfile.name ? 'Me' : item.owner}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -192,7 +153,16 @@ const Mimonie = () => {
           </TouchableOpacity>
         )}
         <FlatList
-          data={searchedContribution || contributions}
+          data={
+            searchedContribution ||
+            contributions.filter((e) =>
+              contributionSearch.trim() !== ''
+                ? e.name
+                    .toLowerCase()
+                    .includes(contributionSearch.toLowerCase())
+                : e
+            )
+          }
           renderItem={renderContribution}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}

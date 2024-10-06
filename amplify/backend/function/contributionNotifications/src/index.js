@@ -66,7 +66,7 @@ const processNotifications = async () => {
   try {
     const contributions = await fetchRunningContributions();
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 is Sunday, 6 is Saturday
+    const dayOfWeek = today.getDay();
     const dayOfMonth = today.getDate();
 
     for (const contribution of contributions) {
@@ -105,7 +105,6 @@ const processNotifications = async () => {
             }
             break;
           case 'days':
-            // Skip daily notifications
             continue;
           default:
             break;

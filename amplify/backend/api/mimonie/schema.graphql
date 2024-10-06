@@ -61,6 +61,7 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   push_token: String
   dva: AWSJSON
   extra: AWSJSON
+  recipient_code: String
 }
 
 type UserCardDetails @model @auth(rules: [{allow: public}]) {
@@ -92,6 +93,7 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   currently_at: Int
   variant: String
   current_count: Int
+  type: String
 }
 
 type ContributionGroups @model @auth(rules: [{allow: public}]) {

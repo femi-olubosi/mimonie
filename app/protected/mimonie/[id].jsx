@@ -9,6 +9,8 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  Button,
+  Modal,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { PageView, SkeletonLoader } from '@/components/Reusable';
@@ -36,8 +38,9 @@ import { safeParseJSON } from '@/utils/safeJSON';
 import CopyLink from '@/components/CopyLink';
 import { downloadUrl, fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
-import { verifyTransfer } from '../../../api/payment.service';
+import { verifyTransfer, withdrawFunds } from '../../../api/payment.service';
 import { Paystack } from '@/paystackDev';
+import { updatePersonalContribution } from '../../../api/contributions.service';
 
 const ContributionDetails = () => {
   const {
@@ -58,6 +61,7 @@ const ContributionDetails = () => {
   const [ownerProfile, setOwnerProfile] = useState({});
   const [imageUrls, setImageUrls] = useState({});
   const paystackWebViewRef = useRef();
+  const [withdrawModal, setWithdrawModal] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -69,6 +73,13 @@ const ContributionDetails = () => {
     fetchContribution();
   }, [id]);
 
+  useEffect(() => {
+    if (contribution) {
+      const parsedData = safeParseJSON(contribution?.participant, []);
+      setParsed(parsedData);
+    }
+  }, [contribution]);
+
   const handleSuccess = async (res) => {
     try {
       setIsLoading(true);
@@ -76,7 +87,11 @@ const ContributionDetails = () => {
         res?.transactionRef?.reference
       );
       if (verificationResponse?.status === 'success') {
-        await updateContributionForUser(contribution, userProfile);
+        if (contribution?.type === 'group') {
+          await updateContributionForUser(contribution, userProfile);
+        } else {
+          await updatePersonalContribution(contribution, userProfile);
+        }
         await fetchUserContributions(currentUser?.userId, setContributions);
         Alert.alert(
           'Payment Successful',
@@ -192,13 +207,6 @@ const ContributionDetails = () => {
 
   const startDate = new Date(contribution?.start_date);
 
-  useEffect(() => {
-    if (contribution) {
-      const parsedData = safeParseJSON(contribution?.participant, []);
-      setParsed(parsedData);
-    }
-  }, [contribution]);
-
   const next = parsed?.find((e) => e.status !== 'received');
 
   useEffect(() => {
@@ -217,6 +225,26 @@ const ContributionDetails = () => {
   const recipient = parsed?.find(
     (participant) => participant.status === 'in progress'
   );
+
+  const handleWithdrawFund = async () => {
+    setWithdrawModal(false);
+    setIsLoading(true);
+    const withdrawalResponse = await withdrawFunds(userProfile.userId, id);
+
+    if (withdrawalResponse?.status === 'success') {
+      Alert.alert(
+        'Withdrawal Processed',
+        'Your withdrawal request has been processed'
+      );
+      setIsLoading(false);
+    } else {
+      Alert.alert('Withdrawal Failed', `${withdrawalResponse.message}`);
+      setIsLoading(false);
+    }
+  };
+
+  const isEarlyWithdrawal =
+    contribution?.currentl_at < contribution?.num_of_month;
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -315,7 +343,19 @@ const ContributionDetails = () => {
                   </Text>
                 </Pressable>
               )}
-              <CopyLink inviteLink={contribution.id} />
+              {contribution?.type === 'group' ? (
+                <CopyLink inviteLink={contribution.id} />
+              ) : contribution?.type === 'personal' &&
+                contribution?.status !== 'closed' &&
+                contribution?.currently_at > 0 ? (
+                <Pressable
+                  style={styles.fab}
+                  onPress={() => setWithdrawModal(true)}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.fabText}>Withdraw</Text>
+                </Pressable>
+              ) : null}
             </View>
 
             <ScrollView
@@ -483,14 +523,15 @@ const ContributionDetails = () => {
                                     size={14}
                                     color="#ecb753"
                                   />
-                                ) : (
+                                ) : eN.status === 'pending' ? (
                                   <AntDesign
                                     name="minussquareo"
                                     size={14}
                                     color="gray"
                                   />
-                                )}
-                                {next?.userId === eN.userId ? (
+                                ) : null}
+                                {contribution?.type !== 'personal' &&
+                                next?.userId === eN.userId ? (
                                   <Text
                                     style={{
                                       color: 'lightgreen',
@@ -572,6 +613,26 @@ const ContributionDetails = () => {
           </Text>
         </View>
       </Paystack>
+      <Modal visible={withdrawModal} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {isEarlyWithdrawal
+                ? 'Confirm Early Withdrawal'
+                : 'Confirm Withdrawal'}
+            </Text>
+            <Text style={styles.modalText}>
+              {isEarlyWithdrawal
+                ? 'Withdrawing before the liquidation date will incur a 10% penalty. Please confirm if you wish to proceed.'
+                : 'Are you sure you want to withdraw your funds? There are no penalties for withdrawing now. Please confirm if you wish to proceed.'}
+            </Text>
+            <View style={styles.buttonContainer}>
+              <Button title="Cancel" onPress={() => setWithdrawModal(false)} />
+              <Button title="Confirm Withdrawal" onPress={handleWithdrawFund} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </PageView>
   );
 };
@@ -783,6 +844,34 @@ const styles = StyleSheet.create({
   fabText: {
     color: 'white',
     fontFamily: 'im',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
 });
 

@@ -64,7 +64,7 @@ const makePaystackRequest = async (endpoint, method, data) => {
   });
 };
 
-const calculateDifference = (startDate, variant, contribution_id) => {
+const calculateDifference = (startDate, variant) => {
   const start = new Date(startDate);
   const now = new Date();
   let difference;
@@ -72,20 +72,9 @@ const calculateDifference = (startDate, variant, contribution_id) => {
   if (variant === 'days') {
     difference = Math.floor((now - start) / (1000 * 60 * 60 * 24));
   } else if (variant === 'weeks') {
-    // const startDayOfWeek = start.getDay();
-    // const daysUntilFirstWednesday = (3 - startDayOfWeek + 7) % 7;
-    // const firstWednesday = new Date(start);
-    // firstWednesday.setDate(start.getDate() + daysUntilFirstWednesday);
-
-    // if (now < firstWednesday) {
-    //   difference = 0;
-    // } else {
-    //   difference =
-    //     Math.floor((now - firstWednesday) / (1000 * 60 * 60 * 24 * 7)) + 1;
-    // }
     const startDayOfWeek = start.getDay();
 
-    const targetDayOfWeek = contribution_id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; 
+    const targetDayOfWeek = 1;
     const daysUntilFirstTargetDay = (targetDayOfWeek - startDayOfWeek + 7) % 7;
     const firstTargetDay = new Date(start);
     firstTargetDay.setDate(start.getDate() + daysUntilFirstTargetDay);
@@ -109,12 +98,11 @@ const calculateDifference = (startDate, variant, contribution_id) => {
     ).getDate();
 
     if (now.getDate() >= 28 || now.getDate() === daysInCurrentMonth) {
-      difference = (currentYear - startYear) * 12 + currentMonth - startMonth; // Number of months since start
+      difference = (currentYear - startYear) * 12 + currentMonth - startMonth;
     } else {
-      difference = 0; // If it's not yet the 28th, don't process any deduction
+      difference = 0;
     }
   } else {
-    // Default case for unsupported variants
     difference = 0;
   }
 
@@ -228,6 +216,29 @@ const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
   );
 };
 
+const chargeCardForPersonalContribution = async (payer, amount) => {
+  const data = {
+    email: payer.email,
+    amount: `${amount * 100}`,
+    authorization_code: payer.auth_url,
+    transaction_charge: 500,
+    metadata: JSON.stringify({
+      custom_fields: [
+        {
+          display_name: 'Purpose',
+          variable_name: 'purpose',
+          value: 'Contribution',
+        },
+      ],
+    }),
+  };
+  return await makePaystackRequest(
+    '/transaction/charge_authorization',
+    'POST',
+    data
+  );
+};
+
 // Main processing function
 const processContributions = async () => {
   try {
@@ -237,8 +248,7 @@ const processContributions = async () => {
       // Calculate the difference based on the variant
       const currentCount = calculateDifference(
         contribution.start_date,
-        contribution.variant,
-        contribution.id
+        contribution.variant
       );
 
       // Stop updating current_count if it equals num_of_month - 1
@@ -255,118 +265,173 @@ const processContributions = async () => {
       if (currentAt === currentCount || currentCount === 0) continue;
 
       const participants = contribution?.participant;
+      if (contribution.type === 'group') {
+        const inProgressParticipant = participants[0].find(
+          (p) => p.status === 'in progress'
+        );
 
-      const inProgressParticipant = participants[0].find(
-        (p) => p.status === 'in progress'
-      );
+        let allPaymentsSuccessful = true;
+        let paymentsProcessed = false;
 
-      let allPaymentsSuccessful = true;
-      let paymentsProcessed = false;
+        for (const participant of participants[0]) {
+          if (
+            participant.status !== 'in progress' &&
+            participant.last_successful_round !== currentCount
+          ) {
+            const flow = await chargeAndSplitPayment(
+              inProgressParticipant.subaccount_code,
+              participant,
+              contribution.amount
+            );
 
-      for (const participant of participants[0]) {
-        if (
-          participant.status !== 'in progress' &&
-          participant.last_successful_round !== currentCount
-        ) {
-          const flow = await chargeAndSplitPayment(
-            inProgressParticipant.subaccount_code,
+            if (flow.data.status === 'success') {
+              participant.contributions = (participant.contributions || 0) + 1;
+              participant.last_successful_round = currentCount;
+              paymentsProcessed = true;
+
+              await saveUserActivity({
+                id: uuidv4(),
+                userId: participant.userId,
+                type: 'contribution',
+                amount: contribution.amount,
+                description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
+              });
+
+              // Send notification to the debited participant
+              await sendNotification(
+                participant?.push_token,
+                'Payment Successful',
+                `You successfully paid ${inProgressParticipant.name} for ${contribution.name}`
+              );
+
+              await saveUserActivity({
+                id: uuidv4(),
+                userId: inProgressParticipant.userId,
+                type: 'collection',
+                amount: contribution.amount,
+                description: `Received payment from ${participant.name} for ${contribution.name}`,
+              });
+
+              // Send notification to the credited participant
+              await sendNotification(
+                inProgressParticipant?.push_token,
+                'Payment Received',
+                `You received payment from ${participant.name} for ${contribution.name}`
+              );
+
+              // Update and save the contribution after each successful payment
+              contribution.participant = participants;
+              await updateContribution(contribution);
+            } else {
+              await saveUserActivity({
+                id: uuidv4(),
+                userId: participant.userId,
+                type: 'contribution',
+                amount: contribution.amount,
+                description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. ${flow?.data?.gateway_response}`,
+              });
+
+              // Send notification for failed payment
+              await sendNotification(
+                participant?.push_token,
+                'Payment Failed',
+                `Your payment to ${inProgressParticipant.name} for ${contribution.name} failed.`
+              );
+
+              allPaymentsSuccessful = false;
+            }
+          }
+        }
+
+        if (allPaymentsSuccessful && paymentsProcessed) {
+          await saveUserActivity({
+            id: uuidv4(),
+            userId: inProgressParticipant.userId,
+            type: 'collection',
+            amount: contribution.amount * (participants[0].length - 1),
+            description: `Final collection for ${contribution.name}`,
+          });
+
+          for (const participant of participants[0]) {
+            participant.last_successful_round = currentCount;
+          }
+
+          inProgressParticipant.status = 'received';
+
+          const nextParticipant = participants[0].find(
+            (p) => p.status === 'pending'
+          );
+          if (nextParticipant) {
+            nextParticipant.status = 'in progress';
+          }
+
+          const allReceived = participants[0].every(
+            (participant) => participant.status === 'received'
+          );
+
+          contribution.participant = participants;
+          if (allReceived) {
+            contribution.status = 'completed';
+          }
+
+          contribution.currently_at = currentCount;
+
+          await updateContribution(contribution);
+        } 
+      } else {
+        const participant = participants[0][0]
+        if(participant.last_successful_round !== currentCount) {
+          const flow = await chargeCardForPersonalContribution(
             participant,
             contribution.amount
           );
-
+  
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
             participant.last_successful_round = currentCount;
-            paymentsProcessed = true;
-
+  
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
               type: 'contribution',
               amount: contribution.amount,
-              description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
+              description: `Successfully completed this round of ${contribution.name} contribution`,
             });
-
+  
             // Send notification to the debited participant
             await sendNotification(
               participant?.push_token,
               'Payment Successful',
-              `You successfully paid ${inProgressParticipant.name} for ${contribution.name}`
+              `Successfully completed this round of ${contribution.name} contribution`
             );
-
-            await saveUserActivity({
-              id: uuidv4(),
-              userId: inProgressParticipant.userId,
-              type: 'collection',
-              amount: contribution.amount,
-              description: `Received payment from ${participant.name} for ${contribution.name}`,
-            });
-
-            // Send notification to the credited participant
-            await sendNotification(
-              inProgressParticipant?.push_token,
-              'Payment Received',
-              `You received payment from ${participant.name} for ${contribution.name}`
-            );
-
+  
             // Update and save the contribution after each successful payment
+            contribution.currently_at = currentCount;
             contribution.participant = participants;
             await updateContribution(contribution);
+  
+            if(contribution.currently_at === contribution.num_of_month) {
+              contribution.status = 'completed';
+              await updateContribution(contribution);
+            }
           } else {
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
               type: 'contribution',
               amount: contribution.amount,
-              description: `Failed to make payment to ${inProgressParticipant.name} for ${contribution.name}. ${flow?.data?.gateway_response}`,
+              description: `Failed to make payment for ${contribution.name}. ${flow?.data?.gateway_response}`,
             });
-
+  
             // Send notification for failed payment
             await sendNotification(
               participant?.push_token,
               'Payment Failed',
-              `Your payment to ${inProgressParticipant.name} for ${contribution.name} failed.`
+              `Your payment for ${contribution.name} failed.`
             );
-
-            allPaymentsSuccessful = false;
           }
         }
-      }
-
-      if (allPaymentsSuccessful && paymentsProcessed) {
-        await saveUserActivity({
-          id: uuidv4(),
-          userId: inProgressParticipant.userId,
-          type: 'collection',
-          amount: contribution.amount * (participants[0].length - 1),
-          description: `Final collection for ${contribution.name}`,
-        });
-
-        for (const participant of participants[0]) {
-          participant.last_successful_round = currentCount;
-        }
-
-        inProgressParticipant.status = 'received';
-
-        const nextParticipant = participants[0].find(
-          (p) => p.status === 'pending'
-        );
-        if (nextParticipant) {
-          nextParticipant.status = 'in progress';
-        }
-
-        const allReceived = participants[0].every(
-          (participant) => participant.status === 'received'
-        );
-
-        contribution.participant = participants;
-        if (allReceived) {
-          contribution.status = 'completed';
-        }
-
-        contribution.currently_at = currentCount;
-
-        await updateContribution(contribution);
+      
       }
     }
   } catch (error) {

@@ -42,7 +42,7 @@ function Pay() {
     <View style={{ flex: 1 }}>
       <Paystack
         paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
-        amount={'50.00'}
+        amount={'500.00'}
         billingEmail={currentUser.email}
         activityIndicatorColor={Colors.pri}
         channels={["card"]}

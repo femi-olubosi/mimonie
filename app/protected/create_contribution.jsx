@@ -14,7 +14,10 @@ import { Link, useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { DateTimeSelector, SelectInput } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
-import { createContribution } from '../../api/contributions.service';
+import {
+  createContribution,
+  createPersonalContribution,
+} from '../../api/contributions.service';
 import { getContributionGroups } from '../../api/groups.service';
 import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
@@ -48,7 +51,6 @@ const CreateContribution = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsVisible, setTermsVisible] = useState(false);
 
-  const [date, setDate] = useState(new Date());
   const {
     contributionGroups,
     setContributionGroups,
@@ -62,6 +64,90 @@ const CreateContribution = () => {
   useEffect(() => {
     getContributionGroups(setContributionGroups);
   }, []);
+
+  const createGroupContribution = async () => {
+    const details = {
+      contributionName,
+      groupName: selectedValue.title,
+      groupId: selectedValue.value,
+      userId: currentUser.userId,
+      username: currentUser.preferred_username,
+      target: selectedValue.target,
+      amount: selectedValue.amount,
+      num_of_month: selectedValue.num_of_month,
+      variant: variant.value,
+    };
+    if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await createContribution(
+        details,
+        setContributions,
+        currentUser,
+        userProfile
+      );
+      setNewContribution(res);
+      setModalVisible(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createContributionPersonal = async () => {
+    const date = new Date();
+    const start_date = date.toLocaleDateString('en-CA');
+
+    const details = {
+      contributionName,
+      groupName: selectedValue.title,
+      groupId: selectedValue.value,
+      userId: currentUser.userId,
+      username: currentUser.preferred_username,
+      target: selectedValue.target,
+      amount: selectedValue.amount,
+      num_of_month: selectedValue.num_of_month,
+      variant: variant.value,
+      start_date: start_date,
+    };
+
+    if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await createPersonalContribution(
+        details,
+        setContributions,
+        currentUser,
+        userProfile
+      );
+
+      Alert.alert(
+        'Contribution Created',
+        'Your personal contribution has been created successfully!',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.push('/protected/mimonie'),
+          },
+        ],
+        { cancelable: false }
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert(
+        'Error',
+        'An error occurred while creating the contribution.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleConfirm = async () => {
     if (!termsAccepted) {
@@ -91,40 +177,11 @@ const CreateContribution = () => {
       return;
     }
 
-    const details = {
-      contributionName,
-      groupName: selectedValue.title,
-      groupId: selectedValue.value,
-      // date: date.toLocaleDateString('en-CA'),
-      userId: currentUser.userId,
-      username: currentUser.preferred_username,
-      target: selectedValue.target,
-      amount: selectedValue.amount,
-      num_of_month: selectedValue.num_of_month,
-      variant: variant.value,
-    };
-    if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
-      return;
+    if (contributionType === 'group') {
+      await createGroupContribution();
+    } else if (contributionType === 'personal') {
+      await createContributionPersonal();
     }
-    setIsLoading(true);
-    try {
-      const res = await createContribution(
-        details,
-        setContributions,
-        currentUser,
-        userProfile
-      );
-      setNewContribution(res);
-      setModalVisible(true);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const toggleDatePicker = () => {
-    setShowDatePicker(!showDatePicker);
   };
 
   const groupNameAndValue = contributionGroups.map((item) => ({
@@ -137,6 +194,7 @@ const CreateContribution = () => {
     setContactVisible(true);
     setModalVisible(false);
   };
+
   const isVerified =
     userProfile?.is_nin_verified && userProfile?.is_bvn_verified;
 
@@ -267,27 +325,12 @@ const CreateContribution = () => {
               {userProfile?.dva?.enabled ? (
                 <>
                   <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Amount</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter Amount"
-                      keyboardType="numeric"
-                      value={selectedValue.amount}
-                      onChangeText={(val) =>
-                        setSelectedValue({ ...selectedValue, amount: val })
-                      }
-                    />
-                  </View>
-                  <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Target</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter Target"
-                      keyboardType="numeric"
-                      value={selectedValue.target}
-                      onChangeText={(val) =>
-                        setSelectedValue({ ...selectedValue, target: val })
-                      }
+                    <Text style={styles.label}>Group Category</Text>
+                    <SelectInput
+                      options={groupNameAndValue}
+                      selectedValue={selectedValue}
+                      setSelectedValue={setSelectedValue}
+                      defaultValue={selectedValue?.label}
                     />
                   </View>
                   <View style={{ rowGap: 14 }}>
@@ -342,18 +385,13 @@ const CreateContribution = () => {
               styles.button,
               {
                 backgroundColor:
-                  !isVerified ||
-                  !contributionType ||
-                  (!userProfile.recipient_code &&
-                    contributionType === 'personal')
+                  !isVerified || !contributionType || !userProfile?.dva?.enabled
                     ? 'gray'
                     : Colors.pri,
               },
             ]}
             disabled={
-              !isVerified ||
-              !contributionType ||
-              (!userProfile.recipient_code && contributionType === 'personal')
+              !isVerified || !contributionType || !userProfile?.dva?.enabled
             }
             onPress={handleConfirm}
           >
