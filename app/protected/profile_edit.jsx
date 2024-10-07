@@ -131,8 +131,6 @@ const ProfileEdit = () => {
 
   const handleSubmit = async () => {
     const data = {
-      name: infoDetails.firstname + ' ' + infoDetails.lastname,
-      birthdate: convertToAWSDate(infoDetails.birthdate),
       address: infoDetails.address,
       occupation: infoDetails.occupation,
       income_from: infoDetails.income_from,
@@ -226,7 +224,7 @@ const ProfileEdit = () => {
                     onChangeText={(value) =>
                       handleInputChange(value, item.name)
                     }
-                    editable={item.name !== 'birthdate'}
+                    editable={item.editable}
                     placeholder={item.placeholder}
                     onPress={() =>
                       item.name === 'birthdate' ? toggleDatePicker() : {}
@@ -332,35 +330,39 @@ const styles = StyleSheet.create({
 export default ProfileEdit;
 
 const formElement = [
-  {
-    label: 'First Name',
-    name: 'firstname',
-    placeholder: 'Jimoh',
-    helperText: 'Use  first name as on official document',
-  },
-  {
-    label: 'Last Name',
-    name: 'lastname',
-    placeholder: 'Alfonso',
-    helperText: 'Use  last name as on official document',
-  },
+  // {
+  //   label: 'First Name',
+  //   name: 'firstname',
+  //   placeholder: 'Jimoh',
+  //   helperText: 'Use  first name as on official document',
+  //   editable: false,
+  // },
+  // {
+  //   label: 'Last Name',
+  //   name: 'lastname',
+  //   placeholder: 'Alfonso',
+  //   helperText: 'Use  last name as on official document',
+  //   editable: false,
+  // },
   // {
   //   label: 'Phone Number',
   //   name: 'phone_number',
   //   placeholder: '+234 0X17 XX4 24X3',
   // },
-  { label: 'Date of Birth', name: 'birthdate', placeholder: '30 July, 1950' },
+  // { label: 'Date of Birth', name: 'birthdate', placeholder: '30 July, 1950', editable: true, },
   {
     label: 'Contact Address',
     name: 'address',
     placeholder: '200, Kilode Close, Ajangbadi, Lagos',
+    editable: true,
   },
-  { label: 'Occupation', name: 'occupation', placeholder: 'Cab Driver' },
+  { label: 'Occupation', name: 'occupation', placeholder: 'Cab Driver',  editable: true, },
   {
     label: 'Income Range',
     name: 'income_from',
     eType: 'select',
     placeholder: '',
+    editable: true,
   },
   // {
   //   label: 'Income To',
@@ -372,12 +374,14 @@ const formElement = [
     name: 'country_of_origin',
     eType: 'select',
     placeholder: 'Nigeria',
+    editable: true,
   },
   {
     label: 'County of Residence',
     name: 'country_of_residence',
     eType: 'select',
     placeholder: 'Nigeria',
+    editable: true,
   },
 ];
 

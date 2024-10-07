@@ -244,7 +244,7 @@ const ContributionDetails = () => {
   };
 
   const isEarlyWithdrawal =
-    contribution?.currentl_at < contribution?.num_of_month;
+    contribution?.currently_at < contribution?.num_of_month;
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -308,15 +308,14 @@ const ContributionDetails = () => {
                 <Pressable
                   style={styles.fab}
                   onPress={() => {
-                    if (contribution?.status === 'completed') {
-                      // Do nothing or handle if needed
-                    } else if (
-                      parsed?.length === contribution?.num_of_month &&
-                      contribution?.owner === userProfile?.name
+                    if (
+                      (parsed?.length === contribution?.num_of_month &&
+                        contribution?.owner === userProfile?.name) ||
+                      contribution?.type === 'personal'
                     ) {
                       handleStartContribution();
                     } else if (
-                      parsed?.length !== contribution?.num_of_month &&
+                      contribution?.status === 'open' &&
                       contribution?.owner === userProfile?.name
                     ) {
                       setVisible(!visible);
@@ -329,14 +328,11 @@ const ContributionDetails = () => {
                   <Text style={styles.fabText}>
                     {isLoading
                       ? 'Joining ...'
-                      : contribution?.status === 'completed'
-                      ? 'Completed'
-                      : contribution?.status === 'running'
-                      ? 'Running'
-                      : parsed?.length === contribution?.num_of_month &&
-                        contribution?.owner === userProfile?.name
+                      : (parsed?.length === contribution?.num_of_month &&
+                          contribution?.owner === userProfile?.name) ||
+                        contribution?.type === 'personal'
                       ? 'Start'
-                      : parsed?.length !== contribution?.num_of_month &&
+                      : contribution?.status === 'open' &&
                         contribution?.owner === userProfile?.name
                       ? 'Invite'
                       : 'Join'}
@@ -427,158 +423,173 @@ const ContributionDetails = () => {
                 </Text>
               </View>
 
-              <View style={styles.detailContainer}>
-                <Text style={styles.label}>Number of Contributors</Text>
-                <Text style={styles.value}>{parsed.length}</Text>
-              </View>
-              <View
-                style={[
-                  {
-                    // minHeight: 85,
-                    marginBottom: 16,
-                    backgroundColor: 'white',
-                    borderRadius: 8,
-                  },
-                ]}
-              >
-                <Text style={styles.label}>Contributors</Text>
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ columnGap: 8, paddingBottom: 10 }}
-                  nestedScrollEnabled={true}
-                  horizontal={true}
-                >
-                  {parsed?.map((eN, id) => {
-                    return (
-                      <View
-                        key={id}
-                        style={{
-                          justifyContent: 'center',
-                          height: 100,
-                          minWidth: 200,
-                          borderRadius: 8,
-                          borderWidth: 1,
-                          borderColor: '#E5E7EB',
-                          backgroundColor: 'white',
-                          paddingHorizontal: 8,
-                          rowGap: 10,
-                          shadowColor: 'gray',
-                          shadowOffset: { width: 0, height: 2 },
-                          shadowOpacity: 0.25,
-                          shadowRadius: 3.84,
-                          elevation: 5,
-                        }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            columnGap: 10,
-                            alignItems: 'center',
-                          }}
-                        >
-                          <View>
-                            {imageUrls[eN.userId] ? (
-                              <Image
-                                source={{ uri: imageUrls[eN.userId] }}
-                                style={{
-                                  width: 50,
-                                  height: 50,
-                                  borderRadius: 8,
-                                  backgroundColor: '#E5E7EB',
-                                  objectFit: 'cover',
-                                }}
-                              />
-                            ) : (
-                              <Feather
-                                name="image"
-                                color={'gray'}
-                                size={40}
-                                style={{
-                                  padding: 0,
-                                  margin: 0,
-                                }}
-                              />
-                            )}
-                          </View>
-                          <View style={{ rowGap: 4 }}>
-                            <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
-                            <View>
-                              <View
-                                style={{
-                                  flexDirection: 'row',
-                                  columnGap: 6,
-                                  alignItems: 'center',
-                                }}
-                              >
-                                <Text>{capitalizeFirstLetter(eN.status)}</Text>
-                                {eN.status === 'received' ? (
-                                  <Fontisto
-                                    name="checkbox-active"
-                                    size={14}
-                                    color="green"
-                                  />
-                                ) : eN.status === 'in progress' ? (
-                                  <MaterialCommunityIcons
-                                    name="progress-check"
-                                    size={14}
-                                    color="#ecb753"
-                                  />
-                                ) : eN.status === 'pending' ? (
-                                  <AntDesign
-                                    name="minussquareo"
-                                    size={14}
-                                    color="gray"
-                                  />
-                                ) : null}
-                                {contribution?.type !== 'personal' &&
-                                next?.userId === eN.userId ? (
-                                  <Text
+              {contribution?.type === 'group' && (
+                <>
+                  <View style={styles.detailContainer}>
+                    <Text style={styles.label}>Number of Contributors</Text>
+                    <Text style={styles.value}>{parsed.length}</Text>
+                  </View>
+                  <View
+                    style={[
+                      {
+                        // minHeight: 85,
+                        marginBottom: 16,
+                        backgroundColor: 'white',
+                        borderRadius: 8,
+                      },
+                    ]}
+                  >
+                    <Text style={styles.label}>Contributors</Text>
+                    <ScrollView
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={{
+                        columnGap: 8,
+                        paddingBottom: 10,
+                      }}
+                      nestedScrollEnabled={true}
+                      horizontal={true}
+                    >
+                      {parsed?.map((eN, id) => {
+                        return (
+                          <View
+                            key={id}
+                            style={{
+                              justifyContent: 'center',
+                              height: 100,
+                              minWidth: 200,
+                              borderRadius: 8,
+                              borderWidth: 1,
+                              borderColor: '#E5E7EB',
+                              backgroundColor: 'white',
+                              paddingHorizontal: 8,
+                              rowGap: 10,
+                              shadowColor: 'gray',
+                              shadowOffset: { width: 0, height: 2 },
+                              shadowOpacity: 0.25,
+                              shadowRadius: 3.84,
+                              elevation: 5,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                columnGap: 10,
+                                alignItems: 'center',
+                              }}
+                            >
+                              <View>
+                                {imageUrls[eN.userId] ? (
+                                  <Image
+                                    source={{ uri: imageUrls[eN.userId] }}
                                     style={{
-                                      color: 'lightgreen',
-                                      fontFamily: 'ir',
+                                      width: 50,
+                                      height: 50,
+                                      borderRadius: 8,
+                                      backgroundColor: '#E5E7EB',
+                                      objectFit: 'cover',
+                                    }}
+                                  />
+                                ) : (
+                                  <Feather
+                                    name="image"
+                                    color={'gray'}
+                                    size={40}
+                                    style={{
+                                      padding: 0,
+                                      margin: 0,
+                                    }}
+                                  />
+                                )}
+                              </View>
+                              <View style={{ rowGap: 4 }}>
+                                <Text style={{ fontFamily: 'ir' }}>
+                                  {eN.name}
+                                </Text>
+                                <View>
+                                  <View
+                                    style={{
+                                      flexDirection: 'row',
+                                      columnGap: 6,
+                                      alignItems: 'center',
                                     }}
                                   >
-                                    Next
-                                  </Text>
-                                ) : null}
+                                    <Text>
+                                      {capitalizeFirstLetter(eN.status)}
+                                    </Text>
+                                    {eN.status === 'received' ? (
+                                      <Fontisto
+                                        name="checkbox-active"
+                                        size={14}
+                                        color="green"
+                                      />
+                                    ) : eN.status === 'in progress' ? (
+                                      <MaterialCommunityIcons
+                                        name="progress-check"
+                                        size={14}
+                                        color="#ecb753"
+                                      />
+                                    ) : eN.status === 'pending' ? (
+                                      <AntDesign
+                                        name="minussquareo"
+                                        size={14}
+                                        color="gray"
+                                      />
+                                    ) : null}
+                                    {contribution?.type !== 'personal' &&
+                                    next?.userId === eN.userId ? (
+                                      <Text
+                                        style={{
+                                          color: 'lightgreen',
+                                          fontFamily: 'ir',
+                                        }}
+                                      >
+                                        Next
+                                      </Text>
+                                    ) : null}
+                                  </View>
+                                </View>
+                                {/* <Text style={{ fontFamily: "ir" }}>{id + 1}</Text> */}
                               </View>
                             </View>
-                            {/* <Text style={{ fontFamily: "ir" }}>{id + 1}</Text> */}
+                            {eN?.status !== 'in progress' &&
+                            eN?.last_successful_round <
+                              contribution?.current_count ? (
+                              <Text style={{ fontSize: 10, color: 'red' }}>
+                                Attention: {'Missed last contribution'}
+                              </Text>
+                            ) : (
+                              <Text style={{ fontSize: 10 }}>
+                                Note: {'In good standing'}
+                              </Text>
+                            )}
                           </View>
-                        </View>
-                        {eN?.status !== 'in progress' &&
-                        eN?.last_successful_round <
-                          contribution?.current_count ? (
-                          <Text style={{ fontSize: 10, color: 'red' }}>
-                            Attention: {'Missed last contribution'}
-                          </Text>
-                        ) : (
-                          <Text style={{ fontSize: 10 }}>
-                            Note: {'In good standing'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  })}
-                </ScrollView>
-              </View>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                </>
+              )}
               <NextContributionDay
                 contribution={contribution}
                 parsed={parsed}
                 userProfile={userProfile}
               />
-              <View style={styles.detailContainer}>
-                <Text style={styles.label}>User role</Text>
-                <Text style={styles.value}>
-                  {contribution?.owner === userProfile?.name
-                    ? 'Creator'
-                    : 'invitee'}
-                </Text>
-              </View>
-              <View style={styles.detailContainer}>
-                <Text style={styles.label}>Owner</Text>
-                <Text style={styles.value}>{contribution?.owner}</Text>
-              </View>
+              {contribution?.type === 'group' && (
+                <>
+                  <View style={styles.detailContainer}>
+                    <Text style={styles.label}>User role</Text>
+                    <Text style={styles.value}>
+                      {contribution?.owner === userProfile?.name
+                        ? 'Creator'
+                        : 'invitee'}
+                    </Text>
+                  </View>
+                  <View style={styles.detailContainer}>
+                    <Text style={styles.label}>Owner</Text>
+                    <Text style={styles.value}>{contribution?.owner}</Text>
+                  </View>
+                </>
+              )}
             </ScrollView>
           </>
         )}
@@ -592,8 +603,8 @@ const ContributionDetails = () => {
         ref={paystackWebViewRef}
         paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
         amount={contribution?.amount}
-        billingEmail={userProfile.email}
-        firstName={userProfile.name}
+        billingEmail={userProfile?.email}
+        firstName={userProfile?.name}
         activityIndicatorColor={Colors.pri}
         subaccount={recipient?.subaccount_code}
         channels={['bank_transfer']}
@@ -648,6 +659,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     }
 
     if (
+      contribution.type === 'group' &&
       contribution?.current_count !== 0 &&
       contribution?.current_count >= parsed.length
     ) {

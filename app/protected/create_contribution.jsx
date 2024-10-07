@@ -44,7 +44,6 @@ const CreateContribution = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [contactVisible, setContactVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState({});
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [newContribution, setNewContribution] = useState({});
   const [contributionType, setContributionType] = useState('group');
   const [variant, setVariant] = useState({});
@@ -77,6 +76,7 @@ const CreateContribution = () => {
       num_of_month: selectedValue.num_of_month,
       variant: variant.value,
     };
+
     if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
       return;
     }
@@ -103,18 +103,23 @@ const CreateContribution = () => {
 
     const details = {
       contributionName,
-      groupName: selectedValue.title,
-      groupId: selectedValue.value,
+      groupName: 'Default',
+      groupId: 'f75fbf99-4e9d-4e3e-ad62-b1b94a9162d9',
       userId: currentUser.userId,
       username: currentUser.preferred_username,
-      target: selectedValue.target,
-      amount: selectedValue.amount,
-      num_of_month: selectedValue.num_of_month,
+      target: selectedValue.p_target,
+      amount: selectedValue.p_amount,
+      num_of_month: Math.ceil(selectedValue.p_target / selectedValue.p_amount),
       variant: variant.value,
-      start_date: start_date,
     };
 
-    if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
+    if (
+      ErrorCheck({
+        contributionName,
+        target: selectedValue.p_target,
+        amount: selectedValue.p_amount,
+      })
+    ) {
       return;
     }
 
@@ -201,7 +206,7 @@ const CreateContribution = () => {
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
-        <ScrollView>
+        <ScrollView nestedScrollEnabled={true}>
           {!isVerified ? (
             <View
               style={{
@@ -246,7 +251,12 @@ const CreateContribution = () => {
                   styles.switchButton,
                   contributionType === 'group' && styles.activeButton,
                 ]}
-                onPress={() => setContributionType('group')}
+                onPress={() => {
+                  setContributionType('group');
+                  setContributionName('');
+                  setVariant({});
+                  setSelectedValue({});
+                }}
               >
                 <Text
                   style={[
@@ -262,7 +272,11 @@ const CreateContribution = () => {
                   styles.switchButton,
                   contributionType === 'personal' && styles.activeButton,
                 ]}
-                onPress={() => setContributionType('personal')}
+                onPress={() => {
+                  setContributionType('personal'), setContributionName('');
+                  setVariant({});
+                  setSelectedValue({});
+                }}
               >
                 <Text
                   style={[
@@ -277,6 +291,11 @@ const CreateContribution = () => {
                 </Text>
               </TouchableOpacity>
             </View>
+            {contributionType === 'personal' && (
+              <Text style={{ fontSize: 12, color: '#000000' }}>
+                Achieve your financial goals at your own pace
+              </Text>
+            )}
           </View>
 
           {contributionType === 'group' ? (
@@ -301,7 +320,7 @@ const CreateContribution = () => {
                 />
               </View>
               <View style={{ rowGap: 14 }}>
-                <Text style={styles.label}>Contribution Variant</Text>
+                <Text style={styles.label}>Frequency</Text>
                 <SelectInput
                   options={variantOptions}
                   selectedValue={variant}
@@ -325,16 +344,37 @@ const CreateContribution = () => {
               {userProfile?.dva?.enabled ? (
                 <>
                   <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Group Category</Text>
-                    <SelectInput
-                      options={groupNameAndValue}
-                      selectedValue={selectedValue}
-                      setSelectedValue={setSelectedValue}
-                      defaultValue={selectedValue?.label}
+                    <Text style={styles.label}>Amount</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter Amount"
+                      keyboardType="numeric"
+                      value={selectedValue.amount}
+                      onChangeText={(val) =>
+                        setSelectedValue({
+                          ...selectedValue,
+                          p_amount: Number(val),
+                        })
+                      }
                     />
                   </View>
                   <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Variant</Text>
+                    <Text style={styles.label}>Target</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter Target"
+                      keyboardType="numeric"
+                      value={selectedValue.target}
+                      onChangeText={(val) =>
+                        setSelectedValue({
+                          ...selectedValue,
+                          p_target: Number(val),
+                        })
+                      }
+                    />
+                  </View>
+                  <View style={{ rowGap: 14 }}>
+                    <Text style={styles.label}>Frequency</Text>
                     <SelectInput
                       options={variantOptions}
                       selectedValue={variant}

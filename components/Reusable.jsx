@@ -121,6 +121,7 @@ export const SelectInput = ({
           <TextInput
             style={styles.searchInput}
             placeholder="Search..."
+            placeholderTextColor="gray"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />

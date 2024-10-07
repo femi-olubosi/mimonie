@@ -188,22 +188,22 @@ export default function HomeScreen() {
     registerPushToken();
   }, [currentUser]);
 
-  const responseListener = useRef();
+  // const responseListener = useRef();
 
-  useEffect(() => {
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const inviteLink =
-          response.notification.request.content.data.invite_link;
-        if (inviteLink) {
-          Linking.openURL(inviteLink);
-        }
-      });
-    return () => {
-      responseListener.current &&
-        Notifications.removeNotificationSubscription(responseListener.current);
-    };
-  }, []);
+  // useEffect(() => {
+  //   responseListener.current =
+  //     Notifications.addNotificationResponseReceivedListener((response) => {
+  //       const inviteLink =
+  //         response.notification.request.content.data.invite_link;
+  //       if (inviteLink) {
+  //         Linking.openURL(inviteLink);
+  //       }
+  //     });
+  //   return () => {
+  //     responseListener.current &&
+  //       Notifications.removeNotificationSubscription(responseListener.current);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const fetchContributions = async () => {

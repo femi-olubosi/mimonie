@@ -186,6 +186,7 @@ const CompleteProfile = () => {
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        nestedScrollEnabled={true}
       >
         {formElement.map((item, index) => (
           <View key={index}>

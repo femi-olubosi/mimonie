@@ -1,6 +1,5 @@
 import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
-import { createNotification } from './notifications.service';
 import { triggerNotificationForUser } from './pushNotification.service';
 import { createUserActivity } from './activities.service';
 
@@ -116,7 +115,7 @@ export const createPersonalContribution = async (
         target: details.target,
         amount: details.amount,
         num_of_month: details.num_of_month,
-        status: 'running',
+        status: 'open',
         current_count: 0,
         variant: details.variant,
         start_date: details.start_date,

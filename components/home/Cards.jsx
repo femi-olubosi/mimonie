@@ -93,7 +93,7 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={{ fontSize: 12, color: 'white', fontFamily: 'im' }}
                     >
-                      Category: {item.category}
+                      Category: {item.type==="group"?item.category:"Personal Contribution"}
                     </Text>
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
@@ -193,7 +193,7 @@ const Cards = ({ contributions }) => {
                   >
                     {item.status === 'completed' ? (
                       'Completed'
-                    ) : done ? (
+                    ) : item.type==="group" && done ? (
                       'Completed your part'
                     ) : (
                       <>
@@ -213,14 +213,13 @@ const Cards = ({ contributions }) => {
                       alignItems: 'center',
                     }}
                   >
-                    <NextContributionDay
+                    {
+                      item.type==="group" && done? null :<NextContributionDay
                       contribution={item}
                       done={done}
                       currentParticipant={currentParticipant}
                     />
-                    <Text style={[styles.text, { fontSize: 12 }]}>
-                      {capitalizeFirstLetter(item?.type)}
-                    </Text>
+                    }
                   </View>
                 </ThemedView>
 
@@ -277,16 +276,15 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
       return 'Completed';
     }
 
-    if (done) {
-      return '-';
+    if (contribution.type==="group" && done) {
+      return '';
     }
 
     const today = new Date();
     let nextContributionDay;
 
-    // Determine the target day of the week: Wednesday if specific ID, Monday otherwise
     const targetDayOfWeek =
-      contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1; // 3 for Wednesday, 1 for Monday
+      contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1;
 
     // If currentParticipant is 'in progress', calculate the next round day after the current round
     if (currentParticipant?.status === 'in progress') {
