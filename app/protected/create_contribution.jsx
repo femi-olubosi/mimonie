@@ -206,220 +206,227 @@ const CreateContribution = () => {
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
-        <ScrollView nestedScrollEnabled={true}>
-          {!isVerified ? (
-            <View
-              style={{
-                backgroundColor: 'red',
-                paddingVertical: 5,
-                paddingHorizontal: 5,
-                borderRadius: 8,
-                marginBottom: 20,
-              }}
-            >
-              <Text
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}
+          >
+            {!isVerified ? (
+              <View
                 style={{
-                  color: 'white',
-                  fontFamily: 'ir',
-                  fontSize: 12,
-                  alignItems: 'center',
+                  backgroundColor: 'red',
+                  paddingVertical: 5,
+                  paddingHorizontal: 5,
+                  borderRadius: 8,
+                  marginBottom: 20,
                 }}
               >
-                You cannot create a contribution at the moment. Please complete
-                your identity verification
-                <Link href={'/protected/account'}>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontFamily: 'ir',
+                    fontSize: 12,
+                    alignItems: 'center',
+                  }}
+                >
+                  You cannot create a contribution at the moment. Please
+                  complete your identity verification
+                  <Link href={'/protected/account'}>
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontFamily: 'ib',
+                        fontSize: 12,
+                      }}
+                    >
+                      Verify Now
+                    </Text>
+                  </Link>
+                </Text>
+              </View>
+            ) : null}
+            <View style={{ marginVertical: 20 }}>
+              <Text style={styles.instructions}>
+                Choose your contribution type:
+              </Text>
+              <View style={styles.switchContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.switchButton,
+                    contributionType === 'group' && styles.activeButton,
+                  ]}
+                  onPress={() => {
+                    setContributionType('group');
+                    setContributionName('');
+                    setVariant({});
+                    setSelectedValue({});
+                  }}
+                >
                   <Text
-                    style={{
-                      color: 'white',
-                      fontFamily: 'ib',
-                      fontSize: 12,
-                    }}
+                    style={[
+                      styles.switchText,
+                      {
+                        color: contributionType === 'group' ? 'white' : 'black',
+                      },
+                    ]}
                   >
-                    Verify Now
+                    Group Contribution
                   </Text>
-                </Link>
-              </Text>
-            </View>
-          ) : null}
-          <View style={{ marginVertical: 20 }}>
-            <Text style={styles.instructions}>
-              Choose your contribution type:
-            </Text>
-            <View style={styles.switchContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.switchButton,
-                  contributionType === 'group' && styles.activeButton,
-                ]}
-                onPress={() => {
-                  setContributionType('group');
-                  setContributionName('');
-                  setVariant({});
-                  setSelectedValue({});
-                }}
-              >
-                <Text
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={[
-                    styles.switchText,
-                    { color: contributionType === 'group' ? 'white' : 'black' },
+                    styles.switchButton,
+                    contributionType === 'personal' && styles.activeButton,
                   ]}
+                  onPress={() => {
+                    setContributionType('personal'), setContributionName('');
+                    setVariant({});
+                    setSelectedValue({});
+                  }}
                 >
-                  Group Contribution
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.switchButton,
-                  contributionType === 'personal' && styles.activeButton,
-                ]}
-                onPress={() => {
-                  setContributionType('personal'), setContributionName('');
-                  setVariant({});
-                  setSelectedValue({});
-                }}
-              >
-                <Text
-                  style={[
-                    styles.switchText,
-                    {
-                      color:
-                        contributionType === 'personal' ? 'white' : 'black',
-                    },
-                  ]}
-                >
-                  Personal Contribution
-                </Text>
-              </TouchableOpacity>
-            </View>
-            {contributionType === 'personal' && (
-              <Text style={{ fontSize: 12, color: '#000000' }}>
-                Achieve your financial goals at your own pace
-              </Text>
-            )}
-          </View>
-
-          {contributionType === 'group' ? (
-            <View style={{ rowGap: 20 }}>
-              <View style={{ rowGap: 14 }}>
-                <Text style={styles.label}>Contribution Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={contributionName}
-                  onChangeText={setContributionName}
-                  placeholder="Enter Contribution Name"
-                />
-              </View>
-
-              <View style={{ rowGap: 14 }}>
-                <Text style={styles.label}>Group Category</Text>
-                <SelectInput
-                  options={groupNameAndValue}
-                  selectedValue={selectedValue}
-                  setSelectedValue={setSelectedValue}
-                  defaultValue={selectedValue?.label}
-                />
-              </View>
-              <View style={{ rowGap: 14 }}>
-                <Text style={styles.label}>Frequency</Text>
-                <SelectInput
-                  options={variantOptions}
-                  selectedValue={variant}
-                  setSelectedValue={setVariant}
-                  defaultValue={variant.value}
-                />
-              </View>
-            </View>
-          ) : (
-            <View style={{ rowGap: 20 }}>
-              <View style={{ rowGap: 14 }}>
-                <Text style={styles.label}>Contribution Name</Text>
-                <TextInput
-                  style={styles.input}
-                  value={contributionName}
-                  onChangeText={setContributionName}
-                  placeholder="Enter Contribution Name"
-                />
-              </View>
-
-              {userProfile?.dva?.enabled ? (
-                <>
-                  <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Amount</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter Amount"
-                      keyboardType="numeric"
-                      value={selectedValue.amount}
-                      onChangeText={(val) =>
-                        setSelectedValue({
-                          ...selectedValue,
-                          p_amount: Number(val),
-                        })
-                      }
-                    />
-                  </View>
-                  <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Target</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Enter Target"
-                      keyboardType="numeric"
-                      value={selectedValue.target}
-                      onChangeText={(val) =>
-                        setSelectedValue({
-                          ...selectedValue,
-                          p_target: Number(val),
-                        })
-                      }
-                    />
-                  </View>
-                  <View style={{ rowGap: 14 }}>
-                    <Text style={styles.label}>Frequency</Text>
-                    <SelectInput
-                      options={variantOptions}
-                      selectedValue={variant}
-                      setSelectedValue={setVariant}
-                      defaultValue={variant.value}
-                    />
-                  </View>
-                </>
-              ) : (
-                <Pressable
-                  onPress={() => router.push('/protected/settings')}
-                  style={styles.warningContainer}
-                >
-                  <Text style={styles.warningText}>
-                    You have not enabled personal contribution.{' '}
-                    <Text style={styles.linkText}>Enable Now</Text>
+                  <Text
+                    style={[
+                      styles.switchText,
+                      {
+                        color:
+                          contributionType === 'personal' ? 'white' : 'black',
+                      },
+                    ]}
+                  >
+                    Personal Contribution
                   </Text>
-                </Pressable>
+                </TouchableOpacity>
+              </View>
+              {contributionType === 'personal' && (
+                <Text style={{ fontSize: 12, color: '#000000' }}>
+                  Achieve your financial goals at your own pace
+                </Text>
               )}
             </View>
-          )}
-          <TouchableOpacity onPress={() => setTermsVisible(true)}>
-            <Text style={styles.termsLink}>
-              Read and Accept Terms & Conditions
-            </Text>
-          </TouchableOpacity>
-          <View style={styles.checkboxContainer}>
-            <TouchableOpacity
-              style={styles.checkbox}
-              onPress={() => setTermsAccepted(!termsAccepted)}
-            >
-              <View
-                style={[
-                  styles.checkboxIndicator,
-                  termsAccepted ? styles.checked : {},
-                ]}
-              />
-            </TouchableOpacity>
-            <Text style={styles.checkboxLabel}>
-              I accept the terms and conditions
-            </Text>
-          </View>
-        </ScrollView>
 
-        <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            {contributionType === 'group' ? (
+              <View style={{ rowGap: 20 }}>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Contribution Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={contributionName}
+                    onChangeText={setContributionName}
+                    placeholder="Enter Contribution Name"
+                  />
+                </View>
+
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Group Category</Text>
+                  <SelectInput
+                    options={groupNameAndValue}
+                    selectedValue={selectedValue}
+                    setSelectedValue={setSelectedValue}
+                    defaultValue={selectedValue?.label}
+                  />
+                </View>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Frequency</Text>
+                  <SelectInput
+                    options={variantOptions}
+                    selectedValue={variant}
+                    setSelectedValue={setVariant}
+                    defaultValue={variant.value}
+                  />
+                </View>
+              </View>
+            ) : (
+              <View style={{ rowGap: 20 }}>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Contribution Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={contributionName}
+                    onChangeText={setContributionName}
+                    placeholder="Enter Contribution Name"
+                  />
+                </View>
+
+                {userProfile?.dva?.enabled ? (
+                  <>
+                    <View style={{ rowGap: 14 }}>
+                      <Text style={styles.label}>Frequency</Text>
+                      <SelectInput
+                        options={variantOptions}
+                        selectedValue={variant}
+                        setSelectedValue={setVariant}
+                        defaultValue={variant.value}
+                      />
+                    </View>
+                    <View style={{ rowGap: 14 }}>
+                      <Text style={styles.label}>Amount {variant?.label}</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter Amount"
+                        keyboardType="numeric"
+                        value={selectedValue.amount}
+                        onChangeText={(val) =>
+                          setSelectedValue({
+                            ...selectedValue,
+                            p_amount: Number(val),
+                          })
+                        }
+                      />
+                    </View>
+                    <View style={{ rowGap: 14 }}>
+                      <Text style={styles.label}>Target</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Enter Target"
+                        keyboardType="numeric"
+                        value={selectedValue.target}
+                        onChangeText={(val) =>
+                          setSelectedValue({
+                            ...selectedValue,
+                            p_target: Number(val),
+                          })
+                        }
+                      />
+                    </View>
+                  </>
+                ) : (
+                  <Pressable
+                    onPress={() => router.push('/protected/settings')}
+                    style={styles.warningContainer}
+                  >
+                    <Text style={styles.warningText}>
+                      You have not enabled personal contribution.{' '}
+                      <Text style={styles.linkText}>Enable Now</Text>
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
+            <TouchableOpacity onPress={() => setTermsVisible(true)}>
+              <Text style={styles.termsLink}>
+                Read and Accept Terms & Conditions
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity
+                style={styles.checkbox}
+                onPress={() => setTermsAccepted(!termsAccepted)}
+              >
+                <View
+                  style={[
+                    styles.checkboxIndicator,
+                    termsAccepted ? styles.checked : {},
+                  ]}
+                />
+              </TouchableOpacity>
+              <Text style={styles.checkboxLabel}>
+                I accept the terms and conditions
+              </Text>
+            </View>
+          </ScrollView>
+        </View>
+
+        <View style={{ justifyContent: 'flex-end' }}>
           <TouchableOpacity
             style={[
               styles.button,
@@ -549,7 +556,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 100,
+    marginTop: 40,
     height: 44,
   },
   buttonText: {
@@ -695,8 +702,7 @@ const terms = (type) => {
     </Text>
   ) : (
     <Text style={styles.termsContent}>
-      1. Paystack charges 1.5% + NGN 100 from each contribution, and Mimonie
-      charges 5%.
+      1. Admin fee of 5%.
       {'\n'}
       {'\n'}
       2. Early withdrawal requests are subject to extra charges.

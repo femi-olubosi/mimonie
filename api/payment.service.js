@@ -584,7 +584,7 @@ const transferToBank = async (recipient_code, amount, contribution) => {
   return await makePaystackRequest('/transfer', 'POST', data);
 };
 
-export const withdrawFunds = async (userId, contributionId) => {
+export const withdrawFunds = async (userProfile, contributionId) => {
   try {
     const contribution = await DataStore.query(Contribution, contributionId);
 
@@ -592,7 +592,8 @@ export const withdrawFunds = async (userId, contributionId) => {
       throw new Error('Contribution not found');
     }
 
-    const participants = JSON.parse(contribution.participant)[0];
+    const userId = userProfile.userId
+    const participants = JSON.parse(contribution.participant);
 
     const participant = participants.find((p) => p.userId === userId);
 
@@ -613,7 +614,7 @@ export const withdrawFunds = async (userId, contributionId) => {
       withdrawalAmount = contributionBalance - penalty;
 
       const flow = await transferToBank(
-        participant.recipient_code,
+        userProfile.recipient_code,
         withdrawalAmount,
         contribution
       );
@@ -646,12 +647,13 @@ export const withdrawFunds = async (userId, contributionId) => {
         return { success: false, message: flow.data.gateway_response };
       }
     } else {
+
       const flow = await transferToBank(
-        participant.recipient_code,
+        userProfile.recipient_code,
         withdrawalAmount,
         contribution
       );
-
+console.log('flow', flow)
       if (flow.data.status === 'pending') {
         await createUserActivity(userId, {
           type: 'collection',

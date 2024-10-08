@@ -59,7 +59,6 @@ const Cards = ({ contributions }) => {
         <FlatList
           data={contributions}
           renderItem={({ item }) => {
-            console.log('...', item.type);
             const participants = safeParseJSON(item?.participant, []);
             const currentParticipant = participants?.find(
               (e) => e.userId === userProfile?.userId

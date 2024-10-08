@@ -229,7 +229,7 @@ const ContributionDetails = () => {
   const handleWithdrawFund = async () => {
     setWithdrawModal(false);
     setIsLoading(true);
-    const withdrawalResponse = await withdrawFunds(userProfile.userId, id);
+    const withdrawalResponse = await withdrawFunds(userProfile, id);
 
     if (withdrawalResponse?.status === 'success') {
       Alert.alert(
