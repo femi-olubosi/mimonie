@@ -6,6 +6,46 @@ import { LazyLoading, LazyLoadingDisabled, AsyncCollection } from "@aws-amplify/
 
 
 
+type EagerUserBankDetails = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserBankDetails, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly userId: string;
+  readonly bank_code: string;
+  readonly bank_number: string;
+  readonly index?: string | null;
+  readonly extra?: string | null;
+  readonly status: string;
+  readonly bank_name: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyUserBankDetails = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserBankDetails, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly userId: string;
+  readonly bank_code: string;
+  readonly bank_number: string;
+  readonly index?: string | null;
+  readonly extra?: string | null;
+  readonly status: string;
+  readonly bank_name: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UserBankDetails = LazyLoading extends LazyLoadingDisabled ? EagerUserBankDetails : LazyUserBankDetails
+
+export declare const UserBankDetails: (new (init: ModelInit<UserBankDetails>) => UserBankDetails) & {
+  copyOf(source: UserBankDetails, mutator: (draft: MutableModel<UserBankDetails>) => MutableModel<UserBankDetails> | void): UserBankDetails;
+}
+
 type EagerPersonalContribution = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<PersonalContribution, 'id'>;

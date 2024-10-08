@@ -94,7 +94,7 @@ export const SelectInput = ({
   return (
     <View
       style={{
-        borderRadius: 12,
+        borderRadius: 8,
         borderWidth: 1,
         borderColor: 'gray',
         minHeight: 53,

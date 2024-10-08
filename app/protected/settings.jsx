@@ -158,7 +158,11 @@ const Settings = () => {
     try {
 
       const customerRecipientCode = await createTransferRecipientForBank(
-        userProfile
+        {
+          bank_code: userProfile.bank_details.bank_code,
+          account_number: userProfile.bank_details.account_number,
+          account_name: userProfile.name,
+        }
       );
 
       const toStore = {

@@ -1,5 +1,10 @@
 import { DataStore } from 'aws-amplify/datastore';
-import { Contribution, UserActivity, UserCardDetails } from '../src/models';
+import {
+  Contribution,
+  UserActivity,
+  UserBankDetails,
+  UserCardDetails,
+} from '../src/models';
 import { createUserActivity } from './activities.service';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
@@ -407,6 +412,79 @@ export const fetchCards = async (setUserCards, currentUser) => {
   }
 };
 
+export const fetchBankDetails = async (setBankDetails, currentUser) => {
+  try {
+    const bankDetails = await DataStore.query(UserBankDetails, (c) =>
+      c.userId.eq(currentUser.userId)
+    );
+    setBankDetails(bankDetails);
+    return bankDetails;
+  } catch (error) {
+    console.error('Error fetching user banks:', error);
+    return [];
+  }
+};
+
+export const createBankDetails = async (bankDetails, userProfile) => {
+  try {
+    const newBankDetails = await DataStore.save(
+      new UserBankDetails({
+        userId: userProfile.userId,
+        bank_code: bankDetails.bank_code,
+        bank_number: bankDetails.account_number,
+        bank_name: bankDetails.bank_name,
+        status: bankDetails.status,
+        index: bankDetails.recipient_code,
+      })
+    );
+
+    return newBankDetails;
+  } catch (error) {
+    console.error('Error creating bank details:', error);
+    throw new Error('Could not create bank details');
+  }
+};
+
+export const updateBankDetails = async (selectedBankId, currentUser) => {
+  try {
+    const bankDetails = await DataStore.query(UserBankDetails, (c) =>
+      c.userId.eq(currentUser.userId)
+    );
+
+    const updatedBankDetails = bankDetails.map((bank) => {
+      return DataStore.save(
+        UserBankDetails.copyOf(bank, (updated) => {
+          updated.status = bank.id === selectedBankId ? 'active' : 'inactive';
+        })
+      );
+    });
+
+    await Promise.all(updatedBankDetails);
+
+    return { success: true, message: 'Bank details updated successfully.' };
+  } catch (error) {
+    console.error('Error updating bank details:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const deleteBankDetails = async (bankId) => {
+  try {
+    const bankDetail = await DataStore.query(UserBankDetails, bankId);
+
+    if (!bankDetail) {
+      throw new Error('Bank details not found');
+    }
+
+    await DataStore.delete(bankDetail);
+
+    return { success: true, message: 'Bank details deleted successfully.' };
+  } catch (error) {
+    console.error('Error deleting bank details:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 export const deleteCards = async (id, setUserCards, currentUser) => {
   try {
     // Query for the contribution to be deleted
@@ -463,18 +541,18 @@ export const createTransferRecipientForDVA = async (details) => {
   return response.data.recipient_code;
 };
 
-export const createTransferRecipientForBank = async (userProfile) => {
-  const data = {
+export const createTransferRecipientForBank = async (data) => {
+  const request_data = {
     type: 'nuban',
-    name: userProfile.name,
-    account_number: userProfile.bank_details.account_number,
-    bank_code: userProfile.bank_details.bank_code,
+    name: data.name,
+    account_number: data.account_number,
+    bank_code: data.bank_code,
     currency: 'NGN',
   };
   const response = await makePaystackRequest(
     '/transferrecipient',
     'POST',
-    data
+    request_data
   );
   return response.data.recipient_code;
 };
@@ -577,14 +655,14 @@ const transferToBank = async (recipient_code, amount, contribution) => {
   const data = {
     recipient: recipient_code,
     amount: amount * 100,
-    source: "balance", 
+    source: 'balance',
     reason: `${contribution.name} contribution payout`,
   };
 
   return await makePaystackRequest('/transfer', 'POST', data);
 };
 
-export const withdrawFunds = async (userProfile, contributionId) => {
+export const withdrawFunds = async (userProfile, contributionId, amount) => {
   try {
     const contribution = await DataStore.query(Contribution, contributionId);
 
@@ -592,7 +670,7 @@ export const withdrawFunds = async (userProfile, contributionId) => {
       throw new Error('Contribution not found');
     }
 
-    const userId = userProfile.userId
+    const userId = userProfile.userId;
     const participants = JSON.parse(contribution.participant);
 
     const participant = participants.find((p) => p.userId === userId);
@@ -602,11 +680,12 @@ export const withdrawFunds = async (userProfile, contributionId) => {
     }
 
     const contributionBalance = participant.contributions * contribution.amount;
+    const participantBalance = participant.balance || contributionBalance;
 
     const isEarlyWithdrawal =
       contribution.currently_at < contribution.num_of_month;
     let penalty = 0;
-    let withdrawalAmount = contributionBalance;
+    let withdrawalAmount = amount;
 
     if (isEarlyWithdrawal) {
       // Apply a penalty (10%)
@@ -643,17 +722,23 @@ export const withdrawFunds = async (userProfile, contributionId) => {
           'Penalty',
           `Penalty of 10% applied for early withdrawal from ${contribution.name}`
         );
+
+        await DataStore.save(
+          Contribution.copyOf(contribution, (updated) => {
+            updated.participant = participants;
+            updated.status = 'closed';
+          })
+        );
       } else {
         return { success: false, message: flow.data.gateway_response };
       }
     } else {
-
       const flow = await transferToBank(
         userProfile.recipient_code,
-        withdrawalAmount,
+        amount,
         contribution
       );
-console.log('flow', flow)
+
       if (flow.data.status === 'pending') {
         await createUserActivity(userId, {
           type: 'collection',
@@ -663,24 +748,55 @@ console.log('flow', flow)
 
         await triggerNotificationForUser(
           participant.push_token,
-          `Withdrawal Processed for ${contribution.name}`,
+          `${withdrawalAmount} Withdrawal Processed for ${contribution.name}`,
           `You successfully withdrew all your funds from ${contribution.name}`
+        );
+
+        participant.balance = participantBalance - withdrawalAmount;
+
+        await DataStore.save(
+          Contribution.copyOf(contribution, (updated) => {
+            updated.participant = participants;
+            updated.status =
+              participant.balance === 0 ? 'closed' : contribution.status;
+          })
         );
       } else {
         return { success: false, message: flow.data.gateway_response };
       }
     }
 
-    await DataStore.save(
-      Contribution.copyOf(contribution, (updated) => {
-        updated.participant = participants;
-        updated.status = 'closed';
-      })
-    );
-
     return { success: true, message: 'Withdrawal successful', penalty };
   } catch (error) {
     console.error('Error processing withdrawal:', error);
     return { success: false, message: error.message };
+  }
+};
+
+export const resolveBankAccount = async (
+  account_number,
+  bank_code,
+  userProfile
+) => {
+  const endpoint = `/bank/resolve?account_number=${account_number}&bank_code=${bank_code}`;
+
+  const result = await makePaystackRequest(endpoint, 'GET');
+
+  const cleanName = (name) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-zA-Z ]/g, '')
+      .split(' ')
+      .filter(Boolean)
+      .join(' ');
+  };
+
+  const resolvedAccountName = cleanName(result.data.account_name);
+  const userProfileName = cleanName(userProfile.name);
+  
+  if (resolvedAccountName === userProfileName) {
+    return { success: true, message: 'verified' };
+  } else {
+    return { success: false, message: 'Invalid account details or account mismatch' };
   }
 };

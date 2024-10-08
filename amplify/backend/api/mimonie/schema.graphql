@@ -1,3 +1,14 @@
+type UserBankDetails @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userId: String!
+  bank_code: String!
+  bank_number: String!
+  index: String
+  extra: AWSJSON
+  status: String!
+  bank_name: String!
+}
+
 type PersonalContribution @model @auth(rules: [{allow: public}]) {
   id: ID!
   name: String

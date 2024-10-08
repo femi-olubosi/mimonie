@@ -226,25 +226,20 @@ const ContributionDetails = () => {
     (participant) => participant.status === 'in progress'
   );
 
-  const handleWithdrawFund = async () => {
-    setWithdrawModal(false);
-    setIsLoading(true);
-    const withdrawalResponse = await withdrawFunds(userProfile, id);
-
-    if (withdrawalResponse?.status === 'success') {
-      Alert.alert(
-        'Withdrawal Processed',
-        'Your withdrawal request has been processed'
-      );
-      setIsLoading(false);
-    } else {
-      Alert.alert('Withdrawal Failed', `${withdrawalResponse.message}`);
-      setIsLoading(false);
-    }
-  };
-
   const isEarlyWithdrawal =
     contribution?.currently_at < contribution?.num_of_month;
+
+  const handleWithdrawFund = async () => {
+    setWithdrawModal(false);
+    router.push({
+      pathname: '/protected/transfer_screen',
+      params: {
+        contribution: JSON.stringify(contribution),
+        isEarly: isEarlyWithdrawal,
+        participant: JSON.stringify(parsed[0]),
+      },
+    });
+  };
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -617,10 +612,10 @@ const ContributionDetails = () => {
       >
         <View style={{ rowGap: 4 }}>
           <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
-            You are paying NGN {contribution.amount}
+            You are paying NGN {contribution?.amount}
           </Text>
           <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
-            for {contribution.name} contribution
+            for {contribution?.name} contribution
           </Text>
         </View>
       </Paystack>
@@ -629,7 +624,7 @@ const ContributionDetails = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
               {isEarlyWithdrawal
-                ? 'Confirm Early Withdrawal'
+                ? 'Continue'
                 : 'Confirm Withdrawal'}
             </Text>
             <Text style={styles.modalText}>
@@ -639,7 +634,7 @@ const ContributionDetails = () => {
             </Text>
             <View style={styles.buttonContainer}>
               <Button title="Cancel" onPress={() => setWithdrawModal(false)} />
-              <Button title="Confirm Withdrawal" onPress={handleWithdrawFund} />
+              <Button title="Continue" onPress={handleWithdrawFund} />
             </View>
           </View>
         </View>
@@ -659,7 +654,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     }
 
     if (
-      contribution.type === 'group' &&
+      contribution?.type === 'group' &&
       contribution?.current_count !== 0 &&
       contribution?.current_count >= parsed.length
     ) {
@@ -879,6 +874,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
+    fontFamily: 'ir'
   },
   buttonContainer: {
     flexDirection: 'row',
