@@ -11,6 +11,8 @@ import {
   View,
   TextInput,
   ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -230,8 +232,9 @@ const transfer_screen = () => {
 
     setVerifying(true);
 
-    Alert.alert('Not available', 'Feature not available at the moment')
-    return
+    Alert.alert('Not available', 'Feature not available at the moment');
+    setVerifying(false);
+    return;
     try {
       if (pinRef) {
         const res = await verifyOTP(pinRef.pinId, pinString);
@@ -336,207 +339,226 @@ const transfer_screen = () => {
           onPress={() => setAddBankModal(true)}
           color={Colors.pri}
         />
-        <View style={{ marginTop: 14 }}>
-          <View style={{ alignItems: 'flex-end', rowGap: 4, marginBottom: 5 }}>
-            <Text>Balance: (NGN) {parsedParticipant?.balance || balance}</Text>
-            {isEarlyWithdrawal ? (
-              <>
-                <Text>Withdrawable Balance: (NGN) {newBalance}</Text>
-                <Text style={{ fontSize: 10 }}>
-                  10% early withdrawal charge
-                </Text>
-              </>
-            ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ marginTop: 20 }}>
+            <View
+              style={{ alignItems: 'flex-end', rowGap: 4, marginBottom: 5 }}
+            >
               <Text>
-                Withdrawable Balance: (NGN){' '}
-                {parsedParticipant?.balance || balance}
+                Balance: (NGN) {parsedParticipant?.balance || balance}
               </Text>
+              {isEarlyWithdrawal ? (
+                <>
+                  <Text>Withdrawable Balance: (NGN) {newBalance}</Text>
+                  <Text style={{ fontSize: 10 }}>
+                    10% early withdrawal charge
+                  </Text>
+                </>
+              ) : (
+                <Text>
+                  Withdrawable Balance: (NGN){' '}
+                  {parsedParticipant?.balance || balance}
+                </Text>
+              )}
+            </View>
+            {!isEarlyWithdrawal && (
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Amount to withdraw"
+                value={amountToWithdraw}
+                onChangeText={setAmountToWithdraw}
+                keyboardType="number-pad"
+              />
             )}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleWithdrawFund}
+            >
+              <Text style={styles.buttonText}>Withdraw</Text>
+            </TouchableOpacity>
           </View>
-          {!isEarlyWithdrawal && (
-            <TextInput
-              style={styles.input}
-              placeholder="Enter Amount to withdraw"
-              value={amountToWithdraw}
-              onChangeText={setAmountToWithdraw}
-              keyboardType="numeric"
-            />
-          )}
-          <TouchableOpacity style={styles.button} onPress={handleWithdrawFund}>
-            <Text style={styles.buttonText}>Withdraw</Text>
-          </TouchableOpacity>
-        </View>
+        </TouchableWithoutFeedback>
       </View>
       <Modal visible={addBankModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Add Bank Account</Text>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Add Bank Account</Text>
 
-            <View style={{ rowGap: 14, width: '100%' }}>
-              <View style={{ width: '100%' }}>
-                <Text style={styles.label}>Account Number</Text>
-                <SelectInput
-                  options={banks}
-                  selectedValue={selectedValue}
-                  setSelectedValue={setSelectedValue}
-                  defaultValue={selectedValue?.label}
-                />
-              </View>
+              <View style={{ rowGap: 14, width: '100%' }}>
+                <View style={{ width: '100%' }}>
+                  <Text style={styles.label}>Account Number</Text>
+                  <SelectInput
+                    options={banks}
+                    selectedValue={selectedValue}
+                    setSelectedValue={setSelectedValue}
+                    defaultValue={selectedValue?.label}
+                  />
+                </View>
 
-              <View style={{ width: '100%' }}>
-                <Text style={styles.label}>Account Number</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter account number"
-                  value={accountNumber}
-                  onChangeText={setAccountNumber}
-                  keyboardType="numeric"
-                />
-              </View>
-              <Text style={{ marginTop: 10, fontFamily: 'ir', fontSize: 10 }}>
-                Note that we will verify the account before adding it to your
-                account list. Ensure the account belongs to you and the account
-                name matches with your app name
-              </Text>
-            </View>
-            {verifying && (
-              <View style={{ marginTop: 10 }}>
-                <ActivityIndicator size="small" color={Colors.pri} />
-                <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
-                  Verifying account...
+                <View style={{ width: '100%' }}>
+                  <Text style={styles.label}>Account Number</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter account number"
+                    value={accountNumber}
+                    onChangeText={setAccountNumber}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <Text style={{ marginTop: 10, fontFamily: 'ir', fontSize: 10 }}>
+                  Note that we will verify the account before adding it to your
+                  account list. Ensure the account belongs to you and the
+                  account name matches with your app name
                 </Text>
               </View>
-            )}
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setAddBankModal(false)}
-                disabled={verifying}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handleAddBank}
-                disabled={verifying}
-              >
-                <Text style={styles.modalButtonText}>Add Bank</Text>
-              </TouchableOpacity>
+              {verifying && (
+                <View style={{ marginTop: 10 }}>
+                  <ActivityIndicator size="small" color={Colors.pri} />
+                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
+                    Verifying account...
+                  </Text>
+                </View>
+              )}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setAddBankModal(false)}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleAddBank}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Add Bank</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
       </Modal>
       <Modal visible={validateCustomerModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Input Transfer Pin</Text>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Input Transfer Pin</Text>
 
-            <View style={{ width: '100%' }}>
-              <Text style={styles.label}>Enter your 6 digit pin</Text>
-              <View style={styles.pinContainer}>
-                {pin.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    style={styles.pinInput}
-                    value={digit}
-                    onChangeText={(value) => handlePinChange(value, index)}
-                    onKeyPress={(e) => handleKeyPress(e, index)}
-                    ref={(ref) => (pinRefs.current[index] = ref)}
-                    keyboardType="numeric"
-                    maxLength={1}
-                    textAlign="center"
-                  />
-                ))}
+              <View style={{ width: '100%' }}>
+                <Text style={styles.label}>Enter your 6 digit pin</Text>
+                <View style={styles.pinContainer}>
+                  {pin.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      style={styles.pinInput}
+                      value={digit}
+                      onChangeText={(value) => handlePinChange(value, index)}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      ref={(ref) => (pinRefs.current[index] = ref)}
+                      keyboardType="numeric"
+                      maxLength={1}
+                      textAlign="center"
+                      secureTextEntry
+                    />
+                  ))}
+                </View>
+              </View>
+
+              {verifying && (
+                <View style={{ marginTop: 10 }}>
+                  <ActivityIndicator size="small" color={Colors.pri} />
+                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
+                    Verifying account...
+                  </Text>
+                </View>
+              )}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setValidateCustomerModal(false)}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={isUser}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Enter</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            {verifying && (
-              <View style={{ marginTop: 10 }}>
-                <ActivityIndicator size="small" color={Colors.pri} />
-                <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
-                  Verifying account...
-                </Text>
-              </View>
-            )}
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setValidateCustomerModal(false)}
-                disabled={verifying}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={isUser}
-                disabled={verifying}
-              >
-                <Text style={styles.modalButtonText}>Enter</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
       </Modal>
       <Modal visible={createPinModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Create Transfer Pin</Text>
-            <Text
-              style={{ marginVertical: 10, fontFamily: 'ir', fontSize: 10 }}
-            >
-              {pinRef
-                ? 'Enter the code sent to your registered phone number'
-                : ' A code will be sent to your registered phone number for verification'}
-            </Text>
-            <View style={{ rowGap: 14, width: '100%' }}>
-              <Text style={styles.label}>Enter your 6 digit pin</Text>
-              <View style={styles.pinContainer}>
-                {pin.map((digit, index) => (
-                  <TextInput
-                    key={index}
-                    style={styles.pinInput}
-                    value={digit}
-                    onChangeText={(value) => handlePinChange(value, index)}
-                    onKeyPress={(e) => handleKeyPress(e, index)}
-                    ref={(ref) => (pinRefs.current[index] = ref)}
-                    keyboardType="numeric"
-                    maxLength={1}
-                    textAlign="center"
-                  />
-                ))}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.modalTitle}>Create Transfer Pin</Text>
+              <Text
+                style={{ marginVertical: 10, fontFamily: 'ir', fontSize: 10 }}
+              >
+                {pinRef
+                  ? 'Enter the code sent to your registered phone number'
+                  : ' A code will be sent to your registered phone number for verification'}
+              </Text>
+              <View style={{ rowGap: 14, width: '100%' }}>
+                <Text style={styles.label}>Enter your 6 digit pin</Text>
+                <View style={styles.pinContainer}>
+                  {pin.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      style={styles.pinInput}
+                      value={digit}
+                      onChangeText={(value) => handlePinChange(value, index)}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      ref={(ref) => (pinRefs.current[index] = ref)}
+                      keyboardType="numeric"
+                      maxLength={1}
+                      textAlign="center"
+                      onPress={Keyboard.dismiss}
+                    />
+                  ))}
+                </View>
+                {pinRef ? null : (
+                  <Text
+                    style={{ marginTop: 10, fontFamily: 'ir', fontSize: 10 }}
+                  >
+                    This pin will be use for all your transfers. Please keep it
+                    safe and secured
+                  </Text>
+                )}
               </View>
-              {pinRef ? null : (
-                <Text style={{ marginTop: 10, fontFamily: 'ir', fontSize: 10 }}>
-                  This pin will be use for all your transfers. Please keep it
-                  safe and secured
-                </Text>
+              {verifying && (
+                <View style={{ marginTop: 10 }}>
+                  <ActivityIndicator size="small" color={Colors.pri} />
+                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
+                    Verifying account...
+                  </Text>
+                </View>
               )}
-            </View>
-            {verifying && (
-              <View style={{ marginTop: 10 }}>
-                <ActivityIndicator size="small" color={Colors.pri} />
-                <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
-                  Verifying account...
-                </Text>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setCreatePinModal(false)}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleConfirmPin}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Create Pin</Text>
+                </TouchableOpacity>
               </View>
-            )}
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setCreatePinModal(false)}
-                disabled={verifying}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handleConfirmPin}
-                disabled={verifying}
-              >
-                <Text style={styles.modalButtonText}>Create Pin</Text>
-              </TouchableOpacity>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
       </Modal>
     </PageView>

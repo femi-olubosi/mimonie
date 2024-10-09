@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#9095A1',
     padding: 12,
