@@ -38,7 +38,9 @@ import {
 } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import {
+  fetchAuthSession,
   sendUserAttributeVerificationCode,
+  signOut,
   updateUserAttributes,
 } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
@@ -98,6 +100,25 @@ export default function HomeScreen() {
     await fetchUserActivities(userProfile?.userId, setUserActivities);
     setRefreshing(false);
   };
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const session = await fetchAuthSession({ forceRefresh: false });
+        const tokenExpiry = session?.tokens?.accessToken?.payload?.exp;
+        const currentTime = Math.floor(Date.now() / 1000);
+
+        if (!tokenExpiry || currentTime > tokenExpiry) {
+          throw new Error('Token has expired');
+        }
+        console.log('Not yet');
+      } catch (error) {
+        console.log('yet');
+        await signOut();
+      }
+    };
+    checkAuthStatus();
+  }, []);
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -445,7 +466,7 @@ export default function HomeScreen() {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={styles.modalText}>Update Is Available!</Text>
-              <Text style={{marginHorizontal: 10}}>
+              <Text style={{ marginHorizontal: 10 }}>
                 A new version of the app is available. Please download it now to
                 continue using the app.
               </Text>

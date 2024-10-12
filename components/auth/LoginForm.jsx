@@ -24,6 +24,7 @@ import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
+import { sendOtp } from '../../api/token.service';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -38,11 +39,8 @@ const LoginForm = (props) => {
     setUserProfile,
     userProfile,
     setNotifications,
+    setConfirmationResult,
   } = useGlobalContext();
-
-  // useEffect(() => {
-  //   setIsLoading(false);
-  // }, []);
 
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
@@ -71,32 +69,34 @@ const LoginForm = (props) => {
       }
       // await DataStore.start()
       const user = await fetchCurrUser(setCurrentUser);
-      console.log('user', user);
+
       const profile = await fetchUserProfile(setUserProfile, user);
-console.log('profile', profile);
+
       await fetchUserNotification(user.userId, setNotifications);
 
-      // if (!profile?.phone_verified) {
-      //   Alert.alert(
-      //     'Phone Number is not verified',
-      //     `Please verify your phone number to continue`,
-      //     [
-      //       {
-      //         text: 'Cancel',
-      //         onPress: () => signOut(),
-      //         style: 'cancel',
-      //       },
-      //       {
-      //         text: 'Okay',
-      //         onPress: async () => {
-      //           router.push('/protected/login_verify');
-      //         },
-      //       },
-      //     ],
-      //     { cancelable: false }
-      //   );
-      //   return;
-      // }
+      if (!profile?.phone_verified) {
+        Alert.alert(
+          'Phone Number is not verified',
+          `Please verify your phone number to continue`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Okay',
+              onPress: async () => {
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'phone_verification' });
+                router.push('/protected/login_verify');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
 
       if (
         !['+2348139781144', '+2348139781147', '+2348139781148'].includes(
@@ -117,10 +117,9 @@ console.log('profile', profile);
             {
               text: 'Register',
               onPress: async () => {
-                // await sendUserAttributeVerificationCode({
-                //   userAttributeKey: 'phone_number',
-                // });
-                // router.push('/protected/login_verify');
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'device_registration' });
+                router.push('/protected/login_verify');
               },
             },
           ],

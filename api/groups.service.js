@@ -6,7 +6,6 @@ export const getContributionGroups = async (setContributionGroups) => {
     // Fetch initial data
     const groups = await DataStore.query(ContributionGroups);
     setContributionGroups(groups);
-
     // Set up real-time subscription
     const subscription = DataStore.observe(ContributionGroups).subscribe(
       (msg) => {

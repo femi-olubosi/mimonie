@@ -4,42 +4,96 @@ import {
   Text,
   View,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+  TextInput,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
 import { signOut } from 'aws-amplify/auth';
+import * as Device from 'expo-device';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
-import { useFirebaseLogin } from '../../captch';
-import { app, auth } from '../../firebase';
+import { verifyOTP } from '../../api/token.service';
+import { updateUserProfile } from '../../api/user.service';
 
 const VerificationCheck = () => {
-  const { setIsLoading, setConfirmationResult, userProfile } =
+  const { confirmationResult, currentUser, setUserProfile } =
     useGlobalContext();
+  const [pin, setPin] = useState(['', '', '', '', '', '']);
+  const [verifying, setVerifying] = useState(false);
 
-  const { recaptcha, sendOtp } = useFirebaseLogin({
-    auth: auth,
-    firebaseConfig: app.options,
-  });
+  const pinRefs = useRef([]);
 
-  const handleSendCode = async () => {
-    setIsLoading(true);
+  const handlePinChange = (value, index) => {
+    const newPin = [...pin];
+    newPin[index] = value;
+    setPin(newPin);
+
+    if (value && index < 5) {
+      pinRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyPress = (e, index) => {
+    if (e.nativeEvent.key === 'Backspace' && pin[index] === '' && index > 0) {
+      pinRefs.current[index - 1].focus();
+    }
+  };
+
+  const pinString = pin.join('');
+  console.log(pinString?.length);
+  const handleConfirmPin = async () => {
+    const pinString = pin.join('');
+    if (pinString.length < 6) {
+      Alert.alert('Error', 'Please enter a valid 6-digit pin');
+      return;
+    }
+
+    setVerifying(true);
     try {
-      const code = await sendOtp(userProfile?.phone_number);
-      setConfirmationResult(code);
-      router.push('/protected/device_verify');
-    } catch (error) {
-      console.log(error);
+      if (confirmationResult) {
+        const res = await verifyOTP(confirmationResult?.pinId, pinString);
+        if (res.verified) {
+          if (confirmationResult.type === 'phone_verification') {
+            setUserProfile((prev) => ({ ...prev, phone_verified: true }));
+            await updateUserProfile({ phone_verified: true }, currentUser);
+            router.push('/protected');
+          } else if (confirmationResult.type === 'device_registration') {
+            const device = {
+              device_id: Device.osInternalBuildId || null,
+              device_name: Device.deviceName || null,
+              device_brand: Device.brand || null,
+            };
+            setUserProfile((prev) => ({
+              ...prev,
+              device_brand: device.device_brand,
+              device_id: device.device_id,
+              device_name: device_name,
+            }));
+            await updateUserProfile(device, currentUser);
+            router.push('/protected');
+          }
+          setVerifying(false);
+        }
+      } else {
+        setVerifying(false);
+      }
+    } catch (e) {
+      console.error(e.message);
+      Alert.alert('Error', e.message + '');
     } finally {
-      setIsLoading(false);
+      setPin(['', '', '', '', '', '']);
+      setVerifying(false);
     }
   };
 
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
-        <View>{recaptcha}</View>
         <View
           style={{
             backgroundColor: 'white',
@@ -52,43 +106,56 @@ const VerificationCheck = () => {
             Verify your phone number
           </Text>
           <Text style={{ marginBottom: 60, textAlign: 'center', fontSize: 16 }}>
-            You will have to solve the captcha to confirm you are human
+            Input the 6 digit pin sent to your registered phone number
           </Text>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              columnGap: 40,
-            }}
-          >
-            <View
-              style={{
-                height: 48,
-                flex: 1,
-                borderRadius: 8,
-                backgroundColor: 'red',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <TouchableOpacity onPress={() => signOut()}>
-                <Text style={styles.buttonText}>Later</Text>
-              </TouchableOpacity>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalContainer}>
+              <View style={{ width: '100%' }}>
+                <Text style={styles.label}>Enter the 6 digit pin</Text>
+                <View style={styles.pinContainer}>
+                  {pin.map((digit, index) => (
+                    <TextInput
+                      key={index}
+                      style={styles.pinInput}
+                      value={digit}
+                      onChangeText={(value) => handlePinChange(value, index)}
+                      onKeyPress={(e) => handleKeyPress(e, index)}
+                      ref={(ref) => (pinRefs.current[index] = ref)}
+                      keyboardType="numeric"
+                      maxLength={1}
+                      textAlign="center"
+                      secureTextEntry
+                    />
+                  ))}
+                </View>
+              </View>
+
+              {verifying && (
+                <View style={{ marginTop: 10 }}>
+                  <ActivityIndicator size="small" color={Colors.pri} />
+                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
+                    Verifying account...
+                  </Text>
+                </View>
+              )}
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => signOut()}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Not now</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.confirmButton}
+                  onPress={handleConfirmPin}
+                  disabled={verifying}
+                >
+                  <Text style={styles.modalButtonText}>Enter</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <Pressable
-              style={{
-                height: 48,
-                flex: 1,
-                borderRadius: 8,
-                backgroundColor: Colors.pri,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-              onPress={handleSendCode}
-            >
-              <Text style={styles.buttonText}>Send Code</Text>
-            </Pressable>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
       </View>
     </Container>
@@ -103,21 +170,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     fontFamily: 'esb',
-  },
-  input: {
-    width: '100%',
-    height: 51,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#9095A1',
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  label: {
-    fontFamily: 'isb',
-    fontSize: 18,
-    marginBottom: 5,
-    color: '#424856',
   },
   footerText: {
     marginTop: 20,
@@ -136,5 +188,95 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontFamily: 'esb',
+  },
+  label: {
+    fontSize: 15,
+    color: '#1F2937',
+    fontFamily: 'ir',
+    marginBottom: 10,
+  },
+  input: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#9095A1',
+    padding: 12,
+    height: 53,
+    width: '100%',
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 44,
+    backgroundColor: Colors.pri,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  modalContainer: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    alignItems: 'center',
+    rowGap: 24,
+    minHeight: '40%',
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flex: 1,
+    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 20,
+  },
+  modalButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+    marginRight: 10,
+  },
+  confirmButton: {
+    backgroundColor: Colors.pri,
+    padding: 10,
+    borderRadius: 5,
+    flex: 1,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  pinContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  pinInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    width: 50,
+    height: 50,
+    fontSize: 24,
+    textAlign: 'center',
   },
 });

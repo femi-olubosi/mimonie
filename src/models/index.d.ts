@@ -200,6 +200,7 @@ type EagerUserProfile = {
   readonly dva?: string | null;
   readonly extra?: string | null;
   readonly recipient_code?: string | null;
+  readonly transfer_pin?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -240,6 +241,7 @@ type LazyUserProfile = {
   readonly dva?: string | null;
   readonly extra?: string | null;
   readonly recipient_code?: string | null;
+  readonly transfer_pin?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

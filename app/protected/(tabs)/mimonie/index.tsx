@@ -63,7 +63,9 @@ const Mimonie = () => {
           }}
         >
           <Text style={styles.contributionName}>{item.name}</Text>
-          <Text style={{ fontSize: 10 }}>{capitalizeFirstLetter(item.type)}</Text>
+          <Text style={{ fontSize: 10 }}>
+            {capitalizeFirstLetter(item.type)}
+          </Text>
         </View>
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>

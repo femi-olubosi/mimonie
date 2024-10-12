@@ -210,6 +210,7 @@ const Account = () => {
                 fontFamily: 'ir',
                 marginTop: 10,
               }}
+              onPress={() => router.push('protected/login_verify')}
             >
               {userProfile?.phone_number}
             </Text>

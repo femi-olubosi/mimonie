@@ -34,6 +34,7 @@ import {
 import { SelectInput } from '@/components/Reusable';
 import { ErrorCheck } from '@/utils/errorCheck';
 import { sendOtp, verifyOTP } from '../../api/token.service';
+import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 
 const transfer_screen = () => {
   const { contribution, isEarly, participant } = useLocalSearchParams();
@@ -58,6 +59,7 @@ const transfer_screen = () => {
   const isEarlyWithdrawal = isEarly === 'false' ? false : true;
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [pinRef, setPinRef] = useState(null);
+  const [userPin, setUserPin] = useState(null);
 
   const pinRefs = useRef([]);
 
@@ -112,20 +114,21 @@ const transfer_screen = () => {
     }
   };
 
-  const isUser = async () => {
+  const isUser = async (t_pin) => {
+    const amount = isEarlyWithdrawal ? newBalance : amountToWithdraw;
     const pinString = pin.join('');
     if (pinString.length < 6) {
       Alert.alert('Invalid PIN', 'Please enter a valid 6-digit PIN');
       return false;
     }
-
-    if (pinString !== userProfile.transfer_pin) {
+    console.log(pinString, t_pin);
+    if (pinString !== t_pin) {
       Alert.alert('Invalid PIN', 'Incorrect PIN');
       return false;
     }
 
     try {
-      setIsLoading(true);
+      setVerifying(true);
       const withdrawalResponse = await withdrawFunds(
         userProfile,
         parsedContribution?.id,
@@ -137,17 +140,17 @@ const transfer_screen = () => {
           'Withdrawal Processed',
           'Your withdrawal request has been processed'
         );
-        setIsLoading(false);
+        setVerifying(false);
       } else {
         Alert.alert('Withdrawal Failed', `${withdrawalResponse.message}`);
-        setIsLoading(false);
+        setVerifying(false);
       }
     } catch (error) {
       console.error('Error withdrawing funds:', error);
       Alert.alert('Error', error.message);
     } finally {
       setPin(['', '', '', '', '', '']);
-      setIsLoading(false);
+      setVerifying(false);
     }
   };
 
@@ -231,19 +234,20 @@ const transfer_screen = () => {
     }
 
     setVerifying(true);
-
-    Alert.alert('Not available', 'Feature not available at the moment');
-    setVerifying(false);
-    return;
     try {
       if (pinRef) {
         const res = await verifyOTP(pinRef.pinId, pinString);
-        if (res.verified === 'True') {
+        if (res.verified) {
           setCreatePinModal(false);
-          setUserProfile((prev) => ({ ...prev, transfer_pin: pinString }));
-          await isUser();
+          setUserProfile((prev) => ({ ...prev, transfer_pin: userPin }));
+          await updateUserProfile({ transfer_pin: userPin }, currentUser);
+          const profile = await fetchUserProfile(setUserProfile, currentUser);
+          // await isUser(profile.transfer_pin);
+          setVerifying(false);
+          Alert.alert('Pin Created Successfully', 'Initiate your Transfer');
         }
       } else {
+        setUserPin(pinString);
         const res = await sendOtp(userProfile.phone_number);
         setPinRef(res);
       }
@@ -484,7 +488,7 @@ const transfer_screen = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.confirmButton}
-                  onPress={isUser}
+                  onPress={() => isUser(userProfile.transfer_pin)}
                   disabled={verifying}
                 >
                   <Text style={styles.modalButtonText}>Enter</Text>
@@ -498,7 +502,9 @@ const transfer_screen = () => {
         <View style={styles.modalOverlay}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Create Transfer Pin</Text>
+              <Text style={styles.modalTitle}>
+                {pinRef ? 'Enter Code' : 'Create Transfer Pin'}
+              </Text>
               <Text
                 style={{ marginVertical: 10, fontFamily: 'ir', fontSize: 10 }}
               >
