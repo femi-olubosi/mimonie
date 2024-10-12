@@ -738,7 +738,6 @@ export const withdrawFunds = async (userProfile, contributionId, amount) => {
         amount,
         contribution
       );
-      console.log({ flow });
       if (flow.data.status === 'pending') {
         await createUserActivity(userId, {
           type: 'collection',
@@ -762,7 +761,7 @@ export const withdrawFunds = async (userProfile, contributionId, amount) => {
           })
         );
       } else {
-        return { success: false, message: flow.data.gateway_response };
+        return { success: false, message: flow.message };
       }
     }
 

@@ -134,7 +134,7 @@ const transfer_screen = () => {
         parsedContribution?.id,
         amount
       );
-
+      console.log('withdraw', withdrawalResponse);
       if (withdrawalResponse?.status === 'success') {
         Alert.alert(
           'Withdrawal Processed',
