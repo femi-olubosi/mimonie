@@ -619,6 +619,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "transfer_pin": {
+                    "name": "transfer_pin",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1086,5 +1093,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "00db6aaa9489f4b466324e156cff2299"
+    "version": "10b7f8bd342ca3ea0c725f143361040a"
 };

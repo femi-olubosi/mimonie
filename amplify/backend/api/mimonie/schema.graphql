@@ -1,4 +1,4 @@
-type UserBankDetails @model @auth(rules: [{allow: public}]) {
+type UserBankDetails @model @auth(rules: [{ allow: public }]) {
   id: ID!
   userId: String!
   bank_code: String!
@@ -9,7 +9,7 @@ type UserBankDetails @model @auth(rules: [{allow: public}]) {
   bank_name: String!
 }
 
-type PersonalContribution @model @auth(rules: [{allow: public}]) {
+type PersonalContribution @model @auth(rules: [{ allow: public }]) {
   id: ID!
   name: String
   status: String
@@ -21,7 +21,7 @@ type PersonalContribution @model @auth(rules: [{allow: public}]) {
   extra: AWSJSON
 }
 
-type UserActivity @model @auth(rules: [{allow: public}]) {
+type UserActivity @model @auth(rules: [{ allow: public }]) {
   id: ID!
   type: String
   amount: Int
@@ -31,7 +31,7 @@ type UserActivity @model @auth(rules: [{allow: public}]) {
   extra: AWSJSON
 }
 
-type UserNotifications @model @auth(rules: [{allow: public}]) {
+type UserNotifications @model @auth(rules: [{ allow: public }]) {
   id: ID!
   type: String
   content: String
@@ -41,7 +41,7 @@ type UserNotifications @model @auth(rules: [{allow: public}]) {
   global: Boolean
 }
 
-type UserProfile @model @auth(rules: [{allow: public}]) {
+type UserProfile @model @auth(rules: [{ allow: public }]) {
   id: ID!
   name: String
   preferred_username: String
@@ -73,9 +73,10 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   dva: AWSJSON
   extra: AWSJSON
   recipient_code: String
+  transfer_pin: String
 }
 
-type UserCardDetails @model @auth(rules: [{allow: public}]) {
+type UserCardDetails @model @auth(rules: [{ allow: public }]) {
   id: ID!
   last4: String
   bank: String
@@ -86,7 +87,7 @@ type UserCardDetails @model @auth(rules: [{allow: public}]) {
   status: String
 }
 
-type Contribution @model @auth(rules: [{allow: public}]) {
+type Contribution @model @auth(rules: [{ allow: public }]) {
   id: ID!
   name: String
   title: String
@@ -107,7 +108,7 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   type: String
 }
 
-type ContributionGroups @model @auth(rules: [{allow: public}]) {
+type ContributionGroups @model @auth(rules: [{ allow: public }]) {
   id: ID!
   description: String
   status: String!
@@ -118,7 +119,7 @@ type ContributionGroups @model @auth(rules: [{allow: public}]) {
   amount: Int!
   name: String!
   num_of_month: Int
-  Contributions: [Contribution] @hasMany(indexName: "byContributionGroups", fields: ["id"])
+  Contributions: [Contribution]
+    @hasMany(indexName: "byContributionGroups", fields: ["id"])
   variant: String!
 }
- 

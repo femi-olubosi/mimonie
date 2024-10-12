@@ -738,7 +738,6 @@ export const withdrawFunds = async (userProfile, contributionId, amount) => {
         amount,
         contribution
       );
-
       if (flow.data.status === 'pending') {
         await createUserActivity(userId, {
           type: 'collection',
@@ -762,7 +761,7 @@ export const withdrawFunds = async (userProfile, contributionId, amount) => {
           })
         );
       } else {
-        return { success: false, message: flow.data.gateway_response };
+        return { success: false, message: flow.message };
       }
     }
 
@@ -793,10 +792,13 @@ export const resolveBankAccount = async (
 
   const resolvedAccountName = cleanName(result.data.account_name);
   const userProfileName = cleanName(userProfile.name);
-  
+
   if (resolvedAccountName === userProfileName) {
     return { success: true, message: 'verified' };
   } else {
-    return { success: false, message: 'Invalid account details or account mismatch' };
+    return {
+      success: false,
+      message: 'Invalid account details or account mismatch',
+    };
   }
 };

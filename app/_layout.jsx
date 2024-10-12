@@ -8,10 +8,9 @@ import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
 import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import '@azure/core-asynciterator-polyfill';
-import Onboarding from './builder/Onboarding'
+import Onboarding from './builder/Onboarding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 Amplify.configure(amplifyconfig);
-
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -27,7 +26,7 @@ function RootLayout() {
   });
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-const [onboard, setOnboard] = useState(false);
+  const [onboard, setOnboard] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -58,7 +57,7 @@ const [onboard, setOnboard] = useState(false);
       }
     };
     checkFirstTimeUser();
-  }, [])
+  }, []);
 
   return (
     <>
