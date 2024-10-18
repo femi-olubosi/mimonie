@@ -11,7 +11,13 @@ import { Colors } from '@/constants/Colors';
 import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-const ProfileView = ({ name, picture, notifications, priText, setShowHelp }) => {
+const ProfileView = ({
+  name,
+  picture,
+  notifications,
+  priText,
+  setShowHelp,
+}) => {
   const [loading, setLoading] = useState(true);
 
   return (
@@ -72,10 +78,15 @@ const ProfileView = ({ name, picture, notifications, priText, setShowHelp }) => 
         style={{
           flexDirection: 'row',
           columnGap: 10,
-          alignItems: 'center'
+          alignItems: 'center',
         }}
       >
-        <Feather name="help-circle" size={24} color="black" onPress={() => setShowHelp(true)}/>
+        <Feather
+          name="help-circle"
+          size={24}
+          color="black"
+          onPress={() => setShowHelp(true)}
+        />
         <TouchableOpacity
           onPress={() => router.push('/protected/notifications')}
           style={{ position: 'relative' }}
@@ -106,5 +117,4 @@ const ProfileView = ({ name, picture, notifications, priText, setShowHelp }) => 
 
 export default ProfileView;
 
-const styles = StyleSheet.create({
-});
+const styles = StyleSheet.create({});

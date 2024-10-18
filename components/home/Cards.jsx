@@ -92,7 +92,10 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={{ fontSize: 12, color: 'white', fontFamily: 'im' }}
                     >
-                      Category: {item.type==="group"?item.category:"Personal Contribution"}
+                      Category:{' '}
+                      {item.type === 'group'
+                        ? item.category
+                        : 'Personal Contribution'}
                     </Text>
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
@@ -190,9 +193,9 @@ const Cards = ({ contributions }) => {
                   <Text
                     style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
                   >
-                    {item.status === 'completed' ? (
+                    {['completed', 'closed'].includes(item?.status) ? (
                       'Completed'
-                    ) : item.type==="group" && done ? (
+                    ) : item.type === 'group' && done ? (
                       'Completed your part'
                     ) : (
                       <>
@@ -212,13 +215,13 @@ const Cards = ({ contributions }) => {
                       alignItems: 'center',
                     }}
                   >
-                    {
-                      item.type==="group" && done? null :<NextContributionDay
-                      contribution={item}
-                      done={done}
-                      currentParticipant={currentParticipant}
-                    />
-                    }
+                    {item.type === 'group' && done ? null : (
+                      <NextContributionDay
+                        contribution={item}
+                        done={done}
+                        currentParticipant={currentParticipant}
+                      />
+                    )}
                   </View>
                 </ThemedView>
 
@@ -271,11 +274,11 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
       return 'Not running';
     }
 
-    if (contribution?.status === 'completed') {
+    if (['completed', 'closed'].includes(contribution?.status)) {
       return 'Completed';
     }
 
-    if (contribution.type==="group" && done) {
+    if (contribution.type === 'group' && done) {
       return '';
     }
 

@@ -297,7 +297,7 @@ const ContributionDetails = () => {
                 (participant) => participant.userId === currentUser.userId
               ) &&
                 contribution?.owner !== userProfile?.name) ||
-              ['completed', 'running']?.includes(
+              ['completed', 'running', 'closed']?.includes(
                 contribution?.status
               ) ? null : (
                 <Pressable
@@ -334,7 +334,8 @@ const ContributionDetails = () => {
                   </Text>
                 </Pressable>
               )}
-              {contribution?.type === 'group' ? (
+              {contribution?.type === 'group' &&
+              contribution?.status !== 'completed' ? (
                 <CopyLink inviteLink={contribution.id} />
               ) : contribution?.type === 'personal' &&
                 contribution?.status !== 'closed' &&
@@ -348,6 +349,31 @@ const ContributionDetails = () => {
                 </Pressable>
               ) : null}
             </View>
+
+            {parsed?.[0]?.balance || parsed?.[0]?.balance === 0 ? (
+              <View
+                style={{
+                  height: 100,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: Colors.pri,
+                  marginVertical: 20,
+                  padding: 20,
+                }}
+              >
+                <Text style={styles.label}>Withdrawable Balance:</Text>
+                <Text
+                  style={{
+                    fontSize: 40,
+                    color: Colors.pri,
+                    fontFamily: 'isb',
+                  }}
+                >
+                  {naira}{' '}
+                  {new Intl.NumberFormat('en-US').format(parsed?.[0]?.balance)}
+                </Text>
+              </View>
+            ) : null}
 
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -422,7 +448,9 @@ const ContributionDetails = () => {
                 <>
                   <View style={styles.detailContainer}>
                     <Text style={styles.label}>Number of Contributors</Text>
-                    <Text style={styles.value}>{parsed.length}</Text>
+                    <Text style={styles.value}>
+                      {parsed.length} of {contribution.num_of_month}
+                    </Text>
                   </View>
                   <View
                     style={[
@@ -623,9 +651,7 @@ const ContributionDetails = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
-              {isEarlyWithdrawal
-                ? 'Continue'
-                : 'Confirm Withdrawal'}
+              {isEarlyWithdrawal ? 'Continue' : 'Confirm Withdrawal'}
             </Text>
             <Text style={styles.modalText}>
               {isEarlyWithdrawal
@@ -874,7 +900,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
-    fontFamily: 'ir'
+    fontFamily: 'ir',
   },
   buttonContainer: {
     flexDirection: 'row',

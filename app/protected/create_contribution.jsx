@@ -23,6 +23,7 @@ import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
 import { ErrorCheck } from '../../utils/errorCheck';
 import CopyLink from '../../components/CopyLink';
+import { naira } from '@/constants/Currency';
 
 const dateOption = [
   'en-US',
@@ -39,6 +40,32 @@ const variantOptions = [
   { label: 'Monthly', value: 'months' },
 ];
 
+const amountOptions = [
+  { label: '₦5,000', value: 5000 },
+  { label: '₦10,000', value: 10000 },
+  { label: '₦20,000', value: 20000 },
+  { label: '₦30,000', value: 30000 },
+  { label: '₦40,000', value: 40000 },
+  { label: '₦50,000', value: 50000 },
+  { label: '₦100,000', value: 100000 },
+  { label: '₦200,000', value: 200000 },
+  { label: '₦300,000', value: 300000 },
+  { label: '₦400,000', value: 400000 },
+  { label: '₦500,000', value: 500000 },
+  { label: '₦1,000,000', value: 1000000 },
+];
+
+const participantOptions = [
+  { label: '3', value: 3 },
+  { label: '4', value: 4 },
+  { label: '5', value: 5 },
+  { label: '6', value: 6 },
+  { label: '7', value: 7 },
+  { label: '8', value: 8 },
+  { label: '9', value: 9 },
+  { label: '10', value: 10 },
+];
+
 const CreateContribution = () => {
   const [contributionName, setContributionName] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -49,6 +76,8 @@ const CreateContribution = () => {
   const [variant, setVariant] = useState({});
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [termsVisible, setTermsVisible] = useState(false);
+  const [amountSelected, setAmountSelected] = useState({});
+  const [numOfParticipants, setNumOfParticipants] = useState({});
 
   const {
     contributionGroups,
@@ -67,17 +96,24 @@ const CreateContribution = () => {
   const createGroupContribution = async () => {
     const details = {
       contributionName,
-      groupName: selectedValue.title,
-      groupId: selectedValue.value,
+      groupName: 'Default',
+      groupId: 'f75fbf99-4e9d-4e3e-ad62-b1b94a9162d9',
       userId: currentUser.userId,
       username: currentUser.preferred_username,
-      target: selectedValue.target,
-      amount: selectedValue.amount,
-      num_of_month: selectedValue.num_of_month,
+      target: amountSelected.value * (numOfParticipants.value - 1),
+      amount: amountSelected.value,
+      num_of_month: numOfParticipants.value,
       variant: variant.value,
     };
 
-    if (ErrorCheck({ contributionName, groupName: selectedValue.title })) {
+    if (
+      ErrorCheck({
+        contributionName,
+        amount: amountSelected.value,
+        participants: numOfParticipants.value,
+        frequency: variant.value,
+      })
+    ) {
       return;
     }
     setIsLoading(true);
@@ -203,6 +239,13 @@ const CreateContribution = () => {
   const isVerified =
     userProfile?.is_nin_verified && userProfile?.is_bvn_verified;
 
+  const collection = (amountSelected?.value * (numOfParticipants?.value - 1))
+    ?.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    ?.split('.')[0];
+
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
@@ -260,6 +303,8 @@ const CreateContribution = () => {
                     setContributionName('');
                     setVariant({});
                     setSelectedValue({});
+                    setAmountSelected({});
+                    setNumOfParticipants({});
                   }}
                 >
                   <Text
@@ -293,7 +338,7 @@ const CreateContribution = () => {
                       },
                     ]}
                   >
-                    Personal Contribution
+                    Personal Savings
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -315,16 +360,6 @@ const CreateContribution = () => {
                     placeholder="Enter Contribution Name"
                   />
                 </View>
-
-                <View style={{ rowGap: 14 }}>
-                  <Text style={styles.label}>Group Category</Text>
-                  <SelectInput
-                    options={groupNameAndValue}
-                    selectedValue={selectedValue}
-                    setSelectedValue={setSelectedValue}
-                    defaultValue={selectedValue?.label}
-                  />
-                </View>
                 <View style={{ rowGap: 14 }}>
                   <Text style={styles.label}>Frequency</Text>
                   <SelectInput
@@ -334,6 +369,57 @@ const CreateContribution = () => {
                     defaultValue={variant.value}
                   />
                 </View>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Amount {variant.label}</Text>
+                  <SelectInput
+                    options={amountOptions}
+                    selectedValue={amountSelected}
+                    setSelectedValue={setAmountSelected}
+                    defaultValue={amountSelected.value}
+                  />
+                </View>
+                <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Number of Participant</Text>
+                  <SelectInput
+                    options={participantOptions}
+                    selectedValue={numOfParticipants}
+                    setSelectedValue={setNumOfParticipants}
+                    defaultValue={numOfParticipants.value}
+                  />
+                </View>
+                {numOfParticipants.value && (
+                  <>
+                    <View style={{ rowGap: 14 }}>
+                      <Text style={styles.label}>Duration</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={`${numOfParticipants?.value} ${variant?.value}`}
+                        placeholder="Duration"
+                        readOnly={true}
+                      />
+                    </View>
+                    <View style={{ rowGap: 14 }}>
+                      <Text style={styles.label}>
+                        Collection Per Participant
+                      </Text>
+                      <TextInput
+                        style={styles.input}
+                        value={`${naira}${collection}`}
+                        placeholder="Collection Per Participant"
+                        readOnly={true}
+                      />
+                    </View>
+                  </>
+                )}
+                {/* <View style={{ rowGap: 14 }}>
+                  <Text style={styles.label}>Group Category</Text>
+                  <SelectInput
+                    options={groupNameAndValue}
+                    selectedValue={selectedValue}
+                    setSelectedValue={setSelectedValue}
+                    defaultValue={selectedValue?.label}
+                  />
+                </View> */}
               </View>
             ) : (
               <View style={{ rowGap: 20 }}>

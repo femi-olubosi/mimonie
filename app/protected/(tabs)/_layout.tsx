@@ -12,7 +12,7 @@ import { Platform, View } from 'react-native';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const {priBg} = ThemeColors()
+  const { priBg } = ThemeColors();
 
   return (
     <Tabs
@@ -27,7 +27,7 @@ export default function TabLayout() {
           alignItems: 'center',
           justifyContent: 'center',
           paddingBottom: Platform.OS === 'android' ? 10 : 25,
-          backgroundColor: priBg
+          backgroundColor: priBg,
         },
       })}
     >
@@ -104,7 +104,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="contact"
         options={{
-          title: 'Contact',
+          title: 'Contacts',
           tabBarIcon: ({ color, focused }) => (
             <View
               style={{
