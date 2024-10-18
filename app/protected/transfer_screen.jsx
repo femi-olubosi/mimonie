@@ -60,6 +60,7 @@ const transfer_screen = () => {
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [pinRef, setPinRef] = useState(null);
   const [userPin, setUserPin] = useState(null);
+  const [recipientCode, setRecipientCode] = useState(null);
 
   const pinRefs = useRef([]);
 
@@ -91,6 +92,13 @@ const transfer_screen = () => {
     fetchBankDetails(setBankDetails, currentUser);
   }, []);
 
+  useEffect(() => {
+    const active = bankDetails.find((e) => e.status === 'active');
+    if (active) {
+      setRecipientCode(active?.index);
+    }
+  }, [bankDetails]);
+
   const balance = parsedParticipant?.contributions * parsedContribution?.amount;
   const penalty = balance * 0.1;
   const newBalance = balance - penalty;
@@ -121,7 +129,7 @@ const transfer_screen = () => {
       Alert.alert('Invalid PIN', 'Please enter a valid 6-digit PIN');
       return false;
     }
-    console.log(pinString, t_pin);
+
     if (pinString !== t_pin) {
       Alert.alert('Invalid PIN', 'Incorrect PIN');
       return false;
@@ -132,13 +140,23 @@ const transfer_screen = () => {
       const withdrawalResponse = await withdrawFunds(
         userProfile,
         parsedContribution?.id,
-        amount
+        amount,
+        recipientCode
       );
       console.log('withdraw', withdrawalResponse);
-      if (withdrawalResponse?.status === 'success') {
+      if (withdrawalResponse?.success) {
         Alert.alert(
           'Withdrawal Processed',
-          'Your withdrawal request has been processed'
+          'Your withdrawal request has been processed',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                router.push(`/protected/mimonie/${parsedContribution?.id}`);
+              },
+            },
+          ],
+          { cancelable: false }
         );
         setVerifying(false);
       } else {
@@ -217,7 +235,7 @@ const transfer_screen = () => {
     setBankDetails((prev) =>
       item.id === prev.id ? { ...item, status: 'active' } : prev
     );
-
+    setRecipientCode(item.index);
     try {
       await updateBankDetails(item.id, userProfile);
       await fetchBankDetails(setBankDetails, currentUser);

@@ -18,9 +18,12 @@ const faq = () => {
   };
 
   return (
-    <PageView title={'FAQs'}>
+    <PageView title={'Frequently Asked Questions'}>
       <View style={{ padding: 20 }}>
-        <ScrollView style={styles.container}>
+        <ScrollView
+          style={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.header}>Frequently Asked Questions</Text>
           {faqData.map((item, index) => (
             <View key={index} style={styles.faqItem}>

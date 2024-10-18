@@ -6,6 +6,7 @@ import {
   UserCardDetails,
 } from '../src/models';
 import { createUserActivity } from './activities.service';
+import { triggerNotificationForUser } from './pushNotification.service';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
 const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
@@ -662,7 +663,12 @@ const transferToBank = async (recipient_code, amount, contribution) => {
   return await makePaystackRequest('/transfer', 'POST', data);
 };
 
-export const withdrawFunds = async (userProfile, contributionId, amount) => {
+export const withdrawFunds = async (
+  userProfile,
+  contributionId,
+  amount,
+  recipientCode
+) => {
   try {
     const contribution = await DataStore.query(Contribution, contributionId);
 
@@ -693,7 +699,7 @@ export const withdrawFunds = async (userProfile, contributionId, amount) => {
       withdrawalAmount = contributionBalance - penalty;
 
       const flow = await transferToBank(
-        userProfile.recipient_code,
+        recipientCode,
         withdrawalAmount,
         contribution
       );
@@ -733,11 +739,7 @@ export const withdrawFunds = async (userProfile, contributionId, amount) => {
         return { success: false, message: flow.data.gateway_response };
       }
     } else {
-      const flow = await transferToBank(
-        userProfile.recipient_code,
-        amount,
-        contribution
-      );
+      const flow = await transferToBank(recipientCode, amount, contribution);
       if (flow.data.status === 'pending') {
         await createUserActivity(userId, {
           type: 'collection',
