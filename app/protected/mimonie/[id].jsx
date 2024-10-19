@@ -675,7 +675,7 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
       return 'Not running';
     }
 
-    if (contribution?.status === 'completed') {
+    if (['completed', 'closed'].includes(contribution?.status)) {
       return 'Completed';
     }
 

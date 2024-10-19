@@ -35,7 +35,6 @@ const dateOption = [
 ];
 
 const variantOptions = [
-  { label: 'Daily', value: 'days' },
   { label: 'Weekly', value: 'weeks' },
   { label: 'Monthly', value: 'months' },
 ];
@@ -253,6 +252,7 @@ const CreateContribution = () => {
           <ScrollView
             nestedScrollEnabled={true}
             showsVerticalScrollIndicator={false}
+            style={{ flex: 1 }}
           >
             {!isVerified ? (
               <View
@@ -376,6 +376,7 @@ const CreateContribution = () => {
                     selectedValue={amountSelected}
                     setSelectedValue={setAmountSelected}
                     defaultValue={amountSelected.value}
+                    useHeight={false}
                   />
                 </View>
                 <View style={{ rowGap: 14 }}>
@@ -385,6 +386,7 @@ const CreateContribution = () => {
                     selectedValue={numOfParticipants}
                     setSelectedValue={setNumOfParticipants}
                     defaultValue={numOfParticipants.value}
+                    useHeight={false}
                   />
                 </View>
                 {numOfParticipants.value && (

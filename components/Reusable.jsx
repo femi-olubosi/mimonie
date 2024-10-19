@@ -83,6 +83,7 @@ export const SelectInput = ({
   selectedValue,
   setSelectedValue,
   defaultValue,
+  useHeight = true,
 }) => {
   const [drop, setDrop] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -117,7 +118,7 @@ export const SelectInput = ({
         </View>
       </Pressable>
       {drop && (
-        <View style={styles.dropdown}>
+        <View style={[styles.dropdown, useHeight && { maxHeight: 250 }]}>
           <TextInput
             style={styles.searchInput}
             placeholder="Search..."
@@ -270,7 +271,6 @@ const styles = StyleSheet.create({
   dropdown: {
     width: '100%',
     paddingVertical: 6,
-    maxHeight: 250,
     overflow: 'hidden',
     backgroundColor: 'white',
   },
