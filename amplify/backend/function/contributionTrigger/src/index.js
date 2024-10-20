@@ -377,40 +377,40 @@ const processContributions = async () => {
           contribution.currently_at = currentCount;
 
           await updateContribution(contribution);
-        } 
+        }
       } else {
-        const participant = participants[0][0]
-        if(participant.last_successful_round !== currentCount) {
+        const participant = participants[0][0];
+        if (participant.last_successful_round !== currentCount) {
           const flow = await chargeCardForPersonalContribution(
             participant,
             contribution.amount
           );
-  
+
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
             participant.last_successful_round = currentCount;
-  
+
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
-              type: 'contribution',
+              type: 'Personal Savings',
               amount: contribution.amount,
               description: `Successfully completed this round of ${contribution.name} contribution`,
             });
-  
+
             // Send notification to the debited participant
             await sendNotification(
               participant?.push_token,
               'Payment Successful',
               `Successfully completed this round of ${contribution.name} contribution`
             );
-  
+
             // Update and save the contribution after each successful payment
             contribution.currently_at = currentCount;
             contribution.participant = participants;
             await updateContribution(contribution);
-  
-            if(contribution.currently_at === contribution.num_of_month) {
+
+            if (contribution.currently_at === contribution.num_of_month) {
               contribution.status = 'completed';
               await updateContribution(contribution);
             }
@@ -418,11 +418,11 @@ const processContributions = async () => {
             await saveUserActivity({
               id: uuidv4(),
               userId: participant.userId,
-              type: 'contribution',
+              type: 'Personal Savings',
               amount: contribution.amount,
               description: `Failed to make payment for ${contribution.name}. ${flow?.data?.gateway_response}`,
             });
-  
+
             // Send notification for failed payment
             await sendNotification(
               participant?.push_token,
@@ -431,7 +431,6 @@ const processContributions = async () => {
             );
           }
         }
-      
       }
     }
   } catch (error) {

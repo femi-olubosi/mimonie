@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import { PageView } from '@/components/Reusable'; // Assuming you have a reusable component for your page view
+import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
 
 const support = () => {

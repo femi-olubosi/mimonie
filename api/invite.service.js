@@ -23,7 +23,7 @@ export const sendSMSInvite = async (contact, inviteLink) => {
 };
 
 export const sendInvite = async (contact) => {
-  const contributionLink = `myapp://`;
+  const contributionLink = `https://mimonie.net`;
   const message = `You are invited to join mimonie app. Click the link to open: ${contributionLink}`;
 
   const isAvailable = await SMS.isAvailableAsync();
