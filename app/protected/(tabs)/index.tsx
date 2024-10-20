@@ -356,7 +356,7 @@ export default function HomeScreen() {
                 paddingVertical: 20,
               }}
             >
-              {userActivities.map((item: any, index: any) => {
+              {userActivities.slice(0, 10).map((item: any, index: any) => {
                 return (
                   <View
                     key={index}
