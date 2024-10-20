@@ -52,10 +52,6 @@ const VerificationHelp = () => {
         Monitor your verification status in the Account Settings and re-verify
         if required.
       </Text>
-
-      <Text style={styles.text}>
-        For any issues, contact support through the Help section.
-      </Text>
     </ScrollView>
   );
 };

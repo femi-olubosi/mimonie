@@ -81,12 +81,12 @@ const ProfileView = ({
           alignItems: 'center',
         }}
       >
-        <Feather
+        {/* <Feather
           name="help-circle"
           size={24}
           color="black"
           onPress={() => setShowHelp(true)}
-        />
+        /> */}
         <TouchableOpacity
           onPress={() => router.push('/protected/notifications')}
           style={{ position: 'relative' }}

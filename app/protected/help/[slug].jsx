@@ -6,6 +6,7 @@ import AccountSetup from '../../../components/help/AccountSetup';
 import ManagingContribution from '../../../components/help/ManagingContribution';
 import VerificationHelp from '../../../components/help/Verification';
 import TroubleshootingHelp from '../../../components/help/Troubleshoot';
+import ManagePersonalContribution from '../../../components/help/ManagePersonalContribution';
 
 const help = () => {
   const { slug } = useLocalSearchParams();
@@ -14,8 +15,10 @@ const help = () => {
     switch (slug) {
       case 'Account Setup':
         return <AccountSetup />;
-      case 'Contributions Help':
+      case 'Group Contributions Help':
         return <ManagingContribution />;
+      case 'Personal Contributions Help':
+        return <ManagePersonalContribution />;
       case 'Verification Help':
         return <VerificationHelp />;
       case 'Troubleshooting Help':

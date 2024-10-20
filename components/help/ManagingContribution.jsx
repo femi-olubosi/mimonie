@@ -36,26 +36,14 @@ const ManagingContribution = () => {
 
       <Text style={styles.sectionTitle}>Step 5: Make Payments</Text>
       <Text style={styles.text}>
-        Pay your contribution using your saved card or set up automatic payments
-        to avoid missing cycles.
+        Contributions will be automatically deducted from your linked card. Make
+        sure your card has sufficient funds at each deduction interval.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 6: Withdraw Funds</Text>
+      <Text style={styles.sectionTitle}>Step 6: Collection</Text>
       <Text style={styles.text}>
-        When it’s your turn to collect, make sure your bank details are correct
-        to withdraw funds.
-      </Text>
-
-      <Text style={styles.sectionTitle}>
-        Step 7: Review Contribution History
-      </Text>
-      <Text style={styles.text}>
-        View the history of all contributions made and received to stay on
-        track.
-      </Text>
-
-      <Text style={styles.text}>
-        For further assistance, visit the Help section or contact support.
+        When it’s your turn to collect, Funds will be deposited into your linked
+        bank account within 24 hours of your withdrawal request.
       </Text>
     </ScrollView>
   );

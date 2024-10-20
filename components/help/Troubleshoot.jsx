@@ -68,12 +68,6 @@ const TroubleshootingHelp = () => {
         Ensure all entered details are correct and match your profile
         information.
       </Text>
-
-      <Text style={styles.sectionTitle}>Contacting Support</Text>
-      <Text style={styles.text}>
-        If all else fails, contact Mimonie support through the Help section for
-        direct assistance.
-      </Text>
     </ScrollView>
   );
 };

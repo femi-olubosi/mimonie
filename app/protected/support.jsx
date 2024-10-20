@@ -1,103 +1,88 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
-import { PageView } from '@/components/Reusable';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 
-const support = () => {
-  const [type, setType] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = () => {
-    if (!type || !subject || !message) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
-    // Add logic to handle form submission here (e.g., API request)
-    setType('');
-    setSubject('');
-    setMessage('');
-    Alert.alert('Support Message Sent', 'We will get back to you shortly');
-  };
+const SupportPage = () => {
+  const router = useRouter();
 
   return (
-    <PageView title="Support">
-      <View style={styles.container}>
-        <Text style={styles.label}>Type</Text>
-        <TextInput
-          style={styles.input}
-          value={type}
-          onChangeText={setType}
-          placeholder="Enter type of issue"
-        />
+    <View style={styles.container}>
+      <Text style={styles.title}>Need Help?</Text>
 
-        <Text style={styles.label}>Subject</Text>
-        <TextInput
-          style={styles.input}
-          value={subject}
-          onChangeText={setSubject}
-          placeholder="Enter subject"
-        />
-
-        <Text style={styles.label}>Message</Text>
-        <TextInput
-          style={[styles.input, styles.messageInput]}
-          value={message}
-          onChangeText={setMessage}
-          placeholder="Enter your message"
-          multiline
-        />
-
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Submit</Text>
+      {[
+        {
+          label: 'Account Setup',
+          route: `/protected/help/Account Help`,
+        },
+        {
+          label: 'Managing Group Contributions',
+          route: '/protected/help/Group Contributions Help',
+        },
+        {
+          label: 'Managing Personal Contributions',
+          route: '/protected/help/Personal Contributions Help',
+        },
+        {
+          label: 'Verifications',
+          route: '/protected/help/Verification Help',
+        },
+        {
+          label: 'Troubleshooting',
+          route: '/protected/help/Troubleshooting Help',
+        },
+      ].map((item, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.helpButton}
+          onPress={() => router.push(item.route)}
+        >
+          <Text style={styles.modalText}>{item.label}</Text>
         </TouchableOpacity>
-      </View>
-    </PageView>
+      ))}
+
+      <TouchableOpacity onPress={() => router.back()}>
+        <Text style={styles.closeText}>Close</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
+
+export default SupportPage;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: Colors.darkGray,
-  },
-  input: {
     backgroundColor: 'white',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 20,
-    fontSize: 14,
-    height: 44,
-  },
-  messageInput: {
-    height: 120,
-  },
-  button: {
-    backgroundColor: Colors.pri,
-    borderRadius: 8,
-    paddingVertical: 12,
+    padding: 20,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 30,
+    color: Colors.pri,
+  },
+  helpButton: {
+    backgroundColor: Colors.pri,
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    marginVertical: 10,
+    borderRadius: 8,
+    width: '80%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
+  closeText: {
+    marginTop: 20,
+    color: Colors.pri,
+    fontSize: 16,
+    textDecorationLine: 'underline',
+  },
 });
-
-export default support;

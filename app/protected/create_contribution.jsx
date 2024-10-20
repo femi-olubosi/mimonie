@@ -39,6 +39,12 @@ const variantOptions = [
   { label: 'Monthly', value: 'months' },
 ];
 
+const variantOptionsPersonal = [
+  { label: 'Daily', value: 'days' },
+  { label: 'Weekly', value: 'weeks' },
+  { label: 'Monthly', value: 'months' },
+];
+
 const amountOptions = [
   { label: '₦5,000', value: 5000 },
   { label: '₦10,000', value: 10000 },
@@ -457,7 +463,7 @@ const CreateContribution = () => {
                     <View style={{ rowGap: 14 }}>
                       <Text style={styles.label}>Frequency</Text>
                       <SelectInput
-                        options={variantOptions}
+                        options={variantOptionsPersonal}
                         selectedValue={variant}
                         setSelectedValue={setVariant}
                         defaultValue={variant.value}

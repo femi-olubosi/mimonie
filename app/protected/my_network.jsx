@@ -33,7 +33,6 @@ const connect = () => {
   } = useGlobalContext();
 
   const handleRemoveRequest = async (data) => {
-    // setIsLoading(true);
     setParsed((prevData) =>
       prevData.filter((item) => item.phone_number !== data.phone_number)
     );
@@ -62,7 +61,6 @@ const connect = () => {
   };
 
   const handleConnectRequest = async (data) => {
-    // setIsLoading(true);
     try {
       if (activeTab === 1) {
         setParsed((prevData) =>
@@ -76,12 +74,11 @@ const connect = () => {
             {
               text: 'OK',
               onPress: () => {
-                // Fetch user profile again when "OK" is pressed
                 fetchUserProfile(setUserProfile, currentUser);
               },
             },
           ],
-          { cancelable: false } // Make the alert non-cancelable
+          { cancelable: false }
         );
       } else if (activeTab === 2) {
         setParsed((prevData) =>
@@ -104,12 +101,11 @@ const connect = () => {
             {
               text: 'OK',
               onPress: () => {
-                // Fetch user profile again when "OK" is pressed
                 fetchUserProfile(setUserProfile, currentUser);
               },
             },
           ],
-          { cancelable: false } // Make the alert non-cancelable
+          { cancelable: false }
         );
       }
     } catch (error) {
@@ -188,7 +184,6 @@ const connect = () => {
             onPress={() => setActiveTab(1)}
             style={{
               borderRadius: 4,
-
               paddingVertical: 4,
               justifyContent: 'center',
               alignItems: 'center',
@@ -211,7 +206,6 @@ const connect = () => {
             onPress={() => setActiveTab(2)}
             style={{
               borderRadius: 4,
-
               paddingVertical: 4,
               justifyContent: 'center',
               alignItems: 'center',
@@ -248,6 +242,20 @@ const connect = () => {
             </View>
           </TouchableOpacity>
         </View>
+
+        {myConnections.length < 1 && activeTab === 1 && (
+          <View style={styles.noConnectionsContainer}>
+            <Text style={styles.noConnectionsText}>
+              You do not have any connection, please click the button below to
+              invite or connect with friends.
+            </Text>
+            <Text style={styles.noConnectionsText}>
+              Note, that to create a group contribution, you must have at least
+              4 connections, as only people in your network can be invited to
+              join your contributions.
+            </Text>
+          </View>
+        )}
 
         <FlatList
           data={activeTab === 1 ? myConnections : pendingConnections}
@@ -286,31 +294,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     columnGap: 10,
   },
-  tabButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-  },
-  tabText: {
-    fontSize: 18,
-    color: 'grey',
-    position: 'relative',
-  },
-  activeTabText: {
-    fontWeight: 'bold',
-    color: 'black',
-  },
-  badgeContainer: {
-    backgroundColor: 'red',
-    borderRadius: 10,
-    padding: 5,
-    position: 'absolute',
-    top: -10,
-    right: -10,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 12,
-  },
   itemContainer: {
     paddingVertical: 20,
     borderBottomWidth: 1,
@@ -323,5 +306,15 @@ const styles = StyleSheet.create({
   itemOccupation: {
     fontSize: 14,
     color: 'grey',
+  },
+  noConnectionsContainer: {
+    marginVertical: 20,
+    alignItems: 'center',
+  },
+  noConnectionsText: {
+    fontSize: 14,
+    color: 'grey',
+    textAlign: 'center',
+    marginVertical: 10,
   },
 });

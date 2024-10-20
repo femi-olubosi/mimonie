@@ -311,7 +311,11 @@ export default function HomeScreen() {
           }
         >
           <Cards contributions={contributions} />
-          <Options userProfile={userProfile} priText={priText} />
+          <Options
+            userProfile={userProfile}
+            priText={priText}
+            setShowHelp={setShowHelp}
+          />
           <Advert />
           <View
             style={{ paddingHorizontal: 20, backgroundColor: priBg, flex: 1 }}
@@ -505,8 +509,12 @@ export default function HomeScreen() {
                   route: `/protected/help/Account Help`,
                 },
                 {
-                  label: 'Managing Contributions',
-                  route: '/protected/help/Contributions Help',
+                  label: 'Managing Group Contributions',
+                  route: '/protected/help/Group Contributions Help',
+                },
+                {
+                  label: 'Managing Personal Contributions',
+                  route: '/protected/help/Personal Contributions Help',
                 },
                 {
                   label: 'Verifications',

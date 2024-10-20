@@ -4,10 +4,11 @@ import {
   AntDesign,
   FontAwesome6,
   MaterialCommunityIcons,
+  MaterialIcons,
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-const Options = ({ userProfile, priText }) => {
+const Options = ({ userProfile, priText, setShowHelp }) => {
   const [parsedConnect, setParsedConnect] = useState([]);
 
   useEffect(() => {
@@ -38,14 +39,11 @@ const Options = ({ userProfile, priText }) => {
     >
       <Pressable
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
-        onPress={() => router.push('/protected/groups')}
+        onPress={() => setShowHelp(true)}
       >
-        <Image
-          source={require('../../assets/logo/group.png')}
-          style={{ width: 33.5, height: 21.8 }}
-        />
+        <MaterialIcons name="support-agent" size={23} color="#555555" />
         <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
-          Groups
+          Help/Support
         </Text>
       </Pressable>
       <Pressable

@@ -38,26 +38,16 @@ const AccountSetup = () => {
         withdrawals.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 6: Set Up a Withdrawal Pin</Text>
-      <Text style={styles.text}>
-        Set up a 6-digit pin to secure your withdrawals from the app.
-      </Text>
-
-      <Text style={styles.sectionTitle}>Step 7: Join Network of Friends</Text>
+      <Text style={styles.sectionTitle}>Step 6: Join Network of Friends</Text>
       <Text style={styles.text}>
         Invite people to your network or accept connection request. It is
         recommended that you have a minimum of 4 connections before you can
         create a contribution
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 8: Start Contributing</Text>
+      <Text style={styles.sectionTitle}>Step 7: Start Contributing</Text>
       <Text style={styles.text}>
         Join or create a contribution group to start participating.
-      </Text>
-
-      <Text style={styles.text}>
-        If you need further assistance, visit the Help section or contact
-        support.
       </Text>
     </ScrollView>
   );
