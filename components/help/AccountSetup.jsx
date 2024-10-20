@@ -15,29 +15,42 @@ const AccountSetup = () => {
         Create your account using your email, phone number, and password.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 2: Verify Your Phone Number</Text>
+      <Text style={styles.sectionTitle}>Step 2: Verify Your Email Address</Text>
+      <Text style={styles.text}>
+        Enter the verification code sent to your email address for email
+        verification.
+      </Text>
+
+      <Text style={styles.sectionTitle}>Step 3: Verify Your Phone Number</Text>
       <Text style={styles.text}>
         Enter the verification code sent to your phone via SMS.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 3: Verify Your Identity</Text>
+      <Text style={styles.sectionTitle}>Step 4: Verify Your Identity</Text>
       <Text style={styles.text}>
         In the **Account** section, provide your BVN and valid ID for identity
         verification.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 4: Add a Bank Card</Text>
+      <Text style={styles.sectionTitle}>Step 5: Add a Bank Card</Text>
       <Text style={styles.text}>
         In the **Payment** section, link your bank card for contributions and
         withdrawals.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 5: Set Up a Withdrawal Pin</Text>
+      <Text style={styles.sectionTitle}>Step 6: Set Up a Withdrawal Pin</Text>
       <Text style={styles.text}>
         Set up a 6-digit pin to secure your withdrawals from the app.
       </Text>
 
-      <Text style={styles.sectionTitle}>Step 6: Start Contributing</Text>
+      <Text style={styles.sectionTitle}>Step 7: Join Network of Friends</Text>
+      <Text style={styles.text}>
+        Invite people to your network or accept connection request. It is
+        recommended that you have a minimum of 5 connections before you can
+        create a contribution
+      </Text>
+
+      <Text style={styles.sectionTitle}>Step 8: Start Contributing</Text>
       <Text style={styles.text}>
         Join or create a contribution group to start participating.
       </Text>

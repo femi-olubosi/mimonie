@@ -85,12 +85,15 @@ const CreateContribution = () => {
     setContributions,
     setIsLoading,
     userProfile,
+    parsed,
   } = useGlobalContext();
   const router = useRouter();
 
   useEffect(() => {
     getContributionGroups(setContributionGroups);
   }, []);
+
+  const myConnections = parsed?.filter((e) => e.status === 'accepted');
 
   const createGroupContribution = async () => {
     const details = {
@@ -218,6 +221,20 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
+      if (myConnections?.length < 5) {
+        Alert.alert(
+          'Sorry!!',
+          'You can only create group contribution when you have up to 5 connections.',
+          [
+            {
+              text: 'Go to Contacts',
+              onPress: () => router.push('/protected/contact'),
+            },
+            { text: 'OK', onPress: () => console.log('OK Pressed') },
+          ]
+        );
+        return;
+      }
       await createGroupContribution();
     } else if (contributionType === 'personal') {
       await createContributionPersonal();

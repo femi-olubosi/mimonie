@@ -126,6 +126,7 @@ const Activities = () => {
               gap: 20,
               paddingVertical: 20,
             }}
+            showsVerticalScrollIndicator={false}
           />
         )}
       </View>

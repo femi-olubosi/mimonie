@@ -288,13 +288,13 @@ export default function HomeScreen() {
   // }, [currentUser]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: secBg }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
       <ThemedView
         style={{
           flex: 1,
           paddingTop: Platform.OS === 'ios' ? 0 : Constants.statusBarHeight,
-          backgroundColor: secBg,
+          backgroundColor: '#F0F9FF',
         }}
       >
         <ProfileView

@@ -509,12 +509,12 @@ const menuItems = [
   {
     title: 'Privacy & Security',
     icon: <MaterialIcons name="security" size={24} color="black" />,
-    route: '/privacy_security',
+    route: '/protected/privacy',
   },
   {
     title: 'Support',
     icon: <MaterialIcons name="support-agent" size={24} color="black" />,
-    route: '/support',
+    route: '/protected/support',
   },
   {
     title: 'Settings',

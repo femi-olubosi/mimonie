@@ -159,10 +159,7 @@ const ProtectedContent = () => {
               name="mimonie/[id]"
               options={{ headerShown: false }}
             />
-              <Stack.Screen
-              name="help/[slug]"
-              options={{ headerShown: false }}
-            />
+            <Stack.Screen name="help/[slug]" options={{ headerShown: false }} />
             <Stack.Screen
               name="create_contribution"
               options={{ headerShown: false }}
@@ -170,7 +167,10 @@ const ProtectedContent = () => {
             <Stack.Screen name="cards" options={{ headerShown: false }} />
             <Stack.Screen name="paystack" options={{ headerShown: false }} />
             <Stack.Screen name="kyc" options={{ headerShown: false }} />
-            <Stack.Screen name="transfer_screen" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="transfer_screen"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen
               name="complete_profile"
               options={{ headerShown: false }}
@@ -194,6 +194,8 @@ const ProtectedContent = () => {
             <Stack.Screen name="faq" options={{ headerShown: false }} />
             <Stack.Screen name="settings" options={{ headerShown: false }} />
             <Stack.Screen name="admin" options={{ headerShown: false }} />
+            <Stack.Screen name="support" options={{ headerShown: false }} />
+            <Stack.Screen name="privacy" options={{ headerShown: false }} />
           </Stack>
         </Authenticator>
       </View>

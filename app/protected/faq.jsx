@@ -24,7 +24,6 @@ const faq = () => {
           style={styles.container}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.header}>Frequently Asked Questions</Text>
           {faqData.map((item, index) => (
             <View key={index} style={styles.faqItem}>
               <Text style={styles.question}>

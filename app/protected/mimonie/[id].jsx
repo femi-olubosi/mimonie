@@ -420,38 +420,8 @@ const ContributionDetails = () => {
                   </Text>
                 </View>
               </View>
-
-              <View style={styles.detailContainer}>
-                <Text style={styles.label}>Amount</Text>
-                <Text style={styles.value}>
-                  {naira}
-                  {hideValues ? (
-                    <Hide color={'black'} />
-                  ) : (
-                    new Intl.NumberFormat('en-US').format(contribution?.amount)
-                  )}
-                </Text>
-              </View>
-              <View style={styles.detailContainer}>
-                <Text style={styles.label}>Target</Text>
-                <Text style={styles.value}>
-                  {naira}
-                  {hideValues ? (
-                    <Hide color={'black'} />
-                  ) : (
-                    new Intl.NumberFormat('en-US').format(contribution?.target)
-                  )}
-                </Text>
-              </View>
-
               {contribution?.type === 'group' && (
                 <>
-                  <View style={styles.detailContainer}>
-                    <Text style={styles.label}>Number of Contributors</Text>
-                    <Text style={styles.value}>
-                      {parsed.length} of {contribution.num_of_month}
-                    </Text>
-                  </View>
                   <View
                     style={[
                       {
@@ -571,7 +541,6 @@ const ContributionDetails = () => {
                                     ) : null}
                                   </View>
                                 </View>
-                                {/* <Text style={{ fontFamily: "ir" }}>{id + 1}</Text> */}
                               </View>
                             </View>
                             {eN?.status !== 'in progress' &&
@@ -592,6 +561,41 @@ const ContributionDetails = () => {
                   </View>
                 </>
               )}
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Amount</Text>
+                <Text style={styles.value}>
+                  {naira}
+                  {hideValues ? (
+                    <Hide color={'black'} />
+                  ) : (
+                    new Intl.NumberFormat('en-US').format(contribution?.amount)
+                  )}
+                </Text>
+              </View>
+              <View style={styles.detailContainer}>
+                <Text style={styles.label}>Target</Text>
+                <Text style={styles.value}>
+                  {naira}
+                  {hideValues ? (
+                    <Hide color={'black'} />
+                  ) : (
+                    new Intl.NumberFormat('en-US').format(contribution?.target)
+                  )}
+                </Text>
+              </View>
+
+              {contribution?.type === 'group' && (
+                <>
+                  <View style={styles.detailContainer}>
+                    <Text style={styles.label}>Number of Contributors</Text>
+                    <Text style={styles.value}>
+                      {parsed.length === contribution.num_of_month
+                        ? `${parsed.length} (Completed)`
+                        : `${parsed.length} contributor(s) joined out of ${contribution.num_of_month} expected contributors`}
+                    </Text>
+                  </View>
+                </>
+              )}
               <NextContributionDay
                 contribution={contribution}
                 parsed={parsed}
@@ -599,14 +603,14 @@ const ContributionDetails = () => {
               />
               {contribution?.type === 'group' && (
                 <>
-                  <View style={styles.detailContainer}>
+                  {/* <View style={styles.detailContainer}>
                     <Text style={styles.label}>User role</Text>
                     <Text style={styles.value}>
                       {contribution?.owner === userProfile?.name
                         ? 'Creator'
                         : 'invitee'}
                     </Text>
-                  </View>
+                  </View> */}
                   <View style={styles.detailContainer}>
                     <Text style={styles.label}>Owner</Text>
                     <Text style={styles.value}>{contribution?.owner}</Text>

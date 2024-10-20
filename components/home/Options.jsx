@@ -1,6 +1,10 @@
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { AntDesign, FontAwesome6 } from '@expo/vector-icons';
+import {
+  AntDesign,
+  FontAwesome6,
+  MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const Options = ({ userProfile, priText }) => {
@@ -40,7 +44,9 @@ const Options = ({ userProfile, priText }) => {
           source={require('../../assets/logo/group.png')}
           style={{ width: 33.5, height: 21.8 }}
         />
-        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>Groups</Text>
+        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
+          Groups
+        </Text>
       </Pressable>
       <Pressable
         style={{
@@ -70,7 +76,9 @@ const Options = ({ userProfile, priText }) => {
           </Text>
         </View>
         <FontAwesome6 name="people-roof" size={23} color="#555555" />
-        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>My Network</Text>
+        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
+          My Network
+        </Text>
       </Pressable>
       <Pressable
         style={{
@@ -81,8 +89,14 @@ const Options = ({ userProfile, priText }) => {
         // onPress={tryNow}
         onPress={() => router.push('/protected/faq')}
       >
-        <AntDesign name="question" size={25} color={priText} />
-        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>FAQ</Text>
+        <MaterialCommunityIcons
+          name="frequently-asked-questions"
+          size={25}
+          color={priText}
+        />
+        <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
+          FAQ
+        </Text>
       </Pressable>
     </View>
   );

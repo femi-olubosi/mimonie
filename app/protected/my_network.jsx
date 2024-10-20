@@ -18,9 +18,8 @@ import {
 } from '@/api/network.service';
 import { fetchUserProfile } from '@/api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
-import { UserProfile } from '@/src/models';
-import { DataStore } from 'aws-amplify/datastore';
 import { triggerNotificationForUser } from '@/api/pushNotification.service';
+import { router } from 'expo-router';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -180,11 +179,10 @@ const connect = () => {
       </View>
     </View>
   );
-  
 
   return (
     <PageView title={'My Network'}>
-      <View style={{ padding: 20 }}>
+      <View style={{ padding: 20, flex: 1 }}>
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => setActiveTab(1)}
@@ -255,7 +253,26 @@ const connect = () => {
           data={activeTab === 1 ? myConnections : pendingConnections}
           renderItem={renderConnectionItem}
           keyExtractor={(item, idx) => idx.toString()}
+          showsVerticalScrollIndicator={false}
         />
+        <Pressable
+          style={{
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: Colors.pri,
+            position: 'absolute',
+            bottom: 20,
+            right: 20,
+            borderRadius: 4,
+          }}
+          onPress={() => router.push('/protected/contact')}
+        >
+          <Text style={{ fontFamily: 'im', fontSize: 16, color: 'white' }}>
+            Invite Friends
+          </Text>
+        </Pressable>
       </View>
     </PageView>
   );

@@ -259,6 +259,7 @@ const Contact = () => {
         }
         keyExtractor={(item, idx) => idx.toString()}
         renderItem={renderContact}
+        showsVerticalScrollIndicator={false}
       />
       <Modal
         animationType="slide"
