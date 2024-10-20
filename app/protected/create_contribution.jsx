@@ -221,10 +221,10 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
-      if (myConnections?.length < 5) {
+      if (myConnections?.length < 4) {
         Alert.alert(
           'Sorry!!',
-          'You can only create group contribution when you have up to 5 connections.',
+          'You can only create group contribution when you have up to 4 connections.',
           [
             {
               text: 'Go to Contacts',
