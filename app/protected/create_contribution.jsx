@@ -167,6 +167,26 @@ const CreateContribution = () => {
       return;
     }
 
+    if (selectedValue.p_target === selectedValue.p_amount) {
+      Alert.alert(
+        'Invalid Target Amount',
+        'The target amount must be more than the contribution amount.'
+      );
+      return;
+    }
+
+    if (selectedValue.p_target % selectedValue.p_amount !== 0) {
+      Alert.alert(
+        'Invalid Target Amount',
+        `The target amount must be a multiple contribution amount. ${
+          selectedValue.p_amount * 3
+        } or  ${selectedValue.p_amount * 4} or  ${
+          selectedValue.p_amount * 5
+        } etc`
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       await createPersonalContribution(

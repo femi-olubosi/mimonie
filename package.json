@@ -60,7 +60,8 @@
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-web": "~0.19.10",
     "react-native-webview": "13.8.6",
-    "expo-notifications": "~0.28.16"
+    "expo-notifications": "~0.28.16",
+    "expo-clipboard": "~6.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
