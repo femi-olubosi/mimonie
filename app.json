@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mimonie",
     "slug": "mimonie",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mimonie",
@@ -11,13 +11,13 @@
       "silentLaunch": true
     },
     "ios": {
-      "buildNumber": "4",
+      "buildNumber": "5",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"]
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
@@ -56,6 +56,18 @@
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo/mimonie_notification.png",
+          "color": "#006EBD",
+          "defaultChannel": "default",
+          "sounds": [
+            "./assets/sound/notification_sound1.wav",
+            "./assets/sound/notification_sound2.wav"
+          ]
         }
       ]
     ],

@@ -43,7 +43,7 @@ const Options = ({ userProfile, priText, setShowHelp }) => {
       >
         <MaterialIcons name="support-agent" size={23} color="#555555" />
         <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
-          Help/Support
+          Help
         </Text>
       </Pressable>
       <Pressable

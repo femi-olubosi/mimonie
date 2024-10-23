@@ -16,9 +16,8 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  checkLinkExpiry,
   downloadUrl,
   fetchCurrUser,
   fetchUserProfile,
@@ -29,17 +28,14 @@ import { getContacts } from '@/api/contact.service';
 import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { DataStore } from 'aws-amplify/datastore';
-import * as Notifications from 'expo-notifications';
-import * as Linking from 'expo-linking';
 import {
   FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import {
   fetchAuthSession,
-  sendUserAttributeVerificationCode,
   signOut,
   updateUserAttributes,
 } from 'aws-amplify/auth';
@@ -47,22 +43,18 @@ import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
 import { fetchUserActivities } from '@/api/activities.service';
-import {
-  Contribution,
-  UserActivity,
-  UserNotifications,
-  UserProfile,
-} from '@/src/models';
+import { Contribution, UserActivity, UserProfile } from '@/src/models';
 import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
-import render from '@/components/Render';
 import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
+import { saveDownloadDate, isAboutToExpire } from '@/utils/helper';
+import { SkeletonLoader } from '@/components/Reusable';
 
 export default function HomeScreen() {
   const {
@@ -167,30 +159,29 @@ export default function HomeScreen() {
       fetchUserActivities(userProfile?.userId, setUserActivities)
     );
     return () => subscription.unsubscribe();
-  }, [currentUser]);
+  }, [userProfile?.name]);
 
   useEffect(() => {
-    const checkExpiry = async () => {
-      const res = await checkLinkExpiry(currentUser?.picture);
+    const checkExpiryAndUpdateUrl = async () => {
+      const res = await isAboutToExpire();
+
       if (res) {
-        console.log('link expired', res);
-        const link = await downloadUrl(currentUser.userId);
-        await updateUserAttributes({
-          userAttributes: {
-            picture: link || '',
-          },
-        });
-        setProfilePicture(link);
-        await fetchCurrUser(setCurrentUser);
+        const newLink = await downloadUrl(currentUser.userId);
+        if (newLink) {
+          await updateUserAttributes({
+            userAttributes: {
+              picture: newLink || '',
+            },
+          });
+          setProfilePicture(newLink);
+          await saveDownloadDate(new Date());
+        }
       } else {
-        console.log('link not expired');
         setProfilePicture(currentUser?.picture);
       }
     };
 
-    if (currentUser?.picture) {
-      checkExpiry();
-    }
+    checkExpiryAndUpdateUrl();
   }, [currentUser]);
 
   useEffect(() => {
@@ -256,7 +247,9 @@ export default function HomeScreen() {
       }
     };
 
-    checkForUpdates();
+    if (!__DEV__) {
+      checkForUpdates();
+    }
   }, []);
 
   const triggerAppUpdate = async () => {
@@ -273,19 +266,6 @@ export default function HomeScreen() {
       setIsLoading(false);
     }
   };
-
-  // useEffect(() => {
-  //   const fetchProfile = async () => {
-  //     const profile = await fetchUserProfile(setUserProfile, currentUser);
-
-  //     if (!profile.phone_verified) {
-  //       router.push('/protected/login_verify');
-  //     }
-  //   };
-  //   if (currentUser) {
-  //     fetchProfile();
-  //   }
-  // }, [currentUser]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -316,9 +296,14 @@ export default function HomeScreen() {
             priText={priText}
             setShowHelp={setShowHelp}
           />
-          <Advert />
+          {/* <Advert /> */}
           <View
-            style={{ paddingHorizontal: 20, backgroundColor: priBg, flex: 1 }}
+            style={{
+              paddingHorizontal: 20,
+              backgroundColor: priBg,
+              flex: 1,
+              paddingTop: 30,
+            }}
           >
             <View
               style={{
@@ -360,101 +345,122 @@ export default function HomeScreen() {
                 paddingVertical: 20,
               }}
             >
-              {userActivities.slice(0, 10).map((item: any, index: any) => {
-                return (
-                  <View
-                    key={index}
-                    style={{
-                      borderWidth: 1,
-                      borderRadius: 8,
-                      minHeight: 74,
-                      borderColor: '#DEE1E6',
-                      width: '100%',
-                      gap: 20,
-                      padding: 10,
-                    }}
-                  >
+              {userActivities?.length < 1 ? (
+                <View style={{ rowGap: 6, width: '100%' }}>
+                  <View style={{ marginVertical: 10 }}>
+                    <SkeletonLoader width="100%" height={20} />
+                    <SkeletonLoader width="60%" height={20} />
+                    <SkeletonLoader width="80%" height={20} />
+                  </View>
+                  <View style={{ marginVertical: 10 }}>
+                    <SkeletonLoader width="100%" height={20} />
+                    <SkeletonLoader width="60%" height={20} />
+                    <SkeletonLoader width="80%" height={20} />
+                  </View>
+                  <View style={{ marginVertical: 10 }}>
+                    <SkeletonLoader width="100%" height={20} />
+                    <SkeletonLoader width="60%" height={20} />
+                    <SkeletonLoader width="80%" height={20} />
+                  </View>
+                </View>
+              ) : (
+                userActivities.slice(0, 10).map((item: any, index: any) => {
+                  return (
                     <View
+                      key={index}
                       style={{
-                        flexDirection: 'row',
-                        columnGap: 10,
-                        alignItems: 'start',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        minHeight: 74,
+                        borderColor: '#DEE1E6',
+                        width: '100%',
+                        gap: 20,
+                        padding: 10,
                       }}
                     >
-                      {item.description.includes('Failed') ? (
-                        <MaterialIcons name="block" size={24} color="red" />
-                      ) : item.type === 'collection' ? (
-                        <MaterialCommunityIcons
-                          name="arrow-bottom-right-thin-circle-outline"
-                          size={24}
-                          color="green"
-                        />
-                      ) : (
-                        <MaterialCommunityIcons
-                          name="arrow-top-left-thin-circle-outline"
-                          size={24}
-                          color="red"
-                        />
-                      )}
                       <View
                         style={{
-                          flex: 1,
-                          rowGap: 12,
+                          flexDirection: 'row',
+                          columnGap: 10,
+                          alignItems: 'start',
                         }}
                       >
-                        <Text
+                        {item.description.includes('Failed') ? (
+                          <MaterialIcons name="block" size={24} color="red" />
+                        ) : item.type === 'collection' ? (
+                          <MaterialCommunityIcons
+                            name="arrow-bottom-right-thin-circle-outline"
+                            size={24}
+                            color="green"
+                          />
+                        ) : (
+                          <MaterialCommunityIcons
+                            name="arrow-top-left-thin-circle-outline"
+                            size={24}
+                            color="red"
+                          />
+                        )}
+                        <View
                           style={{
-                            fontSize: 16,
-                            fontFamily: 'ir',
-                            color: item.description.includes('Failed')
-                              ? 'red'
-                              : 'gray',
+                            flex: 1,
+                            rowGap: 12,
                           }}
                         >
-                          {item.description.includes('Failed')
-                            ? 'Failed Contribution'
-                            : capitalizeFirstLetter(item.type)}
-                        </Text>
-                        <Text
-                          style={{
-                            fontSize: 13,
-                            fontFamily: 'ir',
-                            color: 'gray',
-                          }}
-                        >
-                          {item.description}
-                        </Text>
-                      </View>
-                      <View style={{ rowGap: 12 }}>
-                        <Text
-                          style={{
-                            color: item.type === 'collection' ? 'green' : 'red',
-                            fontSize: 16,
-                            fontFamily: 'ir',
-                          }}
-                        >
-                          {naira}
-                          {hideValues ? (
-                            <Hide
-                              color={
-                                item.type === 'collection' ? 'green' : 'red'
-                              }
-                            />
-                          ) : (
-                            item.amount.toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })
-                          )}
-                        </Text>
-                        <Text style={{ fontSize: 10, color: 'gray' }}>
-                          {formatTimestamp(item.createdAt)}
-                        </Text>
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              fontFamily: 'ir',
+                              color: item.description.includes('Failed')
+                                ? 'red'
+                                : 'gray',
+                            }}
+                          >
+                            {item.description.includes('Failed')
+                              ? 'Failed Contribution'
+                              : capitalizeFirstLetter(item.type)}
+                          </Text>
+                          <Text
+                            style={{
+                              fontSize: 13,
+                              fontFamily: 'ir',
+                              color: 'gray',
+                            }}
+                          >
+                            {item.description}
+                          </Text>
+                        </View>
+                        <View style={{ rowGap: 12 }}>
+                          <Text
+                            style={{
+                              color:
+                                item.type === 'collection' ? 'green' : 'red',
+                              fontSize: 16,
+                              fontFamily: 'ir',
+                            }}
+                          >
+                            {naira}
+                            {hideValues ? (
+                              <Hide
+                                color={
+                                  item.type === 'collection' ? 'green' : 'red'
+                                }
+                              />
+                            ) : (
+                              item.amount.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            )}
+                          </Text>
+                          <Text style={{ fontSize: 10, color: 'gray' }}>
+                            {formatTimestamp(item.createdAt)}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                );
-              })}
+                  );
+                })
+              )}
             </View>
           </View>
         </ScrollView>
