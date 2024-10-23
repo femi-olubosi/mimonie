@@ -143,47 +143,25 @@ const CreateContribution = () => {
 
   const createContributionPersonal = async () => {
     const date = new Date();
-    const start_date = date.toLocaleDateString('en-CA');
-
     const details = {
       contributionName,
       groupName: 'Default',
       groupId: 'f75fbf99-4e9d-4e3e-ad62-b1b94a9162d9',
       userId: currentUser.userId,
       username: currentUser.preferred_username,
-      target: selectedValue.p_target,
+      target: selectedValue.p_amount * selectedValue.p_duration,
       amount: selectedValue.p_amount,
-      num_of_month: Math.ceil(selectedValue.p_target / selectedValue.p_amount),
+      num_of_month: selectedValue.p_duration,
       variant: variant.value,
     };
 
     if (
       ErrorCheck({
         contributionName,
-        target: selectedValue.p_target,
+        target: selectedValue.p_duration,
         amount: selectedValue.p_amount,
       })
     ) {
-      return;
-    }
-
-    if (selectedValue.p_target === selectedValue.p_amount) {
-      Alert.alert(
-        'Invalid Target Amount',
-        'The target amount must be more than the contribution amount.'
-      );
-      return;
-    }
-
-    if (selectedValue.p_target % selectedValue.p_amount !== 0) {
-      Alert.alert(
-        'Invalid Target Amount',
-        `The target amount must be a multiple contribution amount. ${
-          selectedValue.p_amount * 3
-        } or  ${selectedValue.p_amount * 4} or  ${
-          selectedValue.p_amount * 5
-        } etc`
-      );
       return;
     }
 
@@ -287,6 +265,8 @@ const CreateContribution = () => {
       maximumFractionDigits: 2,
     })
     ?.split('.')[0];
+
+  const p_target = selectedValue.p_amount * selectedValue.p_duration || 0;
 
   return (
     <PageView title={'Create Contribution'}>
@@ -495,7 +475,7 @@ const CreateContribution = () => {
                         style={styles.input}
                         placeholder="Enter Amount"
                         keyboardType="numeric"
-                        value={selectedValue.amount}
+                        value={selectedValue.p_amount}
                         onChangeText={(val) =>
                           setSelectedValue({
                             ...selectedValue,
@@ -505,18 +485,28 @@ const CreateContribution = () => {
                       />
                     </View>
                     <View style={{ rowGap: 14 }}>
-                      <Text style={styles.label}>Target</Text>
+                      <Text style={styles.label}>
+                        How many {variant?.value}
+                      </Text>
                       <TextInput
                         style={styles.input}
-                        placeholder="Enter Target"
+                        placeholder="Enter Duration"
                         keyboardType="numeric"
-                        value={selectedValue.target}
+                        value={selectedValue.p_duration}
                         onChangeText={(val) =>
                           setSelectedValue({
                             ...selectedValue,
-                            p_target: Number(val),
+                            p_duration: Number(val),
                           })
                         }
+                      />
+                    </View>
+                    <View style={{ rowGap: 14 }}>
+                      <Text style={styles.label}>Target</Text>
+                      <TextInput
+                        style={styles.input}
+                        value={`${p_target.toLocaleString()}`}
+                        readOnly
                       />
                     </View>
                   </>

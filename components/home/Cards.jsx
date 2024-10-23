@@ -95,7 +95,7 @@ const Cards = ({ contributions }) => {
                       Category:{' '}
                       {item.type === 'group'
                         ? item.category
-                        : 'Personal Contribution'}
+                        : 'Personal Savings'}
                     </Text>
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'isb' }]}
@@ -123,7 +123,7 @@ const Cards = ({ contributions }) => {
                         { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
                       ]}
                     >
-                      Collect on{' '}
+                      {item.type === 'group' ? 'Collect on' : 'Withdraw on'}{' '}
                       {item.status === 'open'
                         ? ' (Not running yet)'
                         : getCollectionDate(
@@ -326,7 +326,7 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
 
     // If no special case, calculate the normal next contribution day
     if (updateMe) {
-      return 'Today (Please fund your card)';
+      return 'Today (Payment failed. Please check activity log)';
     }
 
     switch (contribution?.variant) {
@@ -376,7 +376,7 @@ const NextContributionDay = ({ contribution, done, currentParticipant }) => {
       >
         Due Date: {getNextContributionDay()}
       </Text>
-      {updateMe && <Entypo name="back-in-time" size={10} color="#FF7F7F" />}
+      {/* {updateMe && <Entypo name="back-in-time" size={10} color="#FF7F7F" />} */}
     </View>
   );
 };
