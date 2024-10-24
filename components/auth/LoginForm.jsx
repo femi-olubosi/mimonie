@@ -99,9 +99,12 @@ const LoginForm = (props) => {
       }
 
       if (
-        !['+2348139781144', '+2348139781147', '+2348139781148'].includes(
-          profile?.phone_number
-        ) &&
+        ![
+          '+2348139781144',
+          '+2348139781147',
+          '+2348139781148',
+          '+2348039013901',
+        ].includes(profile?.phone_number) &&
         profile?.device_id &&
         profile?.device_id !== Device.osInternalBuildId
       ) {
