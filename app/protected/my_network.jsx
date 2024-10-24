@@ -179,6 +179,9 @@ const connect = () => {
   return (
     <PageView title={'My Network'}>
       <View style={{ padding: 20, flex: 1 }}>
+        <Text style={{ fontSize: 10, marginBottom: 8, color: 'gray' }}>
+          Only people in your network can be invited to join your contributions.
+        </Text>
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => setActiveTab(1)}

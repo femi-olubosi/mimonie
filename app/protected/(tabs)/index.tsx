@@ -18,6 +18,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useEffect, useState } from 'react';
 import {
+  checkLinkExpiry,
   downloadUrl,
   fetchCurrUser,
   fetchUserProfile,
@@ -166,17 +167,18 @@ export default function HomeScreen() {
       const res = await isAboutToExpire();
 
       if (res) {
-        const newLink = await downloadUrl(currentUser.userId);
-        if (newLink) {
-          await updateUserAttributes({
-            userAttributes: {
-              picture: newLink || '',
-            },
-          });
-          setProfilePicture(newLink);
-          await saveDownloadDate(new Date());
-        }
+        const link = await downloadUrl(currentUser.userId);
+        await updateUserAttributes({
+          userAttributes: {
+            picture: link || '',
+          },
+        });
+        setProfilePicture(link);
+        await fetchCurrUser(setCurrentUser);
+        await saveDownloadDate(new Date());
       } else {
+        console.log('here');
+        console.log(currentUser?.picture);
         setProfilePicture(currentUser?.picture);
       }
     };

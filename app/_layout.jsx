@@ -26,7 +26,7 @@ function RootLayout() {
   });
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-  const [onboard, setOnboard] = useState(false);
+  const [onboard, setOnboard] = useState(true);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -48,16 +48,16 @@ function RootLayout() {
     checkAuthStatus();
   }, []);
 
-  useEffect(() => {
-    const checkFirstTimeUser = async () => {
-      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
-      if (isFirstLaunch === null) {
-        setOnboard(true);
-        await AsyncStorage.setItem('hasLaunched', 'true');
-      }
-    };
-    checkFirstTimeUser();
-  }, []);
+  // useEffect(() => {
+  //   const checkFirstTimeUser = async () => {
+  //     const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
+  //     if (isFirstLaunch === null) {
+  //       setOnboard(true);
+  //       await AsyncStorage.setItem('hasLaunched', 'true');
+  //     }
+  //   };
+  //   checkFirstTimeUser();
+  // }, []);
 
   return (
     <>
