@@ -70,11 +70,12 @@ const Account = () => {
   const handleProfilePicture = async () => {
     try {
       const file = await imagePicker();
+      setIsLoading(true);
       if (!file) {
         throw new Error('No file selected');
       }
-
-      setIsLoading(true);
+      setProfilePicture(file);
+      setIsLoading(false);
       await uploadFile(file, userProfile?.userId);
       const url = await downloadUrl(userProfile.userId);
 

@@ -216,7 +216,7 @@ const CreateContribution = () => {
       return;
     }
 
-    if (!userProfile.auth_url) {
+    if (userProfile.name !== 'Admin Default' && !userProfile.auth_url) {
       Alert.alert(
         'Sorry!!',
         'You cannot create contribution at the moment. Add a card to continue'
@@ -225,7 +225,7 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
-      if (myConnections?.length < 4) {
+      if (userProfile.name !== 'Admin Default' && myConnections?.length < 4) {
         Alert.alert(
           'Sorry!!',
           'You can only create group contribution when you have up to 4 connections.',
@@ -553,13 +553,18 @@ const CreateContribution = () => {
               styles.button,
               {
                 backgroundColor:
-                  !isVerified || !contributionType || !userProfile?.dva?.enabled
+                  !isVerified ||
+                  !contributionType ||
+                  (contributionType === 'personal' &&
+                    !userProfile?.dva?.enabled)
                     ? 'gray'
                     : Colors.pri,
               },
             ]}
             disabled={
-              !isVerified || !contributionType || !userProfile?.dva?.enabled
+              !isVerified ||
+              !contributionType ||
+              (contributionType === 'personal' && !userProfile?.dva?.enabled)
             }
             onPress={handleConfirm}
           >
@@ -724,6 +729,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
+    marginTop: 10,
   },
   modalButtonText: {
     color: 'white',

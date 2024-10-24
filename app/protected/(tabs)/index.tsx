@@ -346,22 +346,16 @@ export default function HomeScreen() {
               }}
             >
               {userActivities?.length < 1 ? (
-                <View style={{ rowGap: 6, width: '100%' }}>
-                  <View style={{ marginVertical: 10 }}>
-                    <SkeletonLoader width="100%" height={20} />
-                    <SkeletonLoader width="60%" height={20} />
-                    <SkeletonLoader width="80%" height={20} />
-                  </View>
-                  <View style={{ marginVertical: 10 }}>
-                    <SkeletonLoader width="100%" height={20} />
-                    <SkeletonLoader width="60%" height={20} />
-                    <SkeletonLoader width="80%" height={20} />
-                  </View>
-                  <View style={{ marginVertical: 10 }}>
-                    <SkeletonLoader width="100%" height={20} />
-                    <SkeletonLoader width="60%" height={20} />
-                    <SkeletonLoader width="80%" height={20} />
-                  </View>
+                <View
+                  style={{
+                    rowGap: 6,
+                    width: '100%',
+                    minHeight: 400,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text>You do not have any activity yet</Text>
                 </View>
               ) : (
                 userActivities.slice(0, 10).map((item: any, index: any) => {
