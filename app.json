@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mimonie",
     "slug": "mimonie",
-    "version": "1.0.4",
+    "version": "1.0.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mimonie",
@@ -11,13 +11,13 @@
       "silentLaunch": true
     },
     "ios": {
-      "buildNumber": "5",
+      "buildNumber": "6",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"]
     },
     "android": {
-      "versionCode": 3,
+      "versionCode": 6,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
