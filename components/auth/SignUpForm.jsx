@@ -161,7 +161,7 @@ const SignUp = (props) => {
             ]}
           >
             <Text style={{}}>I agree with</Text>
-            <Link href={'/termsandconditions'}>
+            <Link href={'/terms_condition'}>
               <Text style={styles.signUp}>Terms & Conditions</Text>
             </Link>
           </View>

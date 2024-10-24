@@ -86,6 +86,7 @@ function RootContent() {
         <Stack.Screen name="email_verify" options={{ headerShown: false }} />
         <Stack.Screen name="login_verify" options={{ headerShown: false }} />
         <Stack.Screen name="device_verify" options={{ headerShown: false }} />
+        <Stack.Screen name="terms_condition" options={{ headerShown: false }} />
         <Stack.Screen name="protected" options={{ headerShown: false }} />
       </Stack>
       <Loader isLoading={isLoading} />
