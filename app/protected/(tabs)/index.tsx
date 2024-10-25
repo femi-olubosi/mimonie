@@ -162,11 +162,33 @@ export default function HomeScreen() {
     return () => subscription.unsubscribe();
   }, [userProfile?.name]);
 
-  useEffect(() => {
-    const checkExpiryAndUpdateUrl = async () => {
-      const res = await isAboutToExpire();
+  // useEffect(() => {
+  //   const checkExpiryAndUpdateUrl = async () => {
+  //     const res = await isAboutToExpire();
 
+  //     if (res) {
+  //       const link = await downloadUrl(currentUser.userId);
+  //       await updateUserAttributes({
+  //         userAttributes: {
+  //           picture: link || '',
+  //         },
+  //       });
+  //       setProfilePicture(link);
+  //       await fetchCurrUser(setCurrentUser);
+  //       await saveDownloadDate(new Date());
+  //     } else {
+  //       setProfilePicture(currentUser?.picture);
+  //     }
+  //   };
+
+  //   checkExpiryAndUpdateUrl();
+  // }, [currentUser]);
+
+  useEffect(() => {
+    const checkExpiry = async () => {
+      const res = await checkLinkExpiry(currentUser?.picture);
       if (res) {
+        console.log('link expired', res);
         const link = await downloadUrl(currentUser.userId);
         await updateUserAttributes({
           userAttributes: {
@@ -175,13 +197,15 @@ export default function HomeScreen() {
         });
         setProfilePicture(link);
         await fetchCurrUser(setCurrentUser);
-        await saveDownloadDate(new Date());
       } else {
+        console.log('link not expired');
         setProfilePicture(currentUser?.picture);
       }
     };
 
-    checkExpiryAndUpdateUrl();
+    if (currentUser?.picture) {
+      checkExpiry();
+    }
   }, [currentUser]);
 
   useEffect(() => {
