@@ -27,6 +27,7 @@ const EmailConfirmation = () => {
       setShowCompleteProfileModal(true);
     }
   }, [currentUser]);
+
   const handleVerify = async () => {
     setIsLoading(true);
     try {

@@ -74,29 +74,29 @@ const LoginForm = (props) => {
 
       await fetchUserNotification(user.userId, setNotifications);
 
-      if (!profile?.phone_verified) {
-        Alert.alert(
-          'Phone Number is not verified',
-          `Please verify your phone number to continue`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Okay',
-              onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
-                setConfirmationResult({ ...res, type: 'phone_verification' });
-                router.push('/protected/login_verify');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
+      // if (!profile?.phone_verified) {
+      //   Alert.alert(
+      //     'Phone Number is not verified',
+      //     `Please verify your phone number to continue`,
+      //     [
+      //       {
+      //         text: 'Cancel',
+      //         onPress: () => signOut(),
+      //         style: 'cancel',
+      //       },
+      //       {
+      //         text: 'Okay',
+      //         onPress: async () => {
+      //           const res = await sendOtp(profile.phone_number);
+      //           setConfirmationResult({ ...res, type: 'phone_verification' });
+      //           router.push('/protected/login_verify');
+      //         },
+      //       },
+      //     ],
+      //     { cancelable: false }
+      //   );
+      //   return;
+      // }
 
       // if (
       //   ![

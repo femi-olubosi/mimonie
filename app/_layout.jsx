@@ -11,6 +11,7 @@ import '@azure/core-asynciterator-polyfill';
 import Onboarding from './builder/Onboarding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 Amplify.configure(amplifyconfig);
+import * as Updates from 'expo-updates';
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -46,6 +47,24 @@ function RootLayout() {
     };
 
     checkAuthStatus();
+  }, []);
+
+  async function onFetchUpdateAsync() {
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  useEffect(() => {
+    if (!__DEV__) {
+      onFetchUpdateAsync();
+    }
   }, []);
 
   // useEffect(() => {
