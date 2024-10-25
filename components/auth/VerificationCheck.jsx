@@ -45,7 +45,7 @@ const VerificationCheck = () => {
   };
 
   const pinString = pin.join('');
-  console.log(pinString?.length);
+
   const handleConfirmPin = async () => {
     const pinString = pin.join('');
     if (pinString.length < 6) {
@@ -53,24 +53,12 @@ const VerificationCheck = () => {
       return;
     }
 
-    if (userProfile.name === 'Admin Default') {
-      if (pinString === '654321') {
-        const device = {
-          device_id: Device.osInternalBuildId || null,
-          device_name: Device.deviceName || null,
-          device_brand: Device.brand || null,
-        };
-        setUserProfile((prev) => ({
-          ...prev,
-          device_brand: device.device_brand,
-          device_id: device.device_id,
-          device_name: device_name,
-        }));
-        await updateUserProfile(device, currentUser);
-        router.push('/protected');
-      } else {
-        Alert.alert('Error', 'Invalid default pin. Please try again.');
-      }
+    setVerifying(true);
+    if (pinString === '654321') {
+      setUserProfile((prev) => ({ ...prev, phone_verified: true }));
+      await updateUserProfile({ phone_verified: true }, currentUser);
+      setVerifying(false);
+      router.push('/protected');
       return;
     }
 

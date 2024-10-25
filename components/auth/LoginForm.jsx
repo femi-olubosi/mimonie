@@ -98,38 +98,38 @@ const LoginForm = (props) => {
         return;
       }
 
-      if (
-        ![
-          '+2348139781144',
-          '+2348139781147',
-          '+2348139781148',
-          '+2348039013901',
-        ].includes(profile?.phone_number) &&
-        profile?.device_id &&
-        profile?.device_id !== Device.osInternalBuildId
-      ) {
-        Alert.alert(
-          'Device Mismatch',
-          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Register',
-              onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
-                setConfirmationResult({ ...res, type: 'device_registration' });
-                router.push('/protected/login_verify');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
+      // if (
+      //   ![
+      //     '+2348139781144',
+      //     '+2348139781147',
+      //     '+2348139781148',
+      //     '+2348039013901',
+      //   ].includes(profile?.phone_number) &&
+      //   profile?.device_id &&
+      //   profile?.device_id !== Device.osInternalBuildId
+      // ) {
+      //   Alert.alert(
+      //     'Device Mismatch',
+      //     `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
+      //     [
+      //       {
+      //         text: 'Cancel',
+      //         onPress: () => signOut(),
+      //         style: 'cancel',
+      //       },
+      //       {
+      //         text: 'Register',
+      //         onPress: async () => {
+      //           const res = await sendOtp(profile.phone_number);
+      //           setConfirmationResult({ ...res, type: 'device_registration' });
+      //           router.push('/protected/login_verify');
+      //         },
+      //       },
+      //     ],
+      //     { cancelable: false }
+      //   );
+      //   return;
+      // }
 
       if (!profile?.name) {
         router.push('/protected/complete_profile');

@@ -177,8 +177,6 @@ export default function HomeScreen() {
         await fetchCurrUser(setCurrentUser);
         await saveDownloadDate(new Date());
       } else {
-        console.log('here');
-        console.log(currentUser?.picture);
         setProfilePicture(currentUser?.picture);
       }
     };
