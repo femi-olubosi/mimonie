@@ -99,7 +99,7 @@ const transfer_screen = () => {
     }
   }, [bankDetails]);
 
-  const balance = parsedParticipant?.contributions * parsedContribution?.amount;
+  const balance = parsedParticipant?.balance;
   const penalty = balance * 0.1;
   const newBalance = balance - penalty;
 
@@ -110,7 +110,7 @@ const transfer_screen = () => {
       return;
     }
 
-    if (amount > (parsedParticipant?.balance || balance)) {
+    if (Number(amount) > Number(balance)) {
       Alert.alert('Insufficient Balance', 'Insufficient balance to withdraw');
       return;
     }
@@ -123,31 +123,39 @@ const transfer_screen = () => {
   };
 
   const isUser = async (t_pin) => {
-    const amount = isEarlyWithdrawal ? newBalance : amountToWithdraw;
-    const pinString = pin.join('');
-    if (pinString.length < 6) {
-      Alert.alert('Invalid PIN', 'Please enter a valid 6-digit PIN');
-      return false;
-    }
-
-    if (pinString !== t_pin) {
-      Alert.alert('Invalid PIN', 'Incorrect PIN');
-      return false;
-    }
-
     try {
+      const amount = isEarlyWithdrawal ? newBalance : amountToWithdraw;
+
+      // Combine pin array into a single string and validate length
+      const pinString = pin.join('');
+      if (pinString.length !== 6) {
+        Alert.alert('Invalid PIN', 'Please enter a valid 6-digit PIN');
+        return false;
+      }
+
+      // Check if the entered pin matches the provided pin (t_pin)
+      if (pinString !== t_pin) {
+        Alert.alert('Invalid PIN', 'The PIN you entered is incorrect');
+        return false;
+      }
+
+      // Start the verification process
+      setValidateCustomerModal(false);
       setVerifying(true);
+
+      // Attempt to withdraw funds
       const withdrawalResponse = await withdrawFunds(
         userProfile,
         parsedContribution?.id,
         amount,
         recipientCode
       );
-      console.log('withdraw', withdrawalResponse);
+
+      // Handle withdrawal success
       if (withdrawalResponse?.success) {
         Alert.alert(
           'Withdrawal Processed',
-          'Your withdrawal request has been processed',
+          'Your withdrawal request has been successfully processed',
           [
             {
               text: 'OK',
@@ -158,15 +166,23 @@ const transfer_screen = () => {
           ],
           { cancelable: false }
         );
-        setVerifying(false);
       } else {
-        Alert.alert('Withdrawal Failed', `${withdrawalResponse.message}`);
-        setVerifying(false);
+        // Handle withdrawal failure
+        setValidateCustomerModal(false);
+        Alert.alert(
+          'Withdrawal Failed',
+          `${withdrawalResponse?.message || 'Unknown error occurred'}`
+        );
       }
     } catch (error) {
+      // Catch any unexpected errors and display them to the user
       console.error('Error withdrawing funds:', error);
-      Alert.alert('Error', error.message);
+      Alert.alert(
+        'Error',
+        `${error?.message || 'An unexpected error occurred, please try again.'}`
+      );
     } finally {
+      // Reset states regardless of success or failure
       setPin(['', '', '', '', '', '']);
       setVerifying(false);
     }
@@ -366,9 +382,7 @@ const transfer_screen = () => {
             <View
               style={{ alignItems: 'flex-end', rowGap: 4, marginBottom: 5 }}
             >
-              <Text>
-                Balance: (NGN) {parsedParticipant?.balance || balance}
-              </Text>
+              <Text>Balance: (NGN) {balance}</Text>
               {isEarlyWithdrawal ? (
                 <>
                   <Text>Withdrawable Balance: (NGN) {newBalance}</Text>
@@ -377,10 +391,7 @@ const transfer_screen = () => {
                   </Text>
                 </>
               ) : (
-                <Text>
-                  Withdrawable Balance: (NGN){' '}
-                  {parsedParticipant?.balance || balance}
-                </Text>
+                <Text>Withdrawable Balance: (NGN) {balance}</Text>
               )}
             </View>
             {!isEarlyWithdrawal && (
