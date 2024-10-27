@@ -388,6 +388,8 @@ const processContributions = async () => {
 
           if (flow.data.status === 'success') {
             participant.contributions = (participant.contributions || 0) + 1;
+            participant.balance =
+              (participant.balance || 0) + contribution.amount;
             participant.last_successful_round = currentCount;
 
             await saveUserActivity({

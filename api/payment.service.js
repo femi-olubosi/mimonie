@@ -666,111 +666,106 @@ const transferToBank = async (recipient_code, amount, contribution) => {
 export const withdrawFunds = async (
   userProfile,
   contributionId,
-  amount,
+  amountToWithdraw,
   recipientCode
 ) => {
   try {
+    // Query the contribution from DataStore
     const contribution = await DataStore.query(Contribution, contributionId);
 
     if (!contribution) {
       throw new Error('Contribution not found');
     }
 
-    const userId = userProfile.userId;
-    const participants = JSON.parse(contribution.participant);
+    const userId = userProfile?.userId;
+    const participants = JSON.parse(contribution?.participant || '[]');
 
-    const participant = participants.find((p) => p.userId === userId);
+    // Check if the participant exists
+    const participant = participants?.find((p) => p?.userId === userId);
 
     if (!participant) {
       throw new Error('User is not part of this contribution');
     }
 
-    const contributionBalance = participant.contributions * contribution.amount;
-    const participantBalance = participant.balance || contributionBalance;
+    // Ensure participant balance exists and is a valid number
+    const participantBalance = Number(participant?.balance || 0);
+    const amount = Number(amountToWithdraw);
+
+    if (amount > participantBalance) {
+      throw new Error('Insufficient balance');
+    }
 
     const isEarlyWithdrawal =
-      contribution.currently_at < contribution.num_of_month;
+      contribution?.currently_at < contribution?.num_of_month;
     let penalty = 0;
     let withdrawalAmount = amount;
 
+    // Apply penalty if early withdrawal
     if (isEarlyWithdrawal) {
-      // Apply a penalty (10%)
-      penalty = contributionBalance * 0.1;
-      withdrawalAmount = contributionBalance - penalty;
-
-      const flow = await transferToBank(
-        recipientCode,
-        withdrawalAmount,
-        contribution
-      );
-
-      if (flow.data.status === 'pending') {
-        await createUserActivity(userId, {
-          type: 'collection',
-          amount: withdrawalAmount,
-          description: `Fund withdrawal processed for ${contribution.name}`,
-        });
-
-        await triggerNotificationForUser(
-          participant.push_token,
-          `Withdrawal Processed for ${contribution.name}`,
-          `You successfully withdrew all your funds from ${contribution.name}`
-        );
-
-        await createUserActivity(userId, {
-          type: 'deduction',
-          amount: penalty,
-          description: `Penalty of 10% applied for early withdrawal from ${contribution.name}`,
-        });
-
-        await triggerNotificationForUser(
-          participant.push_token,
-          'Penalty',
-          `Penalty of 10% applied for early withdrawal from ${contribution.name}`
-        );
-
-        await DataStore.save(
-          Contribution.copyOf(contribution, (updated) => {
-            updated.participant = participants;
-            updated.status = 'closed';
-          })
-        );
-      } else {
-        return { success: false, message: flow.data.gateway_response };
-      }
-    } else {
-      const flow = await transferToBank(recipientCode, amount, contribution);
-      if (flow.data.status === 'pending') {
-        await createUserActivity(userId, {
-          type: 'collection',
-          amount: withdrawalAmount,
-          description: `Fund withdrawal processed for ${contribution.name}`,
-        });
-
-        await triggerNotificationForUser(
-          participant.push_token,
-          `${withdrawalAmount} Withdrawal Processed for ${contribution.name}`,
-          `You successfully withdrew all your funds from ${contribution.name}`
-        );
-
-        participant.balance = participantBalance - withdrawalAmount;
-
-        await DataStore.save(
-          Contribution.copyOf(contribution, (updated) => {
-            updated.participant = participants;
-            updated.status =
-              participant.balance === 0 ? 'closed' : contribution.status;
-          })
-        );
-      } else {
-        return { success: false, message: flow.message };
-      }
+      penalty = amount * 0.1; // 10% penalty on withdrawal amount
+      withdrawalAmount = amount - penalty;
     }
+
+    // Execute bank transfer
+    const flow = await transferToBank(
+      recipientCode,
+      withdrawalAmount,
+      contribution
+    );
+
+    if (flow?.data?.status !== 'pending') {
+      return {
+        success: false,
+        message: flow?.data?.gateway_response || 'Transfer failed',
+      };
+    }
+
+    // Use locking mechanism or versioning to ensure safe concurrent updates
+    const participantBalanceAfterWithdrawal = participantBalance - amount;
+    participant.balance = participantBalanceAfterWithdrawal;
+
+    // Record activity for withdrawal
+    await createUserActivity(userId, {
+      type: 'collection',
+      amount: withdrawalAmount,
+      description: `Fund withdrawal from ${contribution?.name}`,
+    });
+
+    // Notify participant of successful withdrawal
+    await triggerNotificationForUser(
+      participant?.push_token,
+      `Withdrawal Processed for ${contribution?.name}`,
+      `You successfully withdrew ${withdrawalAmount} from ${contribution?.name}`
+    );
+
+    // If early withdrawal, record penalty
+    if (isEarlyWithdrawal) {
+      await createUserActivity(userId, {
+        type: 'deduction',
+        amount: penalty,
+        description: `Penalty of 10% applied for early withdrawal from ${contribution?.name}`,
+      });
+
+      await triggerNotificationForUser(
+        participant?.push_token,
+        'Penalty Applied',
+        `A 10% penalty was applied for early withdrawal from ${contribution?.name}`
+      );
+    }
+
+    // Use versioning to prevent concurrent overwrites
+    await DataStore.save(
+      Contribution.copyOf(contribution, (updated) => {
+        updated.participant = participants;
+        updated.status =
+          participant.balance === 0 ? 'closed' : contribution?.status;
+      })
+    );
 
     return { success: true, message: 'Withdrawal successful', penalty };
   } catch (error) {
     console.error('Error processing withdrawal:', error);
-    return { success: false, message: error.message };
+    return { success: false, message: error?.message || 'An error occurred' };
   }
 };
 
