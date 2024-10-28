@@ -56,7 +56,7 @@ const Onboarding = ({ setOnboard }) => {
   const renderOnboardingScreen = ({ item }) => (
     <View style={{ width: screenWidth }}>
       <View style={styles.imageContainer}>
-      <Image source={item.image} style={styles.image} />
+        <Image source={item.image} style={styles.image} />
       </View>
       <View style={styles.textContainer}>
         <Text style={styles.title}>{item.title}</Text>
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     paddingHorizontal: 20,
-    paddingVertical: 30
+    paddingVertical: 30,
   },
   indicator: {
     width: 80,

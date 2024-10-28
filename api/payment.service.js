@@ -731,6 +731,12 @@ export const withdrawFunds = async (
       description: `Fund withdrawal from ${contribution?.name}`,
     });
 
+    await createUserActivity(userId, {
+      type: 'Personal Savings',
+      amount: withdrawalAmount,
+      description: `Fund withdrawal from ${contribution?.name}`,
+    });
+
     // Notify participant of successful withdrawal
     await triggerNotificationForUser(
       participant?.push_token,
@@ -741,7 +747,7 @@ export const withdrawFunds = async (
     // If early withdrawal, record penalty
     if (isEarlyWithdrawal) {
       await createUserActivity(userId, {
-        type: 'deduction',
+        type: 'Personal Savings',
         amount: penalty,
         description: `Penalty of 10% applied for early withdrawal from ${contribution?.name}`,
       });
