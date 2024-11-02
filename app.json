@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mimonie",
     "slug": "mimonie",
-    "version": "1.0.7",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "mimonie",
@@ -11,7 +11,7 @@
       "silentLaunch": true
     },
     "ios": {
-      "buildNumber": "7",
+      "buildNumber": "11",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"],
@@ -21,7 +21,7 @@
       }
     },
     "android": {
-      "versionCode": 7,
+      "versionCode": 11,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
@@ -72,6 +72,12 @@
             "./assets/sound/notification_sound1.wav",
             "./assets/sound/notification_sound2.wav"
           ]
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Mimonie needs access to your contacts to allow you to connect with your contacts within the app. This information will only be used to identify users you may know and invite them to join your network. and will not be stored anywhere for external use"
         }
       ]
     ],

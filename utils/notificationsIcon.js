@@ -4,7 +4,7 @@ import {
   Ionicons,
   MaterialIcons,
 } from '@expo/vector-icons';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 
 export const notificationIcon = (type) => {
   switch (type) {
@@ -122,5 +122,3 @@ export const notificationIcon = (type) => {
       );
   }
 };
-
-const styles = StyleSheet.create({});

@@ -13,11 +13,7 @@ import {
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import {
-  sendUserAttributeVerificationCode,
-  signIn,
-  signOut,
-} from 'aws-amplify/auth';
+import { signIn, signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
@@ -25,6 +21,7 @@ import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
 import { sendOtp } from '../../api/token.service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -40,6 +37,7 @@ const LoginForm = (props) => {
     userProfile,
     setNotifications,
     setConfirmationResult,
+    setProfilePicture,
   } = useGlobalContext();
 
   const handleSignIn = async () => {
@@ -70,66 +68,69 @@ const LoginForm = (props) => {
       // await DataStore.start()
       const user = await fetchCurrUser(setCurrentUser);
 
+      const file = await AsyncStorage.getItem('profilePicture');
+      setProfilePicture(file);
+
       const profile = await fetchUserProfile(setUserProfile, user);
 
       await fetchUserNotification(user.userId, setNotifications);
 
-      // if (!profile?.phone_verified) {
-      //   Alert.alert(
-      //     'Phone Number is not verified',
-      //     `Please verify your phone number to continue`,
-      //     [
-      //       {
-      //         text: 'Cancel',
-      //         onPress: () => signOut(),
-      //         style: 'cancel',
-      //       },
-      //       {
-      //         text: 'Okay',
-      //         onPress: async () => {
-      //           const res = await sendOtp(profile.phone_number);
-      //           setConfirmationResult({ ...res, type: 'phone_verification' });
-      //           router.push('/protected/login_verify');
-      //         },
-      //       },
-      //     ],
-      //     { cancelable: false }
-      //   );
-      //   return;
-      // }
+      if (!profile?.phone_verified) {
+        Alert.alert(
+          'Phone Number is not verified',
+          `Please verify your phone number to continue`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Okay',
+              onPress: async () => {
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'phone_verification' });
+                router.push('/protected/login_verify');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
 
-      // if (
-      //   ![
-      //     '+2348139781144',
-      //     '+2348139781147',
-      //     '+2348139781148',
-      //     '+2348039013901',
-      //   ].includes(profile?.phone_number) &&
-      //   profile?.device_id &&
-      //   profile?.device_id !== Device.osInternalBuildId
-      // ) {
-      //   Alert.alert(
-      //     'Device Mismatch',
-      //     `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
-      //     [
-      //       {
-      //         text: 'Cancel',
-      //         onPress: () => signOut(),
-      //         style: 'cancel',
-      //       },
-      //       {
-      //         text: 'Register',
-      //         onPress: async () => {
-      //           const res = await sendOtp(profile.phone_number);
-      //           setConfirmationResult({ ...res, type: 'device_registration' });
-      //           router.push('/protected/login_verify');
-      //         },
-      //       },
-      //     ],
-      //     { cancelable: false }
-      //   );
-      //   return;
-      // }
+      if (
+        ![
+          '+2348139781144',
+          '+2348139781147',
+          '+2348139781148',
+          '+2348039013901',
+        ].includes(profile?.phone_number) &&
+        profile?.device_id &&
+        profile?.device_id !== Device.osInternalBuildId
+      ) {
+        Alert.alert(
+          'Device Mismatch',
+          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Register',
+              onPress: async () => {
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'device_registration' });
+                router.push('/protected/login_verify');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
 
       if (!profile?.name) {
         router.push('/protected/complete_profile');

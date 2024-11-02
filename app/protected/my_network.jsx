@@ -179,9 +179,26 @@ const connect = () => {
   return (
     <PageView title={'My Network'}>
       <View style={{ padding: 20, flex: 1 }}>
-        <Text style={{ fontSize: 10, marginBottom: 8, color: 'gray' }}>
+        <Text style={{ fontSize: 13, marginBottom: 12, color: 'gray' }}>
           Only people in your network can be invited to join your contributions.
         </Text>
+        <Pressable
+          style={{
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'flex-end',
+            backgroundColor: Colors.pri,
+            borderRadius: 4,
+            marginBottom: 12,
+          }}
+          onPress={() => router.push('/protected/contact')}
+        >
+          <Text style={{ fontFamily: 'im', fontSize: 16, color: 'white' }}>
+            Invite Friends
+          </Text>
+        </Pressable>
         <View style={styles.headerContainer}>
           <TouchableOpacity
             onPress={() => setActiveTab(1)}
@@ -266,24 +283,6 @@ const connect = () => {
           keyExtractor={(item, idx) => idx.toString()}
           showsVerticalScrollIndicator={false}
         />
-        <Pressable
-          style={{
-            paddingHorizontal: 20,
-            paddingVertical: 10,
-            justifyContent: 'center',
-            alignItems: 'center',
-            backgroundColor: Colors.pri,
-            position: 'absolute',
-            bottom: 20,
-            right: 20,
-            borderRadius: 4,
-          }}
-          onPress={() => router.push('/protected/contact')}
-        >
-          <Text style={{ fontFamily: 'im', fontSize: 16, color: 'white' }}>
-            Invite Friends
-          </Text>
-        </Pressable>
       </View>
     </PageView>
   );
@@ -294,7 +293,7 @@ export default connect;
 const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
+    marginVertical: 20,
     columnGap: 10,
   },
   itemContainer: {

@@ -17,12 +17,7 @@ import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useEffect, useState } from 'react';
-import {
-  checkLinkExpiry,
-  downloadUrl,
-  fetchCurrUser,
-  fetchUserProfile,
-} from '@/api/user.service';
+import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
@@ -35,11 +30,7 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import {
-  fetchAuthSession,
-  signOut,
-  updateUserAttributes,
-} from 'aws-amplify/auth';
+import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
@@ -54,8 +45,7 @@ import Hide from '@/components/Hide';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
-import { saveDownloadDate, isAboutToExpire } from '@/utils/helper';
-import { SkeletonLoader } from '@/components/Reusable';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen() {
   const {
@@ -162,51 +152,12 @@ export default function HomeScreen() {
     return () => subscription.unsubscribe();
   }, [userProfile?.name]);
 
-  // useEffect(() => {
-  //   const checkExpiryAndUpdateUrl = async () => {
-  //     const res = await isAboutToExpire();
-
-  //     if (res) {
-  //       const link = await downloadUrl(currentUser.userId);
-  //       await updateUserAttributes({
-  //         userAttributes: {
-  //           picture: link || '',
-  //         },
-  //       });
-  //       setProfilePicture(link);
-  //       await fetchCurrUser(setCurrentUser);
-  //       await saveDownloadDate(new Date());
-  //     } else {
-  //       setProfilePicture(currentUser?.picture);
-  //     }
-  //   };
-
-  //   checkExpiryAndUpdateUrl();
-  // }, [currentUser]);
-
   useEffect(() => {
-    const checkExpiry = async () => {
-      const res = await checkLinkExpiry(currentUser?.picture);
-      if (res) {
-        console.log('link expired', res);
-        const link = await downloadUrl(currentUser.userId);
-        await updateUserAttributes({
-          userAttributes: {
-            picture: link || '',
-          },
-        });
-        setProfilePicture(link);
-        await fetchCurrUser(setCurrentUser);
-      } else {
-        console.log('link not expired');
-        setProfilePicture(currentUser?.picture);
-      }
-    };
-
-    if (currentUser?.picture) {
-      checkExpiry();
-    }
-  }, [currentUser]);
+    (async () => {
+      const file = await AsyncStorage.getItem('profilePicture');
+      setProfilePicture(file);
+    })();
+  }, []);
 
   useEffect(() => {
     const registerPushToken = async () => {
@@ -303,7 +254,7 @@ export default function HomeScreen() {
       >
         <ProfileView
           name={userProfile?.name}
-          picture={profilePicture || currentUser.picture}
+          picture={profilePicture}
           notifications={notifications}
           priText={priText}
           setShowHelp={setShowHelp}

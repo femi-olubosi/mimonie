@@ -10,7 +10,6 @@ import { Storage } from 'aws-amplify';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
-  console.log('user', user);
   const attribute = await fetchUserAttributes();
   setCurrentUser({
     ...user,
@@ -159,7 +158,7 @@ export const fetchAllUserProfile = async () => {
     await DataStore.start();
     // Fetch contributions where the user is a participant
     const userProfile = await DataStore.query(UserProfile);
-
+    console.log('all', userProfile);
     return userProfile;
   } catch (error) {
     console.error('Error fetching user user profile:', error);

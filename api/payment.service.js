@@ -728,7 +728,7 @@ export const withdrawFunds = async (
     await createUserActivity(userId, {
       type: 'collection',
       amount: withdrawalAmount,
-      description: `Fund withdrawal from ${contribution?.name}`,
+      description: `Your account has been credited`,
     });
 
     await createUserActivity(userId, {

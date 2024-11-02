@@ -15,20 +15,14 @@ import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
-import { createDedicatedVirtualAccount } from '@/api/payment.service';
 import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 import { router } from 'expo-router';
-import {
-  chargeAndTransferToDva,
-  createTransferRecipientForBank,
-  createTransferRecipientForDVA,
-  fetchTransferRecipients,
-} from '../../api/payment.service';
+import { createTransferRecipientForBank } from '../../api/payment.service';
 
 const triggerAccountDeletion = () => {
   Alert.alert(
     'Delete Account',
-    'Are you sure you want to delete your account? This action cannot be undone.',
+    'Are you sure you want to delete your account? A message will be sent to the admin to process the request',
     [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -44,43 +38,6 @@ const triggerAccountDeletion = () => {
   );
 };
 
-const data = {
-  bank: {
-    name: 'Wema Bank',
-    id: 20,
-    slug: 'wema-bank',
-  },
-  account_name: 'MOUNTSPIRALNI/ABDURROHEEM SHERIFDEEN',
-  account_number: '9320275000',
-  assigned: true,
-  currency: 'NGN',
-  metadata: null,
-  active: true,
-  id: 24222125,
-  created_at: '2024-08-06T12:08:15.000Z',
-  updated_at: '2024-09-15T20:25:08.000Z',
-  assignment: {
-    integration: 1216711,
-    assignee_id: 172124958,
-    assignee_type: 'Customer',
-    expired: false,
-    account_type: 'PAY-WITH-TRANSFER-RECURRING',
-    assigned_at: '2024-09-15T20:25:08.850Z',
-    expired_at: null,
-    assignment_expires_at: null,
-  },
-  customer: {
-    id: 172124958,
-    first_name: 'Sherif-deen',
-    last_name: 'Abdur-roheem',
-    email: 'abdurroheemsherifdeen@gmail.com',
-    customer_code: 'CUS_c2lbp8636b1qowo',
-    phone: '+2348139781147',
-    metadata: {},
-    risk_action: 'default',
-    international_format_phone: '+2348139781147',
-  },
-};
 const Settings = () => {
   const {
     currentUser,
@@ -156,21 +113,21 @@ const Settings = () => {
     }
 
     try {
-
-      const customerRecipientCode = await createTransferRecipientForBank(
-        {
-          bank_code: userProfile.bank_details.bank_code,
-          account_number: userProfile.bank_details.account_number,
-          account_name: userProfile.name,
-        }
-      );
+      const customerRecipientCode = await createTransferRecipientForBank({
+        bank_code: userProfile.bank_details.bank_code,
+        account_number: userProfile.bank_details.account_number,
+        account_name: userProfile.name,
+      });
 
       const toStore = {
         customer_recipient_code: customerRecipientCode,
         enabled: true,
       };
 
-      await updateUserProfile({ dva: toStore, recipient_code: customerRecipientCode }, currentUser);
+      await updateUserProfile(
+        { dva: toStore, recipient_code: customerRecipientCode },
+        currentUser
+      );
       await fetchUserProfile(setUserProfile, currentUser);
       setPCEnable(true);
       setIsLoading(false);
@@ -257,7 +214,7 @@ const Settings = () => {
         {/* Delete Account */}
         <TouchableOpacity
           style={styles.setting}
-          // onPress={triggerAccountDeletion}
+          onPress={triggerAccountDeletion}
         >
           <Text style={[styles.settingText, { color: 'red' }]}>
             Request Account Deletion

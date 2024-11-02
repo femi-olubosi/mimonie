@@ -400,6 +400,8 @@ export const updatePersonalContribution = async (contribution, userProfile) => {
 
   participant.contributions = (participant.contributions || 0) + 1;
   participant.last_successful_round = originalContribution.current_count;
+  participant.balance =
+    (participant.balance || 0) + originalContribution.amount;
 
   await triggerNotificationForUser(
     userProfile?.push_token,

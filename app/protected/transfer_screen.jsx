@@ -141,6 +141,7 @@ const transfer_screen = () => {
 
       // Start the verification process
       setValidateCustomerModal(false);
+      setIsLoading(true);
       setVerifying(true);
 
       // Attempt to withdraw funds
@@ -153,6 +154,7 @@ const transfer_screen = () => {
 
       // Handle withdrawal success
       if (withdrawalResponse?.success) {
+        setValidateCustomerModal(false);
         Alert.alert(
           'Withdrawal Processed',
           'Your withdrawal request has been successfully processed',
@@ -160,6 +162,7 @@ const transfer_screen = () => {
             {
               text: 'OK',
               onPress: () => {
+                setValidateCustomerModal(false);
                 router.push(`/protected/mimonie/${parsedContribution?.id}`);
               },
             },
@@ -185,6 +188,7 @@ const transfer_screen = () => {
       // Reset states regardless of success or failure
       setPin(['', '', '', '', '', '']);
       setVerifying(false);
+      setIsLoading(false);
     }
   };
 

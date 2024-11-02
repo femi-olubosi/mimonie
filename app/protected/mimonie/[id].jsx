@@ -196,7 +196,7 @@ const ContributionDetails = () => {
       await findContributionByID(id, setContribution);
       Alert.alert(
         'Contribution Started Successfully',
-        `${res.name} contribution updated successfully}`
+        `${res.name} contribution started successfully`
       );
     } catch (error) {
       console.log(error);
@@ -292,7 +292,6 @@ const ContributionDetails = () => {
                   <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
                 </Pressable>
               )}
-
               {(parsed?.some(
                 (participant) => participant.userId === currentUser.userId
               ) &&

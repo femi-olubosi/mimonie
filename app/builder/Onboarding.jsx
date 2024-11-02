@@ -88,7 +88,6 @@ const Onboarding = ({ setOnboard }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar hidden={true} />
       <FlatList
         ref={flatListRef}
         data={onboardingScreens}
@@ -138,13 +137,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 36,
+    fontSize: 30,
     fontFamily: 'ir',
     color: 'white',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   description: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'ir',
     color: 'white',
     textAlign: 'left',

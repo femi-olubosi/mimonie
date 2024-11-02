@@ -18,11 +18,16 @@ import * as Device from 'expo-device';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { verifyOTP } from '../../api/token.service';
-import { updateUserProfile } from '../../api/user.service';
+import { downloadUrl, updateUserProfile } from '../../api/user.service';
 
 const VerificationCheck = () => {
-  const { confirmationResult, currentUser, setUserProfile, userProfile } =
-    useGlobalContext();
+  const {
+    confirmationResult,
+    currentUser,
+    setUserProfile,
+    userProfile,
+    setProfilePicture,
+  } = useGlobalContext();
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
 
@@ -44,21 +49,10 @@ const VerificationCheck = () => {
     }
   };
 
-  const pinString = pin.join('');
-
   const handleConfirmPin = async () => {
     const pinString = pin.join('');
     if (pinString.length < 6) {
       Alert.alert('Error', 'Please enter a valid 6-digit pin');
-      return;
-    }
-
-    setVerifying(true);
-    if (pinString === '654321') {
-      setUserProfile((prev) => ({ ...prev, phone_verified: true }));
-      await updateUserProfile({ phone_verified: true }, currentUser);
-      setVerifying(false);
-      router.push('/protected');
       return;
     }
 
@@ -84,6 +78,8 @@ const VerificationCheck = () => {
               device_name: device_name,
             }));
             await updateUserProfile(device, currentUser);
+            const url = await downloadUrl(userProfile.userId);
+            setProfilePicture(url || null);
             router.push('/protected');
           }
           setVerifying(false);

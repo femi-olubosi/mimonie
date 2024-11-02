@@ -77,18 +77,10 @@ const Account = () => {
       setProfilePicture(file);
       setIsLoading(false);
       await uploadFile(file, userProfile?.userId);
-      const url = await downloadUrl(userProfile.userId);
 
-      if (!url) {
-        throw new Error('Failed to upload file');
-      }
-      setProfilePicture(url);
-      await updateUserAttributes({
-        userAttributes: {
-          picture: url,
-        },
-      });
-      await fetchCurrUser(setCurrentUser);
+      // const currentDate = new Date().toISOString();
+      await AsyncStorage.setItem('profilePicture', file);
+      // await fetchCurrUser(setCurrentUser);
     } catch (error) {
       console.error('Error handling profile picture:', error);
     } finally {
