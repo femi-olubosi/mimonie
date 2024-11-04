@@ -150,8 +150,8 @@ const CreateContribution = () => {
       userId: currentUser.userId,
       username: currentUser.preferred_username,
       target: selectedValue.p_amount * selectedValue.p_duration,
-      amount: selectedValue.p_amount,
-      num_of_month: selectedValue.p_duration,
+      amount: Number(selectedValue.p_amount),
+      num_of_month: Number(selectedValue.p_duration),
       variant: variant.value,
     };
 
@@ -225,14 +225,14 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
-      if (userProfile.name !== 'Admin Default' && myConnections?.length < 4) {
+      if (myConnections?.length < 4) {
         Alert.alert(
           'Sorry!!',
           'You can only create group contribution when you have up to 4 connections.',
           [
             {
-              text: 'Go to Contacts',
-              onPress: () => router.push('/protected/contact'),
+              text: 'Go to My Network',
+              onPress: () => router.push('/protected/my_network'),
             },
             { text: 'OK', onPress: () => console.log('OK Pressed') },
           ]
@@ -244,12 +244,6 @@ const CreateContribution = () => {
       await createContributionPersonal();
     }
   };
-
-  const groupNameAndValue = contributionGroups.map((item) => ({
-    label: item.title,
-    value: item.id,
-    ...item,
-  }));
 
   const handleInvite = async () => {
     setContactVisible(true);
@@ -267,6 +261,11 @@ const CreateContribution = () => {
     ?.split('.')[0];
 
   const p_target = selectedValue.p_amount * selectedValue.p_duration || 0;
+
+  useEffect(() => {
+    // clear amount and duration when variate changes
+    setSelectedValue({});
+  }, [variant]);
 
   return (
     <PageView title={'Create Contribution'}>
@@ -475,13 +474,16 @@ const CreateContribution = () => {
                         style={styles.input}
                         placeholder="Enter Amount"
                         keyboardType="numeric"
-                        value={selectedValue.p_amount}
-                        onChangeText={(val) =>
+                        value={selectedValue.p_amount?.toString()}
+                        onChangeText={(val) => {
+                          // Remove any non-numeric characters to avoid decimal input
+                          const numericValue = val.replace(/[^0-9]/g, '');
+
                           setSelectedValue({
                             ...selectedValue,
-                            p_amount: Number(val),
-                          })
-                        }
+                            p_amount: numericValue, // No max limit, just whole numbers
+                          });
+                        }}
                       />
                     </View>
                     <View style={{ rowGap: 14 }}>
@@ -492,13 +494,38 @@ const CreateContribution = () => {
                         style={styles.input}
                         placeholder="Enter Duration"
                         keyboardType="numeric"
-                        value={selectedValue.p_duration}
-                        onChangeText={(val) =>
+                        value={selectedValue.p_duration?.toString()}
+                        onChangeText={(val) => {
+                          // Remove any non-numeric characters to avoid decimal input
+                          const numericValue = val.replace(/[^0-9]/g, '');
+
+                          // Set max limit for duration based on the variant
+                          let maxLimit;
+                          switch (variant?.value) {
+                            case 'days':
+                              maxLimit = 365;
+                              break;
+                            case 'weeks':
+                              maxLimit = 52; // Number of weeks in a year
+                              break;
+                            case 'months':
+                              maxLimit = 12; // Number of months in a year
+                              break;
+                            default:
+                              maxLimit = 365; // Default to 365 if variant is not set
+                          }
+
+                          // Ensure the value does not exceed the max limit for duration
+                          const limitedValue = Math.min(
+                            Number(numericValue),
+                            maxLimit
+                          );
+
                           setSelectedValue({
                             ...selectedValue,
-                            p_duration: Number(val),
-                          })
-                        }
+                            p_duration: limitedValue,
+                          });
+                        }}
                       />
                     </View>
                     <View style={{ rowGap: 14 }}>
@@ -506,7 +533,7 @@ const CreateContribution = () => {
                       <TextInput
                         style={styles.input}
                         value={`${p_target.toLocaleString()}`}
-                        readOnly
+                        editable={false}
                       />
                     </View>
                   </>

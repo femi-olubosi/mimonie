@@ -13,7 +13,6 @@ import { Entypo, FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import Hide from '@/components/Hide';
-import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 
 const safeParseJSON = (data, fallback) => {
   try {
