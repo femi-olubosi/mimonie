@@ -1,13 +1,28 @@
-import * as React from 'react'
-import { useState, useEffect, forwardRef, useRef, useImperativeHandle } from 'react';
-import { Modal, View, ActivityIndicator, SafeAreaView, Text } from 'react-native';
+import * as React from 'react';
+import {
+  useState,
+  useEffect,
+  forwardRef,
+  useRef,
+  useImperativeHandle,
+} from 'react';
+import {
+  Modal,
+  View,
+  ActivityIndicator,
+  SafeAreaView,
+  Text,
+} from 'react-native';
 import { WebView, WebViewNavigation } from 'react-native-webview';
 import { getAmountValueInKobo, getChannels } from './helper';
 import { PayStackProps, PayStackRef } from './types';
 
 const CLOSE_URL = 'https://standard.paystack.co/close';
 
-const Paystack: React.ForwardRefRenderFunction<React.ReactNode, PayStackProps> = (
+const Paystack: React.ForwardRefRenderFunction<
+  React.ReactNode,
+  PayStackProps
+> = (
   {
     paystackKey,
     billingEmail,
@@ -18,6 +33,8 @@ const Paystack: React.ForwardRefRenderFunction<React.ReactNode, PayStackProps> =
     currency = 'NGN',
     channels = ['card'],
     refNumber,
+    bearer = 'account',
+    transaction_charge = '0',
     billingName,
     subaccount,
     handleWebViewMessage,
@@ -25,9 +42,9 @@ const Paystack: React.ForwardRefRenderFunction<React.ReactNode, PayStackProps> =
     autoStart = false,
     onSuccess,
     activityIndicatorColor = 'green',
-    children
+    children,
   },
-  ref,
+  ref
 ) => {
   const [isLoading, setisLoading] = useState(true);
   const [showModal, setshowModal] = useState(false);
@@ -53,7 +70,7 @@ const Paystack: React.ForwardRefRenderFunction<React.ReactNode, PayStackProps> =
   };
 
   const refNumberString = refNumber ? `ref: '${refNumber}',` : ''; // should only send ref number if present, else if blank, paystack will auto-generate one
-  
+
   const subAccountString = subaccount ? `subaccount: '${subaccount}',` : ''; // should only send subaccount with the correct subaccoount_code if you want to enable split payment on transaction
 
   const Paystackcontent = `   
@@ -77,6 +94,8 @@ const Paystack: React.ForwardRefRenderFunction<React.ReactNode, PayStackProps> =
                 firstname: '${firstName}',
                 lastname: '${lastName}',
                 phone: '${phone}',
+                bearer: '${bearer}',
+                transaction_charge: '${transaction_charge}',
                 amount: ${getAmountValueInKobo(amount)}, 
                 currency: '${currency}',
                 ${getChannels(channels)}
@@ -145,42 +164,40 @@ const Paystack: React.ForwardRefRenderFunction<React.ReactNode, PayStackProps> =
   };
 
   return (
-    <Modal  visible={showModal} animationType="slide" transparent={false}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f6f6'}}>
-      <View style={{
-        flex:1,
-        // justifyContent: 'flex-end',
-      }}>
-        <View style={{paddingHorizontal: 20, paddingVertical: 5}}>
-            {children}
-        </View>
-  <WebView
-          style={[{ flex: 1, }]}
-          source={{ html: Paystackcontent }}
-          onMessage={(e) => {
-            messageReceived(e.nativeEvent?.data);
+    <Modal visible={showModal} animationType="slide" transparent={false}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#f6f6f6' }}>
+        <View
+          style={{
+            flex: 1,
+            // justifyContent: 'flex-end',
           }}
-          onLoadStart={() => setisLoading(true)}
-          onLoadEnd={() => setisLoading(false)}
-          onNavigationStateChange={onNavigationStateChange}
-          ref={webView}
-          cacheEnabled={false}
-          cacheMode={'LOAD_NO_CACHE'}
-        />
-
-        {isLoading && (
-          <View>
-            <ActivityIndicator size="large" color={activityIndicatorColor} />
+        >
+          <View style={{ paddingHorizontal: 20, paddingVertical: 5 }}>
+            {children}
           </View>
-        )}
-      </View>
-      
+          <WebView
+            style={[{ flex: 1 }]}
+            source={{ html: Paystackcontent }}
+            onMessage={(e) => {
+              messageReceived(e.nativeEvent?.data);
+            }}
+            onLoadStart={() => setisLoading(true)}
+            onLoadEnd={() => setisLoading(false)}
+            onNavigationStateChange={onNavigationStateChange}
+            ref={webView}
+            cacheEnabled={false}
+            cacheMode={'LOAD_NO_CACHE'}
+          />
+
+          {isLoading && (
+            <View>
+              <ActivityIndicator size="large" color={activityIndicatorColor} />
+            </View>
+          )}
+        </View>
       </SafeAreaView>
     </Modal>
   );
 };
 
 export default forwardRef(Paystack);
-
-
-

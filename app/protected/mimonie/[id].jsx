@@ -241,6 +241,11 @@ const ContributionDetails = () => {
     });
   };
 
+  const transactionCharge = Math.round(contribution?.amount * 0.035);
+
+  // Adjust the amount to include the transaction charge
+  const adjustedAmount = contribution?.amount + transactionCharge;
+
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
       <View style={styles.container}>
@@ -628,8 +633,10 @@ const ContributionDetails = () => {
       <Paystack
         ref={paystackWebViewRef}
         paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
-        amount={contribution?.amount}
+        amount={adjustedAmount}
         billingEmail={userProfile?.email}
+        bearer={'account'}
+        transaction_charge={transactionCharge}
         firstName={userProfile?.name}
         activityIndicatorColor={Colors.pri}
         subaccount={recipient?.subaccount_code}

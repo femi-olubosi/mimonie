@@ -193,12 +193,19 @@ const updateContribution = async (contribution) => {
 
 // Function to charge and split payment
 const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
+  // Calculate the transaction charge (3.5% of the base contribution amount)
+  const transactionCharge = Math.round(amount * 0.035); // 3.5% of the contribution amount
+
+  // Adjust the amount to include the transaction charge
+  const adjustedAmount = amount + transactionCharge;
+
   const data = {
     email: payer.email,
-    amount: `${amount * 100}`,
+    amount: `${adjustedAmount * 100}`,
     authorization_code: payer.auth_url,
     subaccount: subaccount_code,
-    transaction_charge: 500,
+    transaction_charge: `${transactionCharge * 100}`,
+    bearer: 'account',
     metadata: JSON.stringify({
       custom_fields: [
         {
@@ -217,11 +224,17 @@ const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
 };
 
 const chargeCardForPersonalContribution = async (payer, amount) => {
+  // Calculate the transaction charge (3.5% of the base contribution amount)
+  const transactionCharge = Math.round(amount * 0.035); // 3.5% of the contribution amount
+
+  // Adjust the amount to include the transaction charge
+  const adjustedAmount = amount + transactionCharge;
+
   const data = {
     email: payer.email,
-    amount: `${amount * 100}`,
+    amount: `${adjustedAmount * 100}`,
     authorization_code: payer.auth_url,
-    transaction_charge: 500,
+    bearer: 'account',
     metadata: JSON.stringify({
       custom_fields: [
         {

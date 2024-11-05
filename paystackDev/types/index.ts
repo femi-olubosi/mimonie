@@ -18,6 +18,8 @@ export interface PayStackProps {
   lastName?: string;
   phone?: string | number;
   amount: string | number;
+  bearer: string;
+  transaction_charge: string | number;
   currency?: Currency;
   channels?: PaymentChannels[];
   refNumber?: string;
@@ -25,10 +27,11 @@ export interface PayStackProps {
   subaccount?: string;
   handleWebViewMessage?: (string: string) => void;
   onCancel: (Response: Response) => void;
-  onSuccess: (SuccessResponse:SuccessResponse) => void;
+  onSuccess: (SuccessResponse: SuccessResponse) => void;
   autoStart?: boolean;
   activityIndicatorColor?: string;
   ref: React.ReactElement;
+  children: React.ReactNode;
 }
 
 export interface PayStackRef {

@@ -218,14 +218,17 @@ export const processContributions = async () => {
 };
 
 export const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
+  const transactionCharge = Math.round(amount * 0.03);
+
+  const adjustedAmount = amount + transactionCharge;
+
   const data = {
     email: payer.email,
-    amount: `${amount * 100}`,
-    // amount: 10000,
+    amount: `${adjustedAmount * 100}`,
     authorization_code: payer.auth_url,
     subaccount: subaccount_code,
-    transaction_charge: 500,
-    // bearer: 'subaccount',
+    transaction_charge: `${transactionCharge * 100}`,
+    bearer: 'account',
     metadata: JSON.stringify({
       custom_fields: [
         {

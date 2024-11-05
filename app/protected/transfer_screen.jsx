@@ -163,7 +163,7 @@ const transfer_screen = () => {
               text: 'OK',
               onPress: () => {
                 setValidateCustomerModal(false);
-                router.push(`/protected/mimonie/${parsedContribution?.id}`);
+                router.push(`/protected/mimonie`);
               },
             },
           ],
