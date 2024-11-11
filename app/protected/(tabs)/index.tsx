@@ -122,6 +122,16 @@ export default function HomeScreen() {
     }
   }, [userProfile]);
 
+useEffect(() => {
+  const verifyPhoneAndSignOut = async () => {
+    if (userProfile && !userProfile.phone_verified) {
+      await signOut();
+    }
+  };
+
+  verifyPhoneAndSignOut();
+}, [userProfile]);
+  
   useEffect(() => {
     (async () => {
       await getContacts(setMyContacts);
