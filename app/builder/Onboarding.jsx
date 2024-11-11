@@ -82,7 +82,7 @@ const Onboarding = ({ setOnboard }) => {
   );
 
   const handleScroll = (event) => {
-    const index = Math.floor(event.nativeEvent.contentOffset.x / screenWidth);
+    const index = Math.ceil(event.nativeEvent.contentOffset.x / screenWidth);
     setCurrentIndex(index);
   };
 
