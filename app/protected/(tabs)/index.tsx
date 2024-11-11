@@ -121,17 +121,6 @@ export default function HomeScreen() {
       setIsLoading(false);
     }
   }, [userProfile]);
-
-useEffect(() => {
-  const verifyPhoneAndSignOut = async () => {
-    if (userProfile && !userProfile.phone_verified) {
-      setIsLoading(false)
-      await signOut();
-    }
-  };
-
-  verifyPhoneAndSignOut();
-}, [userProfile]);
   
   useEffect(() => {
     (async () => {
