@@ -25,6 +25,7 @@ import {
 } from '../api/notifications.service';
 import { convertToAWSDate } from '../utils/toAWSDate';
 import { fetchCountries } from '../api/payment.service';
+import { sendOtp } from '../api/token.service';
 
 const dateOption = [
   'en-US',
@@ -44,6 +45,7 @@ const CompleteProfile = () => {
     userProfile,
     setUserProfile,
     setNotifications,
+    setConfirmationResult,
   } = useGlobalContext();
   const router = useRouter();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -167,8 +169,12 @@ const CompleteProfile = () => {
         setNotifications
       );
       await fetchUserNotification(currentUser.userId, setNotifications);
-      await fetchUserProfile(setUserProfile, currentUser);
-      router.push('/protected');
+      const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+      const resOtp = await sendOtp(profile.phone_number);
+      setConfirmationResult({ ...resOtp, type: 'phone_verification' });
+      router.push('/protected/login_verify');
+      
     } catch (error) {
       console.error(error);
     } finally {
