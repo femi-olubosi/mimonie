@@ -50,51 +50,63 @@ const VerificationCheck = () => {
   };
 
   const handleConfirmPin = async () => {
-    const pinString = pin.join('');
-    if (pinString.length < 6) {
-      Alert.alert('Error', 'Please enter a valid 6-digit pin');
-      return;
+  const pinString = pin.join('');
+  if (pinString.length < 6) {
+    Alert.alert('Error', 'Please enter a valid 6-digit pin');
+    return;
+  }
+
+  setVerifying(true);
+  try {
+    if (!confirmationResult) {
+      throw new Error('No confirmation result available.');
     }
 
-    setVerifying(true);
-    try {
-      if (confirmationResult) {
-        const res = await verifyOTP(confirmationResult?.pinId, pinString);
-        if (res.verified) {
-          if (confirmationResult.type === 'phone_verification') {
-            setUserProfile((prev) => ({ ...prev, phone_verified: true }));
-            await updateUserProfile({ phone_verified: true }, currentUser);
-            router.push('/protected');
-          } else if (confirmationResult.type === 'device_registration') {
-            const device = {
-              device_id: Device.osInternalBuildId || null,
-              device_name: Device.deviceName || null,
-              device_brand: Device.brand || null,
-            };
-            setUserProfile((prev) => ({
-              ...prev,
-              device_brand: device.device_brand,
-              device_id: device.device_id,
-              device_name: device_name,
-            }));
-            await updateUserProfile(device, currentUser);
-            const url = await downloadUrl(userProfile.userId);
-            setProfilePicture(url || null);
-            router.push('/protected');
-          }
-          setVerifying(false);
-        }
-      } else {
-        setVerifying(false);
-      }
-    } catch (e) {
-      console.error(e.message);
-      Alert.alert('Error', e.message + '');
-    } finally {
-      setPin(['', '', '', '', '', '']);
-      setVerifying(false);
+    // Attempt to verify OTP
+    const res = await verifyOTP(confirmationResult?.pinId, pinString);
+    if (!res.verified) {
+      throw new Error('OTP verification failed. Please try again.');
     }
-  };
+
+    // Success handling based on the confirmation type
+    if (confirmationResult.type === 'phone_verification') {
+      setUserProfile((prev) => ({ ...prev, phone_verified: true }));
+      await updateUserProfile({ phone_verified: true }, currentUser);
+      Alert.alert('Success', 'Phone number verified successfully.');
+      router.push('/protected');
+    } else if (confirmationResult.type === 'device_registration') {
+      // Collect device details and update profile
+      const device = {
+        device_id: Device.osInternalBuildId || null,
+        device_name: Device.deviceName || null,
+        device_brand: Device.brand || null,
+      };
+
+      setUserProfile((prev) => ({
+        ...prev,
+        device_brand: device.device_brand,
+        device_id: device.device_id,
+        device_name: device.device_name,
+      }));
+
+      await updateUserProfile(device, currentUser);
+
+      // Fetch and set profile picture URL
+      const url = await downloadUrl(userProfile.userId);
+      setProfilePicture(url || null);
+
+      Alert.alert('Success', 'Device registered successfully.');
+      router.push('/protected');
+    }
+  } catch (error) {
+    console.error('Error in handleConfirmPin:', error.message);
+    Alert.alert('Error', error.message || 'An unexpected error occurred. Please try again.');
+  } finally {
+    // Reset pin and verifying state regardless of outcome
+    setPin(['', '', '', '', '', '']);
+    setVerifying(false);
+  }
+};
 
   return (
     <Container>
