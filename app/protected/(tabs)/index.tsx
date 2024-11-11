@@ -125,6 +125,7 @@ export default function HomeScreen() {
 useEffect(() => {
   const verifyPhoneAndSignOut = async () => {
     if (userProfile && !userProfile.phone_verified) {
+      setIsLoading(false)
       await signOut();
     }
   };
