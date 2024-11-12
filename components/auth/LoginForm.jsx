@@ -75,6 +75,11 @@ const LoginForm = (props) => {
 
       await fetchUserNotification(user.userId, setNotifications);
 
+      if (!profile?.name) {
+        router.push('/protected/complete_profile');
+        return;
+      }
+
       if (!profile?.phone_verified) {
         Alert.alert(
           'Phone Number is not verified',
@@ -132,10 +137,6 @@ const LoginForm = (props) => {
         return;
       }
 
-      if (!profile?.name) {
-        router.push('/protected/complete_profile');
-        return;
-      }
       router.push('/protected');
     } catch (error) {
       Alert.alert('Error', error.message);
