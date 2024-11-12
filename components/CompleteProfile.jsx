@@ -26,6 +26,7 @@ import {
 import { convertToAWSDate } from '../utils/toAWSDate';
 import { fetchCountries } from '../api/payment.service';
 import { sendOtp } from '../api/token.service';
+import { signOut } from 'aws-amplify/auth';
 
 const dateOption = [
   'en-US',
@@ -157,7 +158,7 @@ const CompleteProfile = () => {
         { ...data, customer_code: res.data.customer_code },
         currentUser
       );
-      console.log({ update });
+
       await createNotification(
         {
           title: 'Account Created',
@@ -174,7 +175,6 @@ const CompleteProfile = () => {
       const resOtp = await sendOtp(profile.phone_number);
       setConfirmationResult({ ...resOtp, type: 'phone_verification' });
       router.push('/protected/login_verify');
-      
     } catch (error) {
       console.error(error);
     } finally {
