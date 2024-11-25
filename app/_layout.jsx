@@ -27,7 +27,7 @@ function RootLayout() {
   });
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-  const [onboard, setOnboard] = useState(true);
+  const [onboard, setOnboard] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -82,9 +82,10 @@ function RootLayout() {
     <>
       {isSplashVisible ? (
         <SplashScreen />
-      ) : onboard ? (
-        <Onboarding setOnboard={setOnboard} />
       ) : (
+        // : onboard ? (
+        //   <Onboarding setOnboard={setOnboard} />
+        // )
         <StoreProvider>
           <RootContent />
         </StoreProvider>

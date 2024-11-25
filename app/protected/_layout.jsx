@@ -196,6 +196,10 @@ const ProtectedContent = () => {
             <Stack.Screen name="admin" options={{ headerShown: false }} />
             <Stack.Screen name="support" options={{ headerShown: false }} />
             <Stack.Screen name="privacy" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="income_verification"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </Authenticator>
       </View>
