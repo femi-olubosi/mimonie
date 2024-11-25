@@ -26,6 +26,10 @@ const StoreProvider = ({ children }) => {
   const [parsed, setParsed] = useState([]);
   const [hideValues, setHideValues] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [pilot, setPilot] = useState({
+    account: true,
+    network: true,
+  });
 
   // DataStore.start();
 
@@ -77,6 +81,8 @@ const StoreProvider = ({ children }) => {
     setHideValues,
     updateAvailable,
     setUpdateAvailable,
+    pilot,
+    setPilot,
   };
 
   return (

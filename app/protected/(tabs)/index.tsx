@@ -9,6 +9,7 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
+  Button,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -46,12 +47,14 @@ import { safeParseJSON } from '@/utils/safeJSON';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCopilot } from 'react-native-copilot';
 
 export default function HomeScreen() {
   const {
     currentUser,
     setCurrentUser,
     setUserProfile,
+    isLoading,
     setIsLoading,
     setMyContacts,
     contributions,
@@ -65,9 +68,12 @@ export default function HomeScreen() {
     profilePicture,
     setInviteArray,
     hideValues,
+    parsed,
     setParsed,
     updateAvailable,
     setUpdateAvailable,
+    pilot,
+    setPilot,
   } = useGlobalContext();
 
   const { priBg, secBg, priText } = ThemeColors();
@@ -121,7 +127,7 @@ export default function HomeScreen() {
       setIsLoading(false);
     }
   }, [userProfile]);
-  
+
   useEffect(() => {
     (async () => {
       await getContacts(setMyContacts);
@@ -241,6 +247,35 @@ export default function HomeScreen() {
       setIsLoading(false);
     }
   };
+  const { start } = useCopilot();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    // const isAccountVerified =
+    //   userProfile?.is_bvn_verified && userProfile?.is_nin_verified;
+    // const hasEnoughConnections = parsed.length > 4;
+
+    // setPilot((prev) => ({
+    //   ...prev,
+    //   account: !isAccountVerified,
+    //   network: !hasEnoughConnections,
+    // }));
+
+    // Determine if the copilot should start
+    // const shouldShowCopilot = !isAccountVerified || parsed.length < 4;
+    const shouldShowCopilot = true;
+
+    if (shouldShowCopilot) {
+      console.log('show again');
+      setTimeout(() => {
+        start();
+      }, 2500);
+    } else {
+      console.log('no show');
+    }
+    // }, [isLoading, userProfile, parsed]);
+  }, [isLoading]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -270,8 +305,11 @@ export default function HomeScreen() {
             userProfile={userProfile}
             priText={priText}
             setShowHelp={setShowHelp}
+            connect={parsed?.length}
+            pilot={pilot}
           />
           {/* <Advert /> */}
+
           <View
             style={{
               paddingHorizontal: 20,
