@@ -12,6 +12,7 @@ import Onboarding from './builder/Onboarding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 Amplify.configure(amplifyconfig);
 import * as Updates from 'expo-updates';
+import { CopilotProvider } from 'react-native-copilot';
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -27,7 +28,7 @@ function RootLayout() {
   });
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
-  const [onboard, setOnboard] = useState(true);
+  const [onboard, setOnboard] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -78,15 +79,24 @@ function RootLayout() {
   //   checkFirstTimeUser();
   // }, []);
 
+  const style = {
+    borderRadius: 10,
+    padding: 5,
+    color: 'red',
+  };
+
   return (
     <>
       {isSplashVisible ? (
         <SplashScreen />
-      ) : onboard ? (
-        <Onboarding setOnboard={setOnboard} />
       ) : (
+        // : onboard ? (
+        //   <Onboarding setOnboard={setOnboard} />
+        // )
         <StoreProvider>
-          <RootContent />
+          <CopilotProvider tooltipStyle={style}>
+            <RootContent />
+          </CopilotProvider>
         </StoreProvider>
       )}
     </>
