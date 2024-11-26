@@ -270,7 +270,7 @@ export default function HomeScreen() {
       console.log('show again');
       setTimeout(() => {
         start();
-      }, 2500);
+      }, 1500);
     } else {
       console.log('no show');
     }
@@ -309,7 +309,6 @@ export default function HomeScreen() {
             pilot={pilot}
           />
           {/* <Advert /> */}
-
           <View
             style={{
               paddingHorizontal: 20,
