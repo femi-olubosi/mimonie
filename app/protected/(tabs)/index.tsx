@@ -17,7 +17,7 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
@@ -48,6 +48,7 @@ import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCopilot } from 'react-native-copilot';
+import { useFocusEffect } from 'expo-router';
 
 export default function HomeScreen() {
   const {
@@ -249,33 +250,32 @@ export default function HomeScreen() {
   };
   const { start } = useCopilot();
 
-  useEffect(() => {
-    if (isLoading) return;
+  // useEffect(() => {
+  //   // if (isLoading) return;
 
-    // const isAccountVerified =
-    //   userProfile?.is_bvn_verified && userProfile?.is_nin_verified;
-    // const hasEnoughConnections = parsed.length > 4;
+  //   // const isAccountVerified =
+  //   //   userProfile?.is_bvn_verified && userProfile?.is_nin_verified;
+  //   // const hasEnoughConnections = parsed.length > 4;
 
-    // setPilot((prev) => ({
-    //   ...prev,
-    //   account: !isAccountVerified,
-    //   network: !hasEnoughConnections,
-    // }));
+  //   // setPilot((prev) => ({
+  //   //   ...prev,
+  //   //   account: !isAccountVerified,
+  //   //   network: !hasEnoughConnections,
+  //   // }));
 
-    // Determine if the copilot should start
-    // const shouldShowCopilot = !isAccountVerified || parsed.length < 4;
-    const shouldShowCopilot = true;
+  //   // Determine if the copilot should start
+  //   // const shouldShowCopilot = !isAccountVerified || parsed.length < 4;
+  //   // const shouldShowCopilot = true;
 
-    if (shouldShowCopilot) {
-      console.log('show again');
-      setTimeout(() => {
-        start();
-      }, 1500);
-    } else {
-      console.log('no show');
-    }
-    // }, [isLoading, userProfile, parsed]);
-  }, [isLoading]);
+  //   // if (shouldShowCopilot) {
+  //   //   console.log('show again');
+  //   // setTimeout(() => {
+  //   //   start();
+  //   // }, 3500);
+  //   // } else {
+  //   //   console.log('no show atall');
+  //   // }
+  // }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -299,6 +299,7 @@ export default function HomeScreen() {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          // ref={scrollViewRef}
         >
           <Cards contributions={contributions} />
           <Options

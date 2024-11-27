@@ -69,38 +69,40 @@ const Options = ({ userProfile, priText, setShowHelp, connect, pilot }) => {
         active={pilot.network}
         // active={true}
       >
-        <CopilotPressable
-          style={{
-            rowGap: 5,
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'relative',
-          }}
-          onPress={() => router.push('/protected/my_network')}
-        >
-          <View
+        <CopilotPressable>
+          <Pressable
             style={{
-              width: 15,
-              height: 15,
-              borderRadius: 100,
-              backgroundColor: 'red',
-              position: 'absolute',
+              rowGap: 5,
               justifyContent: 'center',
               alignItems: 'center',
-              right: 20,
-              top: 0,
-              zIndex: 10,
+              position: 'relative',
             }}
+            onPress={() => router.push('/protected/my_network')}
           >
-            <Text style={{ fontSize: 8, fontFamily: 'ir', color: 'white' }}>
-              {pendingConnections?.length}
-            </Text>
-          </View>
+            <View
+              style={{
+                width: 15,
+                height: 15,
+                borderRadius: 100,
+                backgroundColor: 'red',
+                position: 'absolute',
+                justifyContent: 'center',
+                alignItems: 'center',
+                right: 20,
+                top: 0,
+                zIndex: 10,
+              }}
+            >
+              <Text style={{ fontSize: 8, fontFamily: 'ir', color: 'white' }}>
+                {pendingConnections?.length}
+              </Text>
+            </View>
 
-          <FontAwesome6 name="people-roof" size={23} color="#555555" />
-          <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
-            My Network
-          </Text>
+            <FontAwesome6 name="people-roof" size={23} color="#555555" />
+            <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
+              My Network
+            </Text>
+          </Pressable>
         </CopilotPressable>
       </CopilotStep>
       <Pressable
