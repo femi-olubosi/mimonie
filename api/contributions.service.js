@@ -2,6 +2,7 @@ import { DataStore } from 'aws-amplify/datastore';
 import { Contribution } from '../src/models';
 import { triggerNotificationForUser } from './pushNotification.service';
 import { createUserActivity } from './activities.service';
+import { createTransferRecipientForBank } from './payment.service';
 
 export const fetchUserContributions = async (userId, setContributions) => {
   try {
@@ -29,6 +30,14 @@ export const createContribution = async (
   currentUser,
   userProfile
 ) => {
+  const recipient_code = userProfile.recipient_code
+    ? userProfile.recipient_code
+    : await createTransferRecipientForBank({
+        bank_code: userProfile.bank_details.bank_code,
+        account_number: userProfile.bank_details.account_number,
+        account_name: userProfile.name,
+      });
+
   const userObj = {
     name: userProfile.name || currentUser.preferred_username,
     picture: currentUser.picture,
@@ -40,7 +49,9 @@ export const createContribution = async (
     email: currentUser.email,
     last_successful_round: 0,
     push_token: userProfile.push_token,
+    recipient: recipient_code,
     status: 'in progress',
+    type: 'owner',
   };
 
   const link = `https://mimonie.net/protected/mimonie?userId=${

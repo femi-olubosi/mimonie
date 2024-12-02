@@ -161,11 +161,11 @@ const saveUserNotification = async (notification) => {
 const getUserProfile = async (customerCode, recipientCode) => {
   const params = {
     TableName: profileTableName,
-    FilterExpression: customerCode 
-      ? 'customer_code = :customerCode' 
+    FilterExpression: customerCode
+      ? 'customer_code = :customerCode'
       : 'recipient_code = :recipientCode',
-    ExpressionAttributeValues: customerCode 
-      ? { ':customerCode': customerCode } 
+    ExpressionAttributeValues: customerCode
+      ? { ':customerCode': customerCode }
       : { ':recipientCode': recipientCode },
   };
 
@@ -223,7 +223,7 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
 
     // Handle Paystack verification success and failure events
 
-    if(eventType === 'transfer.success') {
+    if (eventType === 'transfer.success') {
       await sendNotification(
         userProfile?.push_token,
         'Payout Successful',
@@ -237,28 +237,28 @@ app.post('/mimonie-bvn-verification', async function (req, res) {
         read: false,
         content: notificationContent,
       };
-  
+
       // Save the notification
       await saveUserNotification(notificationDetails);
-      return
-    } else if(eventType === 'transfer.failed') {
-        await sendNotification(
-          userProfile?.push_token,
-          'Payout Failed',
-          `Error making ${response.amount} payout for ${response.reason}`
-        );
-        const notificationDetails = {
-          id: uuidv4(),
-          userId,
-          type: 'payment',
-          title: 'Payout Failed',
-          read: false,
-          content: notificationContent,
-        };
-    
-        // Save the notification
-        await saveUserNotification(notificationDetails);
-        return
+      return;
+    } else if (eventType === 'transfer.failed') {
+      await sendNotification(
+        userProfile?.push_token,
+        'Payout Failed',
+        `Error making ${response.amount} payout for ${response.reason}`
+      );
+      const notificationDetails = {
+        id: uuidv4(),
+        userId,
+        type: 'payment',
+        title: 'Payout Failed',
+        read: false,
+        content: notificationContent,
+      };
+
+      // Save the notification
+      await saveUserNotification(notificationDetails);
+      return;
     }
 
     if (eventType === 'customeridentification.success') {

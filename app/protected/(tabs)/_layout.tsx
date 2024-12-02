@@ -18,7 +18,7 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { userProfile, pilot } = useGlobalContext();
   const { priBg } = ThemeColors();
-  console.log(pilot);
+
   // const accountSetupText =
   //   !userProfile?.is_bvn_verified && !userProfile?.is_nin_verified
   //     ? 'Open the Account screen to start verification. Verifying your BVN and Identity is essential to creating or participating in contributions.'

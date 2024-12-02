@@ -194,7 +194,7 @@ const updateContribution = async (contribution) => {
 // Function to charge and split payment
 const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
   // Calculate the transaction charge (3.5% of the base contribution amount)
-  const transactionCharge = Math.round(amount * 0.035); // 3.5% of the contribution amount
+  const transactionCharge = Math.round(amount * 0.045); // 4.5% of the contribution amount
 
   // Adjust the amount to include the transaction charge
   const adjustedAmount = amount + transactionCharge;
@@ -250,6 +250,17 @@ const chargeCardForPersonalContribution = async (payer, amount) => {
     'POST',
     data
   );
+};
+
+const transferToBank = async (recipient_code, amount, contribution) => {
+  const data = {
+    recipient: recipient_code,
+    amount: amount * 100,
+    source: 'balance',
+    reason: `owner's fee for ${contribution.name}`,
+  };
+
+  return await makePaystackRequest('/transfer', 'POST', data);
 };
 
 // Main processing function
@@ -384,6 +395,29 @@ const processContributions = async () => {
 
           contribution.participant = participants;
           if (allReceived) {
+            const owner = participants[0].find((p) => p.type === 'owner');
+            const numOfTimes =
+              participants[0].length * (participants[0].length - 1);
+            const ownerAmount = contribution.amount * numOfTimes * 0.01;
+            await transferToBank(
+              owner?.recipient_code,
+              ownerAmount,
+              contribution
+            );
+
+            await sendNotification(
+              owner?.push_token,
+              'Payment Processed',
+              `Your ownership payment for ${contribution.name} is processed`
+            );
+
+            await saveUserActivity({
+              id: uuidv4(),
+              userId: owner.userId,
+              type: 'collection',
+              amount: ownerAmount,
+              description: `Received owner's fee for ${contribution.name}`,
+            });
             contribution.status = 'completed';
           }
 

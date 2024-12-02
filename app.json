@@ -11,7 +11,7 @@
       "silentLaunch": true
     },
     "ios": {
-      "buildNumber": "12",
+      "buildNumber": "13",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"],
@@ -21,7 +21,7 @@
       }
     },
     "android": {
-      "versionCode": 12,
+      "versionCode": 13,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
@@ -41,7 +41,8 @@
           ]
         }
       ],
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "targetSdkVersion": 34
     },
     "web": {
       "bundler": "metro",
