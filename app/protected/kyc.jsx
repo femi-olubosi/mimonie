@@ -72,6 +72,11 @@ const kyc = () => {
     return () => clearTimeout(timeout);
   }, []);
 
+  const liveLink =
+    'https://links.usesmileid.com/6982/98601622-72ef-4511-a1b5-c7fe520c0c27';
+  const sandboxLink =
+    'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0';
+
   return (
     <PageView title={'Verification'} route={'/protected/account'}>
       <View style={{ flex: 1 }}>
@@ -79,7 +84,7 @@ const kyc = () => {
           {!userProfile.is_nin_verified ? (
             <WebView
               source={{
-                uri: 'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0',
+                uri: liveLink,
               }}
               style={styles.webview}
               onLoadStart={() => setIsLoading(true)}
