@@ -22,12 +22,6 @@ import {
   updateContributionForUser,
   fetchUserContributions,
 } from '@/api/contributions.service';
-import {
-  AntDesign,
-  Feather,
-  Fontisto,
-  MaterialCommunityIcons,
-} from '@expo/vector-icons';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { statusCheck } from '@/utils/statusCheck';
 import { naira } from '@/constants/Currency';
@@ -36,11 +30,15 @@ import ContactModal from '@/components/ContactModal';
 import { updateInvite } from '@/api/invite.service';
 import { safeParseJSON } from '@/utils/safeJSON';
 import CopyLink from '@/components/CopyLink';
-import { downloadUrl, fetchUserProfile } from '@/api/user.service';
+import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
 import { verifyTransfer, withdrawFunds } from '../../../api/payment.service';
 import { Paystack } from '@/paystackDev';
 import { updatePersonalContribution } from '../../../api/contributions.service';
+import ModalWrapper from '../../../components/modals/ModalWrapper';
+import Drag from './Drag';
+import NextContributionDay from './NextContributionDay';
+import ParticipantList from './ParticipantList';
 
 const ContributionDetails = () => {
   const {
@@ -57,11 +55,13 @@ const ContributionDetails = () => {
   const [contribution, setContribution] = useState({});
   const [parsed, setParsed] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [imageUrls, setImageUrls] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
-  const [imageUrls, setImageUrls] = useState({});
   const paystackWebViewRef = useRef();
   const [withdrawModal, setWithdrawModal] = useState(false);
+  const [openParticipantEditModal, setOpenParticipantEditModal] =
+    useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -206,21 +206,6 @@ const ContributionDetails = () => {
   };
 
   const startDate = new Date(contribution?.start_date);
-
-  const next = parsed?.find((e) => e.status !== 'received');
-
-  useEffect(() => {
-    const fetchImageUrls = async () => {
-      const urls = {};
-      for (const eN of parsed) {
-        if (eN.userId) {
-          urls[eN.userId] = await downloadUrl(eN.userId);
-        }
-      }
-      setImageUrls(urls);
-    };
-    fetchImageUrls();
-  }, [parsed]);
 
   const recipient = parsed?.find(
     (participant) => participant.status === 'in progress'
@@ -425,145 +410,14 @@ const ContributionDetails = () => {
                 </View>
               </View>
               {contribution?.type === 'group' && (
-                <>
-                  <View
-                    style={[
-                      {
-                        // minHeight: 85,
-                        marginBottom: 16,
-                        backgroundColor: 'white',
-                        borderRadius: 8,
-                      },
-                    ]}
-                  >
-                    <Text style={styles.label}>Contributors</Text>
-                    <ScrollView
-                      showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{
-                        columnGap: 8,
-                        paddingBottom: 10,
-                      }}
-                      nestedScrollEnabled={true}
-                      horizontal={true}
-                    >
-                      {parsed?.map((eN, id) => {
-                        return (
-                          <View
-                            key={id}
-                            style={{
-                              justifyContent: 'center',
-                              height: 100,
-                              minWidth: 200,
-                              borderRadius: 8,
-                              borderWidth: 1,
-                              borderColor: '#E5E7EB',
-                              backgroundColor: 'white',
-                              paddingHorizontal: 8,
-                              rowGap: 10,
-                              shadowColor: 'gray',
-                              shadowOffset: { width: 0, height: 2 },
-                              shadowOpacity: 0.25,
-                              shadowRadius: 3.84,
-                              elevation: 5,
-                            }}
-                          >
-                            <View
-                              style={{
-                                flexDirection: 'row',
-                                columnGap: 10,
-                                alignItems: 'center',
-                              }}
-                            >
-                              <View>
-                                {imageUrls[eN.userId] ? (
-                                  <Image
-                                    source={{ uri: imageUrls[eN.userId] }}
-                                    style={{
-                                      width: 50,
-                                      height: 50,
-                                      borderRadius: 8,
-                                      backgroundColor: '#E5E7EB',
-                                      objectFit: 'cover',
-                                    }}
-                                  />
-                                ) : (
-                                  <Feather
-                                    name="image"
-                                    color={'gray'}
-                                    size={40}
-                                    style={{
-                                      padding: 0,
-                                      margin: 0,
-                                    }}
-                                  />
-                                )}
-                              </View>
-                              <View style={{ rowGap: 4 }}>
-                                <Text style={{ fontFamily: 'ir' }}>
-                                  {eN.name}
-                                </Text>
-                                <View>
-                                  <View
-                                    style={{
-                                      flexDirection: 'row',
-                                      columnGap: 6,
-                                      alignItems: 'center',
-                                    }}
-                                  >
-                                    <Text>
-                                      {capitalizeFirstLetter(eN.status)}
-                                    </Text>
-                                    {eN.status === 'received' ? (
-                                      <Fontisto
-                                        name="checkbox-active"
-                                        size={14}
-                                        color="green"
-                                      />
-                                    ) : eN.status === 'in progress' ? (
-                                      <MaterialCommunityIcons
-                                        name="progress-check"
-                                        size={14}
-                                        color="#ecb753"
-                                      />
-                                    ) : eN.status === 'pending' ? (
-                                      <AntDesign
-                                        name="minussquareo"
-                                        size={14}
-                                        color="gray"
-                                      />
-                                    ) : null}
-                                    {contribution?.type !== 'personal' &&
-                                    next?.userId === eN.userId ? (
-                                      <Text
-                                        style={{
-                                          color: 'lightgreen',
-                                          fontFamily: 'ir',
-                                        }}
-                                      >
-                                        Next
-                                      </Text>
-                                    ) : null}
-                                  </View>
-                                </View>
-                              </View>
-                            </View>
-                            {eN?.status !== 'in progress' &&
-                            eN?.last_successful_round <
-                              contribution?.current_count ? (
-                              <Text style={{ fontSize: 10, color: 'red' }}>
-                                Attention: {'Missed last contribution'}
-                              </Text>
-                            ) : (
-                              <Text style={{ fontSize: 10 }}>
-                                Note: {'In good standing'}
-                              </Text>
-                            )}
-                          </View>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
-                </>
+                <ParticipantList
+                  parsed={parsed}
+                  contribution={contribution}
+                  setOpenParticipantEditModal={setOpenParticipantEditModal}
+                  imageUrls={imageUrls}
+                  setImageUrls={setImageUrls}
+                  userProfile={userProfile}
+                />
               )}
               <View style={styles.detailContainer}>
                 <Text style={styles.label}>Amount</Text>
@@ -675,162 +529,19 @@ const ContributionDetails = () => {
           </View>
         </View>
       </Modal>
+      <ModalWrapper
+        visible={openParticipantEditModal}
+        onClose={() => setOpenParticipantEditModal(false)}
+      >
+        <Drag
+          parsed={parsed}
+          setParsed={setParsed}
+          imageUrls={imageUrls}
+          contribution={contribution}
+          onFinished={() => setOpenParticipantEditModal(false)}
+        />
+      </ModalWrapper>
     </PageView>
-  );
-};
-
-const NextContributionDay = ({ contribution, parsed, userProfile }) => {
-  const getNextContributionDay = () => {
-    if (contribution?.status === 'open') {
-      return 'Not running';
-    }
-
-    if (['completed', 'closed'].includes(contribution?.status)) {
-      return 'Completed';
-    }
-
-    if (
-      contribution?.type === 'group' &&
-      contribution?.current_count !== 0 &&
-      contribution?.current_count >= parsed.length
-    ) {
-      return '-';
-    }
-
-    const today = new Date();
-    let nextContributionDay;
-
-    const parseDate = (dateString) => {
-      if (!dateString) return null;
-      const [year, month, day] = dateString.split('-');
-      return new Date(year, month - 1, day);
-    };
-
-    // Dynamic function to get the next target day of the week
-    const getNextTargetDay = (date, targetDay) => {
-      const dayOfWeek = date.getDay();
-      const daysUntilNextDay = (targetDay - dayOfWeek + 7) % 7 || 7;
-      const nextTargetDay = new Date(date);
-      nextTargetDay.setDate(date.getDate() + daysUntilNextDay);
-      return nextTargetDay;
-    };
-
-    // Dynamic target day based on contribution_id
-    const getTargetDayOfWeek = () => {
-      return contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac'
-        ? 3
-        : 1; // 3 = Wednesday, 1 = Monday
-    };
-
-    // Check if the participant is collecting this period
-    const isReceivingDay = (participant) => {
-      return (
-        participant?.status === 'in progress' &&
-        contribution?.variant === 'days'
-      );
-    };
-
-    const isReceivingWeek = (participant) => {
-      return (
-        participant?.status === 'in progress' &&
-        contribution?.variant === 'weeks'
-      );
-    };
-
-    const isReceivingMonth = (participant) => {
-      return (
-        participant?.status === 'in progress' &&
-        contribution?.variant === 'months'
-      );
-    };
-
-    const currentParticipant = parsed?.find(
-      (participant) => participant.userId === userProfile.userId
-    );
-
-    // Handling contribution types based on variant (days, weeks, months)
-    if (currentParticipant?.status === 'in progress') {
-      switch (contribution?.variant) {
-        case 'days':
-          nextContributionDay = new Date(today);
-          nextContributionDay.setDate(today.getDate() + 2);
-          if (isReceivingDay(currentParticipant)) {
-            nextContributionDay.setDate(nextContributionDay.getDate() + 1); // Skip receiving day
-          }
-          break;
-
-        case 'weeks':
-          nextContributionDay = getNextTargetDay(today, getTargetDayOfWeek()); // Use dynamic day
-          if (isReceivingWeek(currentParticipant)) {
-            nextContributionDay.setDate(nextContributionDay.getDate() + 7); // Skip receiving week
-          }
-          break;
-
-        case 'months':
-          nextContributionDay = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            28
-          );
-          if (today.getDate() > 28) {
-            nextContributionDay.setMonth(today.getMonth() + 1);
-          }
-          if (isReceivingMonth(currentParticipant)) {
-            nextContributionDay.setMonth(nextContributionDay.getMonth() + 1); // Skip receiving month
-          }
-          break;
-
-        default:
-          nextContributionDay = 'Invalid contribution period';
-      }
-
-      return typeof nextContributionDay === 'string'
-        ? nextContributionDay
-        : nextContributionDay.toLocaleDateString('en-US', {
-            day: 'numeric',
-            month: 'long',
-          });
-    }
-
-    // Default case for next contribution when not "in progress"
-    switch (contribution?.variant) {
-      case 'days':
-        nextContributionDay = new Date(today);
-        nextContributionDay.setDate(today.getDate() + 1);
-        break;
-
-      case 'weeks':
-        nextContributionDay = getNextTargetDay(today, getTargetDayOfWeek()); // Use dynamic day
-        break;
-
-      case 'months':
-        nextContributionDay = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          28
-        );
-        if (today.getDate() > 28) {
-          nextContributionDay.setMonth(today.getMonth() + 1);
-        }
-        break;
-
-      default:
-        nextContributionDay = 'Invalid contribution period';
-    }
-
-    return typeof nextContributionDay === 'string'
-      ? nextContributionDay
-      : nextContributionDay.toLocaleDateString('en-US', {
-          day: 'numeric',
-          month: 'long',
-        });
-  };
-
-  return (
-    <View style={styles.detailContainer}>
-      <Text style={styles.label}>Next Contribution Day</Text>
-      <Text style={styles.value}>{getNextContributionDay()}</Text>
-    </View>
   );
 };
 

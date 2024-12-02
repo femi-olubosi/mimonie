@@ -12,7 +12,7 @@ export const fetchUserContributions = async (userId, setContributions) => {
       c.participant_ids.contains(userId)
     );
 
-    const sorted = userContributions.sort((a, b) =>
+    const sorted = userContributions?.sort((a, b) =>
       a.createdAt > b.createdAt ? -1 : 1
     );
 
@@ -238,6 +238,35 @@ export const joinContribution = async (
       prev.map((contribution) =>
         contribution.id === contributionId ? updatedContribution : contribution
       )
+    );
+
+    return updatedContribution;
+  } catch (error) {
+    console.error('Error joining contribution:', error);
+    throw error;
+  }
+};
+
+export const editContributionParticipant = async (
+  contributionId,
+  participants
+) => {
+  try {
+    // Fetch the existing contribution
+    const originalContribution = await DataStore.query(
+      Contribution,
+      contributionId
+    );
+
+    if (!originalContribution) {
+      throw new Error('Contribution not found');
+    }
+
+    // Update the contribution with the new participant
+    const updatedContribution = await DataStore.save(
+      Contribution.copyOf(originalContribution, (updated) => {
+        updated.participant = participants;
+      })
     );
 
     return updatedContribution;
