@@ -225,20 +225,20 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
-      if (myConnections?.length < 4) {
-        Alert.alert(
-          'Sorry!!',
-          'You can only create group contribution when you have up to 4 connections.',
-          [
-            {
-              text: 'Go to My Network',
-              onPress: () => router.push('/protected/my_network'),
-            },
-            { text: 'OK', onPress: () => console.log('OK Pressed') },
-          ]
-        );
-        return;
-      }
+      // if (myConnections?.length < 4) {
+      //   Alert.alert(
+      //     'Sorry!!',
+      //     'You can only create group contribution when you have up to 4 connections.',
+      //     [
+      //       {
+      //         text: 'Go to My Network',
+      //         onPress: () => router.push('/protected/my_network'),
+      //       },
+      //       { text: 'OK', onPress: () => console.log('OK Pressed') },
+      //     ]
+      //   );
+      //   return;
+      // }
       await createGroupContribution();
     } else if (contributionType === 'personal') {
       await createContributionPersonal();

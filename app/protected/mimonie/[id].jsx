@@ -65,12 +65,25 @@ const ContributionDetails = () => {
 
   useEffect(() => {
     const fetchContribution = async () => {
-      setLoading(true);
-      await findContributionByID(id, setContribution);
-      setLoading(false);
+      try {
+        setLoading(true); // Start loading
+
+        const contribution = await findContributionByID(id, setContribution);
+        if (contribution) {
+          setContribution(contribution); // Update state with the fetched contribution
+        } else {
+          console.error('Contribution not found.');
+        }
+      } catch (error) {
+        console.error('Error fetching contribution:', error);
+      } finally {
+        setLoading(false); // End loading
+      }
     };
 
-    fetchContribution();
+    if (id) {
+      fetchContribution();
+    }
   }, [id]);
 
   useEffect(() => {

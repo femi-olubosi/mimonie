@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { ActivityIndicator, Text, View } from 'react-native';
 
-const Loader = ({ isLoading }) => {
+const Loader = ({ isLoading, text = null }) => {
   // const { isLoading } = useGlobalContext();
   return (
     <>
@@ -30,8 +30,8 @@ const Loader = ({ isLoading }) => {
           ></View>
           <View
             style={{
-              width: 70,
-              height: 70,
+              width: text ? 120 : 70,
+              height: text ? 120 : 70,
               borderRadius: 8,
               backgroundColor: Colors.pri,
               justifyContent: 'center',
@@ -42,9 +42,11 @@ const Loader = ({ isLoading }) => {
               {/* <Image source={require('../../assets/general/back-ill.png')} /> */}
             </View>
             <ActivityIndicator color={'white'} size={'large'} />
-            {/* <Text style={{ color: 'white', marginTop: 20 }}>
-              Please wait...
-            </Text> */}
+            {text && (
+              <Text style={{ color: 'white', marginTop: 20 }}>
+                Please wait. This might take a while
+              </Text>
+            )}
           </View>
         </View>
       ) : null}

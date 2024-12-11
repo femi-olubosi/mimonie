@@ -59,13 +59,14 @@ const ParticipantList = ({
           }}
         >
           <Text style={styles.label}>Contributors</Text>
-          {/* {userProfile.userId === parsed.userId && ( */}
-          <Pressable onPress={() => setOpenParticipantEditModal(true)}>
-            <Text style={[styles.label, { color: Colors.pri }]}>
-              Rearrange Contributors
-            </Text>
-          </Pressable>
-          {/* )} */}
+          {contribution?.owner === userProfile?.name &&
+            contribution?.status === 'open' && (
+              <Pressable onPress={() => setOpenParticipantEditModal(true)}>
+                <Text style={[styles.label, { color: Colors.pri }]}>
+                  Rearrange Contributors
+                </Text>
+              </Pressable>
+            )}
         </View>
         <ScrollView
           showsVerticalScrollIndicator={false}

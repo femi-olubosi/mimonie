@@ -30,6 +30,7 @@ const StoreProvider = ({ children }) => {
     account: true,
     network: true,
   });
+  const [kycForm, setKycForm] = useState({});
 
   // DataStore.start();
 
@@ -83,6 +84,8 @@ const StoreProvider = ({ children }) => {
     setUpdateAvailable,
     pilot,
     setPilot,
+    kycForm,
+    setKycForm,
   };
 
   return (

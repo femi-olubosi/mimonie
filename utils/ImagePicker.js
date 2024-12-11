@@ -4,8 +4,7 @@ export const imagePicker = async () => {
   let result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.All,
     allowsEditing: true,
-    aspect: [4, 3],
-    quality: 0,
+    quality: 0.2,
   });
 
   if (!result.canceled) {

@@ -162,7 +162,103 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_callbackurl_apiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_apiKeyProd": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerify": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerifyAsync": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerifyAsyncLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerifyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_callbackUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_callbackUrlProd": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
     "AMPLIFY_function_callbackurl_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_jobStatusApi": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_notificationsTableName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_partnerId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_profileTableName": {
       "usedBy": [
         {
           "category": "function",

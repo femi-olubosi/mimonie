@@ -23,6 +23,42 @@
     "storagedynamoc73ffc4dArn": {
       "Type": "String",
       "Default": "storagedynamoc73ffc4dArn"
+    },
+    "profileTableName": {
+      "Type": "String"
+    },
+    "notificationsTableName": {
+      "Type": "String"
+    },
+    "partnerId": {
+      "Type": "String"
+    },
+    "apiKey": {
+      "Type": "String"
+    },
+    "callbackUrl": {
+      "Type": "String"
+    },
+    "apiKeyProd": {
+      "Type": "String"
+    },
+    "callbackUrlProd": {
+      "Type": "String"
+    },
+    "jobStatusApi": {
+      "Type": "String"
+    },
+    "basicVerifyAsyncLive": {
+      "Type": "String"
+    },
+    "basicVerifyAsync": {
+      "Type": "String"
+    },
+    "basicVerify": {
+      "Type": "String"
+    },
+    "basicVerifyLive": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -77,6 +113,42 @@
             },
             "REGION": {
               "Ref": "AWS::Region"
+            },
+            "PROFILE_TABLE_NAME": {
+              "Ref": "profileTableName"
+            },
+            "NOTIFICATIONS_TABLE_NAME": {
+              "Ref": "notificationsTableName"
+            },
+            "PARTNER_ID": {
+              "Ref": "partnerId"
+            },
+            "API_KEY": {
+              "Ref": "apiKey"
+            },
+            "CALLBACK_URL": {
+              "Ref": "callbackUrl"
+            },
+            "API_KEY_PROD": {
+              "Ref": "apiKeyProd"
+            },
+            "CALLBACK_URL_PROD": {
+              "Ref": "callbackUrlProd"
+            },
+            "JOB_STATUS_API": {
+              "Ref": "jobStatusApi"
+            },
+            "BASIC_VERIFY_ASYNC_LIVE": {
+              "Ref": "basicVerifyAsyncLive"
+            },
+            "BASIC_VERIFY_ASYNC": {
+              "Ref": "basicVerifyAsync"
+            },
+            "BASIC_VERIFY": {
+              "Ref": "basicVerify"
+            },
+            "BASIC_VERIFY_LIVE": {
+              "Ref": "basicVerifyLive"
             }
           }
         },

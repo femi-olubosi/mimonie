@@ -24,7 +24,19 @@
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-392f44565167364c5437-build.zip"
+          "s3Key": "amplify-builds/callbackurl-4735726449327367736f-build.zip",
+          "profileTableName": "UserProfile-d4itlx42uzhtrctybtkmaxruya-dev",
+          "notificationsTableName": "UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev",
+          "partnerId": "6982",
+          "apiKey": "423fc9b7-34bc-45af-ba91-50695b410195",
+          "callbackUrl": "https://hoj6qa5x8j.execute-api.us-west-2.amazonaws.com/dev/smileid-callback",
+          "apiKeyProd": "fa1f07a3-44b5-401a-9f67-d62fa7cd9b75",
+          "callbackUrlProd": "https://hoj6qa5x8j.execute-api.us-west-2.amazonaws.com/dev/smileid-callback",
+          "jobStatusApi": "https://api.smileidentity.com/v1/job_status",
+          "basicVerifyAsyncLive": "https://api.smileidentity.com/v2/verify_async",
+          "basicVerifyAsync": "https://testapi.smileidentity.com/v2/verify_async",
+          "basicVerify": "https://testapi.smileidentity.com/v2/verify",
+          "basicVerifyLive": "https://api.smileidentity.com/v2/verify"
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",

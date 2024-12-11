@@ -68,16 +68,16 @@ function RootLayout() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   const checkFirstTimeUser = async () => {
-  //     const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
-  //     if (isFirstLaunch === null) {
-  //       setOnboard(true);
-  //       await AsyncStorage.setItem('hasLaunched', 'true');
-  //     }
-  //   };
-  //   checkFirstTimeUser();
-  // }, []);
+  useEffect(() => {
+    const checkFirstTimeUser = async () => {
+      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
+      if (isFirstLaunch === null) {
+        setOnboard(true);
+        await AsyncStorage.setItem('hasLaunched', 'true');
+      }
+    };
+    checkFirstTimeUser();
+  }, []);
 
   const style = {
     borderRadius: 10,

@@ -7,6 +7,13 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/biometric-verification": {
+      "name": "/biometric-verification",
+      "lambdaFunction": "callbackurl",
+      "permissions": {
+        "setting": "open"
+      }
     }
   }
 }

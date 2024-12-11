@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Button from '@/components/Button';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { imagePicker } from '@/utils/ImagePicker';
@@ -35,7 +35,7 @@ import {
 } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
-import { get } from 'aws-amplify/api';
+import { get, post } from 'aws-amplify/api';
 import { searchTree } from '@/utils/searchTree';
 import { createNotification } from '@/api/notifications.service';
 import {
@@ -78,9 +78,7 @@ const Account = () => {
       setIsLoading(false);
       await uploadFile(file, userProfile?.userId);
 
-      // const currentDate = new Date().toISOString();
       await AsyncStorage.setItem('profilePicture', file);
-      // await fetchCurrUser(setCurrentUser);
     } catch (error) {
       console.error('Error handling profile picture:', error);
     } finally {
@@ -88,50 +86,54 @@ const Account = () => {
     }
   };
 
-  useFocusEffect(
-    React.useCallback(() => {
-      async function getSmileStatus() {
-        try {
-          const restOperation = get({
-            apiName: 'callback',
-            path: '/smileid-callback',
-          });
+  // useEffect(() => {
+  //   async function getSmileStatus() {
+  //     // const jobId = await AsyncStorage.getItem('jobId');
 
-          const { body } = await restOperation.response;
-          const json = await body.json();
+  //     try {
+  //       const restOperation = post({
+  //         apiName: 'callback',
+  //         path: '/biometric-verification/status',
+  //         options: {
+  //           body: {
+  //             userId: userProfile.id,
+  //             jobId: 'job-38a30d7a-2e35-4762-a988-b337ff46ead6',
+  //           },
+  //         },
+  //       });
 
-          const res = await searchTree(json, 'FullName');
-          if (
-            isNameAndDobIncluded(res, userProfile.name, userProfile.birthdate)
-            // true
-          ) {
-            await updateUserProfile(
-              { is_nin_verified: true, verification_in_progress_id: false },
-              currentUser
-            );
+  //       const { body } = await restOperation.response;
+  //       const json = await body.json();
+  //       console.log('json', json);
 
-            await createNotification(
-              {
-                title: 'Verification Completed',
-                content: `You have successfully verified your identity`,
-                type: 'verification',
-                userId: currentUser.userId,
-                read: false,
-              },
-              setNotifications
-            );
-          }
-          await fetchUserProfile(setUserProfile, currentUser);
-        } catch (e) {
-          console.log('GET call failed: ', JSON.parse(e.response.body));
-        }
-      }
+  //       // const res = await searchTree(json, 'FullName');
+  //       if (json?.result?.job_complete) {
+  //         await updateUserProfile(
+  //           { is_nin_verified: true, verification_in_progress_id: false },
+  //           currentUser
+  //         );
 
-      if (!userProfile?.is_nin_verified) {
-        getSmileStatus();
-      }
-    }, [userProfile?.is_nin_verified])
-  );
+  //         await createNotification(
+  //           {
+  //             title: 'Verification Completed',
+  //             content: `You have successfully verified your identity`,
+  //             type: 'verification',
+  //             userId: currentUser.userId,
+  //             read: false,
+  //           },
+  //           setNotifications
+  //         );
+  //       }
+  //       await fetchUserProfile(setUserProfile, currentUser);
+  //     } catch (e) {
+  //       console.log('GET call failed: ', e);
+  //     }
+  //   }
+
+  //   if (!userProfile?.is_nin_verified) {
+  //     getSmileStatus();
+  //   }
+  // }, [userProfile?.is_nin_verified]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -203,7 +205,7 @@ const Account = () => {
                 fontFamily: 'ir',
                 marginTop: 10,
               }}
-              // onPress={() => router.push('protected/income_verification')}
+              // onPress={store}
             >
               {userProfile?.phone_number}
             </Text>
@@ -479,7 +481,7 @@ const menuItems = [
   {
     title: 'Verify Identity',
     icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
-    route: '/protected/kyc',
+    route: '/protected/smile_id',
     extra: true,
   },
   {

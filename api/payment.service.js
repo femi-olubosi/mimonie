@@ -374,9 +374,10 @@ export const createSubAccount = async (userProfile) => {
 export const fetchBanks = async () => {
   try {
     const { data } = await makePaystackRequest(`/bank`, 'GET');
-    return data.map((bank) => ({
+    return data.map((bank, index) => ({
       value: bank.code,
       label: bank.name,
+      id: index,
     }));
   } catch (error) {
     console.error('Error fetching banks:', error);

@@ -7,6 +7,7 @@ import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 import { Storage } from 'aws-amplify';
+import { Buffer } from 'buffer';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
@@ -29,10 +30,10 @@ export const uploadFile = async (file, userId) => {
       data: img,
       options: {
         contentType: 'image/jpeg',
-        contentEncoding: 'compress',
+        // contentEncoding: 'compress',
       },
     }).result;
-
+    console.log('res', res);
     return res;
   } catch (error) {
     console.error('Error uploading or getting file URL:', error);

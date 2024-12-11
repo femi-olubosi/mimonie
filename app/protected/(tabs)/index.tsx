@@ -18,7 +18,11 @@ import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
+import {
+  downloadUrl,
+  fetchCurrUser,
+  fetchUserProfile,
+} from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
@@ -162,9 +166,20 @@ export default function HomeScreen() {
   useEffect(() => {
     (async () => {
       const file = await AsyncStorage.getItem('profilePicture');
-      setProfilePicture(file);
+      if (!file) {
+        const remotePicture = await downloadUrl(userProfile?.userId);
+        if (remotePicture) {
+          setProfilePicture(remotePicture);
+          await AsyncStorage.setItem('profilePicture', remotePicture);
+        } else {
+          console.log('Failed to download profile picture');
+          setProfilePicture(null);
+        }
+      } else {
+        setProfilePicture(file);
+      }
     })();
-  }, []);
+  }, [userProfile?.userId]);
 
   useEffect(() => {
     const registerPushToken = async () => {
@@ -179,8 +194,10 @@ export default function HomeScreen() {
       }
     };
 
-    registerPushToken();
-  }, [currentUser]);
+    if (userProfile && !userProfile?.push_token) {
+      registerPushToken();
+    }
+  }, [currentUser, userProfile]);
 
   // const responseListener = useRef();
 
@@ -310,6 +327,10 @@ export default function HomeScreen() {
             pilot={pilot}
           />
           {/* <Advert /> */}
+          {/* <Button
+            title="SmileId"
+            onPress={() => router.push('/protected/smile_id')}
+          /> */}
           <View
             style={{
               paddingHorizontal: 20,
