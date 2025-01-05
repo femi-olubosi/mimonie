@@ -11,8 +11,7 @@ const smileIdentityCore = require('smile-identity-core');
 const { v4: uuidv4 } = require('uuid');
 const { Expo } = require('expo-server-sdk');
 const crypto = require('crypto');
-const multer = require('multer');
-const Tesseract = require('tesseract.js');
+// const multer = require('multer');
 
 // Smile ID Configuration
 const partner_id = process.env.PARTNER_ID;
@@ -22,12 +21,10 @@ const api_key =
   sid_server === '0' ? process.env.API_KEY : process.env.API_KEY_PROD;
 const default_callback =
   sid_server === '0' ? process.env.CALLBACK_URL : process.env.CALLBACK_URL_PROD;
-const connection = new smileIdentityCore.WebApi(
-  partner_id,
-  default_callback,
-  api_key,
-  sid_server
-);
+
+const SIDSignature = smileIdentityCore.Signature;
+const SIDWebAPI = smileIdentityCore.WebApi;
+
 const basic_verify_async =
   sid_server === '0'
     ? process.env.BASIC_VERIFY_ASYNC
@@ -37,21 +34,22 @@ const basic_verify =
 const signatureInstance = new smileIdentityCore.Signature(partner_id, api_key);
 
 // DynamoDB Configuration
-const ddbClient = new DynamoDBClient({ region: process.env.TABLE_REGION });
+// const ddbClient = new DynamoDBClient({ region: process.env.TABLE_REGION });
+const ddbClient = new DynamoDBClient({ region: 'us-west-2' });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
 // Table Names
 const profileTableName = process.env.PROFILE_TABLE_NAME;
 const userNotificationTableName = process.env.NOTIFICATIONS_TABLE_NAME;
 
-const storage = multer.memoryStorage(); // Store files in memory for easy base64 conversion
-const upload = multer({ storage });
+// const storage = multer.memoryStorage(); // Store files in memory for easy base64 conversion
+// const upload = multer({ storage });
 
 // Initialize Express App
 const app = express();
 // app.use(bodyParser.json());
 app.use(bodyParser.json({ limit: '10mb' }));
-app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+// app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(awsServerlessExpressMiddleware.eventContext());
 
 // Enable CORS for all methods
@@ -168,11 +166,18 @@ app.post('/biometric-verification', async (req, res) => {
     ];
 
     const options = {
-      return_job_status: false,
+      return_job_status: true,
       return_history: false,
       return_image_links: false,
       signature: true,
     };
+
+    const connection = new SIDWebAPI(
+      partner_id,
+      default_callback,
+      api_key,
+      sid_server
+    );
 
     // Submit job to Smile ID
     const response = await connection.submit_job(
@@ -182,21 +187,19 @@ app.post('/biometric-verification', async (req, res) => {
       options
     );
 
-    if (successRes.includes(response.ResultCode)) {
+    if (successRes.includes(response?.result?.ResultCode)) {
       return res.status(200).json({
         success: true,
         result: 'approved',
-        message: 'Verification successful',
-        response,
+        message: 'Verification Successful',
         job_id,
       });
     }
 
-    return res.status(400).json({
-      success: false,
+    return res.status(200).json({
+      success: true,
       result: 'rejected',
-      message: 'Verification failed',
-      response,
+      message: 'Verification Rejected',
       job_id,
     });
   } catch (error) {
@@ -205,7 +208,7 @@ app.post('/biometric-verification', async (req, res) => {
       success: false,
       result: 'error',
       message: 'Internal server error',
-      error: error.message,
+      error: error,
     });
   }
 });
@@ -246,6 +249,13 @@ app.post('/biometric-verification/biometric', async (req, res) => {
       return_image_links: false,
       signature: true,
     };
+
+    const connection = new SIDWebAPI(
+      partner_id,
+      default_callback,
+      api_key,
+      sid_server
+    );
 
     // Submit job to Smile ID
     const response = await connection.submit_job(
@@ -486,7 +496,7 @@ app.post('/biometric-verification/basic', async (req, res) => {
     dob,
     phone_number,
     bank_code,
-    default_callback,
+    callback_url: default_callback,
     partner_params: {
       job_id,
       user_id,
@@ -511,10 +521,11 @@ app.post('/biometric-verification/basic', async (req, res) => {
       });
     }
 
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       result: 'rejected',
       message: 'Verification failed',
+      smile_response: result,
     });
   } catch (error) {
     console.error('Error submitting KYC request:', error.message);
@@ -525,6 +536,14 @@ app.post('/biometric-verification/basic', async (req, res) => {
       error: error.message,
     });
   }
+});
+
+app.get('/test', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Test endpoint is working!',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Start Express Server

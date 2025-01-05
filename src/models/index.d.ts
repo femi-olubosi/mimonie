@@ -201,6 +201,7 @@ type EagerUserProfile = {
   readonly extra?: string | null;
   readonly recipient_code?: string | null;
   readonly transfer_pin?: string | null;
+  readonly is_admin?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -242,6 +243,7 @@ type LazyUserProfile = {
   readonly extra?: string | null;
   readonly recipient_code?: string | null;
   readonly transfer_pin?: string | null;
+  readonly is_admin?: boolean | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -398,4 +400,44 @@ export declare type ContributionGroups = LazyLoading extends LazyLoadingDisabled
 
 export declare const ContributionGroups: (new (init: ModelInit<ContributionGroups>) => ContributionGroups) & {
   copyOf(source: ContributionGroups, mutator: (draft: MutableModel<ContributionGroups>) => MutableModel<ContributionGroups> | void): ContributionGroups;
+}
+
+type EagerRequest = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<Request, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly type?: string | null;
+  readonly userId?: string | null;
+  readonly user_email?: string | null;
+  readonly user_name?: string | null;
+  readonly status?: string | null;
+  readonly reason?: string | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyRequest = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<Request, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly type?: string | null;
+  readonly userId?: string | null;
+  readonly user_email?: string | null;
+  readonly user_name?: string | null;
+  readonly status?: string | null;
+  readonly reason?: string | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Request = LazyLoading extends LazyLoadingDisabled ? EagerRequest : LazyRequest
+
+export declare const Request: (new (init: ModelInit<Request>) => Request) & {
+  copyOf(source: Request, mutator: (draft: MutableModel<Request>) => MutableModel<Request> | void): Request;
 }

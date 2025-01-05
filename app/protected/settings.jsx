@@ -18,6 +18,9 @@ import {
 import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 import { router } from 'expo-router';
 import { createTransferRecipientForBank } from '../../api/payment.service';
+import { createRequest } from '../../api/request.service';
+import DeleteRequestModal from '../../components/modals/DeleteRequestModal';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const triggerAccountDeletion = () => {
   Alert.alert(
@@ -27,9 +30,16 @@ const triggerAccountDeletion = () => {
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
-        onPress: () => {
+        onPress: async () => {
           console.log('Account deletion triggered');
           // Add your delete account logic here
+          await createRequest({
+            type: 'delete_account',
+            username: userProfile.username,
+            userId: userProfile.userId,
+            user_email: userProfile.email,
+            status: 'open',
+          });
         },
         style: 'destructive',
       },
@@ -55,6 +65,9 @@ const Settings = () => {
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pCEnable, setPCEnable] = useState(false);
+  const [deleteRequestModal, setDeleteRequestModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [requested, setRequested] = useState(false);
 
   useEffect(() => {
     const checkForUpdates = async () => {
@@ -152,6 +165,43 @@ const Settings = () => {
     }
   };
 
+  useEffect(() => {
+    const getRequestStatus = async () => {
+      const request = await AsyncStorage.getItem('requested');
+      setRequested(!!request);
+    };
+
+    getRequestStatus();
+  }, [deleting]);
+
+  const onDelete = async (reason) => {
+    const data = {
+      type: 'delete_request',
+      username: userProfile.username,
+      userId: userProfile.userId,
+      user_email: userProfile.email,
+      status: 'open',
+      reason,
+    };
+    setDeleting(true);
+    try {
+      await createRequest(data);
+      AsyncStorage.setItem('requested', 'true');
+      Alert.alert(
+        'Request sent',
+        'Your request has been sent to the admin for processing. You will receive a response shortly.',
+        [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+        { cancelable: false }
+      );
+      setDeleteRequestModal(false);
+    } catch (e) {
+      console.error('Error sending delete request:', e);
+      Alert.alert('Error', 'Failed to send delete request');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <PageView title={'Settings'}>
       <View style={{ padding: 20 }}>
@@ -214,13 +264,24 @@ const Settings = () => {
         {/* Delete Account */}
         <TouchableOpacity
           style={styles.setting}
-          onPress={triggerAccountDeletion}
+          onPress={() => (requested ? {} : setDeleteRequestModal(true))}
         >
-          <Text style={[styles.settingText, { color: 'red' }]}>
+          <Text
+            style={[styles.settingText, { color: requested ? 'gray' : 'red' }]}
+          >
             Request Account Deletion
           </Text>
+          {requested && (
+            <Text style={{ color: 'gray', fontSize: 10 }}>Request Pending</Text>
+          )}
         </TouchableOpacity>
       </View>
+      <DeleteRequestModal
+        visible={deleteRequestModal}
+        onClose={() => setDeleteRequestModal(false)}
+        onDelete={onDelete}
+        deleting={deleting}
+      />
     </PageView>
   );
 };

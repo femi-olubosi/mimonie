@@ -121,11 +121,20 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
 
 export const createUserProfile = async (
   userId,
-  { device_id, device_name, device_brand }
+  { device_id, device_name, device_brand },
+  email,
+  phone_number
 ) => {
   try {
     const userProfile = await DataStore.save(
-      new UserProfile({ userId, device_id, device_name, device_brand })
+      new UserProfile({
+        userId,
+        device_id,
+        device_name,
+        device_brand,
+        email,
+        phone_number,
+      })
     );
     return userProfile;
   } catch (error) {

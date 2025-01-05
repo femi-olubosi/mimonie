@@ -58,6 +58,9 @@ const amountOptions = [
   { label: '₦400,000', value: 400000 },
   { label: '₦500,000', value: 500000 },
   { label: '₦1,000,000', value: 1000000 },
+  // { label: '₦2,000,000', value: 2000000 },
+  // { label: '₦5,000,000', value: 5000000 },
+  // { label: '₦10,000,000', value: 10000000 },
 ];
 
 const participantOptions = [
@@ -225,20 +228,20 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
-      // if (myConnections?.length < 4) {
-      //   Alert.alert(
-      //     'Sorry!!',
-      //     'You can only create group contribution when you have up to 4 connections.',
-      //     [
-      //       {
-      //         text: 'Go to My Network',
-      //         onPress: () => router.push('/protected/my_network'),
-      //       },
-      //       { text: 'OK', onPress: () => console.log('OK Pressed') },
-      //     ]
-      //   );
-      //   return;
-      // }
+      if (myConnections?.length < 4) {
+        Alert.alert(
+          'Sorry!!',
+          'You can only create group contribution when you have up to 4 connections.',
+          [
+            {
+              text: 'Go to My Network',
+              onPress: () => router.push('/protected/my_network'),
+            },
+            { text: 'OK', onPress: () => console.log('OK Pressed') },
+          ]
+        );
+        return;
+      }
       await createGroupContribution();
     } else if (contributionType === 'personal') {
       await createContributionPersonal();
@@ -652,7 +655,8 @@ const CreateContribution = () => {
         <ContactModal
           visible={contactVisible}
           setVisible={setContactVisible}
-          invite_link={newContribution.id}
+          invite_link={newContribution?.id}
+          amount={newContribution?.amount}
         />
       </View>
     </PageView>

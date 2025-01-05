@@ -291,14 +291,13 @@ export const findContributionByInviteLink = async (invite_link) => {
 export const findContributionByID = async (id, setContribution) => {
   await DataStore.start();
   try {
-    const contributions = await DataStore.query(Contribution, (c) =>
-      c.id.eq(id)
-    );
-    setContribution(contributions[0]);
+    const contributions = await DataStore.query(Contribution, id);
+
+    setContribution(contributions);
 
     // Set up real-time subscription
 
-    return contributions[0];
+    return contributions;
   } catch (error) {
     console.error('Error fetching user contributions:', error);
     return [];

@@ -4,7 +4,7 @@ import { schema } from './schema';
 
 
 
-const { UserBankDetails, PersonalContribution, UserActivity, UserNotifications, UserProfile, UserCardDetails, Contribution, ContributionGroups } = initSchema(schema);
+const { UserBankDetails, PersonalContribution, UserActivity, UserNotifications, UserProfile, UserCardDetails, Contribution, ContributionGroups, Request } = initSchema(schema);
 
 export {
   UserBankDetails,
@@ -14,5 +14,6 @@ export {
   UserProfile,
   UserCardDetails,
   Contribution,
-  ContributionGroups
+  ContributionGroups,
+  Request
 };

@@ -14,11 +14,11 @@ export default function TakeSelfie() {
   const [tapped, setTapped] = useState(false);
 
   const takePicture = async () => {
+    setTapped(true);
     if (cameraRef.current) {
-      setTapped(true);
       const photo = await cameraRef.current.takePictureAsync({
         base64: true,
-        quality: 0.5,
+        quality: 0.1,
       });
       setKycForm({ ...kycForm, selfie: photo.base64 });
       // setKycForm({ ...kycForm, selfie: photo.uri });
@@ -30,7 +30,7 @@ export default function TakeSelfie() {
   const retake = () => {
     setSelfie(null);
   };
-
+  console.log(tapped);
   return (
     <PageView title={'Take a Selfie'}>
       <View style={styles.container}>
@@ -53,10 +53,10 @@ export default function TakeSelfie() {
           </Text>
         </View>
         <Button
-          title={selfie ? 'RETAKE' : 'TAKE SELFIE'}
+          title={tapped ? 'PLEASE WAIT' : selfie ? 'RETAKE' : 'TAKE SELFIE'}
           color={Colors.pri}
           onPress={selfie ? retake : takePicture}
-          // disabled={tapped}
+          disabled={tapped}
         />
         <Button
           title={'USE THIS'}

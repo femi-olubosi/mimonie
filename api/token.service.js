@@ -30,7 +30,6 @@ export const sendOtp = async (phoneNumber) => {
     }
 
     const responseData = await response.json();
-    console.log(responseData);
     return responseData;
   } catch (error) {
     console.error('Failed to send OTP:', error);

@@ -21,7 +21,7 @@ import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 import { triggerNotificationForUser } from '../api/pushNotification.service';
 
-const ContactModal = ({ visible, setVisible, invite_link }) => {
+const ContactModal = ({ visible, setVisible, invite_link, amount }) => {
   const [contactSearch, setContactSearch] = useState('');
   const { userProfile, setUserProfile, currentUser } = useGlobalContext();
   const [parsedConnect, setParsedConnect] = useState([]);
@@ -35,15 +35,24 @@ const ContactModal = ({ visible, setVisible, invite_link }) => {
     );
 
     if (!item.verified) {
-      Alert.alert('Yo!!', `${item?.name} is not verified`);
+      Alert.alert('Sorry!!', `${item?.name} is not verified`);
       return;
     }
+
+    if (item.income_from && item.income_from < amount) {
+      Alert.alert(
+        'Sorry!!',
+        `${item?.name} income is too low to join this contribution`
+      );
+      return;
+    }
+
     if (
       selected.includes(item.userId) ||
       item?.invites?.includes(invite_link)
     ) {
       Alert.alert(
-        'Yo!!',
+        'Sorry!!',
         `${item?.name} is already invited to this contribution`
       );
       return;

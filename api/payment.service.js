@@ -7,6 +7,7 @@ import {
 } from '../src/models';
 import { createUserActivity } from './activities.service';
 import { triggerNotificationForUser } from './pushNotification.service';
+import { countries } from '@/data/countries';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
 const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
@@ -259,7 +260,6 @@ export const verifyTransaction = async (reference, currentUser) => {
     );
 
     const responseData = await verificationResponse.json();
-    console.log('veri', responseData);
     if (responseData.status && responseData.data) {
       const { authorization, customer } = responseData.data;
       const previousCards = await DataStore.query(UserCardDetails, (c) =>
@@ -387,16 +387,7 @@ export const fetchBanks = async () => {
 
 export const fetchCountries = async () => {
   try {
-    const response = await fetch('https://restcountries.com/v3.1/all');
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const countries = await response.json();
-    const countryNames = countries
-      .map((country) => country.name.common)
-      .sort((a, b) => (a > b ? 1 : -1));
-
-    return countryNames.map((e) => ({ label: e, value: e }));
+    return countries.map((e, idx) => ({ label: e, value: e, id: idx }));
   } catch (error) {
     console.error('Error fetching country names:', error);
     return [];

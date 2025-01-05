@@ -22,12 +22,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import SelectModal from '../modals/SelectModal';
+import JobModal from '../modals/JobModal';
 
 export default function UploadDocument() {
-  const [documentType, setDocumentType] = useState({
-    label: 'National ID',
-    value: 'NIN_SLIP',
-  });
+  const [documentType, setDocumentType] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const [docImage, setDocImage] = useState(null);
   const [idNumber, setIdNumber] = useState(null);
@@ -39,24 +37,8 @@ export default function UploadDocument() {
     status: '',
   });
   const [loading, setLoading] = useState(false);
-  const [openBankModal, setOpenBankModal] = useState(false);
-  const [banks, setBanks] = useState([]);
-  const [selectedBank, setSelectedBank] = useState({});
-  const {
-    setKycForm,
-    kycForm,
-    userProfile,
-    setIsLoading,
-    currentUser,
-    setUserProfile,
-  } = useGlobalContext();
-
-  useEffect(() => {
-    (async () => {
-      const response = await fetchBanks();
-      setBanks(response);
-    })();
-  }, []);
+  const { kycForm, userProfile, currentUser, setUserProfile } =
+    useGlobalContext();
 
   const handleImageUpload = async () => {
     const permissionResult =
@@ -76,7 +58,7 @@ export default function UploadDocument() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       base64: true,
-      quality: 0.5,
+      quality: 0.1,
     });
 
     if (!result.canceled) {
@@ -101,7 +83,7 @@ export default function UploadDocument() {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       base64: true,
-      quality: 0.5,
+      quality: 0.1,
     });
 
     if (!result.canceled) {
@@ -111,6 +93,7 @@ export default function UploadDocument() {
   };
 
   const handleFinish = async () => {
+    const check = ['PASSPORT', 'DRIVERS_LICENSE'].includes(documentType.value);
     if (!documentType?.value) {
       setModalContent({
         title: 'Incomplete Information',
@@ -121,7 +104,7 @@ export default function UploadDocument() {
       return;
     }
 
-    if (!idNumber) {
+    if (!check && !idNumber) {
       setModalContent({
         title: 'Incomplete Information',
         message: 'Please enter your ID number.',
@@ -131,7 +114,7 @@ export default function UploadDocument() {
       return;
     }
 
-    if (documentType.value !== 'BANK_ACCOUNT' && !docImage) {
+    if (check && !docImage) {
       setModalContent({
         title: 'Incomplete Information',
         message: 'Please upload an image',
@@ -141,39 +124,34 @@ export default function UploadDocument() {
       return;
     }
 
-    if (documentType.value === 'BANK_ACCOUNT' && !selectedBank?.value) {
-      setModalContent({
-        title: 'Incomplete Information',
-        message: 'Please select the bank',
-        status: 'error',
-      });
-      setStatusModalVisible(true);
-      return;
-    }
+    const dVData = {
+      id_type: documentType.value,
+      user_id: userProfile?.id,
+      selfie_image: kycForm?.selfie,
+      doc_image: docImage,
+    };
 
-    const payload = {
+    const basicData = {
       id_type: documentType.value,
       id_number: idNumber,
       first_name: userProfile?.name?.split(' ')[0],
-      // first_name: 'Abiany',
       last_name: userProfile?.name?.split(' ')[1],
-      // last_name: 'Nsikak',
       dob: userProfile?.birthdate,
-      // dob: '1993-04-01',
       phone_number: userProfile?.phone_number,
       user_id: userProfile?.id,
-      bank_code: selectedBank?.value,
-      // selfie_image: kycForm?.selfie,
-      // doc_image: docImage,
-      // push_token: userProfile?.push_token,
     };
 
-    setLoading(true);
+    const payload = check ? dVData : basicData;
+    const path = check
+      ? '/biometric-verification'
+      : '/biometric-verification/basic';
 
+    console.log(payload, path);
+    setLoading(true);
     try {
       const restOperation = post({
         apiName: 'callback',
-        path: '/biometric-verification/basic',
+        path,
         options: {
           body: payload,
         },
@@ -246,7 +224,10 @@ export default function UploadDocument() {
   };
 
   return (
-    <PageView title="Upload your document for verification">
+    <PageView
+      title="Upload your document for verification"
+      backIcon={loading ? false : true}
+    >
       <View style={styles.container}>
         <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           <View style={styles.imageContainer}>
@@ -258,7 +239,9 @@ export default function UploadDocument() {
           </View>
 
           <Text style={styles.description}>
-            For National ID and Voter' Card, please upload an image of the ID.
+            For National ID and Voter's Card, the image is optional; you can
+            just provide the ID number. However, for Passport and Driver's
+            License, uploading an image is required.
           </Text>
 
           <TouchableOpacity
@@ -269,42 +252,26 @@ export default function UploadDocument() {
               {documentType?.label || 'Select Document Type'}
             </Text>
           </TouchableOpacity>
-          <Text style={{ textAlign: 'center', marginBottom: 3 }}>
-            {documentType?.label + ' ' + 'number'}
-          </Text>
-          <TextInput
-            style={styles.input}
-            value={idNumber}
-            onChangeText={setIdNumber}
-            placeholder="Enter Number"
-          />
-          {documentType.value !== 'BANK_ACCOUNT' ? (
+          {['NIN_SLIP', 'VOTER_ID'].includes(documentType.value) && (
             <>
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleImageUpload}
-              >
-                <Text style={styles.buttonText}>Upload From Phone Library</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.button}
-                onPress={handleImageCapture}
-              >
-                <Text style={styles.buttonText}>Take a Picture</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <TouchableOpacity
-              style={styles.selectButton}
-              onPress={() => setOpenBankModal(true)}
-            >
-              <Text style={styles.selectButtonText}>
-                {' '}
-                {selectedBank?.label || 'Select Bank'}
+              <Text style={{ textAlign: 'center', marginBottom: 3 }}>
+                {(documentType?.label || 'ID') + ' ' + 'Number'}
               </Text>
-            </TouchableOpacity>
+              <TextInput
+                style={styles.input}
+                value={idNumber}
+                onChangeText={setIdNumber}
+                placeholder="Enter Number"
+              />
+            </>
           )}
+          <TouchableOpacity style={styles.button} onPress={handleImageUpload}>
+            <Text style={styles.buttonText}>Upload From Phone Library</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} onPress={handleImageCapture}>
+            <Text style={styles.buttonText}>Take a Picture</Text>
+          </TouchableOpacity>
         </ScrollView>
 
         <TouchableOpacity style={styles.finishButton} onPress={handleFinish}>
@@ -325,18 +292,18 @@ export default function UploadDocument() {
                 style={styles.modalOption}
                 onPress={() =>
                   selectDocumentType({
-                    label: 'National ID',
+                    label: 'NATIONAL ID',
                     value: 'NIN_SLIP',
                   })
                 }
               >
-                <Text style={styles.modalOptionText}>National ID</Text>
+                <Text style={styles.modalOptionText}>NATIONAL ID</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalOption}
                 onPress={() =>
                   selectDocumentType({
-                    label: "Voter'S Card",
+                    label: "VOTER'S CARD",
                     value: 'VOTER_ID',
                   })
                 }
@@ -347,12 +314,23 @@ export default function UploadDocument() {
                 style={styles.modalOption}
                 onPress={() =>
                   selectDocumentType({
-                    label: 'Bank Account',
-                    value: 'BANK_ACCOUNT',
+                    label: 'PASSPORT',
+                    value: 'PASSPORT',
                   })
                 }
               >
-                <Text style={styles.modalOptionText}>BANK ACCOUNT</Text>
+                <Text style={styles.modalOptionText}>PASSPORT</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={() =>
+                  selectDocumentType({
+                    label: 'DRIVERS_LICENSE',
+                    value: 'DRIVERS_LICENSE',
+                  })
+                }
+              >
+                <Text style={styles.modalOptionText}>DRIVER'S LICENSE</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalCloseButton}
@@ -380,7 +358,9 @@ export default function UploadDocument() {
                 />
               )}
               <Text style={styles.modalTitle}>{modalContent.title}</Text>
-              <Text style={styles.modalMessage}>{modalContent.message}</Text>
+              <Text style={[styles.modalMessage, { textAlign: 'center' }]}>
+                {modalContent.message}
+              </Text>
               <TouchableOpacity
                 style={styles.modalCloseButton}
                 onPress={closeStatusModal}
@@ -393,9 +373,9 @@ export default function UploadDocument() {
           </View>
         </Modal>
 
-        <Loader isLoading={loading} text={'Submitting...'} />
+        <JobModal isLoading={loading} setLoading={setLoading} />
       </View>
-
+      {/* 
       <SelectModal
         visible={openBankModal}
         onClose={() => setOpenBankModal(false)}
@@ -405,7 +385,7 @@ export default function UploadDocument() {
           setSelectedBank(item);
         }}
         title="Select Bank"
-      />
+      /> */}
     </PageView>
   );
 }

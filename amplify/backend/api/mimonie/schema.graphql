@@ -74,6 +74,7 @@ type UserProfile @model @auth(rules: [{ allow: public }]) {
   extra: AWSJSON
   recipient_code: String
   transfer_pin: String
+  is_admin: Boolean
 }
 
 type UserCardDetails @model @auth(rules: [{ allow: public }]) {
@@ -122,4 +123,15 @@ type ContributionGroups @model @auth(rules: [{ allow: public }]) {
   Contributions: [Contribution]
     @hasMany(indexName: "byContributionGroups", fields: ["id"])
   variant: String!
+}
+
+type Request @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  type: String
+  userId: String
+  user_email: AWSEmail
+  user_name: String
+  status: String
+  reason: String
+  extra: AWSJSON
 }

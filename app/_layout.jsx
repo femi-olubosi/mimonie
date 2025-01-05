@@ -106,7 +106,7 @@ function RootLayout() {
 export default RootLayout;
 
 function RootContent() {
-  const { isLoading } = useGlobalContext();
+  const { isLoading, userProfile } = useGlobalContext();
 
   return (
     <>

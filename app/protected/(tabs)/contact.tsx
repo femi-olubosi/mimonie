@@ -133,6 +133,7 @@ const Contact = () => {
       invites: res?.userProfile?.invites,
       occupation: res?.userProfile?.occupation,
       push_token: res?.userProfile?.push_token,
+      income_from: res?.userProfile?.income_from,
       verified:
         res?.userProfile?.is_nin_verified && res?.userProfile?.is_bvn_verified,
       status: 'pending',

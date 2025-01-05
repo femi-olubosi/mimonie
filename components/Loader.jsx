@@ -43,7 +43,9 @@ const Loader = ({ isLoading, text = null }) => {
             </View>
             <ActivityIndicator color={'white'} size={'large'} />
             {text && (
-              <Text style={{ color: 'white', marginTop: 20 }}>
+              <Text
+                style={{ color: 'white', marginTop: 20, textAlign: 'center' }}
+              >
                 Please wait. This might take a while
               </Text>
             )}

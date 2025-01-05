@@ -193,7 +193,7 @@ const updateContribution = async (contribution) => {
 
 // Function to charge and split payment
 const chargeAndSplitPayment = async (subaccount_code, payer, amount) => {
-  // Calculate the transaction charge (3.5% of the base contribution amount)
+  // Calculate the transaction charge (4.5% of the base contribution amount)
   const transactionCharge = Math.round(amount * 0.045); // 4.5% of the contribution amount
 
   // Adjust the amount to include the transaction charge

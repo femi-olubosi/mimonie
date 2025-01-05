@@ -52,7 +52,6 @@ import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCopilot } from 'react-native-copilot';
-import { useFocusEffect } from 'expo-router';
 
 export default function HomeScreen() {
   const {
@@ -114,15 +113,16 @@ export default function HomeScreen() {
     checkAuthStatus();
   }, []);
 
-  useEffect(() => {
-    fetchCurrUser(setCurrentUser);
-  }, []);
+  // useEffect(() => {
+  //   fetchCurrUser(setCurrentUser);
+  // }, []);
 
   useEffect(() => {
-    fetchUserProfile(setUserProfile, currentUser);
+    // fetchUserProfile(setUserProfile, currentUser);
     const subscription = DataStore.observe(UserProfile).subscribe(() =>
       fetchUserProfile(setUserProfile, currentUser)
     );
+
     return () => subscription.unsubscribe();
   }, [currentUser]);
 
@@ -329,7 +329,7 @@ export default function HomeScreen() {
           {/* <Advert /> */}
           {/* <Button
             title="SmileId"
-            onPress={() => router.push('/protected/smile_id')}
+            onPress={() => router.push('/protected/complete_profile')}
           /> */}
           <View
             style={{

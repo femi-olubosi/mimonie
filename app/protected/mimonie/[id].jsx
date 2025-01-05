@@ -153,6 +153,14 @@ const ContributionDetails = () => {
       return;
     }
 
+    if (userProfile?.income_from < contribution?.amount) {
+      Alert.alert(
+        'Sorry!!',
+        'Your income is too low to join this contribution'
+      );
+      return;
+    }
+
     const parsedData = safeParseJSON(ownerProfile?.connections, []);
 
     if (!parsedData.find((e) => e.userId === userProfile.userId)) {

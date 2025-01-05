@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SelectedCircle, UnSelectedCircle } from '../Circle';
 import Button from '../Button';
+import { Colors } from '../../constants/Colors';
 
 const SelectModal = ({
   visible,
@@ -34,7 +35,7 @@ const SelectModal = ({
           {/* List */}
           <FlatList
             data={data}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => index}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.listItem}
@@ -53,10 +54,11 @@ const SelectModal = ({
                 )}
               </TouchableOpacity>
             )}
+            showsVerticalScrollIndicator={false}
           />
 
           <View style={{ marginTop: 34 }}>
-            <Button title={'Done'} onPress={onClose} />
+            <Button title={'Done'} onPress={onClose} color={Colors.pri} />
           </View>
         </View>
       </View>

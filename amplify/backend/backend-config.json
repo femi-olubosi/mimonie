@@ -1,5 +1,27 @@
 {
   "api": {
+    "AdminQueries": {
+      "authorizationType": "AMAZON_COGNITO_USER_POOLS",
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "mimonie"
+        },
+        {
+          "attributes": [
+            "Arn",
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "api37a1ef7a": {
       "dependsOn": [
         {
@@ -113,6 +135,55 @@
     }
   },
   "function": {
+    "AdminQueriese69f7a79": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "mimonie"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "billersTrigger2becd2e3": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn",
+            "StreamArn"
+          ],
+          "category": "storage",
+          "resourceName": "billers"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "bills": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "billers"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "callbackurl": {
       "build": true,
       "dependsOn": [
@@ -162,6 +233,22 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_AdminQueriese69f7a79_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ]
+    },
+    "AMPLIFY_function_AdminQueriese69f7a79_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ]
+    },
     "AMPLIFY_function_callbackurl_apiKey": {
       "usedBy": [
         {
@@ -372,6 +459,10 @@
     }
   },
   "storage": {
+    "billers": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
     "dynamoc73ffc4d": {
       "providerPlugin": "awscloudformation",
       "service": "DynamoDB"
