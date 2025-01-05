@@ -16,12 +16,47 @@
       "function": {
         "mimonief71364a4": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/mimonief71364a4-734d6a47586563354d48-build.zip"
+          "s3Key": "amplify-builds/mimonief71364a4-49356a49316f4a632b47-build.zip"
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-7650562f6b3567704434-build.zip"
-        }
+          "s3Key": "amplify-builds/userInfo-747a4c6b6138786f4c61-build.zip"
+        },
+        "callbackurl": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/callbackurl-5949764b44724747316d-build.zip",
+          "profileTableName": "UserProfile-d4itlx42uzhtrctybtkmaxruya-dev",
+          "notificationsTableName": "UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev",
+          "partnerId": "6982",
+          "apiKey": "423fc9b7-34bc-45af-ba91-50695b410195",
+          "callbackUrl": "https://hoj6qa5x8j.execute-api.us-west-2.amazonaws.com/dev/smileid-callback",
+          "apiKeyProd": "fa1f07a3-44b5-401a-9f67-d62fa7cd9b75",
+          "callbackUrlProd": "https://hoj6qa5x8j.execute-api.us-west-2.amazonaws.com/dev/smileid-callback",
+          "jobStatusApi": "https://api.smileidentity.com/v1/job_status",
+          "basicVerifyAsyncLive": "https://api.smileidentity.com/v2/verify_async",
+          "basicVerifyAsync": "https://testapi.smileidentity.com/v2/verify_async",
+          "basicVerify": "https://testapi.smileidentity.com/v2/verify",
+          "basicVerifyLive": "https://api.smileidentity.com/v2/verify"
+        },
+        "contributionTrigger": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/contributionTrigger-446d6d4f46742b6c4244-build.zip",
+          "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
+        },
+        "contributionNotifications": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/contributionNotifications-6452334b734475704667-build.zip"
+        },
+        "verification": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/verification-705056476f78357a7a79-build.zip",
+          "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
+        },
+        "AdminQueriese69f7a79": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-746e42704e4263645241-build.zip"
+        },
+        "bills": {}
       },
       "auth": {
         "mimonie": {}
@@ -29,10 +64,14 @@
       "api": {
         "api37a1ef7a": {},
         "mimonie": {},
-        "userInfo": {}
+        "userInfo": {},
+        "callback": {},
+        "verification": {},
+        "AdminQueries": {}
       },
       "storage": {
-        "mimonieS3Storage": {}
+        "mimonieS3Storage": {},
+        "dynamoc73ffc4d": {}
       }
     }
   }

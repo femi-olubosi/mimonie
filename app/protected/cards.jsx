@@ -44,7 +44,7 @@ const Cards = () => {
     if (pushObj.status === 'active') {
       Alert.alert(
         'Sorry',
-        'You cannot delete an active card as it is tied to your contributions. To Delete this card'
+        'You cannot delete an active card as it is tied to your contributions'
       );
       return;
     }
@@ -136,7 +136,7 @@ const Cards = () => {
             <Text
               style={[styles.modalText, { lineHeight: 25, fontFamily: 'ir' }]}
             >
-              Adding a card requires a charge of 50 Naira for verification. Do
+              Adding a card requires a charge of 500 Naira for verification. Do
               you wish to continue?
             </Text>
             <View style={styles.modalButtons}>

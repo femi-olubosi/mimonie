@@ -1,13 +1,47 @@
-type UserNotifications @model @auth(rules: [{allow: public}]) {
+type UserBankDetails @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  userId: String!
+  bank_code: String!
+  bank_number: String!
+  index: String
+  extra: AWSJSON
+  status: String!
+  bank_name: String!
+}
+
+type PersonalContribution @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String
+  status: String
+  variant: String
+  amount: Int
+  target: Int
+  last_successful_contribution: String
+  currently_at: Int
+  extra: AWSJSON
+}
+
+type UserActivity @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  type: String
+  amount: Int
+  description: String
+  userId: ID
+  status: String
+  extra: AWSJSON
+}
+
+type UserNotifications @model @auth(rules: [{ allow: public }]) {
   id: ID!
   type: String
   content: String
   title: String
   read: Boolean
   userId: ID
+  global: Boolean
 }
 
-type UserProfile @model @auth(rules: [{allow: public}]) {
+type UserProfile @model @auth(rules: [{ allow: public }]) {
   id: ID!
   name: String
   preferred_username: String
@@ -30,9 +64,20 @@ type UserProfile @model @auth(rules: [{allow: public}]) {
   verification_in_progress: Boolean
   subaccount_code: String
   bank_details: AWSJSON
+  device_name: String
+  device_brand: String
+  verification_in_progress_id: Boolean
+  connections: [AWSJSON]
+  phone_verified: Boolean
+  push_token: String
+  dva: AWSJSON
+  extra: AWSJSON
+  recipient_code: String
+  transfer_pin: String
+  is_admin: Boolean
 }
 
-type UserCardDetails @model @auth(rules: [{allow: public}]) {
+type UserCardDetails @model @auth(rules: [{ allow: public }]) {
   id: ID!
   last4: String
   bank: String
@@ -43,7 +88,7 @@ type UserCardDetails @model @auth(rules: [{allow: public}]) {
   status: String
 }
 
-type Contribution @model @auth(rules: [{allow: public}]) {
+type Contribution @model @auth(rules: [{ allow: public }]) {
   id: ID!
   name: String
   title: String
@@ -58,10 +103,13 @@ type Contribution @model @auth(rules: [{allow: public}]) {
   num_of_month: Int!
   status: String
   participant_ids: [ID]
-  currently_at: String
+  currently_at: Int
+  variant: String
+  current_count: Int
+  type: String
 }
 
-type ContributionGroups @model @auth(rules: [{allow: public}]) {
+type ContributionGroups @model @auth(rules: [{ allow: public }]) {
   id: ID!
   description: String
   status: String!
@@ -72,6 +120,18 @@ type ContributionGroups @model @auth(rules: [{allow: public}]) {
   amount: Int!
   name: String!
   num_of_month: Int
-  Contributions: [Contribution] @hasMany(indexName: "byContributionGroups", fields: ["id"])
+  Contributions: [Contribution]
+    @hasMany(indexName: "byContributionGroups", fields: ["id"])
+  variant: String!
 }
- 
+
+type Request @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  type: String
+  userId: String
+  user_email: AWSEmail
+  user_name: String
+  status: String
+  reason: String
+  extra: AWSJSON
+}

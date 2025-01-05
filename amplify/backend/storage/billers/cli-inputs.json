@@ -1,0 +1,27 @@
+{
+  "resourceName": "billers",
+  "tableName": "billers",
+  "partitionKey": {
+    "fieldName": "billerId",
+    "fieldType": "string"
+  },
+  "gsi": [
+    {
+      "name": "category",
+      "partitionKey": {
+        "fieldName": "category",
+        "fieldType": "string"
+      }
+    },
+    {
+      "name": "paymentCode",
+      "partitionKey": {
+        "fieldName": "paymentCode",
+        "fieldType": "string"
+      }
+    }
+  ],
+  "triggerFunctions": [
+    "billersTrigger2becd2e3"
+  ]
+}

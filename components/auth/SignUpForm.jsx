@@ -19,6 +19,7 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { createUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUp = (props) => {
   // const [username, setUsername] = useState('');
@@ -38,6 +39,11 @@ const SignUp = (props) => {
       Alert.alert('Error', 'You must agree to the terms and conditions');
       return;
     }
+    const existing = await AsyncStorage.getItem('userEmail');
+    if (existing) {
+      Alert.alert('Error', `Device already registered with ${existing}`);
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -54,16 +60,18 @@ const SignUp = (props) => {
         },
       });
 
+      await AsyncStorage.setItem('userEmail', email);
+
       const device = {
         device_id: Device.osInternalBuildId || null,
         device_name: Device.deviceName || null,
         device_brand: Device.brand || null,
       };
-      await createUserProfile(userId, device);
+      await createUserProfile(userId, device, email, phone_number);
       setEmailVeri(email);
       router.push('/email_verify');
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error?.message);
       console.error('Error signing up:', error);
     } finally {
       setIsLoading(false);
@@ -77,25 +85,6 @@ const SignUp = (props) => {
           <Text style={styles.title}>Register</Text>
           <Text style={{ textAlign: 'center' }}>Create your account</Text>
         </View>
-        {/* <View
-          style={[
-            styles.input,
-            {
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            },
-          ]}
-        >
-          <AntDesign name="user" size={20} color="gray" />
-          <TextInput
-            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
-            placeholder="Enter your username"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-          />
-        </View> */}
         <View
           style={[
             styles.input,
@@ -108,7 +97,12 @@ const SignUp = (props) => {
         >
           <Fontisto name="email" size={20} color="gray" />
           <TextInput
-            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
+            style={{
+              flex: 1,
+              height: '100%',
+              paddingHorizontal: 10,
+              color: 'gray',
+            }}
             placeholder="Enter your email"
             value={email}
             onChangeText={setEmail}
@@ -122,12 +116,18 @@ const SignUp = (props) => {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'space-between',
+              marginBottom: 0,
             },
           ]}
         >
           <Fontisto name="phone" size={20} color="gray" />
           <TextInput
-            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
+            style={{
+              flex: 1,
+              height: '100%',
+              paddingHorizontal: 10,
+              color: 'gray',
+            }}
             placeholder="Enter your phone number"
             value={phone_number}
             onChangeText={setPhone}
@@ -135,6 +135,9 @@ const SignUp = (props) => {
             keyboardType="phone-pad"
           />
         </View>
+        <Text style={{ marginBottom: 20, marginLeft: 4, fontSize: 10 }}>
+          Your country code followed by your phone number. e.g (+234)
+        </Text>
         <View
           style={[
             styles.input,
@@ -147,7 +150,12 @@ const SignUp = (props) => {
         >
           <Feather name="lock" size={20} color="gray" />
           <TextInput
-            style={{ flex: 1, height: '100%', paddingHorizontal: 10 }}
+            style={{
+              flex: 1,
+              height: '100%',
+              paddingHorizontal: 10,
+              color: 'gray',
+            }}
             placeholder="Enter your password"
             value={password}
             onChangeText={setPassword}
@@ -155,7 +163,7 @@ const SignUp = (props) => {
           />
           <Pressable onPress={() => setShowPass(!showPass)}>
             <Feather
-              name={showPass ? 'eye-off' : 'eye'}
+              name={showPass ? 'eye' : 'eye-off'}
               size={20}
               color="gray"
             />
@@ -180,7 +188,7 @@ const SignUp = (props) => {
             ]}
           >
             <Text style={{}}>I agree with</Text>
-            <Link href={'/termsandconditions'}>
+            <Link href={'/terms_condition'}>
               <Text style={styles.signUp}>Terms & Conditions</Text>
             </Link>
           </View>

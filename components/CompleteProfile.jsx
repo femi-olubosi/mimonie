@@ -7,6 +7,7 @@ import {
   ScrollView,
   Platform,
   Pressable,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Button from '@/components/Button';
@@ -25,6 +26,10 @@ import {
 } from '../api/notifications.service';
 import { convertToAWSDate } from '../utils/toAWSDate';
 import { fetchCountries } from '../api/payment.service';
+import { sendOtp } from '../api/token.service';
+import { signOut } from 'aws-amplify/auth';
+import SelectModal from './modals/SelectModal';
+import { AntDesign, Entypo } from '@expo/vector-icons';
 
 const dateOption = [
   'en-US',
@@ -44,6 +49,7 @@ const CompleteProfile = () => {
     userProfile,
     setUserProfile,
     setNotifications,
+    setConfirmationResult,
   } = useGlobalContext();
   const router = useRouter();
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -53,6 +59,9 @@ const CompleteProfile = () => {
   const [selectedCountry, setSelectedCountry] = useState({});
   const [selectedOrigin, setSelectedOrigin] = useState({});
   const [countries, setCountries] = useState([]);
+  const [cOfOModal, setCOfOModal] = useState(false);
+  const [cOfRModal, setCOfRModal] = useState(false);
+  const [incomeModal, setIncomeModal] = useState(false);
 
   useEffect(() => {
     fetchCurrUser(setCurrentUser);
@@ -131,9 +140,7 @@ const CompleteProfile = () => {
       income_to: infoDetails.income_to,
       country_of_residence: infoDetails.country_of_residence,
       country_of_origin: infoDetails.country_of_origin,
-      email: currentUser.email,
       preferred_username: 'username',
-      phone_number: currentUser.phone_number,
     };
 
     if (ErrorCheck(data)) {
@@ -141,21 +148,21 @@ const CompleteProfile = () => {
     }
     setIsLoading(true);
     try {
-      await updateUserProfile(data, currentUser);
-      const user = await fetchUserProfile(setUserProfile, currentUser);
-      console.log({ user });
-      // const res = await createPaystackCustomer(
-      //   currentUser.email,
-      //   infoDetails.firstname,
-      //   infoDetails.lastname,
-      //   currentUser.phone_number
-      // );
+      // await updateUserProfile(data, currentUser);
+      // const user = await fetchUserProfile(setUserProfile, currentUser);
+      // console.log({ user });
+      const res = await createPaystackCustomer(
+        currentUser.email,
+        infoDetails.firstname,
+        infoDetails.lastname,
+        currentUser.phone_number
+      );
 
-      // const update = await updateUserProfile(
-      //   { ...data, customer_code: res.data.customer_code },
-      //   currentUser
-      // );
-      // console.log({ update });
+      const update = await updateUserProfile(
+        { ...data, customer_code: res.data.customer_code },
+        currentUser
+      );
+
       await createNotification(
         {
           title: 'Account Created',
@@ -167,8 +174,11 @@ const CompleteProfile = () => {
         setNotifications
       );
       await fetchUserNotification(currentUser.userId, setNotifications);
-      await fetchUserProfile(setUserProfile, currentUser);
-      router.push('/protected');
+      const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+      const resOtp = await sendOtp(profile.phone_number);
+      setConfirmationResult({ ...resOtp, type: 'phone_verification' });
+      router.push('/protected/login_verify');
     } catch (error) {
       console.error(error);
     } finally {
@@ -186,82 +196,153 @@ const CompleteProfile = () => {
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        nestedScrollEnabled={true}
       >
         {formElement.map((item, index) => (
-          <Pressable
-            key={index}
-            style={[styles.infoContainer]}
-            onPress={() =>
-              item.name === 'birthdate' ? toggleDatePicker() : {}
-            }
-          >
-            <Text style={styles.label}>{item.label}</Text>
+          <View key={index}>
+            <Pressable
+              style={[
+                styles.infoContainer,
+                { marginBottom: item.helperText ? 2 : 16 },
+              ]}
+              onPress={() =>
+                item.name === 'birthdate' ? toggleDatePicker() : {}
+              }
+            >
+              <Text style={styles.label}>{item.label}</Text>
 
-            {item.eType === 'select' ? (
-              <SelectInput
-                options={
-                  item.name === 'income_from' ? income_range_options : countries
-                }
-                selectedValue={
-                  item.name === 'income_from'
-                    ? selectedValue
-                    : item.name === 'country_of_origin'
-                    ? selectedOrigin
-                    : selectedCountry
-                }
-                setSelectedValue={
-                  item.name === 'income_from'
-                    ? setSelectedValue
-                    : item.name === 'country_of_origin'
-                    ? setSelectedOrigin
-                    : setSelectedCountry
-                }
-                defaultValue={
-                  item.name === 'income_from'
-                    ? selectedValue.value
-                    : item.name === 'country_of_origin'
-                    ? selectedOrigin.value
-                    : selectedCountry.value
-                }
-              />
-            ) : (
-              <View
+              {item.eType === 'select' ? (
+                // <SelectInput
+                //   options={
+                //     item.name === 'income_from'
+                //       ? income_range_options
+                //       : countries
+                //   }
+                //   selectedValue={
+                //     item.name === 'income_from'
+                //       ? selectedValue
+                //       : item.name === 'country_of_origin'
+                //       ? selectedOrigin
+                //       : selectedCountry
+                //   }
+                //   setSelectedValue={
+                //     item.name === 'income_from'
+                //       ? setSelectedValue
+                //       : item.name === 'country_of_origin'
+                //       ? setSelectedOrigin
+                //       : setSelectedCountry
+                //   }
+                //   defaultValue={
+                //     item.name === 'income_from'
+                //       ? selectedValue.value
+                //       : item.name === 'country_of_origin'
+                //       ? selectedOrigin.value
+                //       : selectedCountry.value
+                //   }
+                // />
+                item.name === 'income_from' ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIncomeModal(true);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: 5,
+                    }}
+                  >
+                    <Text>{selectedValue.label || `Select Income Range`}</Text>
+                    <Entypo name="triangle-down" size={24} color="black" />
+                  </TouchableOpacity>
+                ) : item.name === 'country_of_origin' ? (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setCOfOModal(true);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: 5,
+                    }}
+                  >
+                    <Text>
+                      {selectedOrigin.label || `Select Country of Origin`}
+                    </Text>
+                    <Entypo name="triangle-down" size={24} color="black" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setCOfRModal(true);
+                    }}
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginTop: 5,
+                    }}
+                  >
+                    <Text>
+                      {selectedCountry.label || `Select Country of Residence`}
+                    </Text>
+                    <Entypo name="triangle-down" size={24} color="black" />
+                  </TouchableOpacity>
+                )
+              ) : (
+                <View
+                  style={{
+                    flexDirection: item.name === 'birthdate' ? 'row' : '',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <TextInput
+                    style={styles.value}
+                    value={
+                      item.name === 'birthdate'
+                        ? datePick?.toLocaleDateString(...dateOption)
+                        : infoDetails[item.name]
+                    }
+                    onChangeText={(value) =>
+                      handleInputChange(value, item.name)
+                    }
+                    editable={item.name !== 'birthdate'}
+                    placeholder={item.placeholder}
+                    onPress={() =>
+                      item.name === 'birthdate' ? toggleDatePicker() : {}
+                    }
+                    keyboardType={
+                      item.name === 'phone_number' ? 'number-pad' : 'default'
+                    }
+                    scrollEnabled={true}
+                  />
+                  {item.name === 'birthdate' && (
+                    <DateTimeSelector
+                      show={showDatePicker}
+                      setShow={setShowDatePicker}
+                      date={date}
+                      setDate={handleDateChange}
+                      setDatePick={setDatePick}
+                      mode={'date'}
+                    />
+                  )}
+                </View>
+              )}
+            </Pressable>
+            {item.helperText && (
+              <Text
                 style={{
-                  flexDirection: item.name === 'birthdate' ? 'row' : '',
-                  justifyContent: 'space-between',
+                  fontSize: 10,
+                  color: 'gray',
+                  marginBottom: 16,
+                  marginLeft: 5,
                 }}
               >
-                <TextInput
-                  style={styles.value}
-                  value={
-                    item.name === 'birthdate'
-                      ? datePick?.toLocaleDateString(...dateOption)
-                      : infoDetails[item.name]
-                  }
-                  onChangeText={(value) => handleInputChange(value, item.name)}
-                  editable={item.name !== 'birthdate'}
-                  placeholder={item.placeholder}
-                  onPress={() =>
-                    item.name === 'birthdate' ? toggleDatePicker() : {}
-                  }
-                  keyboardType={
-                    item.name === 'phone_number' ? 'number-pad' : 'default'
-                  }
-                  scrollEnabled={true}
-                />
-                {item.name === 'birthdate' && (
-                  <DateTimeSelector
-                    show={showDatePicker}
-                    setShow={setShowDatePicker}
-                    date={date}
-                    setDate={handleDateChange}
-                    setDatePick={setDatePick}
-                    mode={'date'}
-                  />
-                )}
-              </View>
+                {item.helperText}
+              </Text>
             )}
-          </Pressable>
+          </View>
         ))}
       </ScrollView>
       <View style={styles.buttonContainer}>
@@ -272,6 +353,38 @@ const CompleteProfile = () => {
           outline={true}
         />
       </View>
+      <SelectModal
+        visible={cOfOModal}
+        onClose={() => setCOfOModal(false)}
+        data={countries}
+        selectedItem={selectedOrigin}
+        onSelect={(item) => {
+          setSelectedOrigin(item);
+        }}
+        title="Select Country of Origin"
+      />
+
+      <SelectModal
+        visible={cOfRModal}
+        onClose={() => setCOfRModal(false)}
+        data={countries}
+        selectedItem={selectedCountry}
+        onSelect={(item) => {
+          setSelectedCountry(item);
+        }}
+        title="Select Country of Residence"
+      />
+
+      <SelectModal
+        visible={incomeModal}
+        onClose={() => setIncomeModal(false)}
+        data={income_range_options}
+        selectedItem={selectedValue}
+        onSelect={(item) => {
+          setSelectedValue(item);
+        }}
+        title="Select Income Range"
+      />
     </PageView>
   );
 };
@@ -297,7 +410,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   infoContainer: {
-    marginBottom: 16,
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 8,
@@ -324,8 +436,18 @@ const styles = StyleSheet.create({
 export default CompleteProfile;
 
 const formElement = [
-  { label: 'First Name', name: 'firstname', placeholder: '' },
-  { label: 'Last Name', name: 'lastname', placeholder: '' },
+  {
+    label: 'First Name',
+    name: 'firstname',
+    placeholder: '',
+    helperText: 'Use  first name as on official document',
+  },
+  {
+    label: 'Last Name',
+    name: 'lastname',
+    placeholder: '',
+    helperText: 'Use  last name as on official document',
+  },
   // { label: 'User Name', name: 'preferred_username', placeholder: 'Username' },
   // {
   //   label: 'Phone Number',
@@ -368,17 +490,31 @@ const income_range_options = [
   {
     label: '₦100,000 - ₦250,000',
     value: '100000 - 250000',
+    id: 1,
   },
   {
     label: '₦250,000 - ₦500,000',
     value: '250000 - 500000',
+    id: 2,
   },
   {
     label: '₦500,000 - ₦750,000',
     value: '500000 - 750000',
+    id: 3,
   },
   {
     label: '₦750,000 - ₦1,000,000',
     value: '750000 - 1000000',
+    id: 4,
+  },
+  {
+    label: '₦1,000,000 - ₦5,000,000',
+    value: '1000000 - 5000000',
+    id: 5,
+  },
+  {
+    label: '₦5,000,000 - Above',
+    value: '5000000 - 100,000,000',
+    id: 6,
   },
 ];

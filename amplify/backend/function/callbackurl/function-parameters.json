@@ -1,0 +1,53 @@
+{
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "profileTableName",
+      "environmentVariableName": "PROFILE_TABLE_NAME"
+    },
+    {
+      "cloudFormationParameterName": "notificationsTableName",
+      "environmentVariableName": "NOTIFICATIONS_TABLE_NAME"
+    },
+    {
+      "cloudFormationParameterName": "partnerId",
+      "environmentVariableName": "PARTNER_ID"
+    },
+    {
+      "cloudFormationParameterName": "apiKey",
+      "environmentVariableName": "API_KEY"
+    },
+    {
+      "cloudFormationParameterName": "callbackUrl",
+      "environmentVariableName": "CALLBACK_URL"
+    },
+    {
+      "cloudFormationParameterName": "apiKeyProd",
+      "environmentVariableName": "API_KEY_PROD"
+    },
+    {
+      "cloudFormationParameterName": "callbackUrlProd",
+      "environmentVariableName": "CALLBACK_URL_PROD"
+    },
+    {
+      "cloudFormationParameterName": "jobStatusApi",
+      "environmentVariableName": "JOB_STATUS_API"
+    },
+    {
+      "cloudFormationParameterName": "basicVerifyAsyncLive",
+      "environmentVariableName": "BASIC_VERIFY_ASYNC_LIVE"
+    },
+    {
+      "cloudFormationParameterName": "basicVerifyAsync",
+      "environmentVariableName": "BASIC_VERIFY_ASYNC"
+    },
+    {
+      "cloudFormationParameterName": "basicVerify",
+      "environmentVariableName": "BASIC_VERIFY"
+    },
+    {
+      "cloudFormationParameterName": "basicVerifyLive",
+      "environmentVariableName": "BASIC_VERIFY_LIVE"
+    }
+  ]
+}

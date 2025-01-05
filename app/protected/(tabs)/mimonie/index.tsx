@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
   FlatList,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   TextInput,
 } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
@@ -13,33 +12,38 @@ import { useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
+import * as Linking from 'expo-linking';
 import {
   fetchUserContributions,
   findContributionByInviteLink,
 } from '@/api/contributions.service';
 import { naira } from '@/constants/Currency';
+import { statusCheck } from '@/utils/statusCheck';
+import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 
 const Mimonie = () => {
-  const { currentUser, contributions, setContributions, setIsLoading } =
-    useGlobalContext();
+  const { contributions, setIsLoading, userProfile } = useGlobalContext();
   const router = useRouter();
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
 
-  useEffect(() => {
-    fetchUserContributions(currentUser.userId, setContributions);
-  }, []);
-
-  const handleSearchContribution = async () => {
+  const handleSearchContribution = async (searchTerm) => {
     setIsLoading(true);
     try {
-      const res = await findContributionByInviteLink(contributionSearch);
+      const searchQuery =
+        typeof searchTerm === 'string' && searchTerm.trim() !== ''
+          ? searchTerm
+          : contributionSearch;
+
+      const res = await findContributionByInviteLink(searchQuery);
       setSearchedContribution(res);
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
-      setContributionSearch('');
+      if (!searchTerm) {
+        setContributionSearch('');
+      }
     }
   };
 
@@ -59,7 +63,9 @@ const Mimonie = () => {
           }}
         >
           <Text style={styles.contributionName}>{item.name}</Text>
-          <Text style={{ fontSize: 10 }}>{item.category}</Text>
+          <Text style={{ fontSize: 10 }}>
+            {capitalizeFirstLetter(item.type)}
+          </Text>
         </View>
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>
@@ -70,24 +76,22 @@ const Mimonie = () => {
             style={{
               paddingHorizontal: 10,
               paddingVertical: 4,
-              borderRadius: 8,
-              backgroundColor: item.status === 'open' ? 'green' : 'gray',
+              borderRadius: 4,
+              backgroundColor: statusCheck(item.status),
             }}
           >
-            <Text style={styles.contributionStatus}>{item.status}</Text>
+            <Text style={styles.contributionStatus}>
+              {capitalizeFirstLetter(item.status)}
+            </Text>
           </View>
         </View>
-        {/* <View style={styles.contributionInfo}>
-          <Text style={styles.contributionAmount}>
-            Joined: {item.participant.length}
-          </Text>
-          <Text style={styles.contributionAmount}>Target: {item.target}</Text>
-        </View> */}
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>
             {createdAtDate.toLocaleDateString()}
           </Text>
-          <Text style={styles.contributionAmount}>By: {item.owner}</Text>
+          <Text style={styles.contributionAmount}>
+            By: {item.owner === userProfile.name ? 'Me' : item.owner}
+          </Text>
         </View>
       </TouchableOpacity>
     );
@@ -132,8 +136,35 @@ const Mimonie = () => {
             onPress={handleSearchContribution}
           />
         </View>
+        {searchedContribution && (
+          <TouchableOpacity
+            style={{
+              alignSelf: 'flex-end',
+              marginTop: 10,
+              borderWidth: 1,
+              borderColor: 'gray',
+              borderRadius: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+            }}
+            onPress={() => {
+              setSearchedContribution(null), setContributionSearch('');
+            }}
+          >
+            <Text style={{ fontSize: 12 }}>Clear search</Text>
+          </TouchableOpacity>
+        )}
         <FlatList
-          data={searchedContribution || contributions}
+          data={
+            searchedContribution ||
+            contributions.filter((e) =>
+              contributionSearch.trim() !== ''
+                ? e.name
+                    .toLowerCase()
+                    .includes(contributionSearch.toLowerCase())
+                : e
+            )
+          }
           renderItem={renderContribution}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}

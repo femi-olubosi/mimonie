@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mimonie-test",
+  "private_key_id": "de4fd67a4f341004dddcaa5c88988c9dd33ba755",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDGrMwLZVhMwIvr\ntGNb7h2VPhpjdLHkEPZ/ACPrhnnqK67K8/E9aAOQJaFttG7huEdqXP5zvuCRJQvz\ncdVyCJ4Rp8x8DMFrliiCDyzoH0a2QeoVwokI56qSGwhYzwbcSVnzE9Ynexsoa+/a\nxzUYABfH5xfUeNhTa5KfeZOHQNUiKAE3ubmTuHA+bSysJxSAkEgemoo8d5gP0f4g\nyQFW07GcUp323GqshxRZ9TuiSwB9eqYQrIbtDzz/+oOCcxo9bvAXvFsrgQMWg2Rm\nxFmaULLxPvklJ3zCLpK+Ho0ZipaHoCmbM/mMBM6Kb/hVllM24fP0FsHt3sLfwjD1\n3WiK/V3lAgMBAAECggEAEAToSeXwxfWDgqyPk17Cd2Fjxs+mtU0x1uEnxEqaQ2mk\nxRwAwFMF8IY8OyiAhUYyye54HNSP7lwWl9k+nNx5hFJrkDgGE3ruxrfbBtdYwALW\nEU2Xd4aYcAHqfSCqPLJUZJ9dld7c/HghhZoo24fMYxOszfa1eJp0ntOyc8YkOUXs\nk7HSL+oPXeN1hfexeEyvmPAd9zHaPJRYTm3LTfDwyPK3CLgscsQwkuwZQdoQgUwN\nzZ4aMBiEHfoJViRnHIWsbvz7pOKYauaAddIhJttliLbgsivuJOQ1vWymVrHQZoPI\nz5OBu2Z+5fR7Uui+zgvqeZbFYjJUHePYAsVjrBl22QKBgQDs2p1xEWARSie33jJY\nY5VMEy2MTN2oTWgYu/nNQlmwbvz02yqBuxJWvDQFGMlvCJhG5CpKBEBFh8Pc11Co\ngNQvHBfh7wzbi7fa/SvmlXCa2kXbKq6Rk8kz3sCQ9bDZT0PJWk/kMXIr0290FjQA\nC8Z5xlzEpuTb704dC//ofMGLnQKBgQDWvB4kW25jV02WW1jKZ7NZqQWWxHswWmiX\n87IQZnvJQHJOF/2rzrOYRWrfs0mF9RfmSwvbmKgzHm+Vf3YMrqy0hklUEoxvddJp\nJN7nKytiXSzo+evUPRghIka0wCEkyyepyfcYeI/V419DXyxeu5k3qYe0MsB6hNtq\n55S8vya86QKBgAo7O1faB0tX57VSnNwimR1rKqmH3H9bsKZ44EaUmik78iNloEVw\nXk9u29RoiLMKLQHK82S1IE2gmr5ccriEsCXE0edJm0WUmIGWNCJGzFF0IlZgVqAl\nQSjDc5APfO82NFhrVU4nMKZiAMuD9gUWfSFfhzxbdUFm6fnpPcm+MeIlAoGASPtS\nu0Sf9f98DTgqq1AncrexgJZyz/JKTiqzQEO0mqfesZAR1UzBWWVud2019eNhJhIn\ni5EMyaL0hbj2ZEURyaFCVuKe/FrtEnNHlwXjDuFgHCak8lN5WfmOUmxiV2D8sAZG\nhvii2i0W+YzlRaU44+QojSQaqwlwkZr3wFavUdECgYEAzP2VzTYw0qM1gXWXS2OI\n6LKhyO3cGJLcbBOgUn6ucmPPzQI3vXun33hTZ7SzvYEqduMvpg/IKBgXWfWg2ucR\nOAFqfzmVtgWu4e5Kfe07OzHx7Wx6RzWm44ZVjSSgYdam3EehVhECesbXx3k3mtcY\nhj2oSQpOaenYFC6GSH+1CkY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "mimonie-play-console@mimonie-test.iam.gserviceaccount.com",
+  "client_id": "100468332292411414969",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mimonie-play-console%40mimonie-test.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

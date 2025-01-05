@@ -4,11 +4,12 @@ import {
   fetchUserProfile,
   getUserInfo,
 } from '@/api/user.service';
+import { DataStore } from 'aws-amplify/datastore';
 
 const StoreContext = createContext();
 
 const StoreProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [emailVeri, setEmailVeri] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState({});
@@ -17,9 +18,24 @@ const StoreProvider = ({ children }) => {
   const [myContacts, setMyContacts] = useState([]);
   const [userProfile, setUserProfile] = useState({});
   const [notifications, setNotifications] = useState([]);
+  const [userActivities, setUserActivities] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [confirmationResult, setConfirmationResult] = useState(null);
+  const [profilePicture, setProfilePicture] = useState('');
+  const [inviteArray, setInviteArray] = useState([]);
+  const [parsed, setParsed] = useState([]);
+  const [hideValues, setHideValues] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [pilot, setPilot] = useState({
+    account: true,
+    network: true,
+  });
+  const [kycForm, setKycForm] = useState({});
+
+  // DataStore.start();
 
   const toggleMode = () => {
-    setIsDarkMode((prevMode) => !prevMode);
+    setDarkMode((prevMode) => !prevMode);
   };
 
   useEffect(() => {
@@ -31,7 +47,8 @@ const StoreProvider = ({ children }) => {
   }, [currentUser]);
 
   const value = {
-    isDarkMode,
+    darkMode,
+    setDarkMode,
     toggleMode,
     isLoading,
     setIsLoading,
@@ -49,6 +66,26 @@ const StoreProvider = ({ children }) => {
     setMyContacts,
     notifications,
     setNotifications,
+    userActivities,
+    setUserActivities,
+    allUsers,
+    setAllUsers,
+    confirmationResult,
+    setConfirmationResult,
+    profilePicture,
+    setProfilePicture,
+    inviteArray,
+    setInviteArray,
+    parsed,
+    setParsed,
+    hideValues,
+    setHideValues,
+    updateAvailable,
+    setUpdateAvailable,
+    pilot,
+    setPilot,
+    kycForm,
+    setKycForm,
   };
 
   return (

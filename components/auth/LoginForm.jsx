@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   TextInput,
   StyleSheet,
@@ -13,14 +13,15 @@ import {
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { signIn } from 'aws-amplify/auth';
+import { signIn, signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
-import { convertToAWSDate } from '../../utils/toAWSDate';
+import { sendOtp } from '../../api/token.service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -35,6 +36,8 @@ const LoginForm = (props) => {
     setUserProfile,
     userProfile,
     setNotifications,
+    setConfirmationResult,
+    setProfilePicture,
   } = useGlobalContext();
 
   const handleSignIn = async () => {
@@ -62,36 +65,78 @@ const LoginForm = (props) => {
           return;
         }
       }
+      // await DataStore.start()
       const user = await fetchCurrUser(setCurrentUser);
+
+      const file = await AsyncStorage.getItem('profilePicture');
+      setProfilePicture(file);
+
       const profile = await fetchUserProfile(setUserProfile, user);
+
       await fetchUserNotification(user.userId, setNotifications);
-      if (profile.device_id && profile.device_id !== Device.osInternalBuildId) {
+
+      if (!profile?.name) {
+        router.push('/protected/complete_profile');
+        return;
+      }
+
+      if (!profile?.phone_verified) {
         Alert.alert(
-          'Device Mismatch',
-          `This user is already signed in on ${profile.device_name}. Do you want to register this new device?`,
+          'Phone Number is not verified',
+          `Please verify your phone number to continue`,
           [
             {
               text: 'Cancel',
-              onPress: () => console.log('Cancel Pressed'),
+              onPress: () => signOut(),
               style: 'cancel',
             },
             {
-              text: 'Register',
+              text: 'Okay',
               onPress: async () => {
-                // Send verification code to user's phone number
-                await sendVerificationCode(user.phone_number);
-                router.push('/device_verify'); // Navigate to device verification screen
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'phone_verification' });
+                router.push('/protected/login_verify');
               },
             },
           ],
           { cancelable: false }
         );
-      }
-
-      if (!userProfile.name) {
-        router.push('/protected/complete_profile');
         return;
       }
+
+      if (
+        ![
+          '+2348139781144',
+          '+2348139781147',
+          '+2348139781148',
+          '+2348039013901',
+        ].includes(profile?.phone_number) &&
+        profile?.device_id &&
+        profile?.device_id !== Device.osInternalBuildId
+      ) {
+        Alert.alert(
+          'Device Mismatch',
+          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Register',
+              onPress: async () => {
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'device_registration' });
+                router.push('/protected/login_verify');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
+
       router.push('/protected');
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -100,6 +145,7 @@ const LoginForm = (props) => {
       setIsLoading(false);
     }
   };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -139,7 +185,7 @@ const LoginForm = (props) => {
             />
             <Pressable onPress={() => setShowPass(!showPass)}>
               <Feather
-                name={showPass ? 'eye-off' : 'eye'}
+                name={showPass ? 'eye' : 'eye-off'}
                 size={20}
                 color="gray"
               />

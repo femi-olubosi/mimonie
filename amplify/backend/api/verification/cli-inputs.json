@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/mimonie-bvn-verification": {
+      "name": "/mimonie-bvn-verification",
+      "lambdaFunction": "verification",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

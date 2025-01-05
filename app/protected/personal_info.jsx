@@ -34,14 +34,6 @@ const PersonalInformation = () => {
               editable={false}
             />
           </View>
-          {/* <View style={styles.infoContainer}>
-            <Text style={styles.label}>{'Phone Number'}</Text>
-            <TextInput
-              style={styles.value}
-              value={currentUser.phone_number ?? 'Complete your profile'}
-              editable={false}
-            />
-          </View> */}
           <View style={styles.infoContainer}>
             <Text style={styles.label}>{'Date of Birth'}</Text>
             <TextInput

@@ -1,5 +1,27 @@
 {
   "api": {
+    "AdminQueries": {
+      "authorizationType": "AMAZON_COGNITO_USER_POOLS",
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "mimonie"
+        },
+        {
+          "attributes": [
+            "Arn",
+            "Name"
+          ],
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "api37a1ef7a": {
       "dependsOn": [
         {
@@ -9,6 +31,20 @@
           ],
           "category": "function",
           "resourceName": "mimonief71364a4"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
+    "callback": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "callbackurl"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -25,8 +61,9 @@
           ],
           "defaultAuthentication": {
             "apiKeyConfig": {
-              "apiKeyExpirationDays": 30,
-              "description": "api key description"
+              "apiKeyExpirationDate": "2025-11-12T01:50:10.847Z",
+              "apiKeyExpirationDays": 365,
+              "description": "API KEY"
             },
             "authenticationType": "API_KEY"
           }
@@ -44,6 +81,20 @@
           ],
           "category": "function",
           "resourceName": "userInfo"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
+    "verification": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "verification"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -84,6 +135,85 @@
     }
   },
   "function": {
+    "AdminQueriese69f7a79": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "mimonie"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "billersTrigger2becd2e3": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn",
+            "StreamArn"
+          ],
+          "category": "storage",
+          "resourceName": "billers"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "bills": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "billers"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "callbackurl": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributeEnvMap": {
+            "Arn": "TABLE_ARN",
+            "Name": "TABLE_NAME"
+          },
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "storage",
+          "resourceName": "dynamoc73ffc4d"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "contributionNotifications": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "contributionTrigger": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "mimonief71364a4": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -94,9 +224,183 @@
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "verification": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     }
   },
   "parameters": {
+    "AMPLIFY_function_AdminQueriese69f7a79_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ]
+    },
+    "AMPLIFY_function_AdminQueriese69f7a79_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_apiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_apiKeyProd": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerify": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerifyAsync": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerifyAsyncLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_basicVerifyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_callbackUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_callbackUrlProd": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_jobStatusApi": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_notificationsTableName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_partnerId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_profileTableName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_callbackurl_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "callbackurl"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionNotifications_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionNotifications_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionTrigger_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionTrigger"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionTrigger_paystackSecretKeyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionTrigger"
+        }
+      ]
+    },
+    "AMPLIFY_function_contributionTrigger_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "contributionTrigger"
+        }
+      ]
+    },
     "AMPLIFY_function_mimonief71364a4_deploymentBucketName": {
       "usedBy": [
         {
@@ -128,9 +432,41 @@
           "resourceName": "userInfo"
         }
       ]
+    },
+    "AMPLIFY_function_verification_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "verification"
+        }
+      ]
+    },
+    "AMPLIFY_function_verification_paystackSecretKeyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "verification"
+        }
+      ]
+    },
+    "AMPLIFY_function_verification_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "verification"
+        }
+      ]
     }
   },
   "storage": {
+    "billers": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
+    "dynamoc73ffc4d": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
+    },
     "mimonieS3Storage": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",

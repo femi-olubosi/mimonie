@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "paths": {
+    "/smileid-callback": {
+      "name": "/smileid-callback",
+      "lambdaFunction": "callbackurl",
+      "permissions": {
+        "setting": "open"
+      }
+    },
+    "/biometric-verification": {
+      "name": "/biometric-verification",
+      "lambdaFunction": "callbackurl",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

@@ -1,69 +1,36 @@
+import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
 import { Colors } from '@/constants/Colors';
-import { Redirect } from 'expo-router';
-import * as Updates from 'expo-updates';
+import { useGlobalContext } from '@/store/StoreContext';
+import { Redirect, router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Modal, View, StyleSheet, Text, Pressable } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
 const index = () => {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  async function onFetchUpdateAsync() {
-    try {
-      const update = await Updates.checkForUpdateAsync();
-
-      if (update.isAvailable) {
-        setUpdateAvailable(true);
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync();
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const { currentUser, setCurrentUser, setUserProfile } = useGlobalContext();
 
   useEffect(() => {
-    if (!__DEV__) {
-      onFetchUpdateAsync();
-    }
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await fetchCurrUser(setCurrentUser);
+        const user = await fetchUserProfile(setUserProfile, res);
+
+        if (user && !user?.name) {
+          console.log('no name', user);
+          router.push('/protected/complete_profile');
+        } else {
+          console.log(user?.name);
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    };
+
+    fetchCurrentUser();
   }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.pri }}>
-      {updateAvailable ? (
-        <View style={styles.centeredView}>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={updateAvailable}
-            onRequestClose={() => {
-              setUpdateAvailable(false);
-            }}
-          >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>Update Available!</Text>
-                <View
-                  style={{ flexDirection: 'row', columnGap: 40, marginTop: 40 }}
-                >
-                  <Pressable
-                    style={[styles.button, styles.buttonClose]}
-                    onPress={() => setUpdateAvailable(!updateAvailable)}
-                  >
-                    <Text style={styles.textStyle}>Not now</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.button, styles.buttonUpdate]}
-                    onPress={() => onFetchUpdateAsync()}
-                  >
-                    <Text style={styles.textStyle}>Update</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      ) : (
-        <Redirect href={'/protected'} />
-      )}
+      <Redirect href={'/protected'} />
     </View>
   );
 };

@@ -9,37 +9,54 @@ import {
 import React, { useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { confirmUserAttribute } from 'aws-amplify/auth';
+import {
+  confirmUserAttribute,
+  sendUserAttributeVerificationCode,
+  signOut,
+} from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
 import * as Device from 'expo-device';
-import { fetchCurrUser } from '../../api/user.service';
+import { fetchCurrUser, updateUserProfile } from '../../api/user.service';
+import { createNotification } from '../../api/notifications.service';
+import { PhoneAuthProvider } from 'firebase/auth';
 
 const DeviceVerification = () => {
-  const { emailVeri, setIsLoading, setCurrentUser } = useGlobalContext();
+  const {
+    setIsLoading,
+    setCurrentUser,
+    currentUser,
+    setNotifications,
+    confirmationResult,
+  } = useGlobalContext();
   const [code, setCode] = useState(0);
 
   const handleVerify = async () => {
-    // if (ErrorCheck({ email, password })) {
-    //   return;
-    // }
     setIsLoading(true);
     try {
-      const { isSignUpComplete, nextStep } = await confirmUserAttribute({
-        userAttributeKey: 'phone_number',
-        confirmationCode: code,
-      });
+      const credential = PhoneAuthProvider.credential(confirmationResult, code);
 
+      await fetchCurrUser(setCurrentUser);
       const device = {
-        device_id: Device.osInternalBuildId,
-        device_name: Device.deviceName,
-        device_brand: Device.brand,
+        device_id: Device.osInternalBuildId || null,
+        device_name: Device.deviceName || null,
+        device_brand: Device.brand || null,
+        phone_verified: true,
       };
-      const user = await fetchCurrUser(setCurrentUser);
-      await updateUserProfile(device, user);
+      await updateUserProfile(device, currentUser);
+      await createNotification(
+        {
+          title: 'Verification Completed',
+          content: `Your phone number is verified and your device is registered`,
+          type: 'verification',
+          userId: currentUser.userId,
+          read: false,
+        },
+        setNotifications
+      );
       Alert.alert(
         'Success',
-        `Your device "${Device.deviceName}" has been registered successfully.`,
+        `Your phone number is verified and your device is registered`,
         [
           {
             text: 'Continue',
@@ -56,6 +73,15 @@ const DeviceVerification = () => {
     }
   };
 
+  const handleResend = async () => {
+    router.push('/login_verify');
+    // const res = await sendUserAttributeVerificationCode({
+    //   userAttributeKey: 'phone_number',
+    // });
+
+    // console.log({ res });
+  };
+
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -67,8 +93,11 @@ const DeviceVerification = () => {
             paddingHorizontal: 20,
           }}
         >
-          <Text style={[styles.title, { marginBottom: 40 }]}>
+          <Text style={[styles.title, { marginBottom: 10 }]}>
             Verification Code
+          </Text>
+          <Text style={{ marginBottom: 40 }}>
+            A code has been sent to your phone number
           </Text>
           <View>
             <Text style={styles.label}>Code</Text>
@@ -97,9 +126,9 @@ const DeviceVerification = () => {
                 alignItems: 'center',
               }}
             >
-              <Link href={'/protected'}>
+              <Pressable onPress={() => signOut()}>
                 <Text style={styles.buttonText}>Later</Text>
-              </Link>
+              </Pressable>
             </View>
             <Pressable
               style={{
@@ -115,7 +144,7 @@ const DeviceVerification = () => {
               <Text style={styles.buttonText}>Verify</Text>
             </Pressable>
           </View>
-          {/* <Pressable
+          <Pressable
             style={{
               marginTop: 20,
               alignSelf: 'center',
@@ -123,7 +152,7 @@ const DeviceVerification = () => {
             onPress={handleResend}
           >
             <Text>Resend Code</Text>
-          </Pressable> */}
+          </Pressable>
         </View>
       </View>
     </Container>

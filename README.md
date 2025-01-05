@@ -1,51 +1,90 @@
-# Welcome to your Expo app 👋
+# Mimonie App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Overview
 
-## Get started
+The Mimonie App is a robust mobile application designed to simplify and enhance group financial contributions and payments. Built with a focus on efficiency, user security, and a seamless user experience, the app offers advanced features such as biometric identity verification, financial record management, and secure payment processing.
 
-1. Install dependencies
+## Key Features
 
-   ```bash
-   npm install
-   ```
+### User Authentication and Identity Verification
 
-2. Start the app
+- **Biometric Verification**: Integrated using the Smile Identity SDK.
+- **Income Verification**: Implemented via Paystack for BVN and account validation.
+- **Secure Sign-Up and Login**: Ensures user data safety with JWT-based authentication.
 
-   ```bash
-    npx expo start
-   ```
+### Financial Contributions
 
-In the output, you'll find options to open the app in a
+- **Flexible Contribution Management**: Users can create, join, and manage financial contribution groups.
+- **Payment Processing**: Utilizes Paystack for seamless and secure payments.
+- **Income-Based Contribution Limits**: Ensures participants contribute within their verified income range.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Device and Profile Management
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **Device Linking**: Tracks devices associated with user accounts for enhanced security.
+- **User Profiles**: Stores essential information, including avatars and financial verification statuses.
 
-## Get a fresh project
+### Notifications
 
-When you're ready, run:
+- **Push Notifications**: Implemented using Expo for iOS and Android.
+- **Real-Time Alerts**: Keeps users informed about payments, contribution statuses, and account activities.
 
-```bash
-npm run reset-project
-```
+### Admin Features
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- **User Management**: Admins can view, delete, and manage user profiles.
+- **Data Analytics**: Includes dashboard metrics like total users, verified users, and contribution summaries.
 
-## Learn more
+## Tools and Technologies
 
-To learn more about developing your project with Expo, look at the following resources:
+### Frontend
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **React Native** (Expo): Provides cross-platform support for iOS and Android.
+- **TypeScript**: Ensures robust type-checking and cleaner code.
 
-## Join the community
+### Backend
 
-Join our community of developers creating universal apps.
+- **AWS Amplify**: Handles authentication, API integration, and storage.
+- **DynamoDB**: NoSQL database for efficient data storage and retrieval.
+- **Node.js**: Backend scripting and integration.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# mimonie
+### Payment and Identity Verification
+
+- **Smile Identity SDK**: For biometric identity verification.
+- **Paystack**: For financial transactions and income verification.
+
+### Other Tools
+
+- **Tanstack React Query**: Simplifies state management for asynchronous operations.
+- **AsyncStorage**: Local storage solution for managing user sessions.
+- **Expo Router**: Enables smooth navigation between app screens.
+
+## Implementation Highlights
+
+1. **Splash Screen Update**:
+   - Developed and optimized for both iOS and Android platforms.
+2. **Contribution Features**:
+   - Allows users to share invite links for joining contributions.
+   - Ensures seamless navigation to specific contribution screens.
+3. **Income Verification**:
+   - Validates user income ranges before allowing group participation.
+4. **Real-Time Features**:
+   - Push notifications ensure users remain updated on their activities.
+
+## Contribution
+
+We welcome contributions! Please read our [Contribution Guidelines](CONTRIBUTING.md) to get started.
+
+### Documentation
+
+Help us improve the documentation by clarifying existing content or adding new sections.
+
+### Testing
+
+- Write tests for new and existing features to maintain code reliability.
+
+## License
+
+The Mimonie App is licensed under the MIT License. See the LICENSE file for more details.
+
+## Contact
+
+For inquiries, please reach out to the development team at [support@mimonie.com](mailto:support@mimonie.com).

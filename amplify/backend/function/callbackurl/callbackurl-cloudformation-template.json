@@ -1,0 +1,310 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "{\"createdOn\":\"Mac\",\"createdBy\":\"Amplify\",\"createdWith\":\"12.12.1\",\"stackType\":\"function-Lambda\",\"metadata\":{}}",
+  "Parameters": {
+    "CloudWatchRule": {
+      "Type": "String",
+      "Default": "NONE",
+      "Description": " Schedule Expression"
+    },
+    "deploymentBucketName": {
+      "Type": "String"
+    },
+    "env": {
+      "Type": "String"
+    },
+    "s3Key": {
+      "Type": "String"
+    },
+    "storagedynamoc73ffc4dName": {
+      "Type": "String",
+      "Default": "storagedynamoc73ffc4dName"
+    },
+    "storagedynamoc73ffc4dArn": {
+      "Type": "String",
+      "Default": "storagedynamoc73ffc4dArn"
+    },
+    "profileTableName": {
+      "Type": "String"
+    },
+    "notificationsTableName": {
+      "Type": "String"
+    },
+    "partnerId": {
+      "Type": "String"
+    },
+    "apiKey": {
+      "Type": "String"
+    },
+    "callbackUrl": {
+      "Type": "String"
+    },
+    "apiKeyProd": {
+      "Type": "String"
+    },
+    "callbackUrlProd": {
+      "Type": "String"
+    },
+    "jobStatusApi": {
+      "Type": "String"
+    },
+    "basicVerifyAsyncLive": {
+      "Type": "String"
+    },
+    "basicVerifyAsync": {
+      "Type": "String"
+    },
+    "basicVerify": {
+      "Type": "String"
+    },
+    "basicVerifyLive": {
+      "Type": "String"
+    }
+  },
+  "Conditions": {
+    "ShouldNotCreateEnvResources": {
+      "Fn::Equals": [
+        {
+          "Ref": "env"
+        },
+        "NONE"
+      ]
+    }
+  },
+  "Resources": {
+    "LambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Metadata": {
+        "aws:asset:path": "./src",
+        "aws:asset:property": "Code"
+      },
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "deploymentBucketName"
+          },
+          "S3Key": {
+            "Ref": "s3Key"
+          }
+        },
+        "Handler": "index.handler",
+        "FunctionName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "callbackurl",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "callbackurl",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "Environment": {
+          "Variables": {
+            "ENV": {
+              "Ref": "env"
+            },
+            "REGION": {
+              "Ref": "AWS::Region"
+            },
+            "PROFILE_TABLE_NAME": {
+              "Ref": "profileTableName"
+            },
+            "NOTIFICATIONS_TABLE_NAME": {
+              "Ref": "notificationsTableName"
+            },
+            "PARTNER_ID": {
+              "Ref": "partnerId"
+            },
+            "API_KEY": {
+              "Ref": "apiKey"
+            },
+            "CALLBACK_URL": {
+              "Ref": "callbackUrl"
+            },
+            "API_KEY_PROD": {
+              "Ref": "apiKeyProd"
+            },
+            "CALLBACK_URL_PROD": {
+              "Ref": "callbackUrlProd"
+            },
+            "JOB_STATUS_API": {
+              "Ref": "jobStatusApi"
+            },
+            "BASIC_VERIFY_ASYNC_LIVE": {
+              "Ref": "basicVerifyAsyncLive"
+            },
+            "BASIC_VERIFY_ASYNC": {
+              "Ref": "basicVerifyAsync"
+            },
+            "BASIC_VERIFY": {
+              "Ref": "basicVerify"
+            },
+            "BASIC_VERIFY_LIVE": {
+              "Ref": "basicVerifyLive"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs18.x",
+        "Layers": [],
+        "Timeout": 25
+      }
+    },
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::If": [
+            "ShouldNotCreateEnvResources",
+            "mimonieLambdaRole39f72c50",
+            {
+              "Fn::Join": [
+                "",
+                [
+                  "mimonieLambdaRole39f72c50",
+                  "-",
+                  {
+                    "Ref": "env"
+                  }
+                ]
+              ]
+            }
+          ]
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "lambdaexecutionpolicy": {
+      "DependsOn": [
+        "LambdaExecutionRole"
+      ],
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "lambda-execution-policy",
+        "Roles": [
+          {
+            "Ref": "LambdaExecutionRole"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:aws:logs:${region}:${account}:log-group:/aws/lambda/${lambda}:log-stream:*",
+                  {
+                    "region": {
+                      "Ref": "AWS::Region"
+                    },
+                    "account": {
+                      "Ref": "AWS::AccountId"
+                    },
+                    "lambda": {
+                      "Ref": "LambdaFunction"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:DescribeTable",
+                "dynamodb:GetItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem"
+              ],
+              "Resource": [
+                {
+                  "Ref": "storagedynamoc73ffc4dArn"
+                },
+                {
+                  "Fn::Join": [
+                    "/",
+                    [
+                      {
+                        "Ref": "storagedynamoc73ffc4dArn"
+                      },
+                      "index/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "Name": {
+      "Value": {
+        "Ref": "LambdaFunction"
+      }
+    },
+    "Arn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaFunction",
+          "Arn"
+        ]
+      }
+    },
+    "Region": {
+      "Value": {
+        "Ref": "AWS::Region"
+      }
+    },
+    "LambdaExecutionRole": {
+      "Value": {
+        "Ref": "LambdaExecutionRole"
+      }
+    },
+    "LambdaExecutionRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "LambdaExecutionRole",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

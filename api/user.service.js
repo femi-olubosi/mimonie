@@ -3,9 +3,11 @@ import {
   fetchUserAttributes,
   updateUserAttributes,
 } from 'aws-amplify/auth';
-import { downloadData, uploadData } from 'aws-amplify/storage';
+import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
+import { Storage } from 'aws-amplify';
+import { Buffer } from 'buffer';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
@@ -17,32 +19,65 @@ export const fetchCurrUser = async (setCurrentUser) => {
   return user;
 };
 
-export const uploadFile = async (file, type) => {
-  const date = Date.now();
-  const fileName = `${date}.jpg`;
-
+export const uploadFile = async (file, userId) => {
+  const uploadPath = `public/profile/${userId}-profile.jpg`;
   try {
-    const uploadPath = ({ identityId }) =>
-      `protected/${identityId}/${type}/${fileName}`;
+    const response = await fetch(file);
+    const img = await response.blob();
 
-    await uploadData({
+    const res = await uploadData({
       path: uploadPath,
-      data: file,
-    }).result;
-
-    const { body, eTag } = await downloadData({
-      path: uploadPath,
+      data: img,
       options: {
-        onProgress: (event) => {
-          console.log(event.transferredBytes);
-        },
+        contentType: 'image/jpeg',
+        // contentEncoding: 'compress',
       },
     }).result;
-    const text = await body.text();
-    const blob = await body.blob();
-    return text;
+    console.log('res', res);
+    return res;
   } catch (error) {
     console.error('Error uploading or getting file URL:', error);
+  }
+};
+
+export const downloadFile = async (userId) => {
+  const uploadPath = `public/profile/${userId}-profile.jpg`;
+  try {
+    const { body } = await downloadData({
+      path: uploadPath,
+    }).result;
+
+    const imageBlob = await body.blob();
+
+    return URL.createObjectURL(imageBlob);
+  } catch (e) {}
+};
+
+export const downloadUrl = async (userId) => {
+  try {
+    const uploadPath = `public/profile/${userId}-profile.jpg`;
+    const linkToStorageFile = await getUrl({
+      path: uploadPath,
+      expires: 604800,
+    });
+
+    return linkToStorageFile.url.toString();
+  } catch (err) {
+    console.error('Error downloading file:', err);
+    return null;
+  }
+};
+
+export const checkLinkExpiry = async (link) => {
+  try {
+    const response = await fetch(link);
+    return response.status === 403;
+  } catch (error) {
+    if (error.name === 'HTTPError' && error.status === 403) {
+      return true;
+    }
+    console.error('Error checking link expiration:', error);
+    return false;
   }
 };
 
@@ -86,11 +121,20 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
 
 export const createUserProfile = async (
   userId,
-  { device_id, device_name, device_brand }
+  { device_id, device_name, device_brand },
+  email,
+  phone_number
 ) => {
   try {
     const userProfile = await DataStore.save(
-      new UserProfile({ userId, device_id, device_name, device_brand })
+      new UserProfile({
+        userId,
+        device_id,
+        device_name,
+        device_brand,
+        email,
+        phone_number,
+      })
     );
     return userProfile;
   } catch (error) {
@@ -101,16 +145,10 @@ export const createUserProfile = async (
 
 export const updateUserProfile = async (updatedData, currentUser) => {
   try {
-    // Fetch the existing user profile
     const userProfile = await DataStore.query(UserProfile, (c) =>
       c.userId.eq(currentUser.userId)
     );
 
-    // const data = {
-    //   ...updatedData,
-    // };
-
-    // Update the profile with new data
     const updatedProfile = await DataStore.save(
       UserProfile.copyOf(userProfile[0], (updated) => {
         Object.assign(updated, updatedData);
@@ -121,5 +159,19 @@ export const updateUserProfile = async (updatedData, currentUser) => {
   } catch (error) {
     console.error('Error updating user profile:', error);
     throw error;
+  }
+};
+
+export const fetchAllUserProfile = async () => {
+  try {
+    // await DataStore.clear();
+    await DataStore.start();
+    // Fetch contributions where the user is a participant
+    const userProfile = await DataStore.query(UserProfile);
+    console.log('all', userProfile);
+    return userProfile;
+  } catch (error) {
+    console.error('Error fetching user user profile:', error);
+    return [];
   }
 };

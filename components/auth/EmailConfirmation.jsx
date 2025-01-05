@@ -27,6 +27,7 @@ const EmailConfirmation = () => {
       setShowCompleteProfileModal(true);
     }
   }, [currentUser]);
+
   const handleVerify = async () => {
     setIsLoading(true);
     try {
@@ -36,7 +37,6 @@ const EmailConfirmation = () => {
       });
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
-        console.log('output', signInOutput);
         if (signInOutput) {
           router.push('/protected/complete_profile');
         } else {
@@ -52,7 +52,7 @@ const EmailConfirmation = () => {
         );
       }
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error?.message);
       console.error('Error confirming signup:', error);
     } finally {
       setIsLoading(false);
@@ -86,7 +86,7 @@ const EmailConfirmation = () => {
             Verification Code
           </Text>
           <Text style={{ marginBottom: 40, textAlign: 'center' }}>
-            Check ypur email {emailVeri} for a code
+            Check your email {emailVeri} for a code
           </Text>
           <View>
             <Text style={styles.label}>Code</Text>

@@ -3,6 +3,8 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
+import { useGlobalContext } from "@/store/StoreContext";
+
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
@@ -27,4 +29,15 @@ export const Colors = {
   },
   pri: '#006EBD',
   sec: '#ED7D2D',
+  // priBg: darkMode?'#16191f':'#fff'
 };
+
+export const ThemeColors = () => {
+  const {darkMode} = useGlobalContext()
+
+  const priBg = darkMode? '#16191f' : '#fff'
+  const priText = darkMode? '#9095A1':'#000000'
+const secBg = darkMode? '#16191f': '#FAFAFB'
+
+  return {priBg, secBg, priText}
+}

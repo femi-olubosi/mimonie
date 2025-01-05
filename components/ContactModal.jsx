@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import {
+  Alert,
   FlatList,
   Modal,
   Pressable,
@@ -9,14 +10,116 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGlobalContext } from '../store/StoreContext';
 import { Colors } from '../constants/Colors';
-import { FontAwesome } from '@expo/vector-icons';
+import { AntDesign, FontAwesome } from '@expo/vector-icons';
+import { sendUserInvite } from '../api/invite.service';
+import { fetchUserProfile } from '../api/user.service';
+import { safeParseJSON } from '@/utils/safeJSON';
+import { UserProfile } from '@/src/models';
+import { DataStore } from 'aws-amplify/datastore';
+import { triggerNotificationForUser } from '../api/pushNotification.service';
 
-const ContactModal = ({ visible, setVisible }) => {
+const ContactModal = ({ visible, setVisible, invite_link, amount }) => {
   const [contactSearch, setContactSearch] = useState('');
-  const { myContacts } = useGlobalContext();
+  const { userProfile, setUserProfile, currentUser } = useGlobalContext();
+  const [parsedConnect, setParsedConnect] = useState([]);
+  const [selected, setSelected] = useState([]);
+
+  const handleSendInvite = async (item) => {
+    console.log(
+      'object',
+      selected.includes(item.userId),
+      item?.invites?.includes(invite_link)
+    );
+
+    if (!item.verified) {
+      Alert.alert('Sorry!!', `${item?.name} is not verified`);
+      return;
+    }
+
+    if (item.income_from && item.income_from < amount) {
+      Alert.alert(
+        'Sorry!!',
+        `${item?.name} income is too low to join this contribution`
+      );
+      return;
+    }
+
+    if (
+      selected.includes(item.userId) ||
+      item?.invites?.includes(invite_link)
+    ) {
+      Alert.alert(
+        'Sorry!!',
+        `${item?.name} is already invited to this contribution`
+      );
+      return;
+    }
+
+    await sendUserInvite(item.userId, invite_link);
+    await fetchUserProfile(setUserProfile, currentUser);
+    setSelected((prev) => [...prev, item.userId]);
+
+    await triggerNotificationForUser(
+      item?.push_token,
+      'Contribution Invite',
+      `You have been invited to join a contribution`,
+      { invite_link }
+    );
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+      if (profile) {
+        const parsedData = safeParseJSON(profile?.connections, []);
+        setParsedConnect(parsedData);
+      }
+    };
+
+    fetchProfile();
+
+    const subscription = DataStore.observe(UserProfile).subscribe(() =>
+      fetchProfile()
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
+
+  const renderContact = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={styles.contactContainer}
+        onPress={() => handleSendInvite(item)}
+      >
+        <View style={styles.contactInfo}>
+          <FontAwesome name="user-circle-o" size={24} color="gray" />
+          <View style={{ rowGap: 2 }}>
+            <Text style={styles.contactName}>{item.name}</Text>
+          </View>
+        </View>
+        {selected.includes(item.userId) ||
+        item?.invites?.includes(invite_link) ? (
+          <AntDesign name="checkcircleo" size={24} color="green" />
+        ) : (
+          <Text style={styles.inviteText}>Invite</Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  const filteredContacts =
+    parsedConnect && Array.isArray(parsedConnect)
+      ? parsedConnect.filter(
+          (e) =>
+            e.name &&
+            typeof e.name === 'string' &&
+            e.name.toLowerCase().includes(contactSearch.toLowerCase().trim())
+        )
+      : [];
+
   return (
     <Modal
       animationType="slide"
@@ -49,10 +152,8 @@ const ContactModal = ({ visible, setVisible }) => {
           </View>
 
           <FlatList
-            data={myContacts.filter((e) =>
-              e.name.includes(contactSearch.trim())
-            )}
-            keyExtractor={(item) => item.id}
+            data={filteredContacts}
+            keyExtractor={(item, idx) => idx.toString()}
             renderItem={renderContact}
           />
           <View style={{ paddingVertical: 20 }}>
@@ -66,6 +167,7 @@ const ContactModal = ({ visible, setVisible }) => {
               }}
               onPress={() => {
                 setVisible(false);
+                setSelected([]);
                 router.push('/protected/mimonie');
               }}
             >
@@ -214,32 +316,3 @@ const styles = StyleSheet.create({
     color: 'green',
   },
 });
-
-const renderContact = ({ item }) => {
-  const handleSendInvite = async () => {
-    await sendSMSInvite(item, 12345);
-  };
-
-  return (
-    <TouchableOpacity
-      style={styles.contactContainer}
-      onPress={handleSendInvite}
-    >
-      <View style={styles.contactInfo}>
-        <FontAwesome name="user-circle-o" size={24} color="gray" />
-        <View style={{ rowGap: 2 }}>
-          <Text style={styles.contactName}>{item.name}</Text>
-          {/* {item.phoneNumbers &&
-            item.phoneNumbers.map((phone, index) => (
-              <TouchableOpacity key={index}>
-                <Text style={styles.phoneNumber}>
-                  {phone.number} ({phone.label})
-                </Text>
-              </TouchableOpacity>
-            ))} */}
-        </View>
-      </View>
-      <Text style={styles.inviteText}>Invite</Text>
-    </TouchableOpacity>
-  );
-};

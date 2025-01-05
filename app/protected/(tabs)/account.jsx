@@ -1,4 +1,6 @@
 import {
+  ActivityIndicator,
+  Alert,
   Image,
   Modal,
   Pressable,
@@ -9,8 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
-import Button from '../../../components/Button';
+import React, { useEffect, useState } from 'react';
+import Button from '@/components/Button';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { imagePicker } from '@/utils/ImagePicker';
 import {
@@ -18,58 +20,120 @@ import {
   Feather,
   FontAwesome,
   Ionicons,
-  MaterialCommunityIcons,
   MaterialIcons,
-  Octicons,
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
 import { updateUserAttributes } from 'aws-amplify/auth';
-import { fetchCurrUser, updateUserProfile } from '../../../api/user.service';
+import {
+  downloadUrl,
+  fetchCurrUser,
+  fetchUserProfile,
+  updateUserProfile,
+} from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
+import { get, post } from 'aws-amplify/api';
+import { searchTree } from '@/utils/searchTree';
+import { createNotification } from '@/api/notifications.service';
+import {
+  isNameAndDobIncluded,
+  isNameIncluded,
+} from '../../../utils/isNameIncluded';
+import { ThemeColors } from '../../../constants/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
-  const { currentUser, setCurrentUser, setIsLoading, userProfile } =
-    useGlobalContext();
-  const [profilePicture, setProfilePicture] = useState('');
+  const {
+    currentUser,
+    setCurrentUser,
+    setIsLoading,
+    userProfile,
+    setUserProfile,
+    setNotifications,
+    profilePicture,
+    setProfilePicture,
+  } = useGlobalContext();
+
   const [logoutModal, setLogoutModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { priBg, priText } = ThemeColors();
 
   const handleInviteFriends = () => {
     router.push('/protected/contact');
   };
-  // console.log(userProfile);
+
   const handleProfilePicture = async () => {
     try {
       const file = await imagePicker();
+      setIsLoading(true);
       if (!file) {
         throw new Error('No file selected');
       }
-
       setProfilePicture(file);
-      setIsLoading(true);
-      const fileText = await uploadFile(file, 'profile');
-      if (!fileText) {
-        throw new Error('Failed to upload file');
-      }
-      await updateUserAttributes({
-        userAttributes: {
-          picture: fileText,
-        },
-      });
+      setIsLoading(false);
+      await uploadFile(file, userProfile?.userId);
 
-      await updateUserProfile({ picture: fileText }, currentUser);
-      await fetchCurrUser(setCurrentUser);
+      await AsyncStorage.setItem('profilePicture', file);
     } catch (error) {
       console.error('Error handling profile picture:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // useEffect(() => {
+  //   async function getSmileStatus() {
+  //     // const jobId = await AsyncStorage.getItem('jobId');
+
+  //     try {
+  //       const restOperation = post({
+  //         apiName: 'callback',
+  //         path: '/biometric-verification/status',
+  //         options: {
+  //           body: {
+  //             userId: userProfile.id,
+  //             jobId: 'job-38a30d7a-2e35-4762-a988-b337ff46ead6',
+  //           },
+  //         },
+  //       });
+
+  //       const { body } = await restOperation.response;
+  //       const json = await body.json();
+  //       console.log('json', json);
+
+  //       // const res = await searchTree(json, 'FullName');
+  //       if (json?.result?.job_complete) {
+  //         await updateUserProfile(
+  //           { is_nin_verified: true, verification_in_progress_id: false },
+  //           currentUser
+  //         );
+
+  //         await createNotification(
+  //           {
+  //             title: 'Verification Completed',
+  //             content: `You have successfully verified your identity`,
+  //             type: 'verification',
+  //             userId: currentUser.userId,
+  //             read: false,
+  //           },
+  //           setNotifications
+  //         );
+  //       }
+  //       await fetchUserProfile(setUserProfile, currentUser);
+  //     } catch (e) {
+  //       console.log('GET call failed: ', e);
+  //     }
+  //   }
+
+  //   if (!userProfile?.is_nin_verified) {
+  //     getSmileStatus();
+  //   }
+  // }, [userProfile?.is_nin_verified]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -96,18 +160,23 @@ const Account = () => {
                 position: 'relative',
               }}
             >
-              {profilePicture ? (
-                <Image
-                  source={{ uri: profilePicture }}
-                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                  resizeMode="cover"
-                />
-              ) : currentUser?.picture ? (
-                <Image
-                  source={{ uri: currentUser.picture }}
-                  style={{ width: '100%', height: '100%', borderRadius: 50 }}
-                  resizeMode="cover"
-                />
+              {profilePicture || currentUser?.picture ? (
+                <>
+                  {loading && (
+                    <ActivityIndicator
+                      size="small"
+                      color="#ffffff"
+                      style={{ position: 'absolute' }}
+                    />
+                  )}
+                  <Image
+                    source={{ uri: profilePicture || currentUser.picture }}
+                    style={{ width: '100%', height: '100%', borderRadius: 50 }}
+                    resizeMode="cover"
+                    onLoadEnd={() => setLoading(false)}
+                    onError={() => setLoading(false)}
+                  />
+                </>
               ) : (
                 <FontAwesome name="user-o" size={34} color="white" />
               )}
@@ -128,6 +197,7 @@ const Account = () => {
             <Text style={{ color: '#424856', fontSize: 18, fontFamily: 'er' }}>
               {userProfile?.name}
             </Text>
+
             <Text
               style={{
                 color: '#424856',
@@ -135,62 +205,168 @@ const Account = () => {
                 fontFamily: 'ir',
                 marginTop: 10,
               }}
+              // onPress={store}
             >
-              {currentUser?.phone_number}
+              {userProfile?.phone_number}
             </Text>
           </View>
         </View>
-        <View style={{ backgroundColor: 'white', flex: 1 }}>
+        <View style={{ backgroundColor: priBg, flex: 1 }}>
           <ScrollView
             contentContainerStyle={{
               padding: 20,
-              flex: 1,
             }}
           >
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.itemContainer}
-                onPress={() => router.push(item.route)}
-              >
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.icon}
-                  <Text style={styles.itemText}>{item.title}</Text>
-                  {item.extra && (
-                    <View style={{ marginLeft: 5 }}>
-                      {userProfile?.verification_in_progress ? (
-                        <MaterialCommunityIcons
-                          name="progress-clock"
-                          size={20}
-                          color={'#f6bd02'}
-                        />
-                      ) : (
-                        <Octicons
-                          name={
-                            userProfile?.is_bvn_verified
-                              ? 'verified'
-                              : 'unverified'
-                          }
-                          size={20}
-                          color={userProfile?.is_bvn_verified ? 'green' : 'red'}
-                          style={{ marginLeft: 10 }}
-                        />
-                      )}
+            {menuItems.map((item, index) => {
+              const isAuthorized =
+                !item.authorizedUser ||
+                item.authorizedUser.includes(userProfile.userId);
+              if (isAuthorized) {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.itemContainer}
+                    onPress={() => router.push(item.route)}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {item.icon}
+                      <Text style={[styles.itemText, { color: priText }]}>
+                        {item.title}
+                      </Text>
+                      {item.extra && item.title === 'Verify Identity' ? (
+                        <View style={{ marginLeft: 5 }}>
+                          {userProfile?.verification_in_progress_id ? (
+                            <View
+                              style={{
+                                backgroundColor: '#ecb753',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'black',
+                                }}
+                              >
+                                Pending
+                              </Text>
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                backgroundColor: userProfile?.is_nin_verified
+                                  ? 'green'
+                                  : 'red',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                                marginLeft: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'white',
+                                }}
+                              >
+                                {userProfile?.is_nin_verified
+                                  ? 'Verified'
+                                  : 'Not Verified'}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ) : null}
+                      {item.extra && item.title === 'Verify BVN' ? (
+                        <View style={{ marginLeft: 5 }}>
+                          {userProfile?.verification_in_progress ? (
+                            <View
+                              style={{
+                                backgroundColor: '#ecb753',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'black',
+                                }}
+                              >
+                                Pending
+                              </Text>
+                            </View>
+                          ) : (
+                            <View
+                              style={{
+                                backgroundColor: userProfile?.is_bvn_verified
+                                  ? 'green'
+                                  : 'red',
+                                paddingHorizontal: 4,
+                                paddingVertical: 2,
+                                borderRadius: 5,
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 10,
+                                  color: 'white',
+                                }}
+                              >
+                                {userProfile?.is_bvn_verified
+                                  ? 'Verified'
+                                  : 'Not Verified'}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ) : null}
+                      {item.extra && item.title === 'Contribution Invites' ? (
+                        <View style={{ marginLeft: 5 }}>
+                          <View
+                            style={{
+                              backgroundColor: 'red',
+                              paddingHorizontal: 4,
+                              paddingVertical: 2,
+                              borderRadius: 5,
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontSize: 10,
+                                color: 'white',
+                              }}
+                            >
+                              {userProfile?.invites?.length || 0}
+                            </Text>
+                          </View>
+                        </View>
+                      ) : null}
                     </View>
-                  )}
-                </View>
-                <Ionicons name="chevron-forward" size={24} color="black" />
-              </TouchableOpacity>
-            ))}
+                    <Ionicons
+                      name="chevron-forward"
+                      size={24}
+                      color={priText}
+                    />
+                  </TouchableOpacity>
+                );
+              }
+
+              return null;
+            })}
             <View
               style={{
                 flex: 1,
                 justifyContent: 'center',
+                marginTop: 30,
               }}
             >
               <Button
@@ -243,12 +419,10 @@ const Account = () => {
               borderTopRightRadius: 20,
             }}
           >
-            {/* <AntDesign name="logout" size={80} style={{ color: 'red' }} /> */}
             <Text style={{ fontSize: 25, color: 'black' }}>Log Out?</Text>
             <Text
               style={{
                 fontSize: 16,
-                // fontFamily: font.l,
                 color: 'gray',
                 textAlign: 'center',
               }}
@@ -260,7 +434,6 @@ const Account = () => {
                 title={'Confirm Log Out'}
                 color={'red'}
                 onPress={() => {
-                  // setLogoutModal(false);
                   signOut();
                 }}
                 outline={false}
@@ -306,9 +479,15 @@ const menuItems = [
     route: '/protected/personal_info',
   },
   {
-    title: 'Documents Verification',
+    title: 'Verify Identity',
+    icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
+    route: '/protected/smile_id',
+    extra: true,
+  },
+  {
+    title: 'Verify BVN',
     icon: <Ionicons name="document-text-outline" size={24} color="black" />,
-    route: '/protected/kyc',
+    route: '/protected/bvn',
     extra: true,
   },
   {
@@ -316,19 +495,34 @@ const menuItems = [
     icon: <AntDesign name="idcard" size={24} color="black" />,
     route: '/protected/cards',
   },
-  // {
-  //   title: 'Contributions Invites',
-  //   icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
-  //   route: '/invites',
-  // },
+  {
+    title: 'Contribution Invites',
+    icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
+    route: '/protected/my_invites',
+    extra: true,
+  },
   {
     title: 'Privacy & Security',
     icon: <MaterialIcons name="security" size={24} color="black" />,
-    route: '/privacy_security',
+    route: '/protected/privacy',
   },
   {
     title: 'Support',
     icon: <MaterialIcons name="support-agent" size={24} color="black" />,
-    route: '/support',
+    route: '/protected/support',
+  },
+  {
+    title: 'Settings',
+    icon: <AntDesign name="setting" size={24} color="black" />,
+    route: '/protected/settings',
+  },
+  {
+    authorizedUser: [
+      '1831b390-4051-707e-e882-01ce028e7735',
+      '089153d0-70d1-7084-dc69-f41032bfaefb',
+    ],
+    title: 'Admin',
+    icon: <AntDesign name="home" size={24} color="black" />,
+    route: '/protected/admin',
   },
 ];
