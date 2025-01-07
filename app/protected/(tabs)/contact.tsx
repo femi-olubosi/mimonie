@@ -55,68 +55,83 @@ const Contact = () => {
   };
 
   const handleRequestConnect = async (connections: {}) => {
-    setIsLoading(true);
+    setParsed((prevData) => [
+      ...prevData,
+      {
+        ...connections,
+        status: 'pending',
+      },
+    ]);
+
+    // setIsLoading(true);
     try {
+      // Perform the backend operation
       await updateUserConnections(connections, userProfile);
-      const response = await fetchUserProfile(setUserProfile, currentUser);
-      const connect = response.connections;
+      await fetchUserProfile(setUserProfile, currentUser);
       await triggerNotificationForUser(
         connections?.push_token,
         'Connect Request',
         `You have a connection request from ${userProfile.name}`
       );
-      setParsed(connect);
-      await AsyncStorage.setItem('connections', JSON.stringify(connect));
       setModalVisible(true);
-      setIsLoading(false);
     } catch (error) {
       console.error(error);
-      setIsLoading(false);
+      // Optional: You could undo the local state change if the backend fails
     } finally {
+      setIsLoading(false);
     }
   };
 
   const handleRemoveRequest = async (data: {}) => {
-    setIsLoading(true);
+    setParsed((prevData) =>
+      prevData.filter((e) => e?.phone_number !== data?.phone_number)
+    );
+
+    // setIsLoading(true);
     try {
+      // Perform the backend operation
       await undoRequest(data, userProfile);
-      const response = await fetchUserProfile(setUserProfile, currentUser);
-      const connect = response.connections;
-      setParsed(connect);
-      await AsyncStorage.setItem('connections', JSON.stringify(connect));
-      setIsLoading(false);
+      await fetchUserProfile(setUserProfile, currentUser);
     } catch (error) {
       console.error(error);
+      // Optional: You could revert the local state change if the backend fails
+    } finally {
       setIsLoading(false);
     }
   };
 
+  // useEffect(() => {
+  //   if (userProfile) {
+  //     console.log('ran');
+  //     const parsedData = safeParseJSON(userProfile?.connections, []);
+  //     setParsed(parsedData);
+  //   }
+  // }, []);
+
   useEffect(() => {
-    const fetchConnectionFromLocalStorage = async () => {
+    const checkAvailableContacts = async () => {
+      setIsLoading(true); // Start loader
+
       try {
-        const connections = await AsyncStorage.getItem('connections');
-        if (connections) {
-          setParsed(safeParseJSON(connections, []));
-        }
+        const checkAvailable =
+          myContacts && Array.isArray(myContacts)
+            ? myContacts
+                ?.map((contact) => {
+                  const res = findMatchingUser(allUsers, contact.phoneNumbers);
+                  return res?.found ? contact : null;
+                })
+                ?.filter((e) => e)
+            : [];
+
+        setFoundUsers(checkAvailable);
       } catch (error) {
-        console.error(error);
+        console.error('Error checking available contacts:', error);
+      } finally {
+        setIsLoading(false); // Stop loader
       }
     };
-    fetchConnectionFromLocalStorage();
-  }, []);
 
-  useEffect(() => {
-    const checkAvailable =
-      myContacts && Array.isArray(myContacts)
-        ? myContacts
-            ?.map((contact) => {
-              const res = findMatchingUser(allUsers, contact.phoneNumbers);
-              return res?.found ? contact : null;
-            })
-            ?.filter((e) => e)
-        : [];
-
-    setFoundUsers(checkAvailable);
+    checkAvailableContacts();
   }, [allUsers, myContacts]);
 
   const renderContact = ({ item }) => {
@@ -242,7 +257,7 @@ const Contact = () => {
           fontSize: 16,
         }}
       >
-        My Contact
+        My Contacts
       </Text>
       <View style={{ paddingHorizontal: 20 }}>
         <TextInput
