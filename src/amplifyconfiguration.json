@@ -64,6 +64,10 @@
     {
       "tableName": "dynamoc73ffc4d-dev",
       "region": "us-west-2"
+    },
+    {
+      "tableName": "billers-dev",
+      "region": "us-west-2"
     }
   ],
   "aws_user_files_s3_bucket": "mimonies3storageb7338-dev",

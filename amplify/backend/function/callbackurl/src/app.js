@@ -538,14 +538,6 @@ app.post('/biometric-verification/basic', async (req, res) => {
   }
 });
 
-app.get('/test', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Test endpoint is working!',
-    timestamp: new Date().toISOString(),
-  });
-});
-
 // Start Express Server
 app.listen(3000, () => {
   console.log('App started on port 3000');

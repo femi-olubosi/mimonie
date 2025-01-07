@@ -97,6 +97,14 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "storage": {
+    "billers": {
+      "Arn": "string",
+      "Name": "string",
+      "PartitionKeyName": "string",
+      "PartitionKeyType": "string",
+      "Region": "string",
+      "StreamArn": "string"
+    },
     "dynamoc73ffc4d": {
       "Arn": "string",
       "Name": "string",
