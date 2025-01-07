@@ -55,56 +55,54 @@ const Contact = () => {
   };
 
   const handleRequestConnect = async (connections: {}) => {
-    setParsed((prevData) => [
-      ...prevData,
-      {
-        ...connections,
-        status: 'pending',
-      },
-    ]);
-
-    // setIsLoading(true);
+    setIsLoading(true);
     try {
-      // Perform the backend operation
       await updateUserConnections(connections, userProfile);
-      await fetchUserProfile(setUserProfile, currentUser);
+      const response = await fetchUserProfile(setUserProfile, currentUser);
+      const connect = response.connections;
       await triggerNotificationForUser(
         connections?.push_token,
         'Connect Request',
         `You have a connection request from ${userProfile.name}`
       );
+      setParsed(connect);
+      await AsyncStorage.setItem('connections', JSON.stringify(connect));
       setModalVisible(true);
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
-      // Optional: You could undo the local state change if the backend fails
-    } finally {
       setIsLoading(false);
+    } finally {
     }
   };
 
   const handleRemoveRequest = async (data: {}) => {
-    setParsed((prevData) =>
-      prevData.filter((e) => e?.phone_number !== data?.phone_number)
-    );
-
-    // setIsLoading(true);
+    setIsLoading(true);
     try {
-      // Perform the backend operation
       await undoRequest(data, userProfile);
-      await fetchUserProfile(setUserProfile, currentUser);
+      const response = await fetchUserProfile(setUserProfile, currentUser);
+      const connect = response.connections;
+      setParsed(connect);
+      await AsyncStorage.setItem('connections', JSON.stringify(connect));
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
-      // Optional: You could revert the local state change if the backend fails
-    } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (userProfile) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsed(parsedData);
-    }
+    const fetchConnectionFromLocalStorage = async () => {
+      try {
+        const connections = await AsyncStorage.getItem('connections');
+        if (connections) {
+          setParsed(safeParseJSON(connections, []));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchConnectionFromLocalStorage();
   }, []);
 
   useEffect(() => {

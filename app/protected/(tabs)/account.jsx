@@ -434,7 +434,14 @@ const Account = () => {
                 title={'Confirm Log Out'}
                 color={'red'}
                 onPress={() => {
-                  signOut();
+                  setIsLoading(true);
+                  try {
+                    signOut();
+                  } catch (e) {
+                    console.error('Error logging out:', e);
+                  } finally {
+                    setIsLoading(false);
+                  }
                 }}
                 outline={false}
                 styleOverride={{ width: '100%' }}
