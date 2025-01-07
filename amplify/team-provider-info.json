@@ -54,9 +54,8 @@
         },
         "AdminQueriese69f7a79": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/AdminQueriese69f7a79-746e42704e4263645241-build.zip"
-        },
-        "bills": {}
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-746375645636584b6264-build.zip"
+        }
       },
       "auth": {
         "mimonie": {}
@@ -71,7 +70,8 @@
       },
       "storage": {
         "mimonieS3Storage": {},
-        "dynamoc73ffc4d": {}
+        "dynamoc73ffc4d": {},
+        "billers": {}
       }
     }
   }

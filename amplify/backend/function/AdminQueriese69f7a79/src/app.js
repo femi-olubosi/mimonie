@@ -179,7 +179,7 @@ app.get('/getUser', async (req, res, next) => {
 
 app.get('/listUsers', async (req, res, next) => {
   try {
-    const limit = req.query.limit ? parseInt(req.query.limit) : 25;
+    const limit = req.query.limit ? parseInt(req.query.limit) : 60;
     const response = await listUsers(limit, req.query.token);
     res.status(200).json(response);
   } catch (err) {
@@ -258,6 +258,16 @@ app.post('/signUserOut', async (req, res, next) => {
   try {
     const response = await signUserOut(req.body.username);
     res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/testing', async (req, res, next) => {
+  // const { pushToken, title, body } = req.body;
+  try {
+    // await sendPushNotification(pushToken, title, body);
+    res.status(200).json({ success: true, message: 'Notification sent' });
   } catch (err) {
     next(err);
   }

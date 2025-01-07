@@ -17,7 +17,7 @@ import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   downloadUrl,
   fetchCurrUser,
@@ -51,7 +51,10 @@ import { safeParseJSON } from '@/utils/safeJSON';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useCopilot } from 'react-native-copilot';
+import {
+  fetchAndStoreProfilePicture,
+  isExpired,
+} from '@/utils/profileManagement';
 
 export default function HomeScreen() {
   const {
@@ -163,20 +166,54 @@ export default function HomeScreen() {
     return () => subscription.unsubscribe();
   }, [userProfile?.name]);
 
+  // useEffect(() => {
+  //   (async () => {
+  //     // const file = await AsyncStorage.getItem('profilePicture');
+  //     // if (!file) {
+  //     const remotePicture = await downloadUrl(userProfile?.userId);
+  //     if (remotePicture) {
+  //       console.log('remote', remotePicture);
+  //       setProfilePicture(remotePicture);
+  //       await AsyncStorage.setItem('profilePicture', remotePicture);
+  //     } else {
+  //       console.log('Failed to download profile picture');
+  //       setProfilePicture(null);
+  //     }
+  //     // } else {
+  //     //   console.log('file', file);
+  //     //   setProfilePicture(file);
+  //     // }
+  //   })();
+  // }, [userProfile?.userId]);
+
   useEffect(() => {
     (async () => {
-      const file = await AsyncStorage.getItem('profilePicture');
-      if (!file) {
-        const remotePicture = await downloadUrl(userProfile?.userId);
-        if (remotePicture) {
-          setProfilePicture(remotePicture);
-          await AsyncStorage.setItem('profilePicture', remotePicture);
+      if (!userProfile?.userId) return;
+
+      try {
+        const storedData = await AsyncStorage.getItem('profilePicture');
+        if (storedData) {
+          const res = safeParseJSON(storedData, {});
+
+          if (isExpired(res?.timestamp)) {
+            console.log('Profile picture URL expired. Fetching new one...');
+            const picture = await fetchAndStoreProfilePicture(
+              userProfile?.userId
+            );
+            setProfilePicture(picture);
+          } else {
+            console.log('Loaded profile picture from storage.');
+            setProfilePicture(res?.url); // Use existing URL if not expired
+          }
         } else {
-          console.log('Failed to download profile picture');
-          setProfilePicture(null);
+          console.log('No profile picture in storage. Fetching new one...');
+          const picture = await fetchAndStoreProfilePicture(
+            userProfile?.userId
+          );
+          setProfilePicture(picture);
         }
-      } else {
-        setProfilePicture(file);
+      } catch (error) {
+        console.error('Error managing profile picture:', error);
       }
     })();
   }, [userProfile?.userId]);
@@ -194,7 +231,7 @@ export default function HomeScreen() {
       }
     };
 
-    if (userProfile && !userProfile?.push_token) {
+    if (userProfile) {
       registerPushToken();
     }
   }, [currentUser, userProfile]);
@@ -265,34 +302,6 @@ export default function HomeScreen() {
       setIsLoading(false);
     }
   };
-  const { start } = useCopilot();
-
-  // useEffect(() => {
-  //   // if (isLoading) return;
-
-  //   // const isAccountVerified =
-  //   //   userProfile?.is_bvn_verified && userProfile?.is_nin_verified;
-  //   // const hasEnoughConnections = parsed.length > 4;
-
-  //   // setPilot((prev) => ({
-  //   //   ...prev,
-  //   //   account: !isAccountVerified,
-  //   //   network: !hasEnoughConnections,
-  //   // }));
-
-  //   // Determine if the copilot should start
-  //   // const shouldShowCopilot = !isAccountVerified || parsed.length < 4;
-  //   // const shouldShowCopilot = true;
-
-  //   // if (shouldShowCopilot) {
-  //   //   console.log('show again');
-  //   // setTimeout(() => {
-  //   //   start();
-  //   // }, 3500);
-  //   // } else {
-  //   //   console.log('no show atall');
-  //   // }
-  // }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
