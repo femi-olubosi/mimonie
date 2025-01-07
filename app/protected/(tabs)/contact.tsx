@@ -50,11 +50,38 @@ const Contact = () => {
     setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    const checkAvailableContacts = async () => {
+      setIsLoading(true); // Start loader
+
+      try {
+        const checkAvailable =
+          myContacts && Array.isArray(myContacts)
+            ? myContacts
+                ?.map((contact) => {
+                  const res = findMatchingUser(allUsers, contact.phoneNumbers);
+                  return res?.found ? contact : null;
+                })
+                ?.filter((e) => e)
+            : [];
+
+        setFoundUsers(checkAvailable);
+      } catch (error) {
+        console.error('Error checking available contacts:', error);
+      } finally {
+        setIsLoading(false); // Stop loader
+      }
+    };
+
+    checkAvailableContacts();
+  }, [allUsers, myContacts]);
+
   const handleInvite = async (item) => {
     await sendInvite(item);
   };
 
   const handleRequestConnect = async (connections: {}) => {
+    setIsLoading(true);
     setParsed((prevData) => [
       ...prevData,
       {
@@ -83,11 +110,11 @@ const Contact = () => {
   };
 
   const handleRemoveRequest = async (data: {}) => {
+    setIsLoading(true);
     setParsed((prevData) =>
       prevData.filter((e) => e?.phone_number !== data?.phone_number)
     );
 
-    // setIsLoading(true);
     try {
       // Perform the backend operation
       await undoRequest(data, userProfile);
@@ -107,32 +134,6 @@ const Contact = () => {
   //     setParsed(parsedData);
   //   }
   // }, []);
-
-  useEffect(() => {
-    const checkAvailableContacts = async () => {
-      setIsLoading(true); // Start loader
-
-      try {
-        const checkAvailable =
-          myContacts && Array.isArray(myContacts)
-            ? myContacts
-                ?.map((contact) => {
-                  const res = findMatchingUser(allUsers, contact.phoneNumbers);
-                  return res?.found ? contact : null;
-                })
-                ?.filter((e) => e)
-            : [];
-
-        setFoundUsers(checkAvailable);
-      } catch (error) {
-        console.error('Error checking available contacts:', error);
-      } finally {
-        setIsLoading(false); // Stop loader
-      }
-    };
-
-    checkAvailableContacts();
-  }, [allUsers, myContacts]);
 
   const renderContact = ({ item }) => {
     const contactDetails = item?.phoneNumbers;
