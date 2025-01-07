@@ -126,7 +126,7 @@ const Contact = () => {
       setIsLoading(false);
     }
   };
-
+  console.log(parsed);
   // useEffect(() => {
   //   if (userProfile) {
   //     console.log('ran');
