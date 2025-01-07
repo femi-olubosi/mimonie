@@ -45,9 +45,7 @@ const Contact = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
     fetchAllUsers(setAllUsers);
-    setIsLoading(false);
   }, []);
 
   useEffect(() => {
@@ -126,7 +124,7 @@ const Contact = () => {
       setIsLoading(false);
     }
   };
-  console.log(parsed);
+
   // useEffect(() => {
   //   if (userProfile) {
   //     console.log('ran');
