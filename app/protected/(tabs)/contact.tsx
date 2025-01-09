@@ -1,98 +1,66 @@
+import React, { useEffect, useState } from 'react';
 import {
-  Alert,
   FlatList,
   Modal,
-  Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { useGlobalContext } from '@/store/StoreContext';
-import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
-import { topBar } from '@/cStyle';
-import { sendInvite } from '@/api/invite.service';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { fetchAllUsers } from '@/api/admin.service';
-import { findMatchingUser } from '@/utils/findMatchingUser';
-import { undoRequest, updateUserConnections } from '@/api/network.service';
-import { fetchUserProfile } from '@/api/user.service';
-import { UserProfile } from '@/src/models';
-import { DataStore } from 'aws-amplify/datastore';
-import { safeParseJSON } from '@/utils/safeJSON';
+import { useGlobalContext } from '@/store/StoreContext';
+import { sendInvite } from '@/api/invite.service';
+import { updateUserConnections, undoRequest } from '@/api/network.service';
+import { fetchExistingUser } from '@/api/user.service';
 import { triggerNotificationForUser } from '@/api/pushNotification.service';
+import { getContacts } from '@/api/contact.service';
 
 const Contact = () => {
-  const {
-    myContacts,
-    setAllUsers,
-    allUsers,
-    userProfile,
-    setUserProfile,
-    currentUser,
-    setIsLoading,
-    parsed,
-    setParsed,
-  } = useGlobalContext();
+  const { userProfile, setUserProfile, currentUser, setIsLoading } =
+    useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
-  const [foundUsers, setFoundUsers] = useState(null);
-  const [] = useState([]);
+  const [foundUsers, setFoundUsers] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchAllUsers(setAllUsers);
-  }, []);
-
-  useEffect(() => {
-    const checkAvailableContacts = async () => {
-      setIsLoading(true); // Start loader
-
+    const fetchAllUsersData = async () => {
       try {
-        const checkAvailable =
-          myContacts && Array.isArray(myContacts)
-            ? myContacts
-                ?.map((contact) => {
-                  const res = findMatchingUser(allUsers, contact.phoneNumbers);
-                  return res?.found ? contact : null;
-                })
-                ?.filter((e) => e)
-            : [];
-
-        setFoundUsers(checkAvailable);
+        setIsLoading(true);
+        let phoneContacts = await getContacts();
+        const matchedUsers = await fetchExistingUser(phoneContacts);
+        phoneContacts = phoneContacts?.filter(
+          (contact) =>
+            matchedUsers.findIndex(
+              (user) => user.phoneNumbers[0] === contact.phoneNumbers[0]
+            ) === -1
+        );
+        setContacts(phoneContacts);
+        setFoundUsers(matchedUsers);
       } catch (error) {
-        console.error('Error checking available contacts:', error);
+        console.error(error);
       } finally {
-        setIsLoading(false); // Stop loader
+        setIsLoading(false);
       }
     };
 
-    checkAvailableContacts();
-  }, [allUsers, myContacts]);
+    fetchAllUsersData();
+  }, []);
 
   const handleInvite = async (item) => {
     await sendInvite(item);
   };
 
-  const handleRequestConnect = async (connections: {}) => {
-    setIsLoading(true);
-    setParsed((prevData) => [
-      ...prevData,
-      {
-        ...connections,
-        status: 'pending',
-      },
-    ]);
-
-    // setIsLoading(true);
+  const handleRequestConnect = async (connections) => {
     try {
-      // Perform the backend operation
+      setIsLoading(true);
       await updateUserConnections(connections, userProfile);
-      await fetchUserProfile(setUserProfile, currentUser);
+      const updatedUsers = await fetchExistingUser(contacts);
+      setFoundUsers(updatedUsers);
       await triggerNotificationForUser(
         connections?.push_token,
         'Connect Request',
@@ -101,195 +69,129 @@ const Contact = () => {
       setModalVisible(true);
     } catch (error) {
       console.error(error);
-      // Optional: You could undo the local state change if the backend fails
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleRemoveRequest = async (data: {}) => {
-    setIsLoading(true);
-    setParsed((prevData) =>
-      prevData.filter((e) => e?.phone_number !== data?.phone_number)
-    );
-
+  const handleRemoveRequest = async (data) => {
     try {
-      // Perform the backend operation
+      setIsLoading(true);
       await undoRequest(data, userProfile);
-      await fetchUserProfile(setUserProfile, currentUser);
+      const updatedUsers = await fetchExistingUser(contacts);
+      setFoundUsers(updatedUsers);
     } catch (error) {
       console.error(error);
-      // Optional: You could revert the local state change if the backend fails
     } finally {
       setIsLoading(false);
     }
   };
 
-  // useEffect(() => {
-  //   if (userProfile) {
-  //     console.log('ran');
-  //     const parsedData = safeParseJSON(userProfile?.connections, []);
-  //     setParsed(parsedData);
-  //   }
-  // }, []);
-
   const renderContact = ({ item }) => {
-    const contactDetails = item?.phoneNumbers;
-
-    const res = findMatchingUser(allUsers, contactDetails);
     const connections = {
-      userId: res?.userProfile?.userId,
-      name: res?.userProfile?.name,
-      phone_number: res?.userProfile?.phone_number,
-      email: res?.userProfile?.email,
-      invites: res?.userProfile?.invites,
-      occupation: res?.userProfile?.occupation,
-      push_token: res?.userProfile?.push_token,
-      income_from: res?.userProfile?.income_from,
+      userId: item?.userProfile?.userId,
+      name: item?.userProfile?.name,
+      phone_number: item?.userProfile?.phone_number,
+      email: item?.userProfile?.email,
+      invites: item?.userProfile?.invites,
+      occupation: item?.userProfile?.occupation,
+      push_token: item?.userProfile?.push_token,
       verified:
-        res?.userProfile?.is_nin_verified && res?.userProfile?.is_bvn_verified,
+        item?.userProfile?.is_nin_verified &&
+        item?.userProfile?.is_bvn_verified,
       status: 'pending',
       type: 'user',
     };
 
-    const requested = parsed?.find(
-      (e) =>
-        e?.phone_number === res?.userProfile?.phone_number &&
-        e?.status === 'pending'
+    const connected = item?.connections?.some(
+      (e) => e?.userId === userProfile.userId && e?.status === 'accepted'
     );
-
-    const connected = parsed?.find(
-      (e) =>
-        e?.phone_number === res?.userProfile?.phone_number &&
-        e?.status === 'accepted'
+    const requested = item?.connections?.some(
+      (e) => e?.userId === userProfile.userId && e?.status === 'pending'
     );
 
     return (
       <View style={styles.contactContainer}>
         <View style={styles.contactInfo}>
-          <FontAwesome name="user-circle-o" size={24} color="gray" />
-          <View style={{ rowGap: 2 }}>
+          <FontAwesome name="user-circle-o" size={26} color={'gray'} />
+          <View>
             <Text style={styles.contactName}>{item?.name}</Text>
+            <Text style={styles.contactOccupation}>
+              {item?.phoneNumbers?.[0]}
+            </Text>
           </View>
         </View>
-
-        <View style={{}}>
-          {res?.found ? (
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <TouchableOpacity
-                style={{
-                  paddingHorizontal: 4,
-                  paddingVertical: 6,
-                  borderRadius: 4,
-                  borderWidth: 1,
-                  borderColor: requested ? '#ecb753' : Colors.pri,
-                }}
-                onPress={() => {
-                  if (requested || connected) {
-                    return;
-                  }
-                  handleRequestConnect(connections);
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 8,
-                    color: requested ? '#ecb753' : Colors.pri,
-                  }}
-                >
-                  {requested ? 'Pending' : connected ? 'Connected' : 'Connect'}
-                </Text>
-              </TouchableOpacity>
-              {requested && (
-                <TouchableOpacity
-                  style={{
-                    padding: 4,
-                    borderRadius: 6,
-                    borderWidth: 1,
-                    borderColor: 'red',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  onPress={() => handleRemoveRequest(res?.userProfile)}
-                >
-                  <FontAwesome6 name="times-circle" size={14} color={'red'} />
-                </TouchableOpacity>
-              )}
-            </View>
-          ) : (
-            <Pressable onPress={() => handleInvite(item)}>
-              <Text style={styles.inviteText}>Invite</Text>
-            </Pressable>
-          )}
-        </View>
+        {requested ? (
+          <TouchableOpacity
+            style={styles.requestSentButton}
+            onPress={() => handleRemoveRequest(item.userProfile)}
+          >
+            <MaterialIcons name="cancel" size={20} color={'red'} />
+            <Text style={styles.requestSentText}>Cancel Request</Text>
+          </TouchableOpacity>
+        ) : connected ? (
+          <View style={styles.connectedContainer}>
+            <MaterialIcons name="check-circle" size={20} color={'green'} />
+            <Text style={styles.connectedText}>Connected</Text>
+          </View>
+        ) : item.userProfile ? (
+          <TouchableOpacity
+            style={styles.connectButton}
+            onPress={() => handleRequestConnect(connections)}
+          >
+            <MaterialIcons name="add-circle" size={20} color={'white'} />
+            <Text style={styles.connectText}>Connect</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.inviteButton}
+            onPress={() => handleInvite(item)}
+          >
+            <Text style={styles.inviteText}>Invite</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
-  const filteredContacts =
-    myContacts && Array.isArray(myContacts)
-      ? myContacts
-          ?.filter(
-            (e) =>
-              e.name &&
-              typeof e.name === 'string' &&
-              e.name.toLowerCase().includes(contactSearch?.toLowerCase().trim())
-          )
-          ?.sort((a, b) => a.name.localeCompare(b.name))
-      : [];
+  const users = foundUsers ? [...foundUsers, ...contacts] : contacts;
+
+  const filteredContacts = contactSearch
+    ? users.filter((item) =>
+        item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
+      )
+    : users;
 
   return (
-    <SafeAreaView style={{ paddingTop: topBar }}>
+    <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <Text
-        style={{
-          marginVertical: 20,
-          textAlign: 'center',
-          fontFamily: 'isb',
-          fontSize: 16,
-        }}
-      >
-        My Contacts
-      </Text>
-      <View style={{ paddingHorizontal: 20 }}>
-        <TextInput
-          style={styles.inputSearch}
-          value={contactSearch}
-          onChangeText={setContactSearch}
-          placeholder="Search Contact"
-        />
-      </View>
+      <Text style={styles.headerText}>My Contacts</Text>
+      <TextInput
+        style={styles.inputSearch}
+        value={contactSearch}
+        onChangeText={setContactSearch}
+        placeholder="Search Contact"
+        placeholderTextColor={'gray'}
+      />
       <FlatList
-        data={
-          foundUsers ? [...foundUsers, ...filteredContacts] : filteredContacts
-        }
+        data={filteredContacts}
         keyExtractor={(item, idx) => idx.toString()}
         renderItem={renderContact}
         showsVerticalScrollIndicator={false}
       />
       <Modal
         animationType="slide"
-        transparent={true}
+        transparent
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Sent!</Text>
-            <Text style={styles.modalText}>Connect request successfully.</Text>
+            <Text style={styles.modalTitle}>Success!</Text>
+            <Text style={styles.modalText}>Connect request sent.</Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => {
-                fetchUserProfile(setUserProfile, currentUser);
-                setModalVisible(false);
-              }}
+              onPress={() => setModalVisible(false)}
             >
               <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
@@ -303,39 +205,93 @@ const Contact = () => {
 export default Contact;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  headerText: {
+    marginVertical: 20,
+    textAlign: 'center',
+    fontFamily: 'isb',
+    fontSize: 16,
+  },
+  inputSearch: {
+    backgroundColor: '#ffffff', // White
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#d3d3d3', // Light gray border
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginHorizontal: 16,
+    marginBottom: 10,
+  },
   contactContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#dcdcdc', // Gainsboro
   },
   contactInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    columnGap: 10,
+    gap: 10,
   },
-
   contactName: {
-    fontSize: 14,
-    fontFamily: 'ir',
+    fontSize: 13,
+    fontFamily: 'isb',
+    color: '#333333', // Dark gray
   },
-  phoneNumber: {
-    color: 'blue',
+  contactOccupation: {
+    fontSize: 10,
+    color: '#808080', // Gray
+  },
+  inviteButton: {
+    backgroundColor: Colors.pri, // Dodger blue
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   inviteText: {
-    color: 'green',
+    color: '#ffffff', // White
+    fontWeight: 'bold',
   },
-  inputSearch: {
-    backgroundColor: 'white',
-    borderRadius: 12,
+  connectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: '#9095A1',
-    padding: 12,
-    height: 40,
-    width: '100%',
-    alignSelf: 'center',
+    borderColor: Colors.pri,
+  },
+  connectText: {
+    color: '#ffffff', // White
+    fontWeight: 'bold',
+    marginLeft: 4,
+  },
+  connectedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  connectedText: {
+    color: '#32cd32', // Lime green
+    marginLeft: 4,
+    fontWeight: 'bold',
+  },
+  requestSentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dcdcdc', // Gainsboro
+    padding: 8,
+    borderRadius: 4,
+  },
+  requestSentText: {
+    color: '#ff4500', // Orange red
+    fontWeight: 'bold',
+    marginLeft: 4,
   },
   modalContainer: {
     flex: 1,
@@ -343,57 +299,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
-  modalContainerContact: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
   modalView: {
-    width: '60%',
-    backgroundColor: 'white',
-    borderRadius: 8,
+    width: '80%',
+    backgroundColor: '#ffffff', // White
+    borderRadius: 10,
     padding: 20,
     alignItems: 'center',
-    elevation: 5,
-  },
-  modalViewContact: {
-    width: '95%',
-    height: '85%',
-    backgroundColor: 'white',
-    borderRadius: 8,
-    paddingVertical: 20,
-    elevation: 5,
   },
   modalTitle: {
-    fontSize: 16,
-    fontFamily: 'isb',
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
-    textAlign: 'center',
   },
   modalText: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  inviteLink: {
     fontSize: 14,
-    color: '#2563EB',
-    marginBottom: 20,
+    color: '#808080', // Gray
     textAlign: 'center',
+    marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#1e90ff', // Dodger blue
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
   },
   modalButtonText: {
-    color: 'white',
-    fontSize: 16,
+    color: '#ffffff', // White
     fontWeight: 'bold',
   },
 });

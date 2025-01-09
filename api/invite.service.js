@@ -29,11 +29,7 @@ export const sendInvite = async (contact) => {
   const isAvailable = await SMS.isAvailableAsync();
   if (isAvailable) {
     const { result } = await SMS.sendSMSAsync(
-      [
-        contact.phoneNumbers[0].label !== 'home'
-          ? contact.phoneNumbers[0].number
-          : contact.phoneNumbers[1].number,
-      ],
+      [contact.phoneNumbers[0]],
       message
     );
     console.log(result);
