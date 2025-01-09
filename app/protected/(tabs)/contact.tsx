@@ -139,7 +139,7 @@ const Contact = () => {
             style={styles.connectButton}
             onPress={() => handleRequestConnect(connections)}
           >
-            <MaterialIcons name="add-circle" size={20} color={'white'} />
+            <MaterialIcons name="add-circle" size={20} color={Colors.pri} />
             <Text style={styles.connectText}>Connect</Text>
           </TouchableOpacity>
         ) : (
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.pri,
   },
   connectText: {
-    color: '#ffffff', // White
+    color: Colors.pri,
     fontWeight: 'bold',
     marginLeft: 4,
   },
