@@ -752,6 +752,10 @@ const styles = StyleSheet.create({
     color: '#2563EB',
     marginBottom: 20,
     textAlign: 'center',
+    padding: 5,
+    borderWidth: 1,
+    borderColor: '#2563EB',
+    borderRadius: 8,
   },
   modalButton: {
     backgroundColor: '#1F2937',

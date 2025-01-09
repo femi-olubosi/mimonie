@@ -8,6 +8,7 @@ import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 import { Storage } from 'aws-amplify';
 import { Buffer } from 'buffer';
+import { safeParseJSON } from '@/utils/safeJSON';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
@@ -172,6 +173,56 @@ export const fetchAllUserProfile = async () => {
     return userProfile;
   } catch (error) {
     console.error('Error fetching user user profile:', error);
+    return [];
+  }
+};
+
+export const fetchExistingUser = async (contacts) => {
+  try {
+    // Query all user profiles from DataStore
+    const userProfiles = await DataStore.query(UserProfile);
+
+    if (!Array.isArray(userProfiles) || userProfiles.length === 0) {
+      console.warn('No user profiles found in DataStore.');
+      return [];
+    }
+
+    // Map contacts to find matches in user profiles
+    const matchedUsers = contacts.map((contact) => {
+      // Ensure contact.phoneNumbers is an array
+      if (!Array.isArray(contact.phoneNumbers)) {
+        console.warn(`Contact ${contact.name} has invalid phoneNumbers.`);
+        return null;
+      }
+
+      // Find a matching user profile based on phone number
+      const matchingProfile = userProfiles.find((profile) => {
+        if (!profile.phone_number) return false; // Skip profiles with null or undefined phone_number
+        return contact.phoneNumbers.some((phone) => {
+          if (!phone) return false; // Skip null or undefined phone numbers
+          return (
+            phone.replace(/\s+/g, '').replace(/^\+/, '') ===
+            profile.phone_number.replace(/\s+/g, '').replace(/^\+/, '')
+          );
+        });
+      });
+
+      if (matchingProfile) {
+        return {
+          name: contact.name,
+          phoneNumbers: contact.phoneNumbers,
+          userProfile: matchingProfile,
+          connections: safeParseJSON(matchingProfile.connections) || [],
+        };
+      }
+
+      return null;
+    });
+
+    // Filter out unmatched contacts
+    return matchedUsers.filter((match) => match !== null);
+  } catch (error) {
+    console.error('Error fetching and matching user profiles:', error);
     return [];
   }
 };

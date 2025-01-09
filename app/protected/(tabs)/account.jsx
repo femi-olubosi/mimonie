@@ -86,55 +86,6 @@ const Account = () => {
     }
   };
 
-  // useEffect(() => {
-  //   async function getSmileStatus() {
-  //     // const jobId = await AsyncStorage.getItem('jobId');
-
-  //     try {
-  //       const restOperation = post({
-  //         apiName: 'callback',
-  //         path: '/biometric-verification/status',
-  //         options: {
-  //           body: {
-  //             userId: userProfile.id,
-  //             jobId: 'job-38a30d7a-2e35-4762-a988-b337ff46ead6',
-  //           },
-  //         },
-  //       });
-
-  //       const { body } = await restOperation.response;
-  //       const json = await body.json();
-  //       console.log('json', json);
-
-  //       // const res = await searchTree(json, 'FullName');
-  //       if (json?.result?.job_complete) {
-  //         await updateUserProfile(
-  //           { is_nin_verified: true, verification_in_progress_id: false },
-  //           currentUser
-  //         );
-
-  //         await createNotification(
-  //           {
-  //             title: 'Verification Completed',
-  //             content: `You have successfully verified your identity`,
-  //             type: 'verification',
-  //             userId: currentUser.userId,
-  //             read: false,
-  //           },
-  //           setNotifications
-  //         );
-  //       }
-  //       await fetchUserProfile(setUserProfile, currentUser);
-  //     } catch (e) {
-  //       console.log('GET call failed: ', e);
-  //     }
-  //   }
-
-  //   if (!userProfile?.is_nin_verified) {
-  //     getSmileStatus();
-  //   }
-  // }, [userProfile?.is_nin_verified]);
-
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
