@@ -32,6 +32,7 @@ const variantOptions = [
 ];
 
 const adminVariantOptions = [
+  { label: 'Daily', value: 'days' },
   { label: 'Weekly', value: 'weeks' },
   { label: 'Monthly', value: 'months' },
 ];
