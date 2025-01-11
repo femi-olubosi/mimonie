@@ -124,10 +124,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserProfile(setUserProfile, currentUser);
-    const subscription = DataStore.observe(UserProfile).subscribe(() =>
-      fetchUserProfile(setUserProfile, currentUser)
-    );
-    return () => subscription.unsubscribe();
+    // const subscription = DataStore.observe(UserProfile).subscribe(() =>
+    //   fetchUserProfile(setUserProfile, currentUser)
+    // );
+    // return () => subscription.unsubscribe();
   }, [currentUser]);
 
   useEffect(() => {
@@ -163,24 +163,24 @@ export default function HomeScreen() {
     fetchUserActivities(userProfile?.userId, setUserActivities);
   }, [userProfile?.name]);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const file = await AsyncStorage.getItem('profilePicture');
-  //     if (!file) {
-  //     const remotePicture = await downloadUrl(userProfile?.userId);
-  //     if (remotePicture) {
-  //       setProfilePicture(remotePicture);
-  //       await AsyncStorage.setItem('profilePicture', remotePicture);
-  //     } else {
-  //       console.log('Failed to download profile picture');
-  //       setProfilePicture(null);
-  //     }
-  //     } else {
-  //       console.log('file', file);
-  //       setProfilePicture(file);
-  //     }
-  //   })();
-  // }, [userProfile?.userId]);
+  useEffect(() => {
+    (async () => {
+      // const file = await AsyncStorage.getItem('profilePicture');
+      // if (!file) {
+      const remotePicture = await downloadUrl(userProfile?.userId);
+      if (remotePicture) {
+        setProfilePicture(remotePicture);
+        await AsyncStorage.setItem('profilePicture', remotePicture);
+      } else {
+        console.log('Failed to download profile picture');
+        setProfilePicture(null);
+      }
+      // } else {
+      //   console.log('file', file);
+      //   setProfilePicture(file);
+      // }
+    })();
+  }, [userProfile?.userId]);
 
   useEffect(() => {
     const listUserConnections = async () => {
@@ -194,35 +194,35 @@ export default function HomeScreen() {
     listUserConnections();
   }, [userProfile?.userId]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const storedData = await AsyncStorage.getItem('profilePicture');
-        if (storedData) {
-          const res = safeParseJSON(storedData, {});
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const storedData = await AsyncStorage.getItem('profilePicture');
+  //       if (storedData) {
+  //         const res = safeParseJSON(storedData, {});
 
-          if (isExpired(res?.timestamp)) {
-            console.log('Profile picture URL expired. Fetching new one...');
-            const picture = await fetchAndStoreProfilePicture(
-              userProfile?.userId
-            );
-            setProfilePicture(picture);
-          } else {
-            console.log('Loaded profile picture from storage.');
-            setProfilePicture(res?.url);
-          }
-        } else {
-          console.log('No profile picture in storage. Fetching new one...');
-          const picture = await fetchAndStoreProfilePicture(
-            userProfile?.userId
-          );
-          setProfilePicture(picture);
-        }
-      } catch (error) {
-        console.error('Error managing profile picture:', error);
-      }
-    })();
-  }, [userProfile?.userId]);
+  //         if (isExpired(res?.timestamp)) {
+  //           console.log('Profile picture URL expired. Fetching new one...');
+  //           const picture = await fetchAndStoreProfilePicture(
+  //             userProfile?.userId
+  //           );
+  //           setProfilePicture(picture);
+  //         } else {
+  //           console.log('Loaded profile picture from storage.');
+  //           setProfilePicture(res?.url);
+  //         }
+  //       } else {
+  //         console.log('No profile picture in storage. Fetching new one...');
+  //         const picture = await fetchAndStoreProfilePicture(
+  //           userProfile?.userId
+  //         );
+  //         setProfilePicture(picture);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error managing profile picture:', error);
+  //     }
+  //   })();
+  // }, [userProfile?.userId]);
 
   useEffect(() => {
     const registerPushToken = async () => {
