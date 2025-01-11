@@ -97,7 +97,7 @@ const connect = () => {
       setIsLoading(false);
     }
   };
-  console.log(myConnections);
+
   const renderConnectionItem = ({ item }) => {
     const otherUser =
       item.senderId === userProfile.userId
@@ -159,7 +159,7 @@ const connect = () => {
               </Text>
             </Pressable>
           )}
-          {activeTab === 2 && otherUser.userId === userProfile.userId && (
+          {activeTab === 2 && item?.receiverId === userProfile.userId && (
             <Pressable
               style={{
                 paddingHorizontal: 6,

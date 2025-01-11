@@ -29,10 +29,6 @@ const Options = ({ userProfile, priText, setShowHelp, connect, pilot }) => {
     }
   }, [userProfile]);
 
-  const pendingConnections = parsedConnect?.filter(
-    (e) => e.type === 'request' && e.status === 'pending'
-  );
-
   // const networkText =
   //   connect && connect > 0 && connect < 5
   //     ? `Please connect with ${5 - connect} more friend${
@@ -94,7 +90,7 @@ const Options = ({ userProfile, priText, setShowHelp, connect, pilot }) => {
               }}
             >
               <Text style={{ fontSize: 8, fontFamily: 'ir', color: 'white' }}>
-                {pendingConnections?.length}
+                {connect}
               </Text>
             </View>
 

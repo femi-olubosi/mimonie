@@ -114,7 +114,9 @@ const Contact = () => {
         );
 
         setContacts(phoneContacts);
-        setFoundUsers(matchedUsers);
+        setFoundUsers(
+          matchedUsers.filter((e) => e.userId !== userProfile.userId)
+        );
       } catch (error) {
         console.error(error);
       } finally {
