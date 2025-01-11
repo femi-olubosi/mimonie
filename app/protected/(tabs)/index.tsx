@@ -44,7 +44,12 @@ import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
 import { fetchUserActivities } from '@/api/activities.service';
-import { Contribution, UserActivity, UserProfile } from '@/src/models';
+import {
+  Contribution,
+  UserActivity,
+  UserConnections,
+  UserProfile,
+} from '@/src/models';
 import {
   registerForPushNotificationsAsync,
   savePushToken,
@@ -192,7 +197,12 @@ export default function HomeScreen() {
       }
     };
     listUserConnections();
-  }, [userProfile?.userId]);
+
+    const subscription = DataStore.observe(UserConnections).subscribe(() =>
+      listUserConnections()
+    );
+    return () => subscription.unsubscribe();
+  }, [userProfile]);
 
   // useEffect(() => {
   //   (async () => {

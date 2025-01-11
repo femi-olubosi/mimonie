@@ -31,6 +31,11 @@ const variantOptions = [
   { label: 'Monthly', value: 'months' },
 ];
 
+const adminVariantOptions = [
+  { label: 'Weekly', value: 'weeks' },
+  { label: 'Monthly', value: 'months' },
+];
+
 const variantOptionsPersonal = [
   { label: 'Daily', value: 'days' },
   { label: 'Weekly', value: 'weeks' },
@@ -289,6 +294,13 @@ const CreateContribution = () => {
     ? adminAmountOptions
     : amountOptions;
 
+  const variantList = [
+    '1831b390-4051-707e-e882-01ce028e7735',
+    '089153d0-70d1-7084-dc69-f41032bfaefb',
+  ].includes(userProfile?.userId)
+    ? adminVariantOptions
+    : variantOptions;
+
   return (
     <PageView title={'Create Contribution'}>
       <View style={styles.container}>
@@ -407,7 +419,7 @@ const CreateContribution = () => {
                 <View style={{ rowGap: 14 }}>
                   <Text style={styles.label}>Frequency</Text>
                   <SelectInput
-                    options={variantOptions}
+                    options={variantList}
                     selectedValue={variant}
                     setSelectedValue={setVariant}
                     defaultValue={variant.value}
