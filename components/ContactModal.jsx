@@ -20,26 +20,33 @@ import { safeParseJSON } from '@/utils/safeJSON';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 import { triggerNotificationForUser } from '../api/pushNotification.service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ContactModal = ({ visible, setVisible, invite_link, amount }) => {
+const ContactModal = ({
+  visible,
+  setVisible,
+  invite_link,
+  amount,
+  participants = [],
+}) => {
   const [contactSearch, setContactSearch] = useState('');
-  const { userProfile, setUserProfile, currentUser } = useGlobalContext();
+  const { userProfile, setUserProfile, currentUser, parsed } =
+    useGlobalContext();
   const [parsedConnect, setParsedConnect] = useState([]);
   const [selected, setSelected] = useState([]);
+  const [processing, setProcessing] = useState(false);
 
   const handleSendInvite = async (item) => {
-    console.log(
-      'object',
-      selected.includes(item.userId),
-      item?.invites?.includes(invite_link)
-    );
+    if (participants.includes(item.userId) || selected.includes(item.userId)) {
+      return;
+    }
 
     if (!item.verified) {
       Alert.alert('Sorry!!', `${item?.name} is not verified`);
       return;
     }
 
-    if (item.income_from && item.income_from < amount) {
+    if (Number(item.income_from) && Number(item.income_from) < Number(amount)) {
       Alert.alert(
         'Sorry!!',
         `${item?.name} income is too low to join this contribution`
@@ -47,62 +54,60 @@ const ContactModal = ({ visible, setVisible, invite_link, amount }) => {
       return;
     }
 
-    if (
-      selected.includes(item.userId) ||
-      item?.invites?.includes(invite_link)
-    ) {
-      Alert.alert(
-        'Sorry!!',
-        `${item?.name} is already invited to this contribution`
+    setProcessing(true);
+    try {
+      await sendUserInvite(item.userId, invite_link);
+
+      await AsyncStorage.setItem(
+        'invited_users',
+        JSON.stringify([...selected, item.userId])
       );
-      return;
+      setSelected((prev) => [...prev, item.userId]);
+
+      await triggerNotificationForUser(
+        item?.push_token,
+        'Contribution Invite',
+        `You have been invited to join a contribution`,
+        { invite_link }
+      );
+    } catch (err) {
+      Alert.alert('Error', 'Failed to send invite');
+    } finally {
+      setProcessing(false);
     }
-
-    await sendUserInvite(item.userId, invite_link);
-    await fetchUserProfile(setUserProfile, currentUser);
-    setSelected((prev) => [...prev, item.userId]);
-
-    await triggerNotificationForUser(
-      item?.push_token,
-      'Contribution Invite',
-      `You have been invited to join a contribution`,
-      { invite_link }
-    );
   };
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const profile = await fetchUserProfile(setUserProfile, currentUser);
-
-      if (profile) {
-        const parsedData = safeParseJSON(profile?.connections, []);
-        setParsedConnect(parsedData);
+    const invitedUsers = AsyncStorage.getItem('invited_users');
+    if (invitedUsers) {
+      const parsedInvitedUsers = safeParseJSON(invitedUsers);
+      if (Array.isArray(parsedInvitedUsers)) {
+        setSelected(parsedInvitedUsers);
       }
-    };
-
-    fetchProfile();
-
-    const subscription = DataStore.observe(UserProfile).subscribe(() =>
-      fetchProfile()
-    );
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
+    }
+  }, []);
 
   const renderContact = ({ item }) => {
+    const otherUser =
+      item.senderId === userProfile.userId
+        ? item.receiverDetails
+        : item.senderDetails;
+
     return (
       <TouchableOpacity
         style={styles.contactContainer}
-        onPress={() => handleSendInvite(item)}
+        onPress={() => handleSendInvite(otherUser)}
       >
         <View style={styles.contactInfo}>
           <FontAwesome name="user-circle-o" size={24} color="gray" />
           <View style={{ rowGap: 2 }}>
-            <Text style={styles.contactName}>{item.name}</Text>
+            <Text style={styles.contactName}>{otherUser.name}</Text>
           </View>
         </View>
-        {selected.includes(item.userId) ||
-        item?.invites?.includes(invite_link) ? (
+        {participants.includes(otherUser.userId) ? (
           <AntDesign name="checkcircleo" size={24} color="green" />
+        ) : selected.includes(otherUser.userId) ? (
+          <Text style={{ color: Colors.pri }}>Invited</Text>
         ) : (
           <Text style={styles.inviteText}>Invite</Text>
         )}
@@ -111,14 +116,17 @@ const ContactModal = ({ visible, setVisible, invite_link, amount }) => {
   };
 
   const filteredContacts =
-    parsedConnect && Array.isArray(parsedConnect)
-      ? parsedConnect.filter(
+    contactSearch.trim() === ''
+      ? parsed
+      : parsed.filter(
           (e) =>
-            e.name &&
-            typeof e.name === 'string' &&
-            e.name.toLowerCase().includes(contactSearch.toLowerCase().trim())
-        )
-      : [];
+            e.senderDetails?.name
+              .toLowerCase()
+              .includes(contactSearch.toLowerCase().trim()) ||
+            e.receiverDetails?.name
+              .toLowerCase()
+              .includes(contactSearch.toLowerCase().trim())
+        );
 
   return (
     <Modal
@@ -210,7 +218,7 @@ const styles = StyleSheet.create({
   },
   inputSearch: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#9095A1',
     padding: 12,
@@ -312,7 +320,15 @@ const styles = StyleSheet.create({
   phoneNumber: {
     color: 'blue',
   },
+  invitedText: {
+    color: 'green',
+  },
   inviteText: {
     color: 'green',
+    borderWidth: 1,
+    borderColor: 'green',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
 });

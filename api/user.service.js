@@ -108,7 +108,7 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
   try {
     // await DataStore.clear();
     await DataStore.start();
-    // Fetch contributions where the user is a participant
+
     const userProfile = await DataStore.query(UserProfile, (c) =>
       c.userId.eq(currentUser.userId)
     );
@@ -177,8 +177,80 @@ export const fetchAllUserProfile = async () => {
   }
 };
 
+// export const fetchExistingUser = async (contacts) => {
+//   try {
+//     // Query all user profiles from DataStore
+//     const userProfiles = await DataStore.query(UserProfile);
+
+//     if (!Array.isArray(userProfiles) || userProfiles.length === 0) {
+//       console.warn('No user profiles found in DataStore.');
+//       return [];
+//     }
+
+//     // Map contacts to find matches in user profiles
+//     const matchedUsers = contacts.map((contact) => {
+//       // Ensure contact.phoneNumbers is an array
+//       if (!Array.isArray(contact.phoneNumbers)) {
+//         console.warn(`Contact ${contact.name} has invalid phoneNumbers.`);
+//         return null;
+//       }
+
+//       // Find a matching user profile based on phone number
+//       const matchingProfile = userProfiles.find((profile) => {
+//         if (!profile.phone_number) return false; // Skip profiles with null or undefined phone_number
+//         return contact.phoneNumbers.some((phone) => {
+//           if (!phone) return false; // Skip null or undefined phone numbers
+//           return (
+//             phone.replace(/\s+/g, '').replace(/^\+/, '') ===
+//             profile.phone_number.replace(/\s+/g, '').replace(/^\+/, '')
+//           );
+//         });
+//       });
+
+//       if (matchingProfile) {
+//         return {
+//           name: contact.name,
+//           phoneNumbers: contact.phoneNumbers,
+//           userProfile: matchingProfile,
+//           userId: matchingProfile.userId,
+//           connections: safeParseJSON(matchingProfile.connections) || [],
+//         };
+//       }
+
+//       return null;
+//     });
+
+//     // Filter out unmatched contacts
+//     return matchedUsers.filter((match) => match !== null);
+//   } catch (error) {
+//     console.error('Error fetching and matching user profiles:', error);
+//     return [];
+//   }
+// };
+
 export const fetchExistingUser = async (contacts) => {
   try {
+    // Function to normalize phone numbers
+    const normalizePhoneNumber = (phone) => {
+      if (!phone) return null;
+
+      // Remove spaces, dashes, and parentheses
+      const sanitizedPhone = phone.replace(/[\s-()]/g, '');
+
+      // If the phone starts with `+`, assume it's already in international format
+      if (sanitizedPhone.startsWith('+')) {
+        return sanitizedPhone;
+      }
+
+      // Handle local Nigerian numbers (e.g., `08139781147`)
+      if (/^0[789][01]\d{8}$/.test(sanitizedPhone)) {
+        return `+234${sanitizedPhone.slice(1)}`; // Replace leading `0` with `+234`
+      }
+
+      // Return the sanitized phone if no transformation is applied
+      return sanitizedPhone;
+    };
+
     // Query all user profiles from DataStore
     const userProfiles = await DataStore.query(UserProfile);
 
@@ -189,20 +261,23 @@ export const fetchExistingUser = async (contacts) => {
 
     // Map contacts to find matches in user profiles
     const matchedUsers = contacts.map((contact) => {
-      // Ensure contact.phoneNumbers is an array
       if (!Array.isArray(contact.phoneNumbers)) {
         console.warn(`Contact ${contact.name} has invalid phoneNumbers.`);
         return null;
       }
 
-      // Find a matching user profile based on phone number
+      // Find a matching user profile based on normalized phone number
       const matchingProfile = userProfiles.find((profile) => {
-        if (!profile.phone_number) return false; // Skip profiles with null or undefined phone_number
+        if (!profile.phone_number) return false; // Skip profiles without a phone number
+        const normalizedProfilePhone = normalizePhoneNumber(
+          profile.phone_number
+        );
         return contact.phoneNumbers.some((phone) => {
-          if (!phone) return false; // Skip null or undefined phone numbers
+          const normalizedContactPhone = normalizePhoneNumber(phone);
           return (
-            phone.replace(/\s+/g, '').replace(/^\+/, '') ===
-            profile.phone_number.replace(/\s+/g, '').replace(/^\+/, '')
+            normalizedContactPhone &&
+            normalizedProfilePhone &&
+            normalizedContactPhone === normalizedProfilePhone
           );
         });
       });
@@ -212,6 +287,7 @@ export const fetchExistingUser = async (contacts) => {
           name: contact.name,
           phoneNumbers: contact.phoneNumbers,
           userProfile: matchingProfile,
+          userId: matchingProfile.userId,
           connections: safeParseJSON(matchingProfile.connections) || [],
         };
       }

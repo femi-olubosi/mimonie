@@ -135,3 +135,12 @@ type Request @model @auth(rules: [{ allow: public }]) {
   reason: String
   extra: AWSJSON
 }
+
+type UserConnections @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  senderId: String!
+  receiverId: String!
+  senderDetails: AWSJSON
+  receiverDetails: AWSJSON
+  status: String!
+}

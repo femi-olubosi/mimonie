@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   FlatList,
   Modal,
   SafeAreaView,
@@ -9,36 +10,109 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { sendInvite } from '@/api/invite.service';
-import { updateUserConnections, undoRequest } from '@/api/network.service';
+import {
+  updateUserConnections,
+  undoRequest,
+  fetchUserConnections,
+  createConnection,
+} from '@/api/network.service';
 import { fetchExistingUser } from '@/api/user.service';
 import { triggerNotificationForUser } from '@/api/pushNotification.service';
 import { getContacts } from '@/api/contact.service';
+import { DataStore } from 'aws-amplify/dist/esm/datastore';
+import { UserConnections } from '@/src/models';
 
 const Contact = () => {
-  const { userProfile, setUserProfile, currentUser, setIsLoading } =
-    useGlobalContext();
+  const { userProfile, setUserProfile, setIsLoading } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
   const [foundUsers, setFoundUsers] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [activeTab, setActiveTab] = useState('users');
+  const [connectionList, setConnectionList] = useState([]);
+  const [pendingConnectionList, setPendingConnectionList] = useState([]);
+
+  const listConnections = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetchUserConnections(userProfile.userId);
+
+      // Extract sender and receiver IDs from accepted connections
+      const acceptedConnections = response
+        .filter((connection) => connection.status === 'accepted')
+        .flatMap((connection) =>
+          connection.senderId === userProfile.userId
+            ? [connection.receiverId]
+            : [connection.senderId]
+        );
+
+      // Extract sender and receiver IDs from pending connections
+      const pendingConnections = response
+        .filter((connection) => connection.status === 'pending')
+        .flatMap((connection) =>
+          connection.senderId === userProfile.userId
+            ? [connection.receiverId]
+            : [connection.senderId]
+        );
+
+      setConnectionList(acceptedConnections);
+      setPendingConnectionList(pendingConnections);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const syncConnections = async () => {
+    try {
+      const response = await fetchUserConnections(userProfile.userId);
+
+      // Extract sender and receiver IDs from accepted connections
+      const acceptedConnections = response
+        .filter((connection) => connection.status === 'accepted')
+        .flatMap((connection) =>
+          connection.senderId === userProfile.userId
+            ? [connection.receiverId]
+            : [connection.senderId]
+        );
+
+      // Extract sender and receiver IDs from pending connections
+      const pendingConnections = response
+        .filter((connection) => connection.status === 'pending')
+        .flatMap((connection) =>
+          connection.senderId === userProfile.userId
+            ? [connection.receiverId]
+            : [connection.senderId]
+        );
+
+      setConnectionList(acceptedConnections);
+      setPendingConnectionList(pendingConnections);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
-    const fetchAllUsersData = async () => {
+    const initializeContacts = async () => {
       try {
         setIsLoading(true);
         let phoneContacts = await getContacts();
         const matchedUsers = await fetchExistingUser(phoneContacts);
+
         phoneContacts = phoneContacts?.filter(
           (contact) =>
             matchedUsers.findIndex(
               (user) => user.phoneNumbers[0] === contact.phoneNumbers[0]
             ) === -1
         );
+
         setContacts(phoneContacts);
         setFoundUsers(matchedUsers);
       } catch (error) {
@@ -48,21 +122,26 @@ const Contact = () => {
       }
     };
 
-    fetchAllUsersData();
+    initializeContacts();
+    listConnections();
+
+    const subscription = DataStore.observe(UserConnections).subscribe(() => {
+      syncConnections();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleInvite = async (item) => {
     await sendInvite(item);
   };
 
-  const handleRequestConnect = async (connections) => {
+  const handleRequestConnect = async (connection) => {
     try {
       setIsLoading(true);
-      await updateUserConnections(connections, userProfile);
-      const updatedUsers = await fetchExistingUser(contacts);
-      setFoundUsers(updatedUsers);
+      await createConnection(userProfile, connection);
       await triggerNotificationForUser(
-        connections?.push_token,
+        connection?.push_token,
         'Connect Request',
         `You have a connection request from ${userProfile.name}`
       );
@@ -74,41 +153,23 @@ const Contact = () => {
     }
   };
 
-  const handleRemoveRequest = async (data) => {
-    try {
-      setIsLoading(true);
-      await undoRequest(data, userProfile);
-      const updatedUsers = await fetchExistingUser(contacts);
-      setFoundUsers(updatedUsers);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleRemoveRequest = async () => {
+    Alert.alert('Notice', 'Please go to network page to remove the request');
+    return;
   };
 
-  const renderContact = ({ item }) => {
-    const connections = {
-      userId: item?.userProfile?.userId,
-      name: item?.userProfile?.name,
-      phone_number: item?.userProfile?.phone_number,
-      email: item?.userProfile?.email,
-      invites: item?.userProfile?.invites,
-      occupation: item?.userProfile?.occupation,
-      push_token: item?.userProfile?.push_token,
-      verified:
-        item?.userProfile?.is_nin_verified &&
-        item?.userProfile?.is_bvn_verified,
-      status: 'pending',
-      type: 'user',
-    };
+  const renderUser = ({ item }) => {
+    // const connected = item?.connections?.some(
+    //   (conn) =>
+    //     conn?.userId === userProfile.userId && conn?.status === 'accepted'
+    // );
+    // const requested = item?.connections?.some(
+    //   (conn) =>
+    //     conn?.userId === userProfile.userId && conn?.status === 'pending'
+    // );
 
-    const connected = item?.connections?.some(
-      (e) => e?.userId === userProfile.userId && e?.status === 'accepted'
-    );
-    const requested = item?.connections?.some(
-      (e) => e?.userId === userProfile.userId && e?.status === 'pending'
-    );
+    const connected = connectionList.includes(item?.userId);
+    const requested = pendingConnectionList.includes(item?.userId);
 
     return (
       <View style={styles.contactContainer}>
@@ -124,48 +185,93 @@ const Contact = () => {
         {requested ? (
           <TouchableOpacity
             style={styles.requestSentButton}
-            onPress={() => handleRemoveRequest(item.userProfile)}
+            onPress={handleRemoveRequest}
           >
-            <MaterialIcons name="cancel" size={20} color={'red'} />
-            <Text style={styles.requestSentText}>Cancel Request</Text>
+            <Text style={styles.requestSentText}>Request Sent</Text>
           </TouchableOpacity>
         ) : connected ? (
           <View style={styles.connectedContainer}>
             <MaterialIcons name="check-circle" size={20} color={'green'} />
             <Text style={styles.connectedText}>Connected</Text>
           </View>
-        ) : item.userProfile ? (
+        ) : (
           <TouchableOpacity
             style={styles.connectButton}
-            onPress={() => handleRequestConnect(connections)}
+            onPress={() => handleRequestConnect(item.userProfile)}
           >
             <MaterialIcons name="add-circle" size={20} color={Colors.pri} />
             <Text style={styles.connectText}>Connect</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.inviteButton}
-            onPress={() => handleInvite(item)}
-          >
-            <Text style={styles.inviteText}>Invite</Text>
           </TouchableOpacity>
         )}
       </View>
     );
   };
 
-  const users = foundUsers ? [...foundUsers, ...contacts] : contacts;
+  const renderContact = ({ item }) => (
+    <View style={styles.contactContainer}>
+      <View style={styles.contactInfo}>
+        <FontAwesome name="user-circle-o" size={26} color={'gray'} />
+        <View>
+          <Text style={styles.contactName}>{item?.name}</Text>
+          <Text style={styles.contactOccupation}>
+            {item?.phoneNumbers?.[0]}
+          </Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.inviteButton}
+        onPress={() => handleInvite(item)}
+      >
+        <Text style={styles.inviteText}>Invite</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
-  const filteredContacts = contactSearch
-    ? users.filter((item) =>
-        item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
-      )
-    : users;
+  const filteredContacts =
+    activeTab === 'users'
+      ? contactSearch
+        ? foundUsers.filter((item) =>
+            item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
+          )
+        : foundUsers
+      : contactSearch
+      ? contacts.filter((item) =>
+          item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
+        )
+      : contacts;
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       <Text style={styles.headerText}>My Contacts</Text>
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'users' && styles.activeTab]}
+          onPress={() => setActiveTab('users')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'users' && styles.activeTabText,
+            ]}
+          >
+            Registered Users
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'invite' && styles.activeTab]}
+          onPress={() => setActiveTab('invite')}
+        >
+          <Text
+            style={[
+              styles.tabText,
+              activeTab === 'invite' && styles.activeTabText,
+            ]}
+          >
+            Invite Contacts
+          </Text>
+        </TouchableOpacity>
+      </View>
       <TextInput
         style={styles.inputSearch}
         value={contactSearch}
@@ -176,28 +282,9 @@ const Contact = () => {
       <FlatList
         data={filteredContacts}
         keyExtractor={(item, idx) => idx.toString()}
-        renderItem={renderContact}
+        renderItem={activeTab === 'users' ? renderUser : renderContact}
         showsVerticalScrollIndicator={false}
       />
-      <Modal
-        animationType="slide"
-        transparent
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Success!</Text>
-            <Text style={styles.modalText}>Connect request sent.</Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.modalButtonText}>OK</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -216,6 +303,23 @@ const styles = StyleSheet.create({
     fontFamily: 'isb',
     fontSize: 16,
   },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 12,
+    marginBottom: 10,
+  },
+  tabButton: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#e0e0e0',
+    alignItems: 'center',
+    borderRadius: 4,
+    marginHorizontal: 5,
+  },
+  activeTab: { backgroundColor: Colors.pri },
+  tabText: { color: '#333' },
+  activeTabText: { color: '#fff', fontWeight: 'bold' },
   inputSearch: {
     backgroundColor: '#ffffff', // White
     borderRadius: 4,
@@ -281,17 +385,10 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontWeight: 'bold',
   },
-  requestSentButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#dcdcdc', // Gainsboro
-    padding: 8,
-    borderRadius: 4,
-  },
+  requestSentButton: {},
   requestSentText: {
-    color: '#ff4500', // Orange red
-    fontWeight: 'bold',
-    marginLeft: 4,
+    color: '#666600',
+    fontFamily: 'isb',
   },
   modalContainer: {
     flex: 1,

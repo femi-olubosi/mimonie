@@ -441,3 +441,39 @@ export declare type Request = LazyLoading extends LazyLoadingDisabled ? EagerReq
 export declare const Request: (new (init: ModelInit<Request>) => Request) & {
   copyOf(source: Request, mutator: (draft: MutableModel<Request>) => MutableModel<Request> | void): Request;
 }
+
+type EagerUserConnections = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserConnections, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly senderId: string;
+  readonly receiverId: string;
+  readonly senderDetails?: string | null;
+  readonly receiverDetails?: string | null;
+  readonly status: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyUserConnections = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<UserConnections, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly senderId: string;
+  readonly receiverId: string;
+  readonly senderDetails?: string | null;
+  readonly receiverDetails?: string | null;
+  readonly status: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type UserConnections = LazyLoading extends LazyLoadingDisabled ? EagerUserConnections : LazyUserConnections
+
+export declare const UserConnections: (new (init: ModelInit<UserConnections>) => UserConnections) & {
+  copyOf(source: UserConnections, mutator: (draft: MutableModel<UserConnections>) => MutableModel<UserConnections> | void): UserConnections;
+}

@@ -12,14 +12,16 @@ import { PageView } from '@/components/Reusable';
 import { Colors } from '../../constants/Colors';
 import { FontAwesome6 } from '@expo/vector-icons';
 import {
-  removeConnection,
-  acceptConnectionRequest,
-  rejectConnectionRequest,
+  fetchUserConnections,
+  removeUserConnection,
+  updateUserConnection,
 } from '@/api/network.service';
 import { fetchUserProfile } from '@/api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
 import { triggerNotificationForUser } from '@/api/pushNotification.service';
 import { router } from 'expo-router';
+import { UserConnections } from '../../src/models';
+import { DataStore } from 'aws-amplify/datastore';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
@@ -31,28 +33,53 @@ const connect = () => {
     parsed,
     setParsed,
   } = useGlobalContext();
+  const [myConnections, setConnectionList] = useState([]);
+  const [pendingConnections, setPendingConnectionList] = useState([]);
+
+  const syncConnections = async () => {
+    try {
+      const response = await fetchUserConnections(userProfile.userId);
+      setConnectionList(
+        response.filter((connection) => connection.status === 'accepted')
+      );
+      setPendingConnectionList(
+        response.filter((connection) => connection.status === 'pending')
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    const listConnections = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetchUserConnections(userProfile.userId);
+        setConnectionList(
+          response.filter((connection) => connection.status === 'accepted')
+        );
+        setPendingConnectionList(
+          response.filter((connection) => connection.status === 'pending')
+        );
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    listConnections();
+
+    const subscription = DataStore.observe(UserConnections).subscribe(() => {
+      syncConnections();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleRemoveRequest = async (data) => {
-    setParsed((prevData) =>
-      prevData.filter((item) => item.phone_number !== data.phone_number)
-    );
     try {
-      await rejectConnectionRequest(data, userProfile);
-      await fetchUserProfile(setUserProfile, currentUser);
-
-      Alert.alert(
-        'Connection rejected',
-        '',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              fetchUserProfile(setUserProfile, currentUser);
-            },
-          },
-        ],
-        { cancelable: false }
-      );
+      setIsLoading(true);
+      await removeUserConnection(data.id);
     } catch (error) {
       console.error(error);
     } finally {
@@ -60,121 +87,105 @@ const connect = () => {
     }
   };
 
-  const handleConnectRequest = async (data) => {
+  const handleAcceptRequest = async (data) => {
     try {
-      if (activeTab === 1) {
-        setParsed((prevData) =>
-          prevData.filter((item) => item.phone_number !== data.phone_number)
-        );
-        await removeConnection(data, userProfile);
-        Alert.alert(
-          'Connection removed',
-          '',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                fetchUserProfile(setUserProfile, currentUser);
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      } else if (activeTab === 2) {
-        setParsed((prevData) =>
-          prevData.map((item) =>
-            item.phone_number === data.phone_number
-              ? { ...item, status: 'accepted' }
-              : item
-          )
-        );
-        await acceptConnectionRequest(data, userProfile);
-        await triggerNotificationForUser(
-          data?.push_token,
-          'Connect Request Accepted',
-          `${userProfile.name} accepted your connect request`
-        );
-        Alert.alert(
-          'Connection accepted',
-          '',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                fetchUserProfile(setUserProfile, currentUser);
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-      }
+      setIsLoading(true);
+      await updateUserConnection(data.id);
     } catch (error) {
-      console.error('Error handling connection request:', error);
+      console.error(error);
     } finally {
-      await fetchUserProfile(setUserProfile, currentUser);
       setIsLoading(false);
     }
   };
+  console.log(myConnections);
+  const renderConnectionItem = ({ item }) => {
+    const otherUser =
+      item.senderId === userProfile.userId
+        ? item.receiverDetails
+        : item.senderDetails;
 
-  const myConnections = parsed?.filter((e) => e.status === 'accepted');
-  const pendingConnections = parsed?.filter(
-    (e) => e.type === 'request' && e.status === 'pending'
-  );
-
-  const renderConnectionItem = ({ item }) => (
-    <View
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        },
-        styles.itemContainer,
-      ]}
-    >
-      <View style={{ rowGap: 5 }}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemOccupation}>{item.occupation}</Text>
-      </View>
+    return (
       <View
-        style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10 }}
+        style={[
+          {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
+          styles.itemContainer,
+        ]}
       >
-        {activeTab === 2 && (
-          <Pressable
-            style={{
-              paddingHorizontal: 6,
-              paddingVertical: 5,
-              borderRadius: 6,
-              borderWidth: 1,
-              borderColor: 'red',
-            }}
-            onPress={() => handleRemoveRequest(item)}
-          >
-            <FontAwesome6 name="times-circle" size={16} color={'red'} />
-          </Pressable>
-        )}
-        <Pressable
-          style={{
-            paddingHorizontal: 6,
-            paddingVertical: 5,
-            borderRadius: 6,
-            borderWidth: 1,
-            borderColor: activeTab === 1 ? 'red' : Colors.pri,
-          }}
-          onPress={() => handleConnectRequest(item)}
+        <View style={{ rowGap: 5 }}>
+          <Text style={styles.itemName}>{otherUser.name}</Text>
+          <Text style={styles.itemOccupation}>{otherUser.occupation}</Text>
+        </View>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center', columnGap: 10 }}
         >
-          <Text
-            style={{
-              color: activeTab === 1 ? 'red' : Colors.pri,
-              fontSize: 14,
-            }}
-          >
-            {activeTab === 1 ? 'Remove' : 'Accept'}
-          </Text>
-        </Pressable>
+          {activeTab === 2 && (
+            <Pressable
+              style={{
+                paddingHorizontal: 6,
+                paddingVertical: 5,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: 'red',
+              }}
+              onPress={() => handleRemoveRequest(item)}
+            >
+              <FontAwesome6 name="times-circle" size={16} color={'red'} />
+            </Pressable>
+          )}
+          {activeTab === 1 && (
+            <Pressable
+              style={{
+                paddingHorizontal: 6,
+                paddingVertical: 5,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: 'red',
+              }}
+              onPress={() => {
+                handleRemoveRequest(item);
+              }}
+            >
+              <Text
+                style={{
+                  color: 'red',
+                  fontSize: 14,
+                }}
+              >
+                Remove
+              </Text>
+            </Pressable>
+          )}
+          {activeTab === 2 && otherUser.userId === userProfile.userId && (
+            <Pressable
+              style={{
+                paddingHorizontal: 6,
+                paddingVertical: 5,
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: Colors.pri,
+              }}
+              onPress={() => {
+                handleAcceptRequest(item);
+              }}
+            >
+              <Text
+                style={{
+                  color: Colors.pri,
+                  fontSize: 14,
+                }}
+              >
+                Accept
+              </Text>
+            </Pressable>
+          )}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <PageView title={'My Network'}>

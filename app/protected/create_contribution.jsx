@@ -19,20 +19,12 @@ import {
   createPersonalContribution,
 } from '../../api/contributions.service';
 import { getContributionGroups } from '../../api/groups.service';
+import { fetchUserConnections } from '../../api/network.service';
 import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
 import { ErrorCheck } from '../../utils/errorCheck';
 import CopyLink from '../../components/CopyLink';
 import { naira } from '@/constants/Currency';
-
-const dateOption = [
-  'en-US',
-  {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  },
-];
 
 const variantOptions = [
   { label: 'Weekly', value: 'weeks' },
@@ -46,6 +38,26 @@ const variantOptionsPersonal = [
 ];
 
 const amountOptions = [
+  { label: '₦5,000', value: 5000 },
+  { label: '₦10,000', value: 10000 },
+  { label: '₦20,000', value: 20000 },
+  { label: '₦30,000', value: 30000 },
+  { label: '₦40,000', value: 40000 },
+  { label: '₦50,000', value: 50000 },
+  { label: '₦100,000', value: 100000 },
+  { label: '₦200,000', value: 200000 },
+  { label: '₦300,000', value: 300000 },
+  { label: '₦400,000', value: 400000 },
+  { label: '₦500,000', value: 500000 },
+  { label: '₦1,000,000', value: 1000000 },
+  // { label: '₦2,000,000', value: 2000000 },
+  // { label: '₦5,000,000', value: 5000000 },
+  // { label: '₦10,000,000', value: 10000000 },
+];
+const adminAmountOptions = [
+  { label: '₦100', value: 100 },
+  { label: '₦200', value: 200 },
+  { label: '₦500', value: 500 },
   { label: '₦5,000', value: 5000 },
   { label: '₦10,000', value: 10000 },
   { label: '₦20,000', value: 20000 },
@@ -95,6 +107,7 @@ const CreateContribution = () => {
     setIsLoading,
     userProfile,
     parsed,
+    setParsed,
   } = useGlobalContext();
   const router = useRouter();
 
@@ -102,7 +115,7 @@ const CreateContribution = () => {
     getContributionGroups(setContributionGroups);
   }, []);
 
-  const myConnections = parsed?.filter((e) => e.status === 'accepted');
+  const myConnections = parsed;
 
   const createGroupContribution = async () => {
     const details = {
@@ -219,7 +232,7 @@ const CreateContribution = () => {
       return;
     }
 
-    if (userProfile.name !== 'Admin Default' && !userProfile.auth_url) {
+    if (!userProfile.auth_url) {
       Alert.alert(
         'Sorry!!',
         'You cannot create contribution at the moment. Add a card to continue'
@@ -266,9 +279,15 @@ const CreateContribution = () => {
   const p_target = selectedValue.p_amount * selectedValue.p_duration || 0;
 
   useEffect(() => {
-    // clear amount and duration when variate changes
     setSelectedValue({});
   }, [variant]);
+
+  const amountList = [
+    '1831b390-4051-707e-e882-01ce028e7735',
+    '089153d0-70d1-7084-dc69-f41032bfaefb',
+  ].includes(userProfile?.userId)
+    ? adminAmountOptions
+    : amountOptions;
 
   return (
     <PageView title={'Create Contribution'}>
@@ -397,7 +416,7 @@ const CreateContribution = () => {
                 <View style={{ rowGap: 14 }}>
                   <Text style={styles.label}>Amount {variant.label}</Text>
                   <SelectInput
-                    options={amountOptions}
+                    options={amountList}
                     selectedValue={amountSelected}
                     setSelectedValue={setAmountSelected}
                     defaultValue={amountSelected.value}
@@ -754,8 +773,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 5,
     borderWidth: 1,
-    borderColor: '#2563EB',
-    borderRadius: 8,
+    borderColor: '#000',
+    borderRadius: 4,
   },
   modalButton: {
     backgroundColor: '#1F2937',

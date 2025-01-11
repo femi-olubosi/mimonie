@@ -39,6 +39,7 @@ import ModalWrapper from '../../../components/modals/ModalWrapper';
 import Drag from './Drag';
 import NextContributionDay from './NextContributionDay';
 import ParticipantList from './ParticipantList';
+import { fetchUserConnections } from '../../../api/network.service';
 
 const ContributionDetails = () => {
   const {
@@ -49,6 +50,7 @@ const ContributionDetails = () => {
     setInviteArray,
     hideValues,
     isLoading,
+    parsed: connected,
   } = useGlobalContext();
   const { id } = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
@@ -161,9 +163,13 @@ const ContributionDetails = () => {
       return;
     }
 
-    const parsedData = safeParseJSON(ownerProfile?.connections, []);
-
-    if (!parsedData.find((e) => e.userId === userProfile.userId)) {
+    if (
+      connected.find(
+        (e) =>
+          e.senderId !== ownerProfile.userId ||
+          e.receiverId !== ownerProfile.userId
+      )
+    ) {
       Alert.alert('Error joining', 'You are not connected to this user');
       return;
     }
@@ -504,6 +510,7 @@ const ContributionDetails = () => {
         visible={visible}
         setVisible={setVisible}
         invite_link={contribution?.id}
+        participants={contribution?.participant_ids}
       />
       <Paystack
         ref={paystackWebViewRef}

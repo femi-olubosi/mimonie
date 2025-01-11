@@ -26,7 +26,11 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
-import { fetchUserContributions } from '@/api/contributions.service';
+import { getContributionGroups } from '@/api/groups.service';
+import {
+  createContribution,
+  fetchUserContributions,
+} from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { DataStore } from 'aws-amplify/datastore';
 import {
@@ -55,6 +59,7 @@ import {
   fetchAndStoreProfilePicture,
   isExpired,
 } from '@/utils/profileManagement';
+import { createConnection, fetchUserConnections } from '@/api/network.service';
 
 export default function HomeScreen() {
   const {
@@ -86,6 +91,7 @@ export default function HomeScreen() {
   const { priBg, secBg, priText } = ThemeColors();
   const [refreshing, setRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [pushActive, setPushActive] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -116,16 +122,11 @@ export default function HomeScreen() {
     checkAuthStatus();
   }, []);
 
-  // useEffect(() => {
-  //   fetchCurrUser(setCurrentUser);
-  // }, []);
-
   useEffect(() => {
-    // fetchUserProfile(setUserProfile, currentUser);
+    fetchUserProfile(setUserProfile, currentUser);
     const subscription = DataStore.observe(UserProfile).subscribe(() =>
       fetchUserProfile(setUserProfile, currentUser)
     );
-
     return () => subscription.unsubscribe();
   }, [currentUser]);
 
@@ -160,61 +161,68 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserActivities(userProfile?.userId, setUserActivities);
-    const subscription = DataStore.observe(UserActivity).subscribe(() =>
-      fetchUserActivities(userProfile?.userId, setUserActivities)
-    );
-    return () => subscription.unsubscribe();
   }, [userProfile?.name]);
-
-  useEffect(() => {
-    (async () => {
-      // const file = await AsyncStorage.getItem('profilePicture');
-      // if (!file) {
-      const remotePicture = await downloadUrl(userProfile?.userId);
-      if (remotePicture) {
-        console.log('remote', remotePicture);
-        setProfilePicture(remotePicture);
-        await AsyncStorage.setItem('profilePicture', remotePicture);
-      } else {
-        console.log('Failed to download profile picture');
-        setProfilePicture(null);
-      }
-      // } else {
-      //   console.log('file', file);
-      //   setProfilePicture(file);
-      // }
-    })();
-  }, [userProfile?.userId]);
 
   // useEffect(() => {
   //   (async () => {
-  //     try {
-  //       const storedData = await AsyncStorage.getItem('profilePicture');
-  //       if (storedData) {
-  //         const res = safeParseJSON(storedData, {});
-
-  //         if (isExpired(res?.timestamp)) {
-  //           console.log('Profile picture URL expired. Fetching new one...');
-  //           const picture = await fetchAndStoreProfilePicture(
-  //             userProfile?.userId
-  //           );
-  //           setProfilePicture(picture);
-  //         } else {
-  //           console.log('Loaded profile picture from storage.');
-  //           setProfilePicture(res?.url);
-  //         }
-  //       } else {
-  //         console.log('No profile picture in storage. Fetching new one...');
-  //         const picture = await fetchAndStoreProfilePicture(
-  //           userProfile?.userId
-  //         );
-  //         setProfilePicture(picture);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error managing profile picture:', error);
+  //     const file = await AsyncStorage.getItem('profilePicture');
+  //     if (!file) {
+  //     const remotePicture = await downloadUrl(userProfile?.userId);
+  //     if (remotePicture) {
+  //       setProfilePicture(remotePicture);
+  //       await AsyncStorage.setItem('profilePicture', remotePicture);
+  //     } else {
+  //       console.log('Failed to download profile picture');
+  //       setProfilePicture(null);
+  //     }
+  //     } else {
+  //       console.log('file', file);
+  //       setProfilePicture(file);
   //     }
   //   })();
   // }, [userProfile?.userId]);
+
+  useEffect(() => {
+    const listUserConnections = async () => {
+      try {
+        const response = await fetchUserConnections(userProfile.userId);
+        setParsed(response?.filter((e) => e.status === 'accepted'));
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    listUserConnections();
+  }, [userProfile?.userId]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const storedData = await AsyncStorage.getItem('profilePicture');
+        if (storedData) {
+          const res = safeParseJSON(storedData, {});
+
+          if (isExpired(res?.timestamp)) {
+            console.log('Profile picture URL expired. Fetching new one...');
+            const picture = await fetchAndStoreProfilePicture(
+              userProfile?.userId
+            );
+            setProfilePicture(picture);
+          } else {
+            console.log('Loaded profile picture from storage.');
+            setProfilePicture(res?.url);
+          }
+        } else {
+          console.log('No profile picture in storage. Fetching new one...');
+          const picture = await fetchAndStoreProfilePicture(
+            userProfile?.userId
+          );
+          setProfilePicture(picture);
+        }
+      } catch (error) {
+        console.error('Error managing profile picture:', error);
+      }
+    })();
+  }, [userProfile?.userId]);
 
   useEffect(() => {
     const registerPushToken = async () => {
@@ -229,27 +237,11 @@ export default function HomeScreen() {
       }
     };
 
-    if (userProfile) {
+    if (userProfile && !pushActive) {
       registerPushToken();
+      setPushActive(true);
     }
   }, [currentUser, userProfile]);
-
-  // const responseListener = useRef();
-
-  // useEffect(() => {
-  //   responseListener.current =
-  //     Notifications.addNotificationResponseReceivedListener((response) => {
-  //       const inviteLink =
-  //         response.notification.request.content.data.invite_link;
-  //       if (inviteLink) {
-  //         Linking.openURL(inviteLink);
-  //       }
-  //     });
-  //   return () => {
-  //     responseListener.current &&
-  //       Notifications.removeNotificationSubscription(responseListener.current);
-  //   };
-  // }, []);
 
   useEffect(() => {
     const fetchContributions = async () => {
@@ -261,13 +253,6 @@ export default function HomeScreen() {
 
     fetchContributions();
   }, [userProfile?.invites]);
-
-  useEffect(() => {
-    if (userProfile) {
-      const parsedData = safeParseJSON(userProfile?.connections, []);
-      setParsed(parsedData);
-    }
-  }, [userProfile]);
 
   useEffect(() => {
     const checkForUpdates = async () => {
@@ -334,10 +319,7 @@ export default function HomeScreen() {
             pilot={pilot}
           />
           {/* <Advert /> */}
-          {/* <Button
-            title="SmileId"
-            onPress={() => router.push('/protected/complete_profile')}
-          /> */}
+          {/* <Button title="SmileId" onPress={pushObj} /> */}
           <View
             style={{
               paddingHorizontal: 20,

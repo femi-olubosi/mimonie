@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Button from '@/components/Button';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { imagePicker } from '@/utils/ImagePicker';
@@ -23,25 +23,11 @@ import {
   MaterialIcons,
 } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { uploadFile } from '@/api/user.service';
-import { updateUserAttributes } from 'aws-amplify/auth';
-import {
-  downloadUrl,
-  fetchCurrUser,
-  fetchUserProfile,
-  updateUserProfile,
-} from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
-import { get, post } from 'aws-amplify/api';
-import { searchTree } from '@/utils/searchTree';
-import { createNotification } from '@/api/notifications.service';
-import {
-  isNameAndDobIncluded,
-  isNameIncluded,
-} from '../../../utils/isNameIncluded';
 import { ThemeColors } from '../../../constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -49,11 +35,8 @@ const Account = () => {
   const { signOut } = useAuthenticator();
   const {
     currentUser,
-    setCurrentUser,
     setIsLoading,
     userProfile,
-    setUserProfile,
-    setNotifications,
     profilePicture,
     setProfilePicture,
   } = useGlobalContext();
@@ -384,7 +367,7 @@ const Account = () => {
               <Button
                 title={'Confirm Log Out'}
                 color={'red'}
-                onPress={() => {
+                onPress={async () => {
                   setIsLoading(true);
                   try {
                     signOut();
