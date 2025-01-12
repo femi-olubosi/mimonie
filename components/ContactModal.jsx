@@ -150,7 +150,17 @@ const ContactModal = ({
             onPress={() => setVisible(false)}
           ></Pressable>
           <View style={{ paddingVertical: 10 }}>
-            <Text style={styles.modalTitle}>Contacts</Text>
+            <Text style={styles.modalTitle}>My Network</Text>
+            <Text
+              style={{
+                color: 'gray',
+                textAlign: 'center',
+                fontSize: 11,
+                marginBottom: 12,
+              }}
+            >
+              Invite people in your network to join your contribution
+            </Text>
             <TextInput
               style={styles.inputSearch}
               value={contactSearch}
@@ -271,7 +281,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     fontFamily: 'isb',
-    marginBottom: 10,
+    marginBottom: 5,
     textAlign: 'center',
   },
   modalText: {
