@@ -42,10 +42,10 @@ function Pay() {
     <View style={{ flex: 1 }}>
       <Paystack
         paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
-        amount={'500.00'}
+        amount={'100.00'}
         billingEmail={currentUser.email}
         activityIndicatorColor={Colors.pri}
-        channels={["card"]}
+        channels={['card']}
         onCancel={(e) => {
           // handle response here
           router.push('/protected/cards');

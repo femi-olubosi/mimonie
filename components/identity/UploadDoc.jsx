@@ -93,6 +93,19 @@ export default function UploadDocument() {
   };
 
   const handleFinish = async () => {
+    const trial = (await AsyncStorage.getItem('trials')) || 0;
+
+    if (parseInt(trial) >= 3) {
+      setModalContent({
+        title: 'Maximum Trials Reached',
+        message:
+          'You have exceeded the maximum number of trials. Please contact our support team at <a href="https://support.mimonie.net" target="_blank">support.mimonie.net</a> for further assistance.',
+        status: 'error',
+      });
+      setStatusModalVisible(true);
+      return;
+    }
+
     const check = ['PASSPORT', 'DRIVERS_LICENSE'].includes(documentType.value);
     if (!documentType?.value) {
       setModalContent({
@@ -204,6 +217,8 @@ export default function UploadDocument() {
         status: 'error',
       });
     } finally {
+      const newTrialCount = parseInt(trial) + 1;
+      await AsyncStorage.setItem('trials', newTrialCount.toString());
       setLoading(false);
       setStatusModalVisible(true);
     }
