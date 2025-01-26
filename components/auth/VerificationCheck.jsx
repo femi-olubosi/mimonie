@@ -78,7 +78,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/protected');
+              router.push('/');
             },
           },
         ]);
@@ -108,7 +108,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/protected');
+              router.push('/');
             },
           },
         ]);

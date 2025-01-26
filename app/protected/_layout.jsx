@@ -1,11 +1,11 @@
 import { View, StyleSheet, Image } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Authenticator,
   ThemeProvider,
   useAuthenticator,
 } from '@aws-amplify/ui-react-native';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { StatusBar } from 'expo-status-bar';

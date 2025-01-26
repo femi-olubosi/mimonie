@@ -145,7 +145,10 @@ const Contact = () => {
       await triggerNotificationForUser(
         connection?.push_token,
         'Connect Request',
-        `You have a connection request from ${userProfile.name}`
+        `You have a connection request from ${userProfile.name}`,
+        {
+          type: 'connection',
+        }
       );
       setModalVisible(true);
     } catch (error) {

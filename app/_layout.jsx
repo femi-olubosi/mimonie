@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 Amplify.configure(amplifyconfig);
 import * as Updates from 'expo-updates';
 import { CopilotProvider } from 'react-native-copilot';
+import mobileAds from 'react-native-google-mobile-ads';
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -79,6 +80,20 @@ function RootLayout() {
     checkFirstTimeUser();
   }, []);
 
+  useEffect(() => {
+    (async () => {
+      // Google AdMob will show any messages here that you just set up on the AdMob Privacy & Messaging page
+      const { status: trackingStatus } =
+        await requestTrackingPermissionsAsync();
+      if (trackingStatus !== 'granted') {
+        // Do something here such as turn off Sentry tracking, store in context/redux to allow for personalized ads, etc.
+      }
+
+      // Initialize the ads
+      await mobileAds().initialize();
+    })();
+  }, []);
+
   const style = {
     borderRadius: 10,
     padding: 5,
@@ -116,6 +131,14 @@ function RootContent() {
         <Stack.Screen name="login_verify" options={{ headerShown: false }} />
         <Stack.Screen name="device_verify" options={{ headerShown: false }} />
         <Stack.Screen name="terms_condition" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="complete_profile"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="verification_check"
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="protected" options={{ headerShown: false }} />
       </Stack>
       <Loader isLoading={isLoading} />

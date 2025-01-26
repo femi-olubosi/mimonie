@@ -68,7 +68,7 @@ const ContactModal = ({
         item?.push_token,
         'Contribution Invite',
         `You have been invited to join a contribution`,
-        { invite_link }
+        { invite_link, type: 'invite' }
       );
     } catch (err) {
       Alert.alert('Error', 'Failed to send invite');

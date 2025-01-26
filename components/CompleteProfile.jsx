@@ -178,7 +178,7 @@ const CompleteProfile = () => {
 
       const resOtp = await sendOtp(profile.phone_number);
       setConfirmationResult({ ...resOtp, type: 'phone_verification' });
-      router.push('/protected/login_verify');
+      router.push('/verification_check');
     } catch (error) {
       console.error(error);
     } finally {
