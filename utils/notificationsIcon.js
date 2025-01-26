@@ -120,5 +120,17 @@ export const notificationIcon = (type) => {
           <Ionicons name="alarm" size={20} color="white" />
         </View>
       );
+    default:
+      return (
+        <View
+          style={{
+            backgroundColor: '#808080',
+            padding: 6,
+            borderRadius: 12,
+          }}
+        >
+          <Ionicons name="notifications" size={20} color="white" />
+        </View>
+      );
   }
 };

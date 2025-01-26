@@ -38,7 +38,7 @@ const EmailConfirmation = () => {
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
         if (signInOutput) {
-          router.push('/protected/complete_profile');
+          router.push('/complete_profile');
         } else {
           Alert.alert(
             'Sign-in failed',

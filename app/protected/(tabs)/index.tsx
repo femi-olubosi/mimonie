@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
-import Advert from '@/components/home/Advert';
 import Options from '@/components/home/Options';
+import Advert from '@/components/home/Advert';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   downloadUrl,
   fetchCurrUser,
@@ -26,11 +26,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
-import { getContributionGroups } from '@/api/groups.service';
-import {
-  createContribution,
-  fetchUserContributions,
-} from '@/api/contributions.service';
+import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { DataStore } from 'aws-amplify/datastore';
 import {
@@ -44,27 +40,19 @@ import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
 import { fetchUserActivities } from '@/api/activities.service';
-import {
-  Contribution,
-  UserActivity,
-  UserConnections,
-  UserProfile,
-} from '@/src/models';
+import { Contribution, UserConnections, UserNotifications } from '@/src/models';
 import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
 import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
-import { safeParseJSON } from '@/utils/safeJSON';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import * as Updates from 'expo-updates';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  fetchAndStoreProfilePicture,
-  isExpired,
-} from '@/utils/profileManagement';
-import { createConnection, fetchUserConnections } from '@/api/network.service';
+import { fetchUserConnections } from '@/api/network.service';
+import UserVerificationModal from '@/components/modals/UserVerificationModal';
+import * as Notifications from 'expo-notifications';
 
 export default function HomeScreen() {
   const {
@@ -97,6 +85,10 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [pushActive, setPushActive] = useState(false);
+  const [showUserVerificationModal, setShowUserVerificationModal] =
+    useState(false);
+  const [completedSteps, setCompletedSteps] = useState([]);
+  const [hasShownModal, setHasShownModal] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -158,10 +150,10 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserNotification(currentUser?.userId, setNotifications);
-    // const subscription = DataStore.observe(UserNotifications).subscribe(() =>
-    //   fetchUserNotification(currentUser?.userId, setNotifications)
-    // );
-    // return () => subscription.unsubscribe();
+    const subscription = DataStore.observe(UserNotifications).subscribe(() =>
+      fetchUserNotification(currentUser?.userId, setNotifications)
+    );
+    return () => subscription.unsubscribe();
   }, [currentUser]);
 
   useEffect(() => {
@@ -190,7 +182,7 @@ export default function HomeScreen() {
   useEffect(() => {
     const listUserConnections = async () => {
       try {
-        const response = await fetchUserConnections(userProfile.userId);
+        const response = await fetchUserConnections(userProfile?.userId);
         setParsed(response?.filter((e) => e.status === 'accepted'));
       } catch (err) {
         console.error(err);
@@ -203,36 +195,6 @@ export default function HomeScreen() {
     );
     return () => subscription.unsubscribe();
   }, [userProfile]);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const storedData = await AsyncStorage.getItem('profilePicture');
-  //       if (storedData) {
-  //         const res = safeParseJSON(storedData, {});
-
-  //         if (isExpired(res?.timestamp)) {
-  //           console.log('Profile picture URL expired. Fetching new one...');
-  //           const picture = await fetchAndStoreProfilePicture(
-  //             userProfile?.userId
-  //           );
-  //           setProfilePicture(picture);
-  //         } else {
-  //           console.log('Loaded profile picture from storage.');
-  //           setProfilePicture(res?.url);
-  //         }
-  //       } else {
-  //         console.log('No profile picture in storage. Fetching new one...');
-  //         const picture = await fetchAndStoreProfilePicture(
-  //           userProfile?.userId
-  //         );
-  //         setProfilePicture(picture);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error managing profile picture:', error);
-  //     }
-  //   })();
-  // }, [userProfile?.userId]);
 
   useEffect(() => {
     const registerPushToken = async () => {
@@ -279,6 +241,70 @@ export default function HomeScreen() {
     if (!__DEV__) {
       checkForUpdates();
     }
+  }, []);
+
+  useEffect(() => {
+    if (hasShownModal) return;
+
+    const checkSteps = async () => {
+      try {
+        const profile = await fetchUserProfile(setUserProfile, currentUser);
+
+        if (profile) {
+          const steps = [];
+
+          if (profile?.is_bvn_verified) {
+            steps.push('bvn');
+          }
+          if (profile?.is_nin_verified) {
+            steps.push('kyc');
+          }
+          if (profile?.auth_url) {
+            steps.push('card');
+          }
+
+          setCompletedSteps(steps);
+
+          if (steps.length === 3) {
+            setHasShownModal(true);
+            return;
+          }
+
+          if (steps.length < 3) {
+            setShowUserVerificationModal(true);
+            setHasShownModal(true);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching user profile:', err);
+      }
+    };
+
+    checkSteps();
+  }, [currentUser, hasShownModal]);
+
+  const responseListener = useRef();
+
+  useEffect(() => {
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const { data } = response.notification.request.content;
+        console.log('Notification clicked:', data);
+
+        if (data?.type === 'connection') {
+          router.push('/protected/my_network');
+        } else if (data?.type === 'notification') {
+          router.push('/protected/notifications');
+        } else if (data?.type === 'contribution') {
+          router.push('/protected/my_invites');
+        } else {
+          router.push('/');
+        }
+      });
+
+    // Clean up listeners
+    return () =>
+      Notifications.removeNotificationSubscription(responseListener.current);
   }, []);
 
   const triggerAppUpdate = async () => {
@@ -328,7 +354,7 @@ export default function HomeScreen() {
             connect={parsed?.length}
             pilot={pilot}
           />
-          {/* <Advert /> */}
+          <Advert />
           {/* <Button title="SmileId" onPress={pushObj} /> */}
           <View
             style={{
@@ -576,6 +602,12 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
+        <UserVerificationModal
+          visible={showUserVerificationModal}
+          onClose={() => setShowUserVerificationModal(false)}
+          userName={userProfile?.name}
+          completedSteps={completedSteps}
+        />
       </ThemedView>
     </SafeAreaView>
   );
