@@ -35,15 +35,20 @@ const SignUp = (props) => {
     if (ErrorCheck({ password, email, phone_number })) {
       return;
     }
+
     if (!isChecked) {
       Alert.alert('Error', 'You must agree to the terms and conditions');
       return;
     }
-    const existing = await AsyncStorage.getItem('userEmail');
-    if (existing) {
-      Alert.alert('Error', `Device already registered with ${existing}`);
-      return;
-    }
+    // const existing = (await AsyncStorage.getItem('userEmail')) || null;
+    // if (existing) {
+    //   Alert.alert('Error', `Device already registered with ${existing}`);
+    //   return;
+    // }
+
+    const normalizedPhoneNumber = phone_number?.trim()?.startsWith('+2340')
+      ? phone_number?.replace('+2340', '+234')
+      : phone_number;
 
     setIsLoading(true);
     try {
@@ -53,8 +58,8 @@ const SignUp = (props) => {
         options: {
           userAttributes: {
             email,
-            preferred_username: 'username',
-            phone_number,
+            preferred_username: email,
+            phone_number: normalizedPhoneNumber,
           },
           autoSignIn: true,
         },
@@ -67,7 +72,7 @@ const SignUp = (props) => {
         device_name: Device.deviceName || null,
         device_brand: Device.brand || null,
       };
-      await createUserProfile(userId, device, email, phone_number);
+      await createUserProfile(userId, device, email, normalizedPhoneNumber);
       setEmailVeri(email);
       router.push('/email_verify');
     } catch (error) {
@@ -104,6 +109,7 @@ const SignUp = (props) => {
               color: 'gray',
             }}
             placeholder="Enter your email"
+            placeholderTextColor={'silver'}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -129,6 +135,7 @@ const SignUp = (props) => {
               color: 'gray',
             }}
             placeholder="Enter your phone number"
+            placeholderTextColor={'silver'}
             value={phone_number}
             onChangeText={setPhone}
             autoCapitalize="none"
@@ -157,6 +164,7 @@ const SignUp = (props) => {
               color: 'gray',
             }}
             placeholder="Enter your password"
+            placeholderTextColor={'silver'}
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPass}

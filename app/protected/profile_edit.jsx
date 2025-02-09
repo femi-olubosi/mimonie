@@ -444,6 +444,8 @@ const formElement = [
     name: 'address',
     placeholder: '200, Kilode Close, Ajangbadi, Lagos',
     editable: true,
+    helperText:
+      'Warning: incomplete or fake addresses may delay or prevent account verification.',
   },
   {
     label: 'Occupation',

@@ -1,5 +1,10 @@
 export function convertToAWSDate(dateString) {
   // Parse the input date string
+
+  if (!dateString) {
+    return null;
+  }
+
   const [month, day, year] = dateString?.split('/');
 
   // Create a new Date object using the parsed values

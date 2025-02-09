@@ -136,7 +136,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     (async () => {
-      await getContacts(setMyContacts);
+      const contact = await getContacts();
+      setMyContacts(contact);
     })();
   }, []);
 
@@ -150,10 +151,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchUserNotification(currentUser?.userId, setNotifications);
-    const subscription = DataStore.observe(UserNotifications).subscribe(() =>
-      fetchUserNotification(currentUser?.userId, setNotifications)
-    );
-    return () => subscription.unsubscribe();
   }, [currentUser]);
 
   useEffect(() => {
@@ -250,7 +247,7 @@ export default function HomeScreen() {
       try {
         const profile = await fetchUserProfile(setUserProfile, currentUser);
 
-        if (profile) {
+        if (profile && profile?.name && profile?.phone_verified) {
           const steps = [];
 
           if (profile?.is_bvn_verified) {
