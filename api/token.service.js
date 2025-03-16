@@ -1,8 +1,8 @@
-const apiKey = 'TTLdqgHTmDCazBKUrUnDOftWtoUVKeydPanDgxFsbKEfgTQgCllTiyKgTqTrgw';
+const apiKey = process.env.EXPO_PUBLIC_TERMII_LIVE_API_KEY;
 
 export const sendOtp = async (phoneNumber) => {
   const data = {
-    api_key: 'TLgVBToQFgKbdRpwvznaYHTKfAbzhKuqqEozrvBwyrBQSFhHxHsXYBkXRKdJvU',
+    api_key: apiKey,
     message_type: 'NUMERIC',
     to: phoneNumber,
     from: 'N-Alert',
@@ -38,7 +38,7 @@ export const sendOtp = async (phoneNumber) => {
 
 export async function verifyOTP(pinId, pin) {
   const data = {
-    api_key: 'TLgVBToQFgKbdRpwvznaYHTKfAbzhKuqqEozrvBwyrBQSFhHxHsXYBkXRKdJvU',
+    api_key: apiKey,
     pin_id: pinId,
     pin: pin,
   };

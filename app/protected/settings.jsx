@@ -189,7 +189,7 @@ const Settings = () => {
       AsyncStorage.setItem('requested', 'true');
       Alert.alert(
         'Request sent',
-        'Your request has been sent to the admin for processing. You will receive a response shortly.',
+        'Your request has been sent to the admin for processing. You deletion request status will be sent to you email.',
         [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
         { cancelable: false }
       );

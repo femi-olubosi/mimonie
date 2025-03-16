@@ -9,16 +9,21 @@ import {
   Text,
   View,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PageView } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import { Colors } from '../../constants/Colors';
 import { notificationIcon } from '../../utils/notificationsIcon';
 import { formatTimestamp } from '../../utils/formatTimestamp';
-import { updateNotification } from '../../api/notifications.service';
+import {
+  fetchUserNotification,
+  updateNotification,
+} from '../../api/notifications.service';
+import { DataStore } from 'aws-amplify/datastore';
+import { UserNotifications } from '../../src/models';
 
 const notifications = () => {
-  const { notifications, setNotifications } = useGlobalContext();
+  const { notifications, setNotifications, currentUser } = useGlobalContext();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
   const [lastVisible, setLastVisible] = useState(null);
@@ -27,11 +32,17 @@ const notifications = () => {
 
   const fetchMoreNotifications = () => {};
 
+  useEffect(() => {
+    fetchUserNotification(currentUser?.userId, setNotifications);
+    const subscription = DataStore.observe(UserNotifications).subscribe(() =>
+      fetchUserNotification(currentUser?.userId, setNotifications)
+    );
+    return () => subscription.unsubscribe();
+  }, [currentUser]);
+
   const handleNotificationPress = async (notification) => {
     try {
       setSelectedNotification(notification);
-      setModalVisible(true);
-      await updateNotification(notification.id, { read: true });
       const updatedNotifications = notifications.map((e) => {
         if (e.id === notification.id) {
           return { ...e, read: true };
@@ -40,6 +51,8 @@ const notifications = () => {
         }
       });
       setNotifications(updatedNotifications);
+      setModalVisible(true);
+      await updateNotification(notification.id, { read: true });
     } catch (error) {
       console.log(error);
     }

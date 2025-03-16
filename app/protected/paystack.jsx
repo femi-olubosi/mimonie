@@ -21,6 +21,7 @@ function Pay() {
         { auth_url: response.authorization_code },
         currentUser
       );
+
       await createNotification(
         {
           title: 'Card added',

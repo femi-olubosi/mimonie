@@ -1,4 +1,5 @@
 import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
+import { sendOtp } from '@/api/token.service';
 import { Colors } from '@/constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { Redirect, router } from 'expo-router';
@@ -6,7 +7,8 @@ import { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 
 const index = () => {
-  const { currentUser, setCurrentUser, setUserProfile } = useGlobalContext();
+  const { currentUser, setCurrentUser, setUserProfile, setConfirmationResult } =
+    useGlobalContext();
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -14,9 +16,12 @@ const index = () => {
         const res = await fetchCurrUser(setCurrentUser);
         const user = await fetchUserProfile(setUserProfile, res);
 
-        if (user && !user?.name) {
-          console.log('no name', user);
+        if (!user.name) {
           router.push('/protected/complete_profile');
+        } else if (!user?.phone_verified) {
+          const res = await sendOtp(user.phone_number);
+          setConfirmationResult({ ...res, type: 'phone_verification' });
+          router.push('/verification_check');
         } else {
           console.log(user?.name);
         }

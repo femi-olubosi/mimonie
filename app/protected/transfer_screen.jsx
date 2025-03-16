@@ -424,7 +424,7 @@ const transfer_screen = () => {
 
               <View style={{ rowGap: 14, width: '100%' }}>
                 <View style={{ width: '100%' }}>
-                  <Text style={styles.label}>Account Number</Text>
+                  <Text style={styles.label}>Bank Name</Text>
                   <SelectInput
                     options={banks}
                     selectedValue={selectedValue}

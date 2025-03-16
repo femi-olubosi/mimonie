@@ -255,7 +255,7 @@ export default function UploadDocument() {
 
           <Text style={styles.description}>
             For National ID and Voter's Card, the image is optional; you can
-            just provide the ID number. However, for Passport and Driver's
+            just provide the ID number. However, for International Passport and Driver's
             License, uploading an image is required.
           </Text>
 
@@ -329,12 +329,12 @@ export default function UploadDocument() {
                 style={styles.modalOption}
                 onPress={() =>
                   selectDocumentType({
-                    label: 'PASSPORT',
+                    label: 'INTERNATIONAL PASSPORT',
                     value: 'PASSPORT',
                   })
                 }
               >
-                <Text style={styles.modalOptionText}>PASSPORT</Text>
+                <Text style={styles.modalOptionText}>INTERNATIONAL PASSPORT</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalOption}

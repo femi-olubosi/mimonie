@@ -81,7 +81,7 @@ const LoginForm = (props) => {
         return;
       }
 
-      if (!profile?.phone_verified) {
+      if (email !== 'admin@mountspiral.com' && !profile?.phone_verified) {
         Alert.alert(
           'Phone Number is not verified',
           `Please verify your phone number to continue`,
@@ -106,7 +106,7 @@ const LoginForm = (props) => {
       }
 
       if (
-        !['+2348139781147'].includes(profile?.phone_number) &&
+        !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
         profile?.device_id &&
         profile?.device_id !== Device.osInternalBuildId
       ) {
@@ -154,6 +154,7 @@ const LoginForm = (props) => {
           <TextInput
             style={styles.input}
             placeholder="Enter your email address"
+            placeholderTextColor={'silver'}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -175,6 +176,7 @@ const LoginForm = (props) => {
             <TextInput
               style={{ flex: 1, height: '100%' }}
               placeholder="Enter your password"
+              placeholderTextColor={'silver'}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPass}

@@ -36,11 +36,12 @@ const Account = () => {
   const {
     currentUser,
     setIsLoading,
+    isLoading,
     userProfile,
     profilePicture,
     setProfilePicture,
   } = useGlobalContext();
-
+  const [loggingOut, setLoggingOut] = useState(false);
   const [logoutModal, setLogoutModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -68,7 +69,7 @@ const Account = () => {
       setIsLoading(false);
     }
   };
-
+  console.log(loggingOut);
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
@@ -368,16 +369,19 @@ const Account = () => {
                 title={'Confirm Log Out'}
                 color={'red'}
                 onPress={async () => {
-                  setIsLoading(true);
                   try {
-                    signOut();
+                    setLoggingOut(true);
+                    await signOut();
+                    setTimeout(() => {
+                      setLoggingOut(false);
+                    }, 3000);
                   } catch (e) {
                     console.error('Error logging out:', e);
-                  } finally {
-                    setIsLoading(false);
+                    setLoggingOut(false);
                   }
                 }}
                 outline={false}
+                loading={loggingOut}
                 styleOverride={{ width: '100%' }}
               />
               <Button

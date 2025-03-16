@@ -56,6 +56,16 @@ export const validateField = (key, value) => {
         console.log(value);
       }
       break;
+    case 'address':
+      if (!value) {
+        errorMessage = 'Home address is required.';
+      } else {
+        const addressRegex = /^[a-zA-Z0-9\s,.'-]{15,}$/;
+        if (!addressRegex.test(value)) {
+          errorMessage = 'Please enter your complete valid address';
+        }
+      }
+      break;
     case `${key}`:
       if (!value) {
         errorMessage = 'Fields are required';
