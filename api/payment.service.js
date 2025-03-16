@@ -339,9 +339,9 @@ export const getPaystackCustomer = async (customer_code) => {
 };
 
 export const verifyBVN = async (input, userProfile) => {
-  const customer_code = userProfile.customer_code;
-  const first_name = userProfile.name.split(' ')[0];
-  const last_name = userProfile.name.split(' ')[1];
+  const customer_code = userProfile?.customer_code;
+  const first_name = userProfile.name?.split(' ')[0];
+  const last_name = userProfile.name?.split(' ')[1];
 
   const data = {
     country: 'NG',
@@ -715,9 +715,12 @@ export const withdrawFunds = async (
       };
     }
 
-    // Use locking mechanism or versioning to ensure safe concurrent updates
-    const participantBalanceAfterWithdrawal = participantBalance - amount;
-    participant.balance = participantBalanceAfterWithdrawal;
+    if (isEarlyWithdrawal) {
+      participant.balance = 0;
+    } else {
+      const participantBalanceAfterWithdrawal = participantBalance - amount;
+      participant.balance = participantBalanceAfterWithdrawal;
+    }
 
     // Record activity for withdrawal
     await createUserActivity(userId, {

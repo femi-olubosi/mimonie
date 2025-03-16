@@ -15,7 +15,7 @@ import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { signIn, signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { router } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
@@ -39,6 +39,7 @@ const LoginForm = (props) => {
     setConfirmationResult,
     setProfilePicture,
   } = useGlobalContext();
+  const router = useRouter();
 
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
@@ -76,11 +77,11 @@ const LoginForm = (props) => {
       await fetchUserNotification(user.userId, setNotifications);
 
       if (!profile?.name) {
-        router.push('/protected/complete_profile');
+        router.push('/complete_profile');
         return;
       }
 
-      if (!profile?.phone_verified) {
+      if (email !== 'admin@mountspiral.com' && !profile?.phone_verified) {
         Alert.alert(
           'Phone Number is not verified',
           `Please verify your phone number to continue`,
@@ -95,7 +96,7 @@ const LoginForm = (props) => {
               onPress: async () => {
                 const res = await sendOtp(profile.phone_number);
                 setConfirmationResult({ ...res, type: 'phone_verification' });
-                router.push('/protected/login_verify');
+                router.push('/verification_check');
               },
             },
           ],
@@ -105,12 +106,7 @@ const LoginForm = (props) => {
       }
 
       if (
-        ![
-          '+2348139781144',
-          '+2348139781147',
-          '+2348139781148',
-          '+2348039013901',
-        ].includes(profile?.phone_number) &&
+        !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
         profile?.device_id &&
         profile?.device_id !== Device.osInternalBuildId
       ) {
@@ -128,7 +124,7 @@ const LoginForm = (props) => {
               onPress: async () => {
                 const res = await sendOtp(profile.phone_number);
                 setConfirmationResult({ ...res, type: 'device_registration' });
-                router.push('/protected/login_verify');
+                router.push('/verification_check');
               },
             },
           ],
@@ -137,7 +133,7 @@ const LoginForm = (props) => {
         return;
       }
 
-      router.push('/protected');
+      router.push('/');
     } catch (error) {
       Alert.alert('Error', error.message);
       console.error(error.message);
@@ -154,10 +150,11 @@ const LoginForm = (props) => {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Log in</Text>
         <View>
-          <Text style={styles.label}>Email Adrress</Text>
+          <Text style={styles.label}>Email Address</Text>
           <TextInput
             style={styles.input}
             placeholder="Enter your email address"
+            placeholderTextColor={'silver'}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -179,6 +176,7 @@ const LoginForm = (props) => {
             <TextInput
               style={{ flex: 1, height: '100%' }}
               placeholder="Enter your password"
+              placeholderTextColor={'silver'}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPass}

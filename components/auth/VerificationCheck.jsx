@@ -78,7 +78,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/protected');
+              router.push('/');
             },
           },
         ]);
@@ -108,7 +108,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/protected');
+              router.push('/');
             },
           },
         ]);
@@ -176,7 +176,10 @@ const VerificationCheck = () => {
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={styles.cancelButton}
-                  onPress={() => signOut()}
+                  onPress={async () => {
+                    await signOut();
+                    router.push('/');
+                  }}
                   disabled={verifying}
                 >
                   <Text style={styles.modalButtonText}>Not now</Text>

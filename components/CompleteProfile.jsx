@@ -132,20 +132,20 @@ const CompleteProfile = () => {
 
   const handleSubmit = async () => {
     const data = {
-      name: infoDetails.firstname + ' ' + infoDetails.lastname,
-      birthdate: convertToAWSDate(infoDetails.birthdate),
-      address: infoDetails.address,
-      occupation: infoDetails.occupation,
-      income_from: infoDetails.income_from,
-      income_to: infoDetails.income_to,
-      country_of_residence: infoDetails.country_of_residence,
-      country_of_origin: infoDetails.country_of_origin,
-      preferred_username: 'username',
+      name: `${infoDetails?.firstname?.trim()} ${infoDetails?.lastname?.trim()}`,
+      birthdate: convertToAWSDate(infoDetails?.birthdate),
+      address: infoDetails?.address,
+      occupation: infoDetails?.occupation,
+      income_from: infoDetails?.income_from,
+      income_to: infoDetails?.income_to,
+      country_of_residence: infoDetails?.country_of_residence,
+      country_of_origin: infoDetails?.country_of_origin,
     };
 
     if (ErrorCheck(data)) {
       return;
     }
+
     setIsLoading(true);
     try {
       // await updateUserProfile(data, currentUser);
@@ -178,7 +178,7 @@ const CompleteProfile = () => {
 
       const resOtp = await sendOtp(profile.phone_number);
       setConfirmationResult({ ...resOtp, type: 'phone_verification' });
-      router.push('/protected/login_verify');
+      router.push('/verification_check');
     } catch (error) {
       console.error(error);
     } finally {
@@ -309,6 +309,7 @@ const CompleteProfile = () => {
                     }
                     editable={item.name !== 'birthdate'}
                     placeholder={item.placeholder}
+                    placeholderTextColor={'silver'}
                     onPress={() =>
                       item.name === 'birthdate' ? toggleDatePicker() : {}
                     }
@@ -458,7 +459,9 @@ const formElement = [
   {
     label: 'Contact Address',
     name: 'address',
-    placeholder: '',
+    placeholder: '01, Street/Estate name, Area/LG name, State',
+    helperText:
+      'Warning: incomplete or fake addresses may delay or prevent account verification.',
   },
   { label: 'Occupation', name: 'occupation', placeholder: '' },
   {

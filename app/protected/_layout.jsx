@@ -1,11 +1,11 @@
 import { View, StyleSheet, Image } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Authenticator,
   ThemeProvider,
   useAuthenticator,
 } from '@aws-amplify/ui-react-native';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { StatusBar } from 'expo-status-bar';
@@ -68,40 +68,12 @@ const ProtectedLayout = () => {
 
 export default ProtectedLayout;
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#006EBD',
-  },
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 20,
-  },
-  footerText: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#fff',
-  },
-  signUpText: {
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-});
-
 const ProtectedContent = () => {
   const { route } = useAuthenticator((context) => [context.route]);
 
   return (
     <View style={styles.safeArea}>
-      <StatusBar style="light" />
+      {/* <StatusBar style="light" /> */}
       {route === 'signIn' || route === 'forgotPassword' ? (
         <View
           style={{
@@ -209,3 +181,31 @@ const ProtectedContent = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#006EBD',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+  },
+  footerText: {
+    marginTop: 20,
+    fontSize: 16,
+    color: '#fff',
+  },
+  signUpText: {
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+});

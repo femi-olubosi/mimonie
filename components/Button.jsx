@@ -1,6 +1,11 @@
 // Button.js
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 
 const Button = ({
   disabled,
@@ -9,6 +14,7 @@ const Button = ({
   color,
   outline,
   styleOverride = {},
+  loading = false,
 }) => {
   return (
     <TouchableOpacity
@@ -24,9 +30,13 @@ const Button = ({
       onPress={onPress}
       disabled={disabled}
     >
-      <Text style={[styles.buttonText, { color: outline ? color : '#fff' }]}>
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={outline ? color : '#fff'} />
+      ) : (
+        <Text style={[styles.buttonText, { color: outline ? color : '#fff' }]}>
+          {title}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };
