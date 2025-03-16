@@ -20,6 +20,7 @@ import { ErrorCheck } from '../../utils/errorCheck';
 import { createUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 const SignUp = (props) => {
   // const [username, setUsername] = useState('');
@@ -83,6 +84,9 @@ const SignUp = (props) => {
     }
   };
 
+  // const handleSignUp = () => {};
+
+  console.log(email);
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -235,7 +239,6 @@ const SignUp = (props) => {
         </View>
       </View>
     </Container>
-    // </SafeAreaView>
   );
 };
 

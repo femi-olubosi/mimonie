@@ -5,3 +5,8 @@
     ios_app_id: 'ca-app-pub-1971737358661516~3703757547',
   },
 ];
+
+// "blockPermissions": [
+//   "android.permission.RECORD_AUDIO",
+//   "android.permission.CAMERA"
+// ]

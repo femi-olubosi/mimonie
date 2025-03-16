@@ -24,7 +24,7 @@
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-5949764b44724747316d-build.zip",
+          "s3Key": "amplify-builds/callbackurl-5863444e7a316f35464d-build.zip",
           "profileTableName": "UserProfile-d4itlx42uzhtrctybtkmaxruya-dev",
           "notificationsTableName": "UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev",
           "partnerId": "6982",
