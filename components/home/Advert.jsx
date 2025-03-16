@@ -7,8 +7,8 @@ import {
   TestIds,
 } from 'react-native-google-mobile-ads';
 
-const iosAdmobBanner = 'ca-app-pub-1971737358661516/7945290854';
-const androidAdmobBanner = 'ca-app-pub-1971737358661516/4015572177';
+const iosAdmobBanner = process.env.EXPO_PUBLIC_IOS_ADMOD_BANNER_KEY;
+const androidAdmobBanner = process.env.EXPO_PUBLIC_ANDROID_ADMOD_BANNER_KEY;
 const productionID =
   Device.osName === 'Android' ? androidAdmobBanner : iosAdmobBanner;
 
