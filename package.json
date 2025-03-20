@@ -13,7 +13,7 @@
     "amplify-modelgen": "amplify codegen models",
     "update": "eas update --branch preview --message 'New update'",
     "update-4": "eas update --branch preview4 --message 'New update'",
-    "prod": "eas update --branch production --message 'RollBack Update'",
+    "prod": "eas update --branch production --message 'Update 1.0.06 Beta'",
     "build-android": "eas build -p android --profile preview"
   },
   "jest": {
