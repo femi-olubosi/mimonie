@@ -18,7 +18,7 @@ export const fetchUserContributions = async (userId, setContributions) => {
 
     setContributions(sorted);
 
-    return sorted;
+    return sorted || [];
   } catch (error) {
     console.error('Error fetching user contributions:', error);
   }
@@ -33,10 +33,10 @@ export const createContribution = async (
   const recipient_code = userProfile.recipient_code
     ? userProfile.recipient_code
     : await createTransferRecipientForBank({
-        bank_code: userProfile.bank_details.bank_code,
-        account_number: userProfile.bank_details.account_number,
-        account_name: userProfile.name,
-      });
+      bank_code: userProfile.bank_details.bank_code,
+      account_number: userProfile.bank_details.account_number,
+      account_name: userProfile.name,
+    });
 
   const userObj = {
     name: userProfile.name || currentUser.preferred_username,
@@ -54,9 +54,8 @@ export const createContribution = async (
     type: 'owner',
   };
 
-  const link = `https://mimonie.net/protected/mimonie?userId=${
-    currentUser.userId
-  }&contributionName=${details.contributionName.split(' ').join('')}`;
+  const link = `https://mimonie.net/protected/mimonie?userId=${currentUser.userId
+    }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -108,9 +107,8 @@ export const createPersonalContribution = async (
     status: 'active',
   };
 
-  const link = `https://mimonie.net/protected/mimonie?userId=${
-    currentUser.userId
-  }&contributionName=${details.contributionName.split(' ').join('')}`;
+  const link = `https://mimonie.net/protected/mimonie?userId=${currentUser.userId
+    }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -338,10 +336,10 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   const updatedParticipants = participants.map((participant) =>
     participant.userId === userProfile.userId
       ? {
-          ...participant,
-          contributions: (participant.contributions || 0) + 1,
-          last_successful_round: originalContribution.current_count,
-        }
+        ...participant,
+        contributions: (participant.contributions || 0) + 1,
+        last_successful_round: originalContribution.current_count,
+      }
       : participant
   );
 

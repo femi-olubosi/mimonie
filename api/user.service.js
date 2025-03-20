@@ -51,7 +51,7 @@ export const downloadFile = async (userId) => {
     const imageBlob = await body.blob();
 
     return URL.createObjectURL(imageBlob);
-  } catch (e) {}
+  } catch (e) { }
 };
 
 export const downloadUrl = async (userId) => {
@@ -113,6 +113,19 @@ export const fetchUserProfile = async (setUserProfile, currentUser) => {
       c.userId.eq(currentUser.userId)
     );
     setUserProfile(userProfile[0]);
+    return userProfile[0];
+  } catch (error) {
+    console.error('Error fetching user user profile:', error);
+    return [];
+  }
+};
+
+export const fetchUserProfileForInvite = async (userId) => {
+  try {
+    const userProfile = await DataStore.query(UserProfile, (c) =>
+      c.userId.eq(userId)
+    );
+
     return userProfile[0];
   } catch (error) {
     console.error('Error fetching user user profile:', error);

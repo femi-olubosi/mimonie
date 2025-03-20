@@ -25,6 +25,7 @@ import { Colors } from '../../constants/Colors';
 import { ErrorCheck } from '../../utils/errorCheck';
 import CopyLink from '../../components/CopyLink';
 import { naira } from '@/constants/Currency';
+import { validateUserContributions } from '../../utils/validateUserContributions';
 
 const variantOptions = [
   { label: 'Weekly', value: 'weeks' },
@@ -110,6 +111,7 @@ const CreateContribution = () => {
     setContributionGroups,
     currentUser,
     setContributions,
+    contributions,
     setIsLoading,
     userProfile,
     parsed,
@@ -146,6 +148,23 @@ const CreateContribution = () => {
     ) {
       return;
     }
+
+    if (!termsAccepted) {
+      Alert.alert(
+        'Terms Not Accepted',
+        'You must accept the terms and conditions before proceeding.'
+      );
+      return;
+    }
+
+    if (validateUserContributions(contributions, 'group')) {
+      Alert.alert(
+        'Error',
+        'You can only be in one active group contribution at a time.'
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = await createContribution(
@@ -187,6 +206,22 @@ const CreateContribution = () => {
       return;
     }
 
+    if (!termsAccepted) {
+      Alert.alert(
+        'Terms Not Accepted',
+        'You must accept the terms and conditions before proceeding.'
+      );
+      return;
+    }
+
+    if (validateUserContributions(contributions, 'personal')) {
+      Alert.alert(
+        'Error',
+        'You can only be in one active personal savings at a time.'
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       await createPersonalContribution(
@@ -219,14 +254,6 @@ const CreateContribution = () => {
   };
 
   const handleConfirm = async () => {
-    if (!termsAccepted) {
-      Alert.alert(
-        'Terms Not Accepted',
-        'You must accept the terms and conditions before proceeding.'
-      );
-      return;
-    }
-
     if (
       !userProfile.income_from ||
       selectedValue.amount > userProfile.income_from

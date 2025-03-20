@@ -414,7 +414,7 @@ export default function HomeScreen() {
                   <Text>You do not have any activity yet</Text>
                 </View>
               ) : (
-                userActivities.slice(0, 10).map((item: any, index: any) => {
+                userActivities?.slice(0, 10).map((item: any, index: any) => {
                   return (
                     <View
                       key={index}
@@ -496,7 +496,7 @@ export default function HomeScreen() {
                                 }
                               />
                             ) : (
-                              item.amount.toLocaleString('en-US', {
+                              item?.amount?.toLocaleString('en-US', {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
                               })

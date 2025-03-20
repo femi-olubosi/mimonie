@@ -4,21 +4,18 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   Alert,
   Platform,
-  Pressable,
   RefreshControl,
   Button,
   Modal,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { PageView, SkeletonLoader } from '@/components/Reusable';
+import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
 import {
   findContributionByID,
   joinContribution,
-  updateContribution,
   updateContributionForUser,
   fetchUserContributions,
 } from '@/api/contributions.service';
@@ -29,21 +26,28 @@ import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
 import { updateInvite } from '@/api/invite.service';
 import { safeParseJSON } from '@/utils/safeJSON';
-import CopyLink from '@/components/CopyLink';
 import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
-import { verifyTransfer, withdrawFunds } from '../../../api/payment.service';
+import { verifyTransfer } from '../../../api/payment.service';
 import { Paystack } from '@/paystackDev';
-import { updatePersonalContribution } from '../../../api/contributions.service';
+import {
+  updateContribution,
+  updatePersonalContribution,
+} from '../../../api/contributions.service';
 import ModalWrapper from '../../../components/modals/ModalWrapper';
 import Drag from './Drag';
 import NextContributionDay from './NextContributionDay';
 import ParticipantList from './ParticipantList';
 import { fetchUserConnections } from '../../../api/network.service';
+import SkeletonLoaderComp from './SkeletonLoader';
+import ButtonFunctions from './ButtonFunctions';
+import Balance from './Balance';
+import { validateUserContributions } from '../../../utils/validateUserContributions';
 
 const ContributionDetails = () => {
   const {
     setContributions,
+    contributions,
     currentUser,
     userProfile,
     setIsLoading,
@@ -137,6 +141,14 @@ const ContributionDetails = () => {
   }, [contribution]);
 
   const handleJoinContribution = async () => {
+    if (validateUserContributions(contributions, 'group')) {
+      Alert.alert(
+        'Error',
+        'You can only be in one active group contribution at a time.'
+      );
+      return;
+    }
+
     if (!userProfile.is_bvn_verified) {
       Alert.alert('Please verify your bvn');
       return;
@@ -255,141 +267,30 @@ const ContributionDetails = () => {
 
   const transactionCharge = Math.round(contribution?.amount * 0.035);
 
-  // Adjust the amount to include the transaction charge
   const adjustedAmount = contribution?.amount + transactionCharge;
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
       <View style={styles.container}>
         {loading ? (
-          <View style={{ rowGap: 6 }}>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-          </View>
+          <SkeletonLoaderComp />
         ) : (
           <>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 20,
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                marginBottom: 10,
-              }}
-            >
-              {parsed?.some(
-                (participant) =>
-                  participant.userId === currentUser.userId &&
-                  participant.status !== 'in progress' &&
-                  participant?.last_successful_round <
-                    contribution?.current_count
-              ) && (
-                <Pressable
-                  style={styles.fab}
-                  onPress={() => paystackWebViewRef.current.startTransaction()}
-                >
-                  <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
-                </Pressable>
-              )}
-              {(parsed?.some(
-                (participant) => participant.userId === currentUser.userId
-              ) &&
-                contribution?.owner !== userProfile?.name) ||
-              ['completed', 'running', 'closed']?.includes(
-                contribution?.status
-              ) ? null : (
-                <Pressable
-                  style={styles.fab}
-                  onPress={() => {
-                    if (
-                      (parsed?.length === contribution?.num_of_month &&
-                        contribution?.owner === userProfile?.name) ||
-                      contribution?.type === 'personal'
-                    ) {
-                      handleStartContribution();
-                    } else if (
-                      contribution?.status === 'open' &&
-                      contribution?.owner === userProfile?.name
-                    ) {
-                      setVisible(!visible);
-                    } else {
-                      handleJoinContribution();
-                    }
-                  }}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.fabText}>
-                    {isLoading
-                      ? 'Joining ...'
-                      : (parsed?.length === contribution?.num_of_month &&
-                          contribution?.owner === userProfile?.name) ||
-                        contribution?.type === 'personal'
-                      ? 'Start'
-                      : contribution?.status === 'open' &&
-                        contribution?.owner === userProfile?.name
-                      ? 'Invite'
-                      : 'Join'}
-                  </Text>
-                </Pressable>
-              )}
-              {contribution?.type === 'group' &&
-              contribution?.status !== 'completed' ? (
-                <CopyLink inviteLink={contribution.id} />
-              ) : contribution?.type === 'personal' &&
-                contribution?.status !== 'closed' &&
-                contribution?.currently_at > 0 ? (
-                <Pressable
-                  style={styles.fab}
-                  onPress={() => setWithdrawModal(true)}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.fabText}>Withdraw</Text>
-                </Pressable>
-              ) : null}
-            </View>
+            <ButtonFunctions
+              handlePaystackStartTransaction={() =>
+                paystackWebViewRef.current.startTransaction()
+              }
+              handleJoinContribution={handleJoinContribution}
+              handleStartContribution={handleStartContribution}
+              setVisible={setVisible}
+              setWithdrawModal={setWithdrawModal}
+              contribution={contribution}
+              parsed={parsed}
+              userProfile={userProfile}
+              isLoading={isLoading}
+            />
 
-            {parsed?.[0]?.balance || parsed?.[0]?.balance === 0 ? (
-              <View
-                style={{
-                  height: 100,
-                  borderRadius: 10,
-                  borderWidth: 1,
-                  borderColor: Colors.pri,
-                  marginVertical: 20,
-                  padding: 20,
-                }}
-              >
-                <Text style={styles.label}>Withdrawable Balance:</Text>
-                <Text
-                  style={{
-                    fontSize: 40,
-                    color: Colors.pri,
-                    fontFamily: 'isb',
-                  }}
-                >
-                  {naira}{' '}
-                  {new Intl.NumberFormat('en-US').format(parsed?.[0]?.balance)}
-                </Text>
-              </View>
-            ) : null}
+            <Balance parsed={parsed} />
 
             <ScrollView
               showsVerticalScrollIndicator={false}
