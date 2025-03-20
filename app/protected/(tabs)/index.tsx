@@ -401,7 +401,7 @@ export default function HomeScreen() {
                 paddingVertical: 20,
               }}
             >
-              {userActivities?.length < 1 ? (
+              {/* {userActivities?.length < 1 ? (
                 <View
                   style={{
                     rowGap: 6,
@@ -510,7 +510,18 @@ export default function HomeScreen() {
                     </View>
                   );
                 })
-              )}
+              )} */}
+              <View
+                style={{
+                  rowGap: 6,
+                  width: '100%',
+                  minHeight: 400,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                <Text>You do not have any activity yet</Text>
+              </View>
             </View>
           </View>
         </ScrollView>
