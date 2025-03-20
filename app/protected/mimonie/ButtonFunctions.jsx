@@ -1,4 +1,11 @@
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import React from 'react';
 import CopyLink from '../../../components/CopyLink';
 import { Colors } from '../../../constants/Colors';
@@ -16,11 +23,11 @@ const ButtonFunctions = ({
   parsed,
   handlePaystackStartTransaction,
   userProfile,
-  handleJoinContribution,
   handleStartContribution,
   setVisible,
   setWithdrawModal,
   isLoading,
+  setConfirmJoinModal,
 }) => {
   const isParticipant = parsed?.some(
     (participant) => participant.userId === userProfile.userId
@@ -91,7 +98,7 @@ const ButtonFunctions = ({
       {shouldShowJoinButton && (
         <Button
           title={isLoading ? 'Joining...' : 'Join'}
-          onPress={handleJoinContribution}
+          onPress={() => setConfirmJoinModal(true)}
           disabled={isLoading}
         />
       )}

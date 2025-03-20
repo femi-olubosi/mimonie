@@ -43,6 +43,7 @@ import SkeletonLoaderComp from './SkeletonLoader';
 import ButtonFunctions from './ButtonFunctions';
 import Balance from './Balance';
 import { validateUserContributions } from '../../../utils/validateUserContributions';
+import ConfirmJoinModal from './ConfirmJoinModal';
 
 const ContributionDetails = () => {
   const {
@@ -68,6 +69,7 @@ const ContributionDetails = () => {
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [openParticipantEditModal, setOpenParticipantEditModal] =
     useState(false);
+  const [confirmJoinModal, setConfirmJoinModal] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -141,6 +143,7 @@ const ContributionDetails = () => {
   }, [contribution]);
 
   const handleJoinContribution = async () => {
+    setConfirmJoinModal(false);
     if (validateUserContributions(contributions, 'group')) {
       Alert.alert(
         'Error',
@@ -280,7 +283,7 @@ const ContributionDetails = () => {
               handlePaystackStartTransaction={() =>
                 paystackWebViewRef.current.startTransaction()
               }
-              handleJoinContribution={handleJoinContribution}
+              setConfirmJoinModal={setConfirmJoinModal}
               handleStartContribution={handleStartContribution}
               setVisible={setVisible}
               setWithdrawModal={setWithdrawModal}
@@ -470,6 +473,11 @@ const ContributionDetails = () => {
           onFinished={() => setOpenParticipantEditModal(false)}
         />
       </ModalWrapper>
+      <ConfirmJoinModal
+        visible={confirmJoinModal}
+        onClose={() => setConfirmJoinModal(false)}
+        onConfirm={handleJoinContribution}
+      />
     </PageView>
   );
 };
