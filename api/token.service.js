@@ -1,4 +1,4 @@
-const apiKey = process.env.EXPO_PUBLIC_TERMII_LIVE_API_KEY;
+const apiKey = "TLgVBToQFgKbdRpwvznaYHTKfAbzhKuqqEozrvBwyrBQSFhHxHsXYBkXRKdJvU";
 
 export const sendOtp = async (phoneNumber) => {
   const data = {
