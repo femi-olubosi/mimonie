@@ -401,7 +401,7 @@ export default function HomeScreen() {
                 paddingVertical: 20,
               }}
             >
-              {/* {userActivities?.length < 1 ? (
+              {userActivities?.length < 1 ? (
                 <View
                   style={{
                     rowGap: 6,
@@ -414,7 +414,7 @@ export default function HomeScreen() {
                   <Text>You do not have any activity yet</Text>
                 </View>
               ) : (
-                userActivities?.slice(0, 10).map((item: any, index: any) => {
+                userActivities?.slice(0, 10)?.map((item: any, index: any) => {
                   return (
                     <View
                       key={index}
@@ -435,9 +435,9 @@ export default function HomeScreen() {
                           alignItems: 'start',
                         }}
                       >
-                        {item.description.includes('Failed') ? (
+                        {item.description?.includes('Failed') ? (
                           <MaterialIcons name="block" size={24} color="red" />
-                        ) : item.type === 'collection' ? (
+                        ) : item?.type === 'collection' ? (
                           <MaterialCommunityIcons
                             name="arrow-bottom-right-thin-circle-outline"
                             size={24}
@@ -460,14 +460,14 @@ export default function HomeScreen() {
                             style={{
                               fontSize: 16,
                               fontFamily: 'ir',
-                              color: item.description.includes('Failed')
+                              color: item.description?.includes('Failed')
                                 ? 'red'
                                 : 'gray',
                             }}
                           >
-                            {item.description.includes('Failed')
+                            {item.description?.includes('Failed')
                               ? 'Failed Contribution'
-                              : capitalizeFirstLetter(item.type)}
+                              : capitalizeFirstLetter(item?.type)}
                           </Text>
                           <Text
                             style={{
@@ -476,14 +476,14 @@ export default function HomeScreen() {
                               color: 'gray',
                             }}
                           >
-                            {item.description}
+                            {item?.description}
                           </Text>
                         </View>
                         <View style={{ rowGap: 12 }}>
                           <Text
                             style={{
                               color:
-                                item.type === 'collection' ? 'green' : 'red',
+                                item?.type === 'collection' ? 'green' : 'red',
                               fontSize: 16,
                               fontFamily: 'ir',
                             }}
@@ -492,7 +492,7 @@ export default function HomeScreen() {
                             {hideValues ? (
                               <Hide
                                 color={
-                                  item.type === 'collection' ? 'green' : 'red'
+                                  item?.type === 'collection' ? 'green' : 'red'
                                 }
                               />
                             ) : (
@@ -503,25 +503,14 @@ export default function HomeScreen() {
                             )}
                           </Text>
                           <Text style={{ fontSize: 10, color: 'gray' }}>
-                            {formatTimestamp(item.createdAt)}
+                            {formatTimestamp(item?.createdAt)}
                           </Text>
                         </View>
                       </View>
                     </View>
                   );
                 })
-              )} */}
-              <View
-                style={{
-                  rowGap: 6,
-                  width: '100%',
-                  minHeight: 400,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Text>You do not have any activity yet</Text>
-              </View>
+              )}
             </View>
           </View>
         </ScrollView>
