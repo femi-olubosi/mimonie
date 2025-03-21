@@ -1,5 +1,5 @@
 import { DataStore } from 'aws-amplify/datastore';
-import { UserActivity } from '../src/models';
+import { Contribution, UserActivity } from '../src/models';
 
 export const fetchUserActivities = async (userId, setUserActivities) => {
   try {
@@ -28,11 +28,12 @@ export const createUserActivity = async (userId, activityData) => {
       type: activityData.type,
       amount: activityData.amount,
       description: activityData.description,
+      extra: JSON.stringify({ contribution_id: activityData.extra }) || null,
     });
 
     await DataStore.save(newActivity);
     return newActivity;
   } catch (error) {
-    return null;
+    return error;
   }
 };

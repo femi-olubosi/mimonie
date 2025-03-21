@@ -353,6 +353,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
     type: 'contribution',
     amount: contribution.amount,
     description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
+    extra: contribution.id
   });
 
   await triggerNotificationForUser(
@@ -365,6 +366,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
     type: 'collection',
     amount: contribution.amount,
     description: `Received payment from ${userProfile.name} for ${contribution.name}`,
+    extra: contribution.id
   });
 
   await DataStore.save(
@@ -384,6 +386,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
       type: 'collection',
       amount: contribution.amount * participants.length,
       description: `Final collection for ${contribution.name}`,
+      extra: contribution.id
     });
 
     updatedParticipants.forEach((participant) => {
@@ -447,9 +450,10 @@ export const updatePersonalContribution = async (contribution, userProfile) => {
   );
 
   await createUserActivity(userProfile.userId, {
-    type: 'contribution',
+    type: 'Personal savings',
     amount: contribution.amount,
     description: `You successfully contributed to ${contribution.name}`,
+    extra: contribution.id
   });
 
   await DataStore.save(

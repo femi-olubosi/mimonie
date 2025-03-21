@@ -232,8 +232,8 @@ const CreateContribution = () => {
       );
 
       Alert.alert(
-        'Contribution Created',
-        'Your personal contribution has been created successfully!',
+        'Savings Created',
+        'Your personal savings has been created successfully!',
         [
           {
             text: 'OK',
@@ -244,10 +244,7 @@ const CreateContribution = () => {
       );
     } catch (error) {
       console.error(error);
-      Alert.alert(
-        'Error',
-        'An error occurred while creating the contribution.'
-      );
+      Alert.alert('Error', 'An error occurred while creating the savings.');
     } finally {
       setIsLoading(false);
     }

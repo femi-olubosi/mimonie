@@ -418,7 +418,7 @@ const ContributionDetails = () => {
       />
       <Paystack
         ref={paystackWebViewRef}
-        paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
+        paystackKey={'pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f'}
         amount={adjustedAmount}
         billingEmail={userProfile?.email}
         bearer={'account'}

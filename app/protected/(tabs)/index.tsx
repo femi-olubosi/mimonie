@@ -39,8 +39,11 @@ import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
-import { fetchUserActivities } from '@/api/activities.service';
-import { Contribution, UserConnections, UserNotifications } from '@/src/models';
+import {
+  createUserActivity,
+  fetchUserActivities,
+} from '@/api/activities.service';
+import { Contribution, UserConnections } from '@/src/models';
 import {
   registerForPushNotificationsAsync,
   savePushToken,
@@ -352,7 +355,7 @@ export default function HomeScreen() {
             pilot={pilot}
           />
           <Advert />
-          {/* <Button title="SmileId" onPress={pushObj} /> */}
+          {/* <Button title="SmileId" onPress={trigger} /> */}
           <View
             style={{
               paddingHorizontal: 20,

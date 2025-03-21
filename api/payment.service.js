@@ -10,7 +10,8 @@ import { triggerNotificationForUser } from './pushNotification.service';
 import { countries } from '@/data/countries';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
-const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
+// const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
+const PAYSTACK_SECRET_KEY_LIVE = "sk_live_018197960c67614111a22568257da65f67191fb3";
 
 const makePaystackRequest = async (endpoint, method, data) => {
   const url = `https://api.paystack.co${endpoint}`;
@@ -726,14 +727,16 @@ export const withdrawFunds = async (
     await createUserActivity(userId, {
       type: 'collection',
       amount: withdrawalAmount,
-      description: `Your account has been credited`,
+      description: `Fund withdrawal from ${contribution.name} savings`,
+      extra: contribution.id
     });
 
-    await createUserActivity(userId, {
-      type: 'Personal Savings',
-      amount: withdrawalAmount,
-      description: `Fund withdrawal from ${contribution?.name}`,
-    });
+    // await createUserActivity(userId, {
+    //   type: 'Personal Savings',
+    //   amount: withdrawalAmount,
+    //   description: `Fund withdrawal from ${contribution?.name}`,
+    //   extra: JSON.stringify(contribution.id)
+    // });
 
     // Notify participant of successful withdrawal
     await triggerNotificationForUser(
@@ -748,6 +751,7 @@ export const withdrawFunds = async (
         type: 'Personal Savings',
         amount: penalty,
         description: `Penalty of 10% applied for early withdrawal from ${contribution?.name}`,
+        extra: contribution.id
       });
 
       await triggerNotificationForUser(
