@@ -424,7 +424,7 @@ export const schema = {
                 "phone_number": {
                     "name": "phone_number",
                     "isArray": false,
-                    "type": "AWSPhone",
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -1288,5 +1288,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "64fc2e002feda4b32ae278aca2eafa4e"
+    "version": "a9092c84013d64a8f93551080df6c3dc"
 };

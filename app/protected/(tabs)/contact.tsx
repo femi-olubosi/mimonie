@@ -10,18 +10,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { sendInvite } from '@/api/invite.service';
-import {
-  updateUserConnections,
-  undoRequest,
-  fetchUserConnections,
-  createConnection,
-} from '@/api/network.service';
+import { fetchUserConnections, createConnection } from '@/api/network.service';
 import { fetchExistingUser } from '@/api/user.service';
 import { triggerNotificationForUser } from '@/api/pushNotification.service';
 import { getContacts } from '@/api/contact.service';
@@ -29,7 +23,7 @@ import { DataStore } from 'aws-amplify/dist/esm/datastore';
 import { UserConnections } from '@/src/models';
 
 const Contact = () => {
-  const { userProfile, setUserProfile, setIsLoading } = useGlobalContext();
+  const { userProfile, isLoading, setIsLoading } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
   const [foundUsers, setFoundUsers] = useState([]);
   const [contacts, setContacts] = useState([]);
@@ -99,32 +93,32 @@ const Contact = () => {
     }
   };
 
+  const initializeContacts = async (auto: string) => {
+    try {
+      setIsLoading(true);
+      let phoneContacts = await getContacts();
+      const matchedUsers = await fetchExistingUser(phoneContacts, auto);
+
+      phoneContacts = phoneContacts?.filter(
+        (contact) =>
+          matchedUsers.findIndex(
+            (user) => user.phoneNumbers[0] === contact.phoneNumbers[0]
+          ) === -1
+      );
+
+      setContacts(phoneContacts);
+      setFoundUsers(
+        matchedUsers.filter((e) => e.userId !== userProfile.userId)
+      );
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const initializeContacts = async () => {
-      try {
-        setIsLoading(true);
-        let phoneContacts = await getContacts();
-        const matchedUsers = await fetchExistingUser(phoneContacts);
-
-        phoneContacts = phoneContacts?.filter(
-          (contact) =>
-            matchedUsers.findIndex(
-              (user) => user.phoneNumbers[0] === contact.phoneNumbers[0]
-            ) === -1
-        );
-
-        setContacts(phoneContacts);
-        setFoundUsers(
-          matchedUsers.filter((e) => e.userId !== userProfile.userId)
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeContacts();
+    initializeContacts('auto');
     listConnections();
 
     const subscription = DataStore.observe(UserConnections).subscribe(() => {
@@ -134,11 +128,11 @@ const Contact = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleInvite = async (item) => {
+  const handleInvite = async (item: any) => {
     await sendInvite(item);
   };
 
-  const handleRequestConnect = async (connection) => {
+  const handleRequestConnect = async (connection: any) => {
     try {
       setIsLoading(true);
       await createConnection(userProfile, connection);
@@ -164,15 +158,6 @@ const Contact = () => {
   };
 
   const renderUser = ({ item }) => {
-    // const connected = item?.connections?.some(
-    //   (conn) =>
-    //     conn?.userId === userProfile.userId && conn?.status === 'accepted'
-    // );
-    // const requested = item?.connections?.some(
-    //   (conn) =>
-    //     conn?.userId === userProfile.userId && conn?.status === 'pending'
-    // );
-
     const connected = connectionList.includes(item?.userId);
     const requested = pendingConnectionList.includes(item?.userId);
 
@@ -290,6 +275,24 @@ const Contact = () => {
         renderItem={activeTab === 'users' ? renderUser : renderContact}
         showsVerticalScrollIndicator={false}
       />
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={async () => {
+          setIsLoading(true);
+          try {
+            await initializeContacts('manual');
+          } catch (e) {
+            Alert.alert('Error', 'Failed to fetch contacts');
+          } finally {
+            setIsLoading(false);
+          }
+        }}
+        disabled={isLoading}
+      >
+        <Text style={styles.floatingButtonText}>
+          {isLoading ? 'Refreshing' : 'Refresh Contacts'}
+        </Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -427,6 +430,24 @@ const styles = StyleSheet.create({
   },
   modalButtonText: {
     color: '#ffffff', // White
+    fontWeight: 'bold',
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: Colors.pri,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 25,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  floatingButtonText: {
+    color: '#fff',
+    fontSize: 12,
     fontWeight: 'bold',
   },
 });

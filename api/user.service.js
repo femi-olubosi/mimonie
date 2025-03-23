@@ -9,6 +9,7 @@ import { DataStore } from 'aws-amplify/datastore';
 import { Storage } from 'aws-amplify';
 import { Buffer } from 'buffer';
 import { safeParseJSON } from '@/utils/safeJSON';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
@@ -206,67 +207,21 @@ export const fetchAllUserProfile = async () => {
   }
 };
 
-// export const fetchExistingUser = async (contacts) => {
-//   try {
-//     // Query all user profiles from DataStore
-//     const userProfiles = await DataStore.query(UserProfile);
-
-//     if (!Array.isArray(userProfiles) || userProfiles.length === 0) {
-//       console.warn('No user profiles found in DataStore.');
-//       return [];
-//     }
-
-//     // Map contacts to find matches in user profiles
-//     const matchedUsers = contacts.map((contact) => {
-//       // Ensure contact.phoneNumbers is an array
-//       if (!Array.isArray(contact.phoneNumbers)) {
-//         console.warn(`Contact ${contact.name} has invalid phoneNumbers.`);
-//         return null;
-//       }
-
-//       // Find a matching user profile based on phone number
-//       const matchingProfile = userProfiles.find((profile) => {
-//         if (!profile.phone_number) return false; // Skip profiles with null or undefined phone_number
-//         return contact.phoneNumbers.some((phone) => {
-//           if (!phone) return false; // Skip null or undefined phone numbers
-//           return (
-//             phone.replace(/\s+/g, '').replace(/^\+/, '') ===
-//             profile.phone_number.replace(/\s+/g, '').replace(/^\+/, '')
-//           );
-//         });
-//       });
-
-//       if (matchingProfile) {
-//         return {
-//           name: contact.name,
-//           phoneNumbers: contact.phoneNumbers,
-//           userProfile: matchingProfile,
-//           userId: matchingProfile.userId,
-//           connections: safeParseJSON(matchingProfile.connections) || [],
-//         };
-//       }
-
-//       return null;
-//     });
-
-//     // Filter out unmatched contacts
-//     return matchedUsers.filter((match) => match !== null);
-//   } catch (error) {
-//     console.error('Error fetching and matching user profiles:', error);
-//     return [];
-//   }
-// };
-
-export const fetchExistingUser = async (contacts) => {
+export const fetchExistingUser = async (contacts, type) => {
   try {
+    if (type === 'auto') {
+      const storedUsers = await AsyncStorage.getItem('cachedExistingUsers');
+      if (storedUsers) {
+        return JSON.parse(storedUsers);
+      }
+    }
     // Function to normalize phone numbers
     const normalizePhoneNumber = (phone) => {
-      if (!phone) return null;
+      if (!phone || typeof phone !== "string") return null;
 
       // Remove spaces, dashes, and parentheses
       const sanitizedPhone = phone.replace(/[\s-()]/g, '');
 
-      // If the phone starts with `+`, assume it's already in international format
       if (sanitizedPhone.startsWith('+')) {
         return sanitizedPhone;
       }
@@ -280,52 +235,59 @@ export const fetchExistingUser = async (contacts) => {
       return sanitizedPhone;
     };
 
-    // Query all user profiles from DataStore
-    const userProfiles = await DataStore.query(UserProfile);
+    // Normalize all contact phone numbers
+    const normalizedContacts = contacts.map(contact => ({
+      ...contact,
+      phoneNumbers: contact.phoneNumbers.map(normalizePhoneNumber).filter(Boolean)
+    }));
 
-    if (!Array.isArray(userProfiles) || userProfiles.length === 0) {
-      console.warn('No user profiles found in DataStore.');
-      return [];
+    // Collect all unique normalized phone numbers
+    const uniquePhoneNumbers = [...new Set(normalizedContacts.flatMap(contact => contact.phoneNumbers))];
+
+    const batchSize = 500;
+    const userProfiles = [];
+
+    for (let i = 0; i < uniquePhoneNumbers.length; i += batchSize) {
+      const batch = uniquePhoneNumbers.slice(i, i + batchSize);
+      const profiles = await DataStore.query(UserProfile, (c) =>
+        c.or((c1) => batch.map((phone) => c1.phone_number.eq(phone)))
+      );
+      userProfiles.push(...profiles);
     }
 
-    // Map contacts to find matches in user profiles
-    const matchedUsers = contacts.map((contact) => {
-      if (!Array.isArray(contact.phoneNumbers)) {
-        console.warn(`Contact ${contact.name} has invalid phoneNumbers.`);
-        return null;
+    // Create a map of phone numbers to user profiles for quick lookup
+    const phoneToProfileMap = new Map();
+    userProfiles.forEach(profile => {
+      const normalizedPhone = normalizePhoneNumber(profile.phone_number);
+      if (normalizedPhone) {
+        phoneToProfileMap.set(normalizedPhone, profile);
       }
+    });
 
-      // Find a matching user profile based on normalized phone number
-      const matchingProfile = userProfiles.find((profile) => {
-        if (!profile.phone_number) return false; // Skip profiles without a phone number
-        const normalizedProfilePhone = normalizePhoneNumber(
-          profile.phone_number
-        );
-        return contact.phoneNumbers.some((phone) => {
-          const normalizedContactPhone = normalizePhoneNumber(phone);
-          return (
-            normalizedContactPhone &&
-            normalizedProfilePhone &&
-            normalizedContactPhone === normalizedProfilePhone
-          );
-        });
-      });
+    // Map contacts to find matches in user profiles
+    const matchedUsers = normalizedContacts.map(contact => {
+      const matchingProfile = contact.phoneNumbers.find(phone => phoneToProfileMap.has(phone));
 
       if (matchingProfile) {
+        const profile = phoneToProfileMap.get(matchingProfile);
         return {
           name: contact.name,
           phoneNumbers: contact.phoneNumbers,
-          userProfile: matchingProfile,
-          userId: matchingProfile.userId,
-          connections: safeParseJSON(matchingProfile.connections) || [],
+          userProfile: profile,
+          userId: profile.userId,
+          connections: safeParseJSON(profile.connections) || [],
         };
       }
 
       return null;
     });
 
-    // Filter out unmatched contacts
-    return matchedUsers.filter((match) => match !== null);
+    const existingUsers = matchedUsers.filter(match => match !== null);
+
+    // Cache the results in AsyncStorage
+    await AsyncStorage.setItem('cachedExistingUsers', JSON.stringify(existingUsers));
+
+    return existingUsers
   } catch (error) {
     console.error('Error fetching and matching user profiles:', error);
     return [];
