@@ -255,7 +255,7 @@ export default function UploadDocument() {
       setStatusModalVisible(false);
     }
   };
-  console.log(documentType.value);
+
   return (
     <PageView
       title="Upload your document for verification"

@@ -17,10 +17,10 @@ export default function VerificationSteps() {
   const { userProfile } = useGlobalContext();
 
   const handleStart = () => {
-    // if (userProfile.is_nin_verified) {
-    //   Alert.alert('Verification', 'You are already verified');
-    //   return;
-    // }
+    if (userProfile.is_nin_verified) {
+      Alert.alert('Verification', 'You are already verified');
+      return;
+    }
 
     router.push('/protected/take_selfie');
   };
