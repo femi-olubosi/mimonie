@@ -17,7 +17,11 @@ import Checkbox from 'expo-checkbox';
 import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { createUserProfile, isDeviceExist } from '../../api/user.service';
+import {
+  createUserProfile,
+  isDeviceExist,
+  isPhoneNumberExist,
+} from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAvoidingView, Platform } from 'react-native';
@@ -54,12 +58,26 @@ const SignUp = (props) => {
 
     setIsLoading(true);
     try {
-      const existing = await isDeviceExist(device?.device_id);
+      // const existing = await isDeviceExist(device?.device_id);
 
-      if (existing?.status) {
+      // if (existing) {
+      //   Alert.alert('Error', `Device is already associated with an account`);
+      //   return;
+      // }
+
+      const existing = await AsyncStorage.getItem('existingEmail');
+
+      if (existing) {
+        Alert.alert('Error', `Device already registered with ${existing}`);
+        return;
+      }
+
+      const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
+
+      if (phonExisting) {
         Alert.alert(
           'Error',
-          `Device already registered with ${existing?.email}`
+          `Phone number is already associated with an account`
         );
         return;
       }
@@ -79,6 +97,7 @@ const SignUp = (props) => {
 
       await createUserProfile(userId, device, email, normalizedPhoneNumber);
       setEmailVeri(email);
+      await AsyncStorage.setItem('existingEmail', email);
       router.push('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);

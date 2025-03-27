@@ -133,6 +133,7 @@ const LoginForm = (props) => {
         return;
       }
 
+      await AsyncStorage.setItem('existingEmail', email);
       router.push('/');
     } catch (error) {
       Alert.alert('Error', error.message);

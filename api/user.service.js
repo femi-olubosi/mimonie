@@ -136,14 +136,35 @@ export const fetchUserProfileForInvite = async (userId) => {
 
 export const isDeviceExist = async (device_id) => {
   try {
+
     const device_ids = await DataStore.query(UserProfile, (c) =>
       c.device_id.eq(device_id)
     );
 
     if (device_ids && device_ids.length > 0) {
-      return { status: true, email: device_ids[0]?.email }
+      return true
     }
-    return { status: false }
+    return false
+  } catch (error) {
+    console.error('Error fetching user user device id:', error);
+    return false
+  }
+};
+
+export const isPhoneNumberExist = async (phone_number) => {
+  try {
+
+    await DataStore.start();
+    await DataStore.query(UserProfile);
+
+    const phoneNumbers = await DataStore.query(UserProfile, (c) =>
+      c.phone_number.eq(phone_number)
+    );
+
+    if (phoneNumbers && phoneNumbers.length > 0) {
+      return true
+    }
+    return false
   } catch (error) {
     console.error('Error fetching user user device id:', error);
     return false
