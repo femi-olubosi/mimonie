@@ -206,6 +206,14 @@ const CreateContribution = () => {
       return;
     }
 
+    if (variant.value === 'days' && selectedValue.p_duration < 5) {
+      Alert.alert(
+        'Duration Error',
+        'Duration can not be less than 5 for daily contribution'
+      );
+      return;
+    }
+
     if (!termsAccepted) {
       Alert.alert(
         'Terms Not Accepted',
@@ -547,42 +555,54 @@ const CreateContribution = () => {
                     </View>
                     <View style={{ rowGap: 14 }}>
                       <Text style={styles.label}>
-                        How many {variant?.value}
+                        How many {variant?.value} (minimum of 5 for daily
+                        savings)
                       </Text>
                       <TextInput
                         style={styles.input}
                         placeholder="Enter Duration"
                         keyboardType="numeric"
+                        editable={selectedValue.p_amount}
                         value={selectedValue.p_duration?.toString()}
                         onChangeText={(val) => {
                           // Remove any non-numeric characters to avoid decimal input
+
                           const numericValue = val.replace(/[^0-9]/g, '');
 
-                          // Set max limit for duration based on the variant
-                          let maxLimit;
+                          // Set min and max limits for duration based on the variant
+                          let minLimit, maxLimit;
                           switch (variant?.value) {
                             case 'days':
+                              minLimit = 5;
                               maxLimit = 365;
                               break;
                             case 'weeks':
+                              minLimit = 1; // 1 week is approximately 5 days
                               maxLimit = 52; // Number of weeks in a year
                               break;
                             case 'months':
+                              minLimit = 1; // 1 month is more than 5 days
                               maxLimit = 12; // Number of months in a year
                               break;
                             default:
-                              maxLimit = 365; // Default to 365 if variant is not set
+                              minLimit = 5;
+                              maxLimit = 365; // Default to days if variant is not set
                           }
 
-                          // Ensure the value does not exceed the max limit for duration
-                          const limitedValue = Math.min(
-                            Number(numericValue),
-                            maxLimit
-                          );
+                          // Convert to number (empty string becomes 0)
+                          let numericValueAsNumber = Number(numericValue);
+
+                          // Ensure the value is within min and max limits
+                          if (numericValueAsNumber > 0) {
+                            numericValueAsNumber = Math.max(
+                              minLimit,
+                              Math.min(numericValueAsNumber, maxLimit)
+                            );
+                          }
 
                           setSelectedValue({
                             ...selectedValue,
-                            p_duration: limitedValue,
+                            p_duration: numericValueAsNumber || undefined, // Set to undefined if 0
                           });
                         }}
                       />
