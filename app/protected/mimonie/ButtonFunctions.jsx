@@ -44,14 +44,14 @@ const ButtonFunctions = ({
     contribution?.status
   );
 
-  const shouldShowPayButton =
-    isParticipant &&
-    parsed?.some(
-      (participant) =>
-        participant.userId === userProfile.userId &&
-        participant.status !== 'in progress' &&
-        participant?.last_successful_round < contribution?.current_count
-    );
+  // const shouldShowPayButton =
+  //   isParticipant &&
+  //   parsed?.some(
+  //     (participant) =>
+  //       participant.userId === userProfile.userId &&
+  //       participant.status !== 'in progress' &&
+  //       participant?.last_successful_round < contribution?.current_count
+  //   );
 
   const shouldShowStartButton =
     ((parsed?.length === contribution?.num_of_month && isOwner) ||
@@ -77,11 +77,11 @@ const ButtonFunctions = ({
         marginBottom: 10,
       }}
     >
-      {shouldShowPayButton && (
+      {/* {shouldShowPayButton && (
         <Pressable style={styles.fab} onPress={handlePaystackStartTransaction}>
           <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
         </Pressable>
-      )}
+      )} */}
 
       {shouldShowStartButton && (
         <Button

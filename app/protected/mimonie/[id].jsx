@@ -101,40 +101,40 @@ const ContributionDetails = () => {
     }
   }, [contribution]);
 
-  const handleSuccess = async (res) => {
-    try {
-      setIsLoading(true);
-      const verificationResponse = await verifyTransfer(
-        res?.transactionRef?.reference
-      );
-      if (verificationResponse?.status === 'success') {
-        if (contribution?.type === 'group') {
-          await updateContributionForUser(contribution, userProfile);
-        } else {
-          await updatePersonalContribution(contribution, userProfile);
-        }
-        await fetchUserContributions(currentUser?.userId, setContributions);
-        Alert.alert(
-          'Payment Successful',
-          'Your contribution has been updated',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push('/protected/mimonie'),
-            },
-          ],
-          { cancelable: false }
-        );
-      } else {
-        Alert.alert('Payment Failed', 'Could not verify payment');
-      }
-    } catch (error) {
-      console.error('Error verifying transaction:', error);
-      Alert.alert('Error', 'Something went wrong while verifying payment');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleSuccess = async (res) => {
+  //   try {
+  //     setIsLoading(true);
+  //     const verificationResponse = await verifyTransfer(
+  //       res?.transactionRef?.reference
+  //     );
+  //     if (verificationResponse?.status === 'success') {
+  //       if (contribution?.type === 'group') {
+  //         await updateContributionForUser(contribution, userProfile);
+  //       } else {
+  //         await updatePersonalContribution(contribution, userProfile);
+  //       }
+  //       await fetchUserContributions(currentUser?.userId, setContributions);
+  //       Alert.alert(
+  //         'Payment Successful',
+  //         'Your contribution has been updated',
+  //         [
+  //           {
+  //             text: 'OK',
+  //             onPress: () => router.push('/protected/mimonie'),
+  //           },
+  //         ],
+  //         { cancelable: false }
+  //       );
+  //     } else {
+  //       Alert.alert('Payment Failed', 'Could not verify payment');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error verifying transaction:', error);
+  //     Alert.alert('Error', 'Something went wrong while verifying payment');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     fetchUserProfile(setOwnerProfile, {
@@ -249,9 +249,9 @@ const ContributionDetails = () => {
 
   const startDate = new Date(contribution?.start_date);
 
-  const recipient = parsed?.find(
-    (participant) => participant.status === 'in progress'
-  );
+  // const recipient = parsed?.find(
+  //   (participant) => participant.status === 'in progress'
+  // );
 
   const isEarlyWithdrawal =
     contribution?.currently_at < contribution?.num_of_month;
@@ -268,9 +268,9 @@ const ContributionDetails = () => {
     });
   };
 
-  const transactionCharge = Math.round(contribution?.amount * 0.035);
+  // const transactionCharge = Math.round(contribution?.amount * 0.035);
 
-  const adjustedAmount = contribution?.amount + transactionCharge;
+  // const adjustedAmount = contribution?.amount + transactionCharge;
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -416,7 +416,7 @@ const ContributionDetails = () => {
         invite_link={contribution?.id}
         participants={contribution?.participant_ids}
       />
-      <Paystack
+      {/* <Paystack
         ref={paystackWebViewRef}
         paystackKey={'pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f'}
         amount={adjustedAmount}
@@ -442,7 +442,7 @@ const ContributionDetails = () => {
             for {contribution?.name} contribution
           </Text>
         </View>
-      </Paystack>
+      </Paystack> */}
       <Modal visible={withdrawModal} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
