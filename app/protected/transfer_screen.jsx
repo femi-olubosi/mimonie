@@ -90,6 +90,7 @@ const transfer_screen = () => {
 
       if (withdrawalResponse?.success) {
         setIsLoading(false);
+        setProcessing(false);
         Alert.alert(
           'Withdrawal Processed',
           'Your withdrawal request has been successfully processed',
@@ -105,6 +106,7 @@ const transfer_screen = () => {
         );
       } else {
         setIsLoading(false);
+        setProcessing(false);
         Alert.alert(
           'Withdrawal Failed',
           `${withdrawalResponse?.message || 'Unknown error occurred'}`
@@ -112,12 +114,14 @@ const transfer_screen = () => {
       }
     } catch (error) {
       setIsLoading(false);
+      setProcessing(false);
       Alert.alert(
         'Error',
         `${error?.message || 'An unexpected error occurred, please try again.'}`
       );
     } finally {
       setIsLoading(false);
+      setProcessing(false);
     }
   };
 
