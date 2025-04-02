@@ -1,14 +1,15 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { getNextDate } from '@/utils/savings_contribution_helper';
+import { endStatus } from '@/data/contributionStatuses';
 
 const NextContributionDay = ({ contribution, parsed, userProfile }) => {
   const currentParticipant = parsed?.find(
-    (participant) => participant.user_id === userProfile?.user_id
+    (participant) => participant?.user_id === userProfile?.user_id
   );
 
   const getNextContributionDay = () => {
-    if (['closed', 'completed'].includes(contribution.status)) {
-      return 'Completed';
+    if (endStatus.includes(contribution?.status)) {
+      return contribution?.status;
     }
 
     if (contribution?.status === 'open') {
@@ -16,9 +17,12 @@ const NextContributionDay = ({ contribution, parsed, userProfile }) => {
     }
     return getNextDate(contribution, currentParticipant);
   };
+
   return (
     <View style={styles.detailContainer}>
-      <Text style={styles.label}>Next Contribution Day</Text>
+      <Text style={styles.label}>
+        Next {contribution?.type === 'group' ? 'Contribution' : 'Savings'} Day
+      </Text>
       <Text style={styles.value}>{getNextContributionDay()}</Text>
     </View>
   );

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { getNextDate } from '@/utils/savings_contribution_helper';
+import { endStatus } from '@/data/contributionStatuses';
 
 const NextContributionDay = ({ contribution, currentParticipant }) => {
   const current_count = contribution?.current_count || 0;
@@ -10,8 +11,8 @@ const NextContributionDay = ({ contribution, currentParticipant }) => {
     current_count > lastSuccessfulRound;
 
   const getNextContributionDay = () => {
-    if (['closed', 'completed'].includes(contribution.status)) {
-      return 'Completed';
+    if (endStatus.includes(contribution?.status)) {
+      return contribution?.status;
     }
 
     if (contribution?.status === 'open') {

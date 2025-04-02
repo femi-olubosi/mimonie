@@ -33,6 +33,10 @@ const ButtonFunctions = ({
     (participant) => participant.userId === userProfile.userId
   );
 
+  const user = parsed?.find(
+    (participant) => participant.userId === userProfile.userId
+  );
+
   const isOwner = contribution?.owner === userProfile?.name;
   const isPersonal = contribution?.type === 'personal';
   const isGroup = contribution?.type === 'group';
@@ -43,6 +47,8 @@ const ButtonFunctions = ({
   const invisible = !['running', 'closed', 'completed'].includes(
     contribution?.status
   );
+  const balance = user?.balance || 0;
+  const withdrawable = balance - contribution?.amount;
 
   // const shouldShowPayButton =
   //   isParticipant &&

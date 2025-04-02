@@ -79,7 +79,7 @@ const transfer_screen = () => {
     setValidateCustomerModal(false);
     setProcessing(true);
     try {
-      const amount = isEarlyWithdrawal ? newBalance : amountToWithdraw;
+      const amount = isEarlyWithdrawal ? balance : amountToWithdraw;
 
       const withdrawalResponse = await withdrawFunds(
         userProfile,

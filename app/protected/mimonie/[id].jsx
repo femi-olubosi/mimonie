@@ -28,7 +28,10 @@ import { updateInvite } from '@/api/invite.service';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
-import { verifyTransfer } from '../../../api/payment.service';
+import {
+  processFirstSavings,
+  verifyTransfer,
+} from '../../../api/payment.service';
 import { Paystack } from '@/paystackDev';
 import {
   updateContribution,
@@ -44,6 +47,8 @@ import ButtonFunctions from './ButtonFunctions';
 import Balance from './Balance';
 import { validateUserContributions } from '../../../utils/validateUserContributions';
 import ConfirmJoinModal from './ConfirmJoinModal';
+import { isLastDaysOfMonth } from '../../../utils/helper';
+import StartSavingsModal from './StartSavingsModal';
 
 const ContributionDetails = () => {
   const {
@@ -70,6 +75,8 @@ const ContributionDetails = () => {
   const [openParticipantEditModal, setOpenParticipantEditModal] =
     useState(false);
   const [confirmJoinModal, setConfirmJoinModal] = useState(false);
+  const [confirmStartModal, setConfirmStartModal] = useState(false);
+  const [processingCharge, setProcessingCharge] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -247,6 +254,73 @@ const ContributionDetails = () => {
     }
   };
 
+  const handleStartSavingContribution = async () => {
+    setProcessingCharge(true);
+
+    const participant = parsed.find(
+      (participant) => participant.userId === currentUser.userId
+    );
+    const date = new Date();
+    const start_date = date.toLocaleDateString('en-CA');
+
+    try {
+      const response = await processFirstSavings(
+        participant,
+        contribution,
+        userProfile,
+        start_date
+      );
+
+      if (!response.success) {
+        Alert.alert('We could not start you savings', response.message);
+        return;
+      }
+      await findContributionByID(id, setContribution);
+      setConfirmStartModal(false);
+      Alert.alert(
+        'Savings Started Successfully',
+        `Your savings to ${contribution?.name} has been started successfully.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error processing charge:', error);
+      Alert.alert('Error', 'An error occurred while processing the charge');
+    } finally {
+      setProcessingCharge(false);
+    }
+  };
+
+  const triggerStartButton = () => {
+    if (!contribution) return;
+
+    if (contribution?.variant === 'months' && isLastDaysOfMonth(new Date())) {
+      Alert.alert(
+        'Monthly Contribution Restriction',
+        'Monthly contributions can only be started between the 1st and 28th of the month.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    if (contribution?.type === 'group') {
+      Alert.alert(
+        'Start Group Contribution?',
+        'This will begin the contribution cycle for all members.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Start', onPress: handleStartContribution },
+        ]
+      );
+    } else {
+      setConfirmStartModal(true);
+    }
+  };
+
   const startDate = new Date(contribution?.start_date);
 
   // const recipient = parsed?.find(
@@ -284,7 +358,7 @@ const ContributionDetails = () => {
                 paystackWebViewRef.current.startTransaction()
               }
               setConfirmJoinModal={setConfirmJoinModal}
-              handleStartContribution={handleStartContribution}
+              handleStartContribution={triggerStartButton}
               setVisible={setVisible}
               setWithdrawModal={setWithdrawModal}
               contribution={contribution}
@@ -293,7 +367,7 @@ const ContributionDetails = () => {
               isLoading={isLoading}
             />
 
-            <Balance parsed={parsed} />
+            <Balance parsed={parsed} amount={contribution?.amount} />
 
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -477,6 +551,12 @@ const ContributionDetails = () => {
         visible={confirmJoinModal}
         onClose={() => setConfirmJoinModal(false)}
         onConfirm={handleJoinContribution}
+      />
+      <StartSavingsModal
+        visible={confirmStartModal}
+        onClose={() => setConfirmStartModal(false)}
+        onConfirm={handleStartSavingContribution}
+        processingCharge={processingCharge}
       />
     </PageView>
   );

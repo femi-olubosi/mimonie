@@ -8,6 +8,7 @@ import {
 import { createUserActivity } from './activities.service';
 import { triggerNotificationForUser } from './pushNotification.service';
 import { countries } from '@/data/countries';
+import { updateContribution, updatePersonalContribution } from './contributions.service';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
 // const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
@@ -807,3 +808,60 @@ export const resolveBankAccount = async (
     };
   }
 };
+
+export const chargeCardForPersonalContribution = async (payer, amount) => {
+  // Calculate the transaction charge (3.5% of the base contribution amount)
+  const transactionCharge = Math.round(amount * 0.035); // 3.5% of the contribution amount
+
+  // Adjust the amount to include the transaction charge
+  const adjustedAmount = amount + transactionCharge;
+
+  const data = {
+    email: payer.email,
+    amount: `${adjustedAmount * 100}`,
+    authorization_code: payer.auth_url,
+    bearer: 'account',
+    metadata: JSON.stringify({
+      custom_fields: [
+        {
+          display_name: 'Purpose',
+          variable_name: 'purpose',
+          value: 'Contribution',
+        },
+      ],
+    }),
+  };
+
+  try {
+    const result = await makePaystackRequest(
+      '/transaction/charge_authorization',
+      'POST',
+      data
+    );
+
+    return result
+  } catch (error) {
+    console.log('charge error', error)
+    return error.message || 'Error processing payment. Please try again'
+  }
+};
+
+export const processFirstSavings = async (participant, contribution, userProfile, start_date) => {
+  try {
+    const flow = await chargeCardForPersonalContribution(
+      participant,
+      contribution.amount
+    );
+
+    if (flow?.data?.status === 'success') {
+      await updatePersonalContribution(contribution, userProfile, start_date)
+      return { success: true, message: 'Card charged successfully.' }
+    } else {
+      return { success: false, message: flow?.data?.gateway_response }
+    }
+  } catch (error) {
+    console.log('first savings error', error)
+    throw error
+  }
+
+}

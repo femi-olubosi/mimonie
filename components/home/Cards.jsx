@@ -115,6 +115,7 @@ const Cards = ({ contributions }) => {
                         { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
                       ]}
                     >
+                      Expected{' '}
                       {item.type === 'group' ? 'Collect on' : 'Withdraw on'}{' '}
                       {item.status === 'open'
                         ? ' (Not running yet)'
@@ -136,7 +137,9 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'ir' }]}
                     >
-                      {currentParticipant?.contributions} contribution(s) so far
+                      {currentParticipant?.contributions}{' '}
+                      {item?.type === 'group' ? 'contribution(s)' : 'savings'}{' '}
+                      so far
                     </Text>
                     <View
                       style={{
@@ -179,13 +182,23 @@ const Cards = ({ contributions }) => {
                       { fontSize: 12, marginTop: 10, fontFamily: 'ir' },
                     ]}
                   >
-                    Upcoming Contribution
+                    Upcoming{' '}
+                    {item?.type === 'group' ? 'Contribution' : 'Savings'}
                   </Text>
                   <Text
-                    style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
+                    style={[
+                      styles.text,
+                      {
+                        fontSize: 16,
+                        fontFamily: 'em',
+                        textTransform: 'capitalize',
+                      },
+                    ]}
                   >
-                    {['completed', 'closed'].includes(item?.status) ? (
-                      'Completed'
+                    {['closed', 'completed', 'stopped'].includes(
+                      item?.status
+                    ) ? (
+                      item.status
                     ) : (
                       <>
                         <FontAwesome6

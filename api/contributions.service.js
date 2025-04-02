@@ -421,7 +421,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   }
 };
 
-export const updatePersonalContribution = async (contribution, userProfile) => {
+export const updatePersonalContribution = async (contribution, userProfile, start_date) => {
   const originalContribution = await DataStore.query(
     Contribution,
     contribution.id
@@ -439,30 +439,30 @@ export const updatePersonalContribution = async (contribution, userProfile) => {
   }
 
   participant.contributions = (participant.contributions || 0) + 1;
-  participant.last_successful_round = originalContribution.current_count;
+  participant.last_successful_round = (participant.last_successful_round || 0) + 1;
   participant.balance =
     (participant.balance || 0) + originalContribution.amount;
 
   await triggerNotificationForUser(
     userProfile?.push_token,
     'Payment Successful',
-    `You successfully contributed to ${contribution.name}`
+    `You successfully saved to ${contribution.name}`
   );
 
   await createUserActivity(userProfile.userId, {
     type: 'Personal savings',
     amount: contribution.amount,
-    description: `You successfully contributed to ${contribution.name}`,
+    description: `You successfully saved to ${contribution.name}`,
     extra: contribution.id
   });
 
   await DataStore.save(
     Contribution.copyOf(originalContribution, (updated) => {
       updated.participant = participants;
-      updated.currently_at = originalContribution.current_count;
-      if (participant.contributions >= originalContribution.num_of_month) {
-        updated.status = 'completed';
-      }
+      updated.currently_at = (updated.currently_at ?? 0) + 1;
+      updated.status = 'running';
+      updated.current_count = (updated.current_count ?? 0) + 1;
+      updated.start_date = start_date
     })
   );
 };

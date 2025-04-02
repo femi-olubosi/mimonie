@@ -21,7 +21,8 @@ const ConfirmJoinModal = ({ visible, onClose, onConfirm }) => {
               1. Your payment method must be funded before the deduction date.
             </Text>
             <Text style={styles.condition}>
-              2. Deductions will occur every Monday.
+              2. Receiver of a round will receive payment in their account
+              within 48 hours
             </Text>
             <Text style={styles.condition}>
               3. You are responsible for applicable transaction fees and

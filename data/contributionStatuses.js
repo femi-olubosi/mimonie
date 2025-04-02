@@ -1,0 +1,1 @@
+export const endStatus = ['closed', 'completed', 'stopped']
