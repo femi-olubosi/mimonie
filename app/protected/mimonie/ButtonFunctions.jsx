@@ -10,9 +10,13 @@ import React from 'react';
 import CopyLink from '../../../components/CopyLink';
 import { Colors } from '../../../constants/Colors';
 
-const Button = ({ title, onPress, disabled }) => {
+const Button = ({ title, onPress, disabled, styleOverride }) => {
   return (
-    <Pressable style={styles.fab} onPress={onPress} disabled={disabled}>
+    <Pressable
+      style={[styles.fab, { ...styleOverride }]}
+      onPress={onPress}
+      disabled={disabled}
+    >
       <Text style={styles.fabText}>{title}</Text>
     </Pressable>
   );
@@ -28,12 +32,9 @@ const ButtonFunctions = ({
   setWithdrawModal,
   isLoading,
   setConfirmJoinModal,
+  setStopSavingsModal,
 }) => {
   const isParticipant = parsed?.some(
-    (participant) => participant.userId === userProfile.userId
-  );
-
-  const user = parsed?.find(
     (participant) => participant.userId === userProfile.userId
   );
 
@@ -43,12 +44,11 @@ const ButtonFunctions = ({
   const isOpen = contribution?.status === 'open';
   const isRunning = contribution?.status === 'running';
   const isCompleted = contribution?.status === 'completed';
+  const isStopped = contribution?.status === 'stopped';
   const isClosed = contribution?.status === 'closed';
   const invisible = !['running', 'closed', 'completed'].includes(
     contribution?.status
   );
-  const balance = user?.balance || 0;
-  const withdrawable = balance - contribution?.amount;
 
   // const shouldShowPayButton =
   //   isParticipant &&
@@ -64,14 +64,16 @@ const ButtonFunctions = ({
       isPersonal) &&
     invisible;
 
-  const shouldShowInviteButton = isOpen && isOwner && isGroup;
+  const shouldShowInviteButton = isGroup && isOpen && isOwner;
 
-  const shouldShowJoinButton = !isParticipant && isOpen && isGroup;
+  const shouldShowJoinButton = isGroup && isOpen && !isParticipant;
 
   const shouldShowWithdrawButton =
-    isPersonal && !isClosed && contribution?.currently_at > 0;
+    isPersonal && !isClosed && (isCompleted || isStopped);
 
   const shouldShowCopyLink = isGroup && !isCompleted;
+
+  const shouldShowStopSavings = isPersonal && isRunning;
 
   return (
     <View
@@ -109,13 +111,24 @@ const ButtonFunctions = ({
         />
       )}
 
-      {shouldShowWithdrawButton && (
+      {shouldShowStopSavings && (
         <Button
-          title="Withdraw"
-          onPress={() => setWithdrawModal(true)}
+          title="Stop Savings"
+          onPress={() => setStopSavingsModal(true)}
           disabled={isLoading}
+          styleOverride={{
+            backgroundColor: 'red',
+          }}
         />
       )}
+
+      {/* {shouldShowWithdrawButton && ( */}
+      <Button
+        title="Request Withdrawal"
+        onPress={() => setWithdrawModal(true)}
+        disabled={isLoading}
+      />
+      {/* )} */}
 
       {shouldShowCopyLink && <CopyLink inviteLink={contribution.id} />}
     </View>

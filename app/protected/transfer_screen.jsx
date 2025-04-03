@@ -25,6 +25,7 @@ import PinInputModal from '../../components/withdrawal/PinInputModal';
 import ValidateUser from '../../components/withdrawal/ValidateUser';
 import { ErrorCheck } from '../../utils/errorCheck';
 import WithdrawalLoader from '../../components/withdrawal/WithrawalLoader';
+import { earlyWithdrawalCharge } from '../../constants/charges';
 
 const transfer_screen = () => {
   const { contribution, isEarly, participant } = useLocalSearchParams();
@@ -40,6 +41,7 @@ const transfer_screen = () => {
   const isEarlyWithdrawal = isEarly === 'false' ? false : true;
   const [recipientCode, setRecipientCode] = useState(null);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchBankDetails(setBankDetails, currentUser);
@@ -53,20 +55,36 @@ const transfer_screen = () => {
   }, [bankDetails]);
 
   const balance = parsedParticipant?.balance;
-  const penalty = balance * 0.1;
+  const penalty = balance * (earlyWithdrawalCharge / 100);
   const newBalance = balance - penalty;
 
   const handleWithdrawFund = async () => {
-    const amount = isEarlyWithdrawal ? balance : amountToWithdraw;
+    const withdrawableAmount = isEarlyWithdrawal
+      ? Number(newBalance)
+      : Number(balance);
 
-    if (ErrorCheck({ amount })) {
+    if (ErrorCheck({ amountToWithdraw })) {
       return;
     }
 
-    if (Number(amount) > Number(balance)) {
-      Alert.alert('Insufficient Balance', 'Insufficient balance to withdraw');
+    // if (Number(amount) > Number(balance)) {
+    //   Alert.alert('Insufficient Balance', 'Insufficient balance to withdraw');
+    //   return;
+    // }
+
+    const numericAmount = parseFloat(amountToWithdraw);
+
+    if (!amountToWithdraw || isNaN(numericAmount)) {
+      setError('Please enter a valid amount');
       return;
     }
+
+    if (numericAmount > withdrawableAmount) {
+      setError(`Amount cannot exceed ${withdrawableAmount}`);
+      return;
+    }
+
+    setError('');
 
     if (userProfile.transfer_pin) {
       setValidateCustomerModal(true);
@@ -186,15 +204,33 @@ const transfer_screen = () => {
                   <Text>Withdrawable Balance: (NGN) {balance}</Text>
                 )}
               </View>
-              {!isEarlyWithdrawal && (
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Amount to withdraw"
-                  value={amountToWithdraw}
-                  onChangeText={setAmountToWithdraw}
-                  keyboardType="number-pad"
-                />
-              )}
+
+              {/* <TextInput
+                style={styles.input}
+                placeholder="Enter Amount to withdraw"
+                value={amountToWithdraw}
+                onChangeText={setAmountToWithdraw}
+                keyboardType="number-pad"
+              /> */}
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Amount to Withdraw:</Text>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.currencySymbol}>₦</Text>
+                  <TextInput
+                    style={styles.input}
+                    keyboardType="numeric"
+                    placeholder="Enter amount"
+                    value={amountToWithdraw}
+                    onChangeText={(text) => {
+                      setAmountToWithdraw(text.replace(/[^0-9.]/g, ''));
+                      setError('');
+                    }}
+                    placeholderTextColor="#999"
+                  />
+                </View>
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              </View>
+
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleWithdrawFund}
@@ -250,14 +286,43 @@ const styles = StyleSheet.create({
     fontFamily: 'ir',
     marginBottom: 10,
   },
-  input: {
-    backgroundColor: 'white',
-    borderRadius: 8,
+  // input: {
+  //   backgroundColor: 'white',
+  //   borderRadius: 8,
+  //   borderWidth: 1,
+  //   borderColor: '#9095A1',
+  //   padding: 12,
+  //   height: 53,
+  //   width: '100%',
+  // },
+  inputContainer: {
+    marginBottom: 24,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#9095A1',
-    padding: 12,
-    height: 53,
-    width: '100%',
+    borderColor: '#DDD',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 50,
+  },
+  currencySymbol: {
+    fontSize: 16,
+    color: '#555',
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    height: '100%',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#D32F2F', // Red error color
+    marginTop: 4,
+    marginLeft: 4,
   },
   contributionContainer: {
     padding: 16,

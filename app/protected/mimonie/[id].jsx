@@ -49,6 +49,9 @@ import { validateUserContributions } from '../../../utils/validateUserContributi
 import ConfirmJoinModal from './ConfirmJoinModal';
 import { isLastDaysOfMonth } from '../../../utils/helper';
 import StartSavingsModal from './StartSavingsModal';
+import StopSavingsModal from './StopSavingsModal';
+import WithdrawalModal from './WithdrawalModal';
+import { earlyWithdrawalCharge } from '../../../constants/charges';
 
 const ContributionDetails = () => {
   const {
@@ -77,6 +80,7 @@ const ContributionDetails = () => {
   const [confirmJoinModal, setConfirmJoinModal] = useState(false);
   const [confirmStartModal, setConfirmStartModal] = useState(false);
   const [processingCharge, setProcessingCharge] = useState(false);
+  const [stopSavingsModal, setStopSavingsModal] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -107,41 +111,6 @@ const ContributionDetails = () => {
       setParsed(parsedData);
     }
   }, [contribution]);
-
-  // const handleSuccess = async (res) => {
-  //   try {
-  //     setIsLoading(true);
-  //     const verificationResponse = await verifyTransfer(
-  //       res?.transactionRef?.reference
-  //     );
-  //     if (verificationResponse?.status === 'success') {
-  //       if (contribution?.type === 'group') {
-  //         await updateContributionForUser(contribution, userProfile);
-  //       } else {
-  //         await updatePersonalContribution(contribution, userProfile);
-  //       }
-  //       await fetchUserContributions(currentUser?.userId, setContributions);
-  //       Alert.alert(
-  //         'Payment Successful',
-  //         'Your contribution has been updated',
-  //         [
-  //           {
-  //             text: 'OK',
-  //             onPress: () => router.push('/protected/mimonie'),
-  //           },
-  //         ],
-  //         { cancelable: false }
-  //       );
-  //     } else {
-  //       Alert.alert('Payment Failed', 'Could not verify payment');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error verifying transaction:', error);
-  //     Alert.alert('Error', 'Something went wrong while verifying payment');
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   useEffect(() => {
     fetchUserProfile(setOwnerProfile, {
@@ -323,10 +292,6 @@ const ContributionDetails = () => {
 
   const startDate = new Date(contribution?.start_date);
 
-  // const recipient = parsed?.find(
-  //   (participant) => participant.status === 'in progress'
-  // );
-
   const isEarlyWithdrawal =
     contribution?.currently_at < contribution?.num_of_month;
 
@@ -342,9 +307,25 @@ const ContributionDetails = () => {
     });
   };
 
-  // const transactionCharge = Math.round(contribution?.amount * 0.035);
-
-  // const adjustedAmount = contribution?.amount + transactionCharge;
+  const handleStopSavings = async () => {
+    setStopSavingsModal(false);
+    setIsLoading(true);
+    try {
+      const savings = await updateContribution(contribution?.id, {
+        status: 'stopped',
+      });
+      await findContributionByID(id, setContribution);
+      Alert.alert(
+        'Savings Stopped Successfully',
+        `Your savings to ${savings?.name} have been stopped successfully.`
+      );
+    } catch (error) {
+      console.error('Error stopping savings:', error);
+      Alert.alert('Error', 'An error occurred while stopping the savings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
@@ -365,6 +346,7 @@ const ContributionDetails = () => {
               parsed={parsed}
               userProfile={userProfile}
               isLoading={isLoading}
+              setStopSavingsModal={setStopSavingsModal}
             />
 
             <Balance parsed={parsed} amount={contribution?.amount} />
@@ -466,14 +448,6 @@ const ContributionDetails = () => {
               />
               {contribution?.type === 'group' && (
                 <>
-                  {/* <View style={styles.detailContainer}>
-                    <Text style={styles.label}>User role</Text>
-                    <Text style={styles.value}>
-                      {contribution?.owner === userProfile?.name
-                        ? 'Creator'
-                        : 'invitee'}
-                    </Text>
-                  </View> */}
                   <View style={styles.detailContainer}>
                     <Text style={styles.label}>Owner</Text>
                     <Text style={styles.value}>{contribution?.owner}</Text>
@@ -490,51 +464,6 @@ const ContributionDetails = () => {
         invite_link={contribution?.id}
         participants={contribution?.participant_ids}
       />
-      {/* <Paystack
-        ref={paystackWebViewRef}
-        paystackKey={'pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f'}
-        amount={adjustedAmount}
-        billingEmail={userProfile?.email}
-        bearer={'account'}
-        transaction_charge={transactionCharge}
-        firstName={userProfile?.name}
-        activityIndicatorColor={Colors.pri}
-        subaccount={recipient?.subaccount_code}
-        channels={['bank_transfer']}
-        onCancel={(e) => {
-          console.log('cancelled');
-        }}
-        onSuccess={(res) => {
-          handleSuccess(res);
-        }}
-      >
-        <View style={{ rowGap: 4 }}>
-          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
-            You are paying NGN {contribution?.amount}
-          </Text>
-          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
-            for {contribution?.name} contribution
-          </Text>
-        </View>
-      </Paystack> */}
-      <Modal visible={withdrawModal} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {isEarlyWithdrawal ? 'Continue' : 'Confirm Withdrawal'}
-            </Text>
-            <Text style={styles.modalText}>
-              {isEarlyWithdrawal
-                ? 'Withdrawing before the liquidation date will incur a 10% penalty. Please confirm if you wish to proceed.'
-                : 'Are you sure you want to withdraw your funds? There are no penalties for withdrawing now. Please confirm if you wish to proceed.'}
-            </Text>
-            <View style={styles.buttonContainer}>
-              <Button title="Cancel" onPress={() => setWithdrawModal(false)} />
-              <Button title="Continue" onPress={handleWithdrawFund} />
-            </View>
-          </View>
-        </View>
-      </Modal>
       <ModalWrapper
         visible={openParticipantEditModal}
         onClose={() => setOpenParticipantEditModal(false)}
@@ -557,6 +486,20 @@ const ContributionDetails = () => {
         onClose={() => setConfirmStartModal(false)}
         onConfirm={handleStartSavingContribution}
         processingCharge={processingCharge}
+      />
+      <StopSavingsModal
+        visible={stopSavingsModal}
+        onClose={() => setStopSavingsModal(false)}
+        onConfirm={handleStopSavings}
+        contribution={contribution}
+        breakFeePercentage={earlyWithdrawalCharge}
+      />
+      <WithdrawalModal
+        visible={withdrawModal}
+        onClose={() => setWithdrawModal(false)}
+        onConfirm={handleWithdrawFund}
+        isEarlyWithdrawal={isEarlyWithdrawal}
+        balance={parsed[0]?.balance}
       />
     </PageView>
   );
