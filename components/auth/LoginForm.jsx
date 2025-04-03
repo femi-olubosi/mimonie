@@ -144,11 +144,11 @@ const LoginForm = (props) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      enabled={false}
-    >
-      <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView behavior="padding" enabled={false}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        nestedScrollEnabled={true}
+      >
         <Text style={styles.title}>Log in</Text>
         <View>
           <Text style={styles.label}>Email Address</Text>
