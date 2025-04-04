@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Platform,
   Pressable,
@@ -25,7 +26,6 @@ const Button = ({ title, onPress, disabled, styleOverride }) => {
 const ButtonFunctions = ({
   contribution,
   parsed,
-  handlePaystackStartTransaction,
   userProfile,
   handleStartContribution,
   setVisible,
@@ -33,6 +33,8 @@ const ButtonFunctions = ({
   isLoading,
   setConfirmJoinModal,
   setStopSavingsModal,
+  checkingExisting,
+  isExisting,
 }) => {
   const isParticipant = parsed?.some(
     (participant) => participant.userId === userProfile.userId
@@ -46,18 +48,9 @@ const ButtonFunctions = ({
   const isCompleted = contribution?.status === 'completed';
   const isStopped = contribution?.status === 'stopped';
   const isClosed = contribution?.status === 'closed';
-  const invisible = !['running', 'closed', 'completed'].includes(
+  const invisible = !['running', 'closed', 'completed', 'stopped'].includes(
     contribution?.status
   );
-
-  // const shouldShowPayButton =
-  //   isParticipant &&
-  //   parsed?.some(
-  //     (participant) =>
-  //       participant.userId === userProfile.userId &&
-  //       participant.status !== 'in progress' &&
-  //       participant?.last_successful_round < contribution?.current_count
-  //   );
 
   const shouldShowStartButton =
     ((parsed?.length === contribution?.num_of_month && isOwner) ||
@@ -69,11 +62,19 @@ const ButtonFunctions = ({
   const shouldShowJoinButton = isGroup && isOpen && !isParticipant;
 
   const shouldShowWithdrawButton =
-    isPersonal && !isClosed && (isCompleted || isStopped);
+    isPersonal && !isClosed && !isExisting && (isCompleted || isStopped);
 
   const shouldShowCopyLink = isGroup && !isCompleted;
 
   const shouldShowStopSavings = isPersonal && isRunning;
+
+  if (checkingExisting) {
+    return (
+      <View style={{ marginBottom: 10 }}>
+        <ActivityIndicator color={Colors.pri} size={'large'} />
+      </View>
+    );
+  }
 
   return (
     <View
@@ -85,11 +86,12 @@ const ButtonFunctions = ({
         marginBottom: 10,
       }}
     >
-      {/* {shouldShowPayButton && (
-        <Pressable style={styles.fab} onPress={handlePaystackStartTransaction}>
-          <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
-        </Pressable>
-      )} */}
+      {isExisting && (
+        <Button
+          title="Request Processing"
+          styleOverride={{ backgroundColor: 'black' }}
+        />
+      )}
 
       {shouldShowStartButton && (
         <Button
@@ -122,13 +124,13 @@ const ButtonFunctions = ({
         />
       )}
 
-      {/* {shouldShowWithdrawButton && ( */}
-      <Button
-        title="Request Withdrawal"
-        onPress={() => setWithdrawModal(true)}
-        disabled={isLoading}
-      />
-      {/* )} */}
+      {shouldShowWithdrawButton && (
+        <Button
+          title="Request Withdrawal"
+          onPress={() => setWithdrawModal(true)}
+          disabled={isLoading}
+        />
+      )}
 
       {shouldShowCopyLink && <CopyLink inviteLink={contribution.id} />}
     </View>

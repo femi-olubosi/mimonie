@@ -116,6 +116,16 @@ export type AmplifyDependentResourcesAttributes = {
     "mimonieS3Storage": {
       "BucketName": "string",
       "Region": "string"
+    },
+    "withdrawalRequests": {
+      "Arn": "string",
+      "Name": "string",
+      "PartitionKeyName": "string",
+      "PartitionKeyType": "string",
+      "Region": "string",
+      "SortKeyName": "string",
+      "SortKeyType": "string",
+      "StreamArn": "string"
     }
   }
 }

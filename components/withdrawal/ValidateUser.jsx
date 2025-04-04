@@ -23,10 +23,11 @@ const ValidateUser = ({ visible, onClose, userProfile, onVerified }) => {
       return;
     }
 
-    // if (pinString !== userProfile.transfer_pin) {
-    //   Alert.alert('Invalid PIN', 'The PIN you entered is incorrect');
-    //   return;
-    // }
+    if (pinString !== userProfile.transfer_pin) {
+      Alert.alert('Invalid PIN', 'The PIN you entered is incorrect');
+      return;
+    }
+
     setPin(['', '', '', '', '', '']);
     onVerified();
   };

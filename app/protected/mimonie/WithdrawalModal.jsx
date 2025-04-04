@@ -17,7 +17,7 @@ const WithdrawalModal = ({
     <Modal
       visible={visible}
       transparent={true}
-      animationType="fade"
+      animationType="slide"
       onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
@@ -39,7 +39,7 @@ const WithdrawalModal = ({
           <View style={styles.amountContainer}>
             <Text style={styles.label}>Withdrawable Amount:</Text>
             <Text style={styles.amountText}>
-              ₦{withdrawableAmount.toLocaleString()}
+              ₦{withdrawableAmount?.toLocaleString()}
             </Text>
           </View>
           <View style={styles.buttonContainer}>

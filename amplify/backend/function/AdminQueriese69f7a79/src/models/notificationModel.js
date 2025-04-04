@@ -1,11 +1,9 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
-    DynamoDBDocumentClient,
-    QueryCommand
+  DynamoDBDocumentClient,
+  QueryCommand,
+  ScanCommand
 } = require('@aws-sdk/lib-dynamodb');
-const { v4: uuidv4 } = require('uuid');
-
-let expo = new Expo();
 
 const dynamoDB = new DynamoDBClient({ region: 'us-west-2' });
 const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
@@ -14,13 +12,16 @@ const notificationTableName = 'UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev'
 
 
 const notificationModel = {
-    async listNotifications(lastEvaluatedKey = null, limit = null) {
+    async listNotifications(lastEvaluatedKey = null, limit = 20) {
         const params = {
             TableName: notificationTableName,
             IndexName: "CreatedAtIndex", // GSI name
-            KeyConditionExpression: "constant_key = :key",
+            KeyConditionExpression: "#typename = :type",
+            ExpressionAttributeNames: {
+                "#typename": "__typename" //
+            },
             ExpressionAttributeValues: {
-                ":key": "ALL_ITEMS"
+                ":type": "UserNotifications"
             },
             ScanIndexForward: false, // False = Descending order
             Limit: limit,
@@ -28,19 +29,13 @@ const notificationModel = {
 
         if (lastEvaluatedKey) {
             params.ExclusiveStartKey = lastEvaluatedKey;
-        }
-
-        //   if (searchTerm) {
-        //     params.FilterExpression =
-        //       'contains(product_name, :searchTerm) OR contains(product_barcode, :searchTerm)';
-        //     params.ExpressionAttributeValues[':searchTerm'] = searchTerm;
-        //   }
-
-        const result = await ddbDocClient.send(new QueryCommand);
-
+          }
+    
+        const result = await ddbDocClient.send(new QueryCommand(params));
+ 
         return {
             items: result.Items,
-            lastEvaluatedKey: result.LastEvaluatedKey
+            nextToken: result.LastEvaluatedKey
         };
     }
 }

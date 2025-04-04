@@ -12,14 +12,13 @@ import {
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
-import { DateTimeSelector, SelectInput } from '../../components/Reusable';
+import { SelectInput } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import {
   createContribution,
   createPersonalContribution,
 } from '../../api/contributions.service';
 import { getContributionGroups } from '../../api/groups.service';
-import { fetchUserConnections } from '../../api/network.service';
 import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
 import { ErrorCheck } from '../../utils/errorCheck';
@@ -107,7 +106,6 @@ const CreateContribution = () => {
   const [numOfParticipants, setNumOfParticipants] = useState({});
 
   const {
-    contributionGroups,
     setContributionGroups,
     currentUser,
     setContributions,
@@ -115,7 +113,6 @@ const CreateContribution = () => {
     setIsLoading,
     userProfile,
     parsed,
-    setParsed,
   } = useGlobalContext();
   const router = useRouter();
 
@@ -183,7 +180,6 @@ const CreateContribution = () => {
   };
 
   const createContributionPersonal = async () => {
-    const date = new Date();
     const details = {
       contributionName,
       groupName: 'Default',

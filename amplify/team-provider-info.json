@@ -20,11 +20,11 @@
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-747a4c6b6138786f4c61-build.zip"
+          "s3Key": "amplify-builds/userInfo-4f6e64627468436c6965-build.zip"
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-5863444e7a316f35464d-build.zip",
+          "s3Key": "amplify-builds/callbackurl-6e4461436b2b36773448-build.zip",
           "profileTableName": "UserProfile-d4itlx42uzhtrctybtkmaxruya-dev",
           "notificationsTableName": "UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev",
           "partnerId": "6982",
@@ -40,7 +40,7 @@
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/contributionTrigger-446d6d4f46742b6c4244-build.zip",
+          "s3Key": "amplify-builds/contributionTrigger-4643455443456d665364-build.zip",
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         },
         "contributionNotifications": {
@@ -49,12 +49,12 @@
         },
         "verification": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/verification-705056476f78357a7a79-build.zip",
+          "s3Key": "amplify-builds/verification-6e566e516a3145542b62-build.zip",
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         },
         "AdminQueriese69f7a79": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/AdminQueriese69f7a79-746375645636584b6264-build.zip"
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-5a7331784735586e6849-build.zip"
         }
       },
       "auth": {
@@ -71,7 +71,14 @@
       "storage": {
         "mimonieS3Storage": {},
         "dynamoc73ffc4d": {},
-        "billers": {}
+        "billers": {},
+        "withdrawalRequests": {}
+      },
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "d1dysz7zlgu6rj",
+          "type": "manual"
+        }
       }
     }
   }

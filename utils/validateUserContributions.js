@@ -1,6 +1,6 @@
 export const validateUserContributions = (contributions, type) => {
     for (const contribution of contributions) {
-        if (['closed', 'completed'].includes(contribution.status)) {
+        if (['closed', 'completed', 'stopped'].includes(contribution.status)) {
             continue;
         }
 

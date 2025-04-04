@@ -7,8 +7,8 @@ See the License for the specific language governing permissions and limitations 
 */
 
 /* Amplify Params - DO NOT EDIT
-	ENV
-	REGION
+  ENV
+  REGION
 Amplify Params - DO NOT EDIT */
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
@@ -108,10 +108,6 @@ app.get('/mimonie-bvn-verification/*', function (req, res) {
   res.json({ success: 'get call succeed!', url: req.url });
 });
 
-/****************************
- * Example post method *
- ****************************/
-
 const sendNotification = async (pushToken, title, body, data = {}) => {
   if (!Expo.isExpoPushToken(pushToken)) {
     console.error(`Push token ${pushToken} is not a valid Expo push token`);
@@ -155,8 +151,6 @@ const saveUserNotification = async (notification) => {
     throw new Error('Could not save user notification');
   }
 };
-
-// Helper function to get user profile by customer_code
 
 const getUserProfile = async (customerCode, recipientCode) => {
   const params = {

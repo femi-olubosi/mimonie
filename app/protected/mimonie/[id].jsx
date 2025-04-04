@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,6 @@ import {
   Alert,
   Platform,
   RefreshControl,
-  Button,
-  Modal,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { PageView } from '@/components/Reusable';
@@ -16,8 +14,6 @@ import { useGlobalContext } from '../../../store/StoreContext';
 import {
   findContributionByID,
   joinContribution,
-  updateContributionForUser,
-  fetchUserContributions,
 } from '@/api/contributions.service';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { statusCheck } from '@/utils/statusCheck';
@@ -28,20 +24,12 @@ import { updateInvite } from '@/api/invite.service';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
-import {
-  processFirstSavings,
-  verifyTransfer,
-} from '../../../api/payment.service';
-import { Paystack } from '@/paystackDev';
-import {
-  updateContribution,
-  updatePersonalContribution,
-} from '../../../api/contributions.service';
+import { processFirstSavings } from '../../../api/payment.service';
+import { updateContribution } from '../../../api/contributions.service';
 import ModalWrapper from '../../../components/modals/ModalWrapper';
 import Drag from './Drag';
 import NextContributionDay from './NextContributionDay';
 import ParticipantList from './ParticipantList';
-import { fetchUserConnections } from '../../../api/network.service';
 import SkeletonLoaderComp from './SkeletonLoader';
 import ButtonFunctions from './ButtonFunctions';
 import Balance from './Balance';
@@ -52,6 +40,7 @@ import StartSavingsModal from './StartSavingsModal';
 import StopSavingsModal from './StopSavingsModal';
 import WithdrawalModal from './WithdrawalModal';
 import { earlyWithdrawalCharge } from '../../../constants/charges';
+import { get } from 'aws-amplify/api';
 
 const ContributionDetails = () => {
   const {
@@ -73,7 +62,6 @@ const ContributionDetails = () => {
   const [imageUrls, setImageUrls] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
-  const paystackWebViewRef = useRef();
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [openParticipantEditModal, setOpenParticipantEditModal] =
     useState(false);
@@ -81,6 +69,8 @@ const ContributionDetails = () => {
   const [confirmStartModal, setConfirmStartModal] = useState(false);
   const [processingCharge, setProcessingCharge] = useState(false);
   const [stopSavingsModal, setStopSavingsModal] = useState(false);
+  const [isExisting, setIsExisting] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -117,6 +107,34 @@ const ContributionDetails = () => {
       userId: contribution?.participant_ids?.[0],
     });
   }, [contribution]);
+
+  useEffect(() => {
+    const checkExistingRequest = async () => {
+      setCheckingExisting(true);
+      try {
+        const restOperation = get({
+          apiName: 'userInfo',
+          path: `/request-withdrawal/${id}`,
+        });
+
+        const response = await restOperation.response;
+        const existing = await response.body.json();
+
+        setIsExisting(existing?.request?.length > 0);
+      } catch (error) {
+        console.log('error', error);
+      } finally {
+        setCheckingExisting(false);
+      }
+    };
+
+    if (
+      contribution?.type === 'personal' &&
+      ['stopped', 'completed'].includes(contribution?.status)
+    ) {
+      checkExistingRequest();
+    }
+  }, [id, contribution]);
 
   const handleJoinContribution = async () => {
     setConfirmJoinModal(false);
@@ -335,9 +353,6 @@ const ContributionDetails = () => {
         ) : (
           <>
             <ButtonFunctions
-              handlePaystackStartTransaction={() =>
-                paystackWebViewRef.current.startTransaction()
-              }
               setConfirmJoinModal={setConfirmJoinModal}
               handleStartContribution={triggerStartButton}
               setVisible={setVisible}
@@ -347,6 +362,8 @@ const ContributionDetails = () => {
               userProfile={userProfile}
               isLoading={isLoading}
               setStopSavingsModal={setStopSavingsModal}
+              checkingExisting={checkingExisting}
+              isExisting={isExisting}
             />
 
             <Balance parsed={parsed} amount={contribution?.amount} />

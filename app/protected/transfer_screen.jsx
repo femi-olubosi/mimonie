@@ -26,6 +26,7 @@ import ValidateUser from '../../components/withdrawal/ValidateUser';
 import { ErrorCheck } from '../../utils/errorCheck';
 import WithdrawalLoader from '../../components/withdrawal/WithrawalLoader';
 import { earlyWithdrawalCharge } from '../../constants/charges';
+import { post } from 'aws-amplify/api';
 
 const transfer_screen = () => {
   const { contribution, isEarly, participant } = useLocalSearchParams();
@@ -63,14 +64,9 @@ const transfer_screen = () => {
       ? Number(newBalance)
       : Number(balance);
 
-    if (ErrorCheck({ amountToWithdraw })) {
+    if (ErrorCheck({ amount: amountToWithdraw })) {
       return;
     }
-
-    // if (Number(amount) > Number(balance)) {
-    //   Alert.alert('Insufficient Balance', 'Insufficient balance to withdraw');
-    //   return;
-    // }
 
     const numericAmount = parseFloat(amountToWithdraw);
 
@@ -94,24 +90,33 @@ const transfer_screen = () => {
   };
 
   const onVerified = async () => {
+    const payload = {
+      userId: userProfile.userId,
+      contributionId: parsedContribution?.id,
+      amount: amountToWithdraw,
+      isEarlyWithdrawal,
+      recipientCode,
+    };
+
+    setAmountToWithdraw('');
     setValidateCustomerModal(false);
     setProcessing(true);
     try {
-      const amount = isEarlyWithdrawal ? balance : amountToWithdraw;
-
-      const withdrawalResponse = await withdrawFunds(
-        userProfile,
-        parsedContribution?.id,
-        amount,
-        recipientCode
-      );
+      const restOperation = post({
+        apiName: 'userInfo',
+        path: '/request-withdrawal',
+        options: {
+          body: payload,
+        },
+      });
+      const response = await restOperation.response;
+      const withdrawalResponse = await response.body.json();
 
       if (withdrawalResponse?.success) {
-        setIsLoading(false);
         setProcessing(false);
         Alert.alert(
           'Withdrawal Processed',
-          'Your withdrawal request has been successfully processed',
+          'Your withdrawal request has been successfully processed. You will receive a notification once it is completed.',
           [
             {
               text: 'OK',
@@ -123,7 +128,6 @@ const transfer_screen = () => {
           { cancelable: false }
         );
       } else {
-        setIsLoading(false);
         setProcessing(false);
         Alert.alert(
           'Withdrawal Failed',
@@ -131,14 +135,12 @@ const transfer_screen = () => {
         );
       }
     } catch (error) {
-      setIsLoading(false);
       setProcessing(false);
       Alert.alert(
         'Error',
         `${error?.message || 'An unexpected error occurred, please try again.'}`
       );
     } finally {
-      setIsLoading(false);
       setProcessing(false);
     }
   };
@@ -213,7 +215,6 @@ const transfer_screen = () => {
                 keyboardType="number-pad"
               /> */}
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Amount to Withdraw:</Text>
                 <View style={styles.inputWrapper}>
                   <Text style={styles.currencySymbol}>₦</Text>
                   <TextInput
@@ -234,6 +235,7 @@ const transfer_screen = () => {
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleWithdrawFund}
+                disabled={!amountToWithdraw}
               >
                 <Text style={styles.buttonText}>Withdraw</Text>
               </TouchableOpacity>
@@ -297,6 +299,7 @@ const styles = StyleSheet.create({
   // },
   inputContainer: {
     marginBottom: 24,
+    marginTop: 10,
   },
   inputWrapper: {
     flexDirection: 'row',
