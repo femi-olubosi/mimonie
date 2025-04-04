@@ -9,18 +9,13 @@ import {
 } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { Colors } from '@/constants/Colors';
-import { Entypo, FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome6 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import Hide from '@/components/Hide';
-
-const safeParseJSON = (data, fallback) => {
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    return fallback;
-  }
-};
+import NextContributionDay from './components/NextContributionDay';
+import { safeParseJSON } from '@/utils/safeJSON';
+import { getCollectionDate } from '@/utils/savings_contribution_helper';
 
 const Cards = ({ contributions }) => {
   const { userProfile, hideValues } = useGlobalContext();
@@ -62,9 +57,7 @@ const Cards = ({ contributions }) => {
             const currentParticipant = participants?.find(
               (e) => e.userId === userProfile?.userId
             );
-            const done =
-              currentParticipant?.contributions !== 0 &&
-              currentParticipant?.contributions >= participants?.length - 1;
+
             return (
               <Pressable
                 style={[
@@ -122,6 +115,7 @@ const Cards = ({ contributions }) => {
                         { fontSize: 10, fontFamily: 'ir', marginTop: 2 },
                       ]}
                     >
+                      Expected{' '}
                       {item.type === 'group' ? 'Collect on' : 'Withdraw on'}{' '}
                       {item.status === 'open'
                         ? ' (Not running yet)'
@@ -129,7 +123,6 @@ const Cards = ({ contributions }) => {
                             item.start_date,
                             currentParticipant?.index,
                             item.variant,
-                            item.id,
                             item.num_of_month,
                             item.type
                           )}
@@ -144,7 +137,9 @@ const Cards = ({ contributions }) => {
                     <Text
                       style={[styles.text, { fontSize: 12, fontFamily: 'ir' }]}
                     >
-                      {currentParticipant?.contributions} contribution(s) so far
+                      {currentParticipant?.contributions}{' '}
+                      {item?.type === 'group' ? 'contribution(s)' : 'savings'}{' '}
+                      so far
                     </Text>
                     <View
                       style={{
@@ -187,15 +182,23 @@ const Cards = ({ contributions }) => {
                       { fontSize: 12, marginTop: 10, fontFamily: 'ir' },
                     ]}
                   >
-                    Upcoming Contribution
+                    Upcoming{' '}
+                    {item?.type === 'group' ? 'Contribution' : 'Savings'}
                   </Text>
                   <Text
-                    style={[styles.text, { fontSize: 16, fontFamily: 'em' }]}
+                    style={[
+                      styles.text,
+                      {
+                        fontSize: 16,
+                        fontFamily: 'em',
+                        textTransform: 'capitalize',
+                      },
+                    ]}
                   >
-                    {['completed', 'closed'].includes(item?.status) ? (
-                      'Completed'
-                    ) : item.type === 'group' && done ? (
-                      'Completed your part'
+                    {['closed', 'completed', 'stopped'].includes(
+                      item?.status
+                    ) ? (
+                      item.status
                     ) : (
                       <>
                         <FontAwesome6
@@ -214,13 +217,12 @@ const Cards = ({ contributions }) => {
                       alignItems: 'center',
                     }}
                   >
-                    {item.type === 'group' && done ? null : (
+                    {
                       <NextContributionDay
                         contribution={item}
-                        done={done}
                         currentParticipant={currentParticipant}
                       />
-                    )}
+                    }
                   </View>
                 </ThemedView>
 
@@ -248,206 +250,6 @@ const Cards = ({ contributions }) => {
 };
 
 export default Cards;
-
-const parseDate = (dateString) => {
-  if (!dateString) return null;
-  const [year, month, day] = dateString.split('-');
-  return new Date(year, month - 1, day);
-};
-
-const NextContributionDay = ({ contribution, done, currentParticipant }) => {
-  const updateMe =
-    contribution?.current_count !== currentParticipant?.index &&
-    currentParticipant?.last_successful_round < contribution?.current_count;
-
-  const getNextDayOfWeek = (date, targetDay) => {
-    const dayOfWeek = date.getDay();
-    const daysUntilNextDay = (targetDay - dayOfWeek + 7) % 7 || 7;
-    const nextDay = new Date(date);
-    nextDay.setDate(date.getDate() + daysUntilNextDay);
-    return nextDay;
-  };
-
-  const getNextContributionDay = () => {
-    if (contribution?.status === 'open') {
-      return 'Not running';
-    }
-
-    if (['completed', 'closed'].includes(contribution?.status)) {
-      return 'Completed';
-    }
-
-    if (contribution.type === 'group' && done) {
-      return '';
-    }
-
-    const today = new Date();
-    let nextContributionDay;
-
-    const targetDayOfWeek =
-      contribution?.id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1;
-
-    // If currentParticipant is 'in progress', calculate the next round day after the current round
-    if (currentParticipant?.status === 'in progress') {
-      switch (contribution?.variant) {
-        case 'days':
-          nextContributionDay = new Date(today);
-          nextContributionDay.setDate(today.getDate() + 2); // Day after tomorrow
-          break;
-
-        case 'weeks':
-          nextContributionDay = getNextDayOfWeek(today, targetDayOfWeek); // Use dynamic day
-          break;
-
-        case 'months':
-          nextContributionDay = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            28
-          );
-          if (today.getDate() > 28) {
-            nextContributionDay.setMonth(today.getMonth() + 1);
-          }
-          nextContributionDay.setMonth(nextContributionDay.getMonth() + 1);
-          break;
-
-        default:
-          nextContributionDay = 'Invalid contribution period';
-      }
-
-      return typeof nextContributionDay === 'string'
-        ? nextContributionDay
-        : nextContributionDay.toLocaleDateString('en-US', {
-            day: 'numeric',
-            month: 'long',
-          });
-    }
-
-    // If no special case, calculate the normal next contribution day
-    if (updateMe) {
-      return 'Today (Payment failed. Please check activity log)';
-    }
-
-    switch (contribution?.variant) {
-      case 'days':
-        nextContributionDay = new Date(today);
-        nextContributionDay.setDate(today.getDate() + 1);
-        break;
-
-      case 'weeks':
-        nextContributionDay = getNextDayOfWeek(today, targetDayOfWeek); // Use dynamic day
-        break;
-
-      case 'months':
-        nextContributionDay = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          28
-        );
-        if (today.getDate() > 28) {
-          nextContributionDay.setMonth(today.getMonth() + 1);
-        }
-        break;
-
-      default:
-        nextContributionDay = 'Invalid contribution period';
-    }
-
-    return typeof nextContributionDay === 'string'
-      ? nextContributionDay
-      : nextContributionDay.toLocaleDateString('en-US', {
-          day: 'numeric',
-          month: 'long',
-        });
-  };
-
-  return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-      <Text
-        style={[
-          styles.text,
-          {
-            fontSize: 10,
-            fontFamily: 'ir',
-            color: updateMe ? '#FF7F7F' : 'white',
-          },
-        ]}
-      >
-        Due Date: {getNextContributionDay()}
-      </Text>
-      {/* {updateMe && <Entypo name="back-in-time" size={10} color="#FF7F7F" />} */}
-    </View>
-  );
-};
-
-const getCollectionDate = (
-  startDate,
-  participantIndex,
-  variant,
-  contribution_id,
-  num_of_month,
-  type
-) => {
-  const start = new Date(startDate);
-  let collectionDate;
-
-  const targetDayOfWeek =
-    contribution_id === 'eacd86aa-2c49-4d4e-a9b8-38036505b0ac' ? 3 : 1;
-
-  if (type === 'personal') {
-    switch (variant) {
-      case 'days':
-        collectionDate = new Date(start);
-        collectionDate.setDate(start.getDate() + num_of_month);
-        break;
-
-      case 'weeks':
-        collectionDate = new Date(start);
-        collectionDate.setDate(start.getDate() + num_of_month * 7);
-        break;
-
-      case 'months':
-        collectionDate = new Date(start);
-        collectionDate.setMonth(start.getMonth() + num_of_month);
-        break;
-
-      default:
-        collectionDate = 'Invalid contribution period';
-    }
-  } else {
-    switch (variant) {
-      case 'days':
-        collectionDate = new Date(start);
-        collectionDate.setDate(start.getDate() + participantIndex);
-        break;
-
-      case 'weeks':
-        collectionDate = new Date(start);
-        const daysUntilNextDay =
-          (targetDayOfWeek - collectionDate.getDay() + 7) % 7 || 7;
-        collectionDate.setDate(
-          start.getDate() + daysUntilNextDay + (participantIndex - 1) * 7
-        );
-        break;
-
-      case 'months':
-        collectionDate = new Date(start);
-        collectionDate.setMonth(start.getMonth() + participantIndex);
-        collectionDate.setDate(28);
-        break;
-
-      default:
-        collectionDate = 'Invalid contribution period';
-    }
-  }
-
-  return collectionDate instanceof Date
-    ? collectionDate.toLocaleDateString('en-US', {
-        day: 'numeric',
-        month: 'long',
-      })
-    : collectionDate;
-};
 
 const styles = StyleSheet.create({
   container: {

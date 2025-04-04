@@ -18,7 +18,7 @@ export const fetchUserContributions = async (userId, setContributions) => {
 
     setContributions(sorted);
 
-    return sorted;
+    return sorted || [];
   } catch (error) {
     console.error('Error fetching user contributions:', error);
   }
@@ -33,10 +33,10 @@ export const createContribution = async (
   const recipient_code = userProfile.recipient_code
     ? userProfile.recipient_code
     : await createTransferRecipientForBank({
-        bank_code: userProfile.bank_details.bank_code,
-        account_number: userProfile.bank_details.account_number,
-        account_name: userProfile.name,
-      });
+      bank_code: userProfile.bank_details.bank_code,
+      account_number: userProfile.bank_details.account_number,
+      account_name: userProfile.name,
+    });
 
   const userObj = {
     name: userProfile.name || currentUser.preferred_username,
@@ -54,9 +54,8 @@ export const createContribution = async (
     type: 'owner',
   };
 
-  const link = `https://mimonie.net/protected/mimonie?userId=${
-    currentUser.userId
-  }&contributionName=${details.contributionName.split(' ').join('')}`;
+  const link = `https://mimonie.net/protected/mimonie?userId=${currentUser.userId
+    }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -108,9 +107,8 @@ export const createPersonalContribution = async (
     status: 'active',
   };
 
-  const link = `https://mimonie.net/protected/mimonie?userId=${
-    currentUser.userId
-  }&contributionName=${details.contributionName.split(' ').join('')}`;
+  const link = `https://mimonie.net/protected/mimonie?userId=${currentUser.userId
+    }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -338,10 +336,10 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   const updatedParticipants = participants.map((participant) =>
     participant.userId === userProfile.userId
       ? {
-          ...participant,
-          contributions: (participant.contributions || 0) + 1,
-          last_successful_round: originalContribution.current_count,
-        }
+        ...participant,
+        contributions: (participant.contributions || 0) + 1,
+        last_successful_round: originalContribution.current_count,
+      }
       : participant
   );
 
@@ -355,6 +353,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
     type: 'contribution',
     amount: contribution.amount,
     description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
+    extra: contribution.id
   });
 
   await triggerNotificationForUser(
@@ -367,6 +366,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
     type: 'collection',
     amount: contribution.amount,
     description: `Received payment from ${userProfile.name} for ${contribution.name}`,
+    extra: contribution.id
   });
 
   await DataStore.save(
@@ -386,6 +386,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
       type: 'collection',
       amount: contribution.amount * participants.length,
       description: `Final collection for ${contribution.name}`,
+      extra: contribution.id
     });
 
     updatedParticipants.forEach((participant) => {
@@ -420,7 +421,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   }
 };
 
-export const updatePersonalContribution = async (contribution, userProfile) => {
+export const updatePersonalContribution = async (contribution, userProfile, start_date) => {
   const originalContribution = await DataStore.query(
     Contribution,
     contribution.id
@@ -438,29 +439,30 @@ export const updatePersonalContribution = async (contribution, userProfile) => {
   }
 
   participant.contributions = (participant.contributions || 0) + 1;
-  participant.last_successful_round = originalContribution.current_count;
+  participant.last_successful_round = (participant.last_successful_round || 0) + 1;
   participant.balance =
     (participant.balance || 0) + originalContribution.amount;
 
   await triggerNotificationForUser(
     userProfile?.push_token,
     'Payment Successful',
-    `You successfully contributed to ${contribution.name}`
+    `You successfully saved to ${contribution.name}`
   );
 
   await createUserActivity(userProfile.userId, {
-    type: 'contribution',
+    type: 'Personal savings',
     amount: contribution.amount,
-    description: `You successfully contributed to ${contribution.name}`,
+    description: `You successfully saved to ${contribution.name}`,
+    extra: contribution.id
   });
 
   await DataStore.save(
     Contribution.copyOf(originalContribution, (updated) => {
       updated.participant = participants;
-      updated.currently_at = originalContribution.current_count;
-      if (participant.contributions >= originalContribution.num_of_month) {
-        updated.status = 'completed';
-      }
+      updated.currently_at = (updated.currently_at ?? 0) + 1;
+      updated.status = 'running';
+      updated.current_count = (updated.current_count ?? 0) + 1;
+      updated.start_date = start_date
     })
   );
 };

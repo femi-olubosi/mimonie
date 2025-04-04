@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Modal,
@@ -15,12 +16,18 @@ import { useGlobalContext } from '../store/StoreContext';
 import { Colors } from '../constants/Colors';
 import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import { sendUserInvite } from '../api/invite.service';
-import { fetchUserProfile } from '../api/user.service';
+import {
+  fetchUserProfile,
+  fetchUserProfileForInvite,
+} from '../api/user.service';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
 import { triggerNotificationForUser } from '../api/pushNotification.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetchUserContributions } from '../api/contributions.service';
+import { validateUserContributions } from '../utils/validateUserContributions';
+import Loader from './Loader';
 
 const ContactModal = ({
   visible,
@@ -35,18 +42,36 @@ const ContactModal = ({
   const [parsedConnect, setParsedConnect] = useState([]);
   const [selected, setSelected] = useState([]);
   const [processing, setProcessing] = useState(false);
+  const [inviteeContributions, setInviteeContributions] = useState([]);
 
-  const handleSendInvite = async (item) => {
-    if (participants.includes(item.userId) || selected.includes(item.userId)) {
+  const handleSendInvite = async (invitee) => {
+    if (
+      participants.includes(invitee.userId) ||
+      selected.includes(invitee.userId)
+    ) {
+      return;
+    }
+    setProcessing(true);
+
+    const inviteeUser = await fetchUserProfileForInvite(invitee.userId);
+
+    if (!inviteeUser) {
+      setProcessing(false);
+      Alert.alert('Error', 'User not found');
       return;
     }
 
-    if (!item.verified) {
-      Alert.alert('Sorry!!', `${item?.name} is not verified`);
+    if (!inviteeUser.is_bvn_verified || !inviteeUser.is_nin_verified) {
+      setProcessing(false);
+      Alert.alert('Sorry!!', `${invitee?.name} is not fully verified`);
       return;
     }
 
-    if (Number(item.income_from) && Number(item.income_from) < Number(amount)) {
+    if (
+      Number(inviteeUser.income_from) &&
+      Number(inviteeUser.income_from) < Number(amount)
+    ) {
+      setProcessing(false);
       Alert.alert(
         'Sorry!!',
         `${item?.name} income is too low to join this contribution`
@@ -54,18 +79,30 @@ const ContactModal = ({
       return;
     }
 
-    setProcessing(true);
     try {
-      await sendUserInvite(item.userId, invite_link);
+      const hisContributions = await fetchUserContributions(
+        invitee.userId,
+        setInviteeContributions
+      );
+
+      if (validateUserContributions(hisContributions, 'group')) {
+        Alert.alert(
+          'Error',
+          'The user you are trying to invite is currently not available to join contributions.'
+        );
+        return;
+      }
+
+      await sendUserInvite(invitee.userId, invite_link);
 
       await AsyncStorage.setItem(
         'invited_users',
-        JSON.stringify([...selected, item.userId])
+        JSON.stringify([...selected, invitee.userId])
       );
-      setSelected((prev) => [...prev, item.userId]);
+      setSelected((prev) => [...prev, invitee.userId]);
 
       await triggerNotificationForUser(
-        item?.push_token,
+        invitee?.push_token,
         'Contribution Invite',
         `You have been invited to join a contribution`,
         { invite_link, type: 'invite' }
@@ -194,6 +231,28 @@ const ContactModal = ({
               </Text>
             </Pressable>
           </View>
+          {processing && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderRadius: 8,
+              }}
+            >
+              <View>
+                <ActivityIndicator size={'large'} color={Colors.pri} />
+                <Text style={{ marginTop: 10 }}>
+                  Confirming user availability
+                </Text>
+              </View>
+            </View>
+          )}
         </View>
       </View>
     </Modal>

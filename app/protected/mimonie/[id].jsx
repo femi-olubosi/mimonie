@@ -1,26 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   Alert,
   Platform,
-  Pressable,
   RefreshControl,
-  Button,
-  Modal,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { PageView, SkeletonLoader } from '@/components/Reusable';
+import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
 import {
   findContributionByID,
   joinContribution,
-  updateContribution,
-  updateContributionForUser,
-  fetchUserContributions,
 } from '@/api/contributions.service';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { statusCheck } from '@/utils/statusCheck';
@@ -29,21 +22,31 @@ import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
 import { updateInvite } from '@/api/invite.service';
 import { safeParseJSON } from '@/utils/safeJSON';
-import CopyLink from '@/components/CopyLink';
 import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
-import { verifyTransfer, withdrawFunds } from '../../../api/payment.service';
-import { Paystack } from '@/paystackDev';
-import { updatePersonalContribution } from '../../../api/contributions.service';
+import { processFirstSavings } from '../../../api/payment.service';
+import { updateContribution } from '../../../api/contributions.service';
 import ModalWrapper from '../../../components/modals/ModalWrapper';
 import Drag from './Drag';
 import NextContributionDay from './NextContributionDay';
 import ParticipantList from './ParticipantList';
-import { fetchUserConnections } from '../../../api/network.service';
+import SkeletonLoaderComp from './SkeletonLoader';
+import ButtonFunctions from './ButtonFunctions';
+import Balance from './Balance';
+import { validateUserContributions } from '../../../utils/validateUserContributions';
+import ConfirmJoinModal from './ConfirmJoinModal';
+import { isLastDaysOfMonth } from '../../../utils/helper';
+import StartSavingsModal from './StartSavingsModal';
+import StopSavingsModal from './StopSavingsModal';
+import WithdrawalModal from './WithdrawalModal';
+import { earlyWithdrawalCharge } from '../../../constants/charges';
+import { get } from 'aws-amplify/api';
+import { isEarly } from '../../../utils/isEarlyWithdrawal';
 
 const ContributionDetails = () => {
   const {
     setContributions,
+    contributions,
     currentUser,
     userProfile,
     setIsLoading,
@@ -60,10 +63,15 @@ const ContributionDetails = () => {
   const [imageUrls, setImageUrls] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [ownerProfile, setOwnerProfile] = useState({});
-  const paystackWebViewRef = useRef();
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [openParticipantEditModal, setOpenParticipantEditModal] =
     useState(false);
+  const [confirmJoinModal, setConfirmJoinModal] = useState(false);
+  const [confirmStartModal, setConfirmStartModal] = useState(false);
+  const [processingCharge, setProcessingCharge] = useState(false);
+  const [stopSavingsModal, setStopSavingsModal] = useState(false);
+  const [isExisting, setIsExisting] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
@@ -95,48 +103,50 @@ const ContributionDetails = () => {
     }
   }, [contribution]);
 
-  const handleSuccess = async (res) => {
-    try {
-      setIsLoading(true);
-      const verificationResponse = await verifyTransfer(
-        res?.transactionRef?.reference
-      );
-      if (verificationResponse?.status === 'success') {
-        if (contribution?.type === 'group') {
-          await updateContributionForUser(contribution, userProfile);
-        } else {
-          await updatePersonalContribution(contribution, userProfile);
-        }
-        await fetchUserContributions(currentUser?.userId, setContributions);
-        Alert.alert(
-          'Payment Successful',
-          'Your contribution has been updated',
-          [
-            {
-              text: 'OK',
-              onPress: () => router.push('/protected/mimonie'),
-            },
-          ],
-          { cancelable: false }
-        );
-      } else {
-        Alert.alert('Payment Failed', 'Could not verify payment');
-      }
-    } catch (error) {
-      console.error('Error verifying transaction:', error);
-      Alert.alert('Error', 'Something went wrong while verifying payment');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchUserProfile(setOwnerProfile, {
       userId: contribution?.participant_ids?.[0],
     });
   }, [contribution]);
 
+  useEffect(() => {
+    const checkExistingRequest = async () => {
+      setCheckingExisting(true);
+      try {
+        const restOperation = get({
+          apiName: 'userInfo',
+          path: `/request-withdrawal/${id}`,
+        });
+
+        const response = await restOperation.response;
+        const existing = await response.body.json();
+
+        setIsExisting(existing?.request?.length > 0);
+      } catch (error) {
+        console.log('error', error);
+      } finally {
+        setCheckingExisting(false);
+      }
+    };
+
+    if (
+      contribution?.type === 'personal' &&
+      ['stopped', 'completed'].includes(contribution?.status)
+    ) {
+      checkExistingRequest();
+    }
+  }, [id, contribution]);
+
   const handleJoinContribution = async () => {
+    setConfirmJoinModal(false);
+    if (validateUserContributions(contributions, 'group')) {
+      Alert.alert(
+        'Error',
+        'You can only be in one active group contribution at a time.'
+      );
+      return;
+    }
+
     if (!userProfile.is_bvn_verified) {
       Alert.alert('Please verify your bvn');
       return;
@@ -232,14 +242,80 @@ const ContributionDetails = () => {
     }
   };
 
+  const handleStartSavingContribution = async () => {
+    setProcessingCharge(true);
+
+    const participant = parsed.find(
+      (participant) => participant.userId === currentUser.userId
+    );
+    const date = new Date();
+    const start_date = date.toLocaleDateString('en-CA');
+
+    try {
+      const response = await processFirstSavings(
+        participant,
+        contribution,
+        userProfile,
+        start_date
+      );
+
+      if (!response.success) {
+        Alert.alert('We could not start you savings', response.message);
+        return;
+      }
+      await findContributionByID(id, setContribution);
+      setConfirmStartModal(false);
+      Alert.alert(
+        'Savings Started Successfully',
+        `Your savings to ${contribution?.name} has been started successfully.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error processing charge:', error);
+      Alert.alert('Error', 'An error occurred while processing the charge');
+    } finally {
+      setProcessingCharge(false);
+    }
+  };
+
+  const triggerStartButton = () => {
+    if (!contribution) return;
+
+    if (contribution?.variant === 'months' && isLastDaysOfMonth(new Date())) {
+      Alert.alert(
+        'Monthly Contribution Restriction',
+        'Monthly contributions can only be started between the 1st and 28th of the month.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    if (contribution?.type === 'group') {
+      Alert.alert(
+        'Start Group Contribution?',
+        'This will begin the contribution cycle for all members.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Start', onPress: handleStartContribution },
+        ]
+      );
+    } else {
+      setConfirmStartModal(true);
+    }
+  };
+
   const startDate = new Date(contribution?.start_date);
 
-  const recipient = parsed?.find(
-    (participant) => participant.status === 'in progress'
+  const isEarlyWithdrawal = isEarly(
+    contribution?.currently_at,
+    contribution?.num_of_month,
+    contribution?.variant
   );
-
-  const isEarlyWithdrawal =
-    contribution?.currently_at < contribution?.num_of_month;
 
   const handleWithdrawFund = async () => {
     setWithdrawModal(false);
@@ -253,143 +329,48 @@ const ContributionDetails = () => {
     });
   };
 
-  const transactionCharge = Math.round(contribution?.amount * 0.035);
-
-  // Adjust the amount to include the transaction charge
-  const adjustedAmount = contribution?.amount + transactionCharge;
+  const handleStopSavings = async () => {
+    setStopSavingsModal(false);
+    setIsLoading(true);
+    try {
+      const savings = await updateContribution(contribution?.id, {
+        status: 'stopped',
+      });
+      await findContributionByID(id, setContribution);
+      Alert.alert(
+        'Savings Stopped Successfully',
+        `Your savings to ${savings?.name} have been stopped successfully.`
+      );
+    } catch (error) {
+      console.error('Error stopping savings:', error);
+      Alert.alert('Error', 'An error occurred while stopping the savings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <PageView title={'Contribution Details'} route={'protected/mimonie'}>
       <View style={styles.container}>
         {loading ? (
-          <View style={{ rowGap: 6 }}>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-            <View style={{ marginVertical: 10 }}>
-              <SkeletonLoader width="100%" height={20} />
-              <SkeletonLoader width="60%" height={20} />
-              <SkeletonLoader width="80%" height={20} />
-            </View>
-          </View>
+          <SkeletonLoaderComp />
         ) : (
           <>
-            <View
-              style={{
-                flexDirection: 'row',
-                columnGap: 20,
-                alignItems: 'center',
-                justifyContent: 'flex-end',
-                marginBottom: 10,
-              }}
-            >
-              {parsed?.some(
-                (participant) =>
-                  participant.userId === currentUser.userId &&
-                  participant.status !== 'in progress' &&
-                  participant?.last_successful_round <
-                    contribution?.current_count
-              ) && (
-                <Pressable
-                  style={styles.fab}
-                  onPress={() => paystackWebViewRef.current.startTransaction()}
-                >
-                  <Text style={{ color: 'white' }}>Pay Via Transfer</Text>
-                </Pressable>
-              )}
-              {(parsed?.some(
-                (participant) => participant.userId === currentUser.userId
-              ) &&
-                contribution?.owner !== userProfile?.name) ||
-              ['completed', 'running', 'closed']?.includes(
-                contribution?.status
-              ) ? null : (
-                <Pressable
-                  style={styles.fab}
-                  onPress={() => {
-                    if (
-                      (parsed?.length === contribution?.num_of_month &&
-                        contribution?.owner === userProfile?.name) ||
-                      contribution?.type === 'personal'
-                    ) {
-                      handleStartContribution();
-                    } else if (
-                      contribution?.status === 'open' &&
-                      contribution?.owner === userProfile?.name
-                    ) {
-                      setVisible(!visible);
-                    } else {
-                      handleJoinContribution();
-                    }
-                  }}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.fabText}>
-                    {isLoading
-                      ? 'Joining ...'
-                      : (parsed?.length === contribution?.num_of_month &&
-                          contribution?.owner === userProfile?.name) ||
-                        contribution?.type === 'personal'
-                      ? 'Start'
-                      : contribution?.status === 'open' &&
-                        contribution?.owner === userProfile?.name
-                      ? 'Invite'
-                      : 'Join'}
-                  </Text>
-                </Pressable>
-              )}
-              {contribution?.type === 'group' &&
-              contribution?.status !== 'completed' ? (
-                <CopyLink inviteLink={contribution.id} />
-              ) : contribution?.type === 'personal' &&
-                contribution?.status !== 'closed' &&
-                contribution?.currently_at > 0 ? (
-                <Pressable
-                  style={styles.fab}
-                  onPress={() => setWithdrawModal(true)}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.fabText}>Withdraw</Text>
-                </Pressable>
-              ) : null}
-            </View>
+            <ButtonFunctions
+              setConfirmJoinModal={setConfirmJoinModal}
+              handleStartContribution={triggerStartButton}
+              setVisible={setVisible}
+              setWithdrawModal={setWithdrawModal}
+              contribution={contribution}
+              parsed={parsed}
+              userProfile={userProfile}
+              isLoading={isLoading}
+              setStopSavingsModal={setStopSavingsModal}
+              checkingExisting={checkingExisting}
+              isExisting={isExisting}
+            />
 
-            {parsed?.[0]?.balance || parsed?.[0]?.balance === 0 ? (
-              <View
-                style={{
-                  height: 100,
-                  borderRadius: 10,
-                  borderWidth: 1,
-                  borderColor: Colors.pri,
-                  marginVertical: 20,
-                  padding: 20,
-                }}
-              >
-                <Text style={styles.label}>Withdrawable Balance:</Text>
-                <Text
-                  style={{
-                    fontSize: 40,
-                    color: Colors.pri,
-                    fontFamily: 'isb',
-                  }}
-                >
-                  {naira}{' '}
-                  {new Intl.NumberFormat('en-US').format(parsed?.[0]?.balance)}
-                </Text>
-              </View>
-            ) : null}
+            <Balance parsed={parsed} amount={contribution?.amount} />
 
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -488,14 +469,6 @@ const ContributionDetails = () => {
               />
               {contribution?.type === 'group' && (
                 <>
-                  {/* <View style={styles.detailContainer}>
-                    <Text style={styles.label}>User role</Text>
-                    <Text style={styles.value}>
-                      {contribution?.owner === userProfile?.name
-                        ? 'Creator'
-                        : 'invitee'}
-                    </Text>
-                  </View> */}
                   <View style={styles.detailContainer}>
                     <Text style={styles.label}>Owner</Text>
                     <Text style={styles.value}>{contribution?.owner}</Text>
@@ -512,51 +485,6 @@ const ContributionDetails = () => {
         invite_link={contribution?.id}
         participants={contribution?.participant_ids}
       />
-      <Paystack
-        ref={paystackWebViewRef}
-        paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
-        amount={adjustedAmount}
-        billingEmail={userProfile?.email}
-        bearer={'account'}
-        transaction_charge={transactionCharge}
-        firstName={userProfile?.name}
-        activityIndicatorColor={Colors.pri}
-        subaccount={recipient?.subaccount_code}
-        channels={['bank_transfer']}
-        onCancel={(e) => {
-          console.log('cancelled');
-        }}
-        onSuccess={(res) => {
-          handleSuccess(res);
-        }}
-      >
-        <View style={{ rowGap: 4 }}>
-          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
-            You are paying NGN {contribution?.amount}
-          </Text>
-          <Text style={{ fontFamily: 'im', fontSize: 14, letterSpacing: 1 }}>
-            for {contribution?.name} contribution
-          </Text>
-        </View>
-      </Paystack>
-      <Modal visible={withdrawModal} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {isEarlyWithdrawal ? 'Continue' : 'Confirm Withdrawal'}
-            </Text>
-            <Text style={styles.modalText}>
-              {isEarlyWithdrawal
-                ? 'Withdrawing before the liquidation date will incur a 10% penalty. Please confirm if you wish to proceed.'
-                : 'Are you sure you want to withdraw your funds? There are no penalties for withdrawing now. Please confirm if you wish to proceed.'}
-            </Text>
-            <View style={styles.buttonContainer}>
-              <Button title="Cancel" onPress={() => setWithdrawModal(false)} />
-              <Button title="Continue" onPress={handleWithdrawFund} />
-            </View>
-          </View>
-        </View>
-      </Modal>
       <ModalWrapper
         visible={openParticipantEditModal}
         onClose={() => setOpenParticipantEditModal(false)}
@@ -569,6 +497,32 @@ const ContributionDetails = () => {
           onFinished={() => setOpenParticipantEditModal(false)}
         />
       </ModalWrapper>
+      <ConfirmJoinModal
+        visible={confirmJoinModal}
+        onClose={() => setConfirmJoinModal(false)}
+        onConfirm={handleJoinContribution}
+      />
+      <StartSavingsModal
+        visible={confirmStartModal}
+        onClose={() => setConfirmStartModal(false)}
+        onConfirm={handleStartSavingContribution}
+        processingCharge={processingCharge}
+      />
+      <StopSavingsModal
+        visible={stopSavingsModal}
+        onClose={() => setStopSavingsModal(false)}
+        onConfirm={handleStopSavings}
+        contribution={contribution}
+        breakFeePercentage={earlyWithdrawalCharge}
+        isLoading={isLoading}
+      />
+      <WithdrawalModal
+        visible={withdrawModal}
+        onClose={() => setWithdrawModal(false)}
+        onConfirm={handleWithdrawFund}
+        isEarlyWithdrawal={isEarlyWithdrawal}
+        balance={parsed[0]?.balance}
+      />
     </PageView>
   );
 };

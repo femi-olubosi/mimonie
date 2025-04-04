@@ -69,7 +69,7 @@ const Account = () => {
       setIsLoading(false);
     }
   };
-  console.log(loggingOut);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />

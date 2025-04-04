@@ -184,6 +184,12 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "processWithdrawalRequest": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "userInfo": {
       "build": true,
       "dependsOn": [],
@@ -195,6 +201,13 @@
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    }
+  },
+  "hosting": {
+    "amplifyhosting": {
+      "providerPlugin": "awscloudformation",
+      "service": "amplifyhosting",
+      "type": "manual"
     }
   },
   "parameters": {
@@ -382,6 +395,30 @@
         }
       ]
     },
+    "AMPLIFY_function_processWithdrawalRequest_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processWithdrawalRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_processWithdrawalRequest_paystackSecretKeyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processWithdrawalRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_processWithdrawalRequest_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processWithdrawalRequest"
+        }
+      ]
+    },
     "AMPLIFY_function_userInfo_deploymentBucketName": {
       "usedBy": [
         {
@@ -421,6 +458,22 @@
           "resourceName": "verification"
         }
       ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_appId": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
+    },
+    "AMPLIFY_hosting_amplifyhosting_type": {
+      "usedBy": [
+        {
+          "category": "hosting",
+          "resourceName": "amplifyhosting"
+        }
+      ]
     }
   },
   "storage": {
@@ -436,6 +489,10 @@
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "S3"
+    },
+    "withdrawalRequests": {
+      "providerPlugin": "awscloudformation",
+      "service": "DynamoDB"
     }
   }
 }

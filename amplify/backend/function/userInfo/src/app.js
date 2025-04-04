@@ -5,21 +5,12 @@ Licensed under the Apache License, Version 2.0 (the "License"). You may not use 
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 */
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { PutCommand, ScanCommand } = require('@aws-sdk/lib-dynamodb');
 
 const express = require('express');
 const bodyParser = require('body-parser');
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware');
-const { getCurrentUser } = require('aws-amplify/auth');
+const models = require('./model/models');
 
-const ddbClient = new DynamoDBClient({ region: process.env.TABLE_REGION });
-const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
-
-let tableName = 'dynamoc73ffc4d';
-if (process.env.ENV && process.env.ENV !== 'NONE') {
-  tableName = tableName + '-' + process.env.ENV;
-}
 
 // declare a new express app
 const app = express();
@@ -33,93 +24,61 @@ app.use(function (req, res, next) {
   next();
 });
 
-/**********************
- * Example get method *
- **********************/
 
-app.get('/user-info', async function (req, res) {
-  var params = {
-    TableName: tableName,
-    Select: 'ALL_ATTRIBUTES',
-  };
-
+app.post('/request-withdrawal', async (req, res) => {
+  const data = req.body;
   try {
-    const data = await ddbDocClient.send(new ScanCommand(params));
-    res.json(data.Items);
-  } catch (err) {
-    res.statusCode = 500;
-    res.json({ error: 'Could not load items: ' + err.message });
+    const request = await models.createWithdrawalRequest(data);
+    res.status(201).json({
+      success: true,
+      data: request
+    });
+  } catch (error) {
+    // const statusCode = error.message.includes('already exists') ? 409 : 500;
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
-// app.get('/user-info/*', function (req, res) {
-//   // Add your code here
-//   res.json({ success: 'get call succeed!', url: req.url });
-// });
-
-/****************************
- * Example post method *
- ****************************/
-
-app.post('/user-info', async function (req, res) {
-  // Add your code here
-  // const user = await getCurrentUser();
+app.get('/request-withdrawal/:contributionId', async (req, res) => {
+  const { contributionId } = req.params;
 
   try {
-    const IDP_REGEX = /.*\/.*,(.*)\/(.*):CognitoSignIn:(.*)/;
-    const authProvider =
-      req.apiGateway.event.requestContext.identity
-        .cognitoAuthenticationProvider;
-    const [, , , userId] = authProvider.match(IDP_REGEX);
+    const request = await models.getActiveRequestByContribution(contributionId);
 
-    const cognito = new AWS.CognitoIdentityServiceProvider();
-    const listUsersResponse = await cognito
-      .listUsers({
-        UserPoolId: process.env.AUTH_LAMBDAUSERSOMENUMBER_USERPOOLID,
-        Filter: `sub = "${userId}"`,
-        Limit: 1,
-      })
-      .promise();
-    const user = listUsersResponse.Users[0];
-    res.json({ user, message: 'get call succeed!', url: req.url });
-  } catch (err) {
-    res.statusCode = 500;
-    res.json({ error: err, url: req.url, body: req.body });
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        error: 'No active request found'
+      });
+    }
+
+    res.json({ success: true, request });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
-app.post('/user-info/*', function (req, res) {
-  // Add your code here
-  res.json({ success: 'post call succeed!', url: req.url, body: req.body });
+app.delete('/request-withdrawal/:requestId', async (req, res) => {
+  const { requestId } = req.params;
+
+  try {
+    const canceledRequest = await models.cancelWithdrawalRequest(requestId);
+    res.json({ success: true, data: canceledRequest });
+  } catch (error) {
+    const statusCode = error.message.includes('cannot be canceled') ? 400 : 500;
+    res.status(statusCode).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
-/****************************
- * Example put method *
- ****************************/
-
-app.put('/user-info', function (req, res) {
-  // Add your code here
-  res.json({ success: 'put call succeed!', url: req.url, body: req.body });
-});
-
-app.put('/user-info/*', function (req, res) {
-  // Add your code here
-  res.json({ success: 'put call succeed!', url: req.url, body: req.body });
-});
-
-/****************************
- * Example delete method *
- ****************************/
-
-app.delete('/user-info', function (req, res) {
-  // Add your code here
-  res.json({ success: 'delete call succeed!', url: req.url });
-});
-
-app.delete('/user-info/*', function (req, res) {
-  // Add your code here
-  res.json({ success: 'delete call succeed!', url: req.url });
-});
 
 app.listen(3000, function () {
   console.log('App started');

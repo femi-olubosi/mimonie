@@ -17,7 +17,11 @@ import Checkbox from 'expo-checkbox';
 import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { createUserProfile } from '../../api/user.service';
+import {
+  createUserProfile,
+  isDeviceExist,
+  isPhoneNumberExist,
+} from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAvoidingView, Platform } from 'react-native';
@@ -41,18 +45,43 @@ const SignUp = (props) => {
       Alert.alert('Error', 'You must agree to the terms and conditions');
       return;
     }
-    // const existing = (await AsyncStorage.getItem('userEmail')) || null;
-    // if (existing) {
-    //   Alert.alert('Error', `Device already registered with ${existing}`);
-    //   return;
-    // }
 
     const normalizedPhoneNumber = phone_number?.trim()?.startsWith('+2340')
       ? phone_number?.replace('+2340', '+234')
       : phone_number;
 
+    const device = {
+      device_id: Device.osInternalBuildId || null,
+      device_name: Device.deviceName || null,
+      device_brand: Device.brand || null,
+    };
+
     setIsLoading(true);
     try {
+      // const existing = await isDeviceExist(device?.device_id);
+
+      // if (existing) {
+      //   Alert.alert('Error', `Device is already associated with an account`);
+      //   return;
+      // }
+
+      const existing = await AsyncStorage.getItem('existingEmail');
+
+      if (existing) {
+        Alert.alert('Error', `Device already registered with ${existing}`);
+        return;
+      }
+
+      const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
+
+      if (phonExisting) {
+        Alert.alert(
+          'Error',
+          `Phone number is already associated with an account`
+        );
+        return;
+      }
+
       const { userId } = await signUp({
         username: email,
         password,
@@ -66,15 +95,9 @@ const SignUp = (props) => {
         },
       });
 
-      await AsyncStorage.setItem('userEmail', email);
-
-      const device = {
-        device_id: Device.osInternalBuildId || null,
-        device_name: Device.deviceName || null,
-        device_brand: Device.brand || null,
-      };
       await createUserProfile(userId, device, email, normalizedPhoneNumber);
       setEmailVeri(email);
+      await AsyncStorage.setItem('existingEmail', email);
       router.push('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);
@@ -84,9 +107,6 @@ const SignUp = (props) => {
     }
   };
 
-  // const handleSignUp = () => {};
-
-  console.log(email);
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>

@@ -12,19 +12,19 @@ import {
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { PageView } from '@/components/Reusable';
-import { DateTimeSelector, SelectInput } from '../../components/Reusable';
+import { SelectInput } from '../../components/Reusable';
 import { useGlobalContext } from '../../store/StoreContext';
 import {
   createContribution,
   createPersonalContribution,
 } from '../../api/contributions.service';
 import { getContributionGroups } from '../../api/groups.service';
-import { fetchUserConnections } from '../../api/network.service';
 import ContactModal from '../../components/ContactModal';
 import { Colors } from '../../constants/Colors';
 import { ErrorCheck } from '../../utils/errorCheck';
 import CopyLink from '../../components/CopyLink';
 import { naira } from '@/constants/Currency';
+import { validateUserContributions } from '../../utils/validateUserContributions';
 
 const variantOptions = [
   { label: 'Weekly', value: 'weeks' },
@@ -106,14 +106,13 @@ const CreateContribution = () => {
   const [numOfParticipants, setNumOfParticipants] = useState({});
 
   const {
-    contributionGroups,
     setContributionGroups,
     currentUser,
     setContributions,
+    contributions,
     setIsLoading,
     userProfile,
     parsed,
-    setParsed,
   } = useGlobalContext();
   const router = useRouter();
 
@@ -146,6 +145,23 @@ const CreateContribution = () => {
     ) {
       return;
     }
+
+    if (!termsAccepted) {
+      Alert.alert(
+        'Terms Not Accepted',
+        'You must accept the terms and conditions before proceeding.'
+      );
+      return;
+    }
+
+    if (validateUserContributions(contributions, 'group')) {
+      Alert.alert(
+        'Error',
+        'You can only be in one active group contribution at a time.'
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       const res = await createContribution(
@@ -164,7 +180,6 @@ const CreateContribution = () => {
   };
 
   const createContributionPersonal = async () => {
-    const date = new Date();
     const details = {
       contributionName,
       groupName: 'Default',
@@ -187,6 +202,30 @@ const CreateContribution = () => {
       return;
     }
 
+    if (variant.value === 'days' && selectedValue.p_duration < 5) {
+      Alert.alert(
+        'Duration Error',
+        'Duration can not be less than 5 for daily contribution'
+      );
+      return;
+    }
+
+    if (!termsAccepted) {
+      Alert.alert(
+        'Terms Not Accepted',
+        'You must accept the terms and conditions before proceeding.'
+      );
+      return;
+    }
+
+    if (validateUserContributions(contributions, 'personal')) {
+      Alert.alert(
+        'Error',
+        'You can only be in one active personal savings at a time.'
+      );
+      return;
+    }
+
     setIsLoading(true);
     try {
       await createPersonalContribution(
@@ -197,8 +236,8 @@ const CreateContribution = () => {
       );
 
       Alert.alert(
-        'Contribution Created',
-        'Your personal contribution has been created successfully!',
+        'Savings Created',
+        'Your personal savings has been created successfully!',
         [
           {
             text: 'OK',
@@ -209,24 +248,13 @@ const CreateContribution = () => {
       );
     } catch (error) {
       console.error(error);
-      Alert.alert(
-        'Error',
-        'An error occurred while creating the contribution.'
-      );
+      Alert.alert('Error', 'An error occurred while creating the savings.');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleConfirm = async () => {
-    if (!termsAccepted) {
-      Alert.alert(
-        'Terms Not Accepted',
-        'You must accept the terms and conditions before proceeding.'
-      );
-      return;
-    }
-
     if (
       !userProfile.income_from ||
       selectedValue.amount > userProfile.income_from
@@ -523,42 +551,54 @@ const CreateContribution = () => {
                     </View>
                     <View style={{ rowGap: 14 }}>
                       <Text style={styles.label}>
-                        How many {variant?.value}
+                        How many {variant?.value} (minimum of 5 for daily
+                        savings)
                       </Text>
                       <TextInput
                         style={styles.input}
                         placeholder="Enter Duration"
                         keyboardType="numeric"
+                        editable={selectedValue.p_amount}
                         value={selectedValue.p_duration?.toString()}
                         onChangeText={(val) => {
                           // Remove any non-numeric characters to avoid decimal input
+
                           const numericValue = val.replace(/[^0-9]/g, '');
 
-                          // Set max limit for duration based on the variant
-                          let maxLimit;
+                          // Set min and max limits for duration based on the variant
+                          let minLimit, maxLimit;
                           switch (variant?.value) {
                             case 'days':
+                              minLimit = 5;
                               maxLimit = 365;
                               break;
                             case 'weeks':
+                              minLimit = 1; // 1 week is approximately 5 days
                               maxLimit = 52; // Number of weeks in a year
                               break;
                             case 'months':
+                              minLimit = 1; // 1 month is more than 5 days
                               maxLimit = 12; // Number of months in a year
                               break;
                             default:
-                              maxLimit = 365; // Default to 365 if variant is not set
+                              minLimit = 5;
+                              maxLimit = 365; // Default to days if variant is not set
                           }
 
-                          // Ensure the value does not exceed the max limit for duration
-                          const limitedValue = Math.min(
-                            Number(numericValue),
-                            maxLimit
-                          );
+                          // Convert to number (empty string becomes 0)
+                          let numericValueAsNumber = Number(numericValue);
+
+                          // Ensure the value is within min and max limits
+                          if (numericValueAsNumber > 0) {
+                            numericValueAsNumber = Math.max(
+                              minLimit,
+                              Math.min(numericValueAsNumber, maxLimit)
+                            );
+                          }
 
                           setSelectedValue({
                             ...selectedValue,
-                            p_duration: limitedValue,
+                            p_duration: numericValueAsNumber || undefined, // Set to undefined if 0
                           });
                         }}
                       />

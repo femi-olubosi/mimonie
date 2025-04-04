@@ -137,6 +137,26 @@ export default function UploadDocument() {
       return;
     }
 
+    if (documentType.value === 'VOTER_ID' && idNumber.length !== 19) {
+      setModalContent({
+        title: 'Invalid ID Number',
+        message: 'Please enter a valid 19-digit Voter ID number.',
+        status: 'error',
+      });
+      setStatusModalVisible(true);
+      return;
+    }
+
+    if (documentType.value === 'NIN_SLIP' && idNumber.length !== 11) {
+      setModalContent({
+        title: 'Invalid ID Number',
+        message: 'Please enter a valid 11-digit NIN number.',
+        status: 'error',
+      });
+      setStatusModalVisible(true);
+      return;
+    }
+
     const dVData = {
       id_type: documentType.value,
       user_id: userProfile?.id,
@@ -171,8 +191,6 @@ export default function UploadDocument() {
       });
       const response = await restOperation.response;
       const res = await response.body.json();
-
-      console.log('Backend response:', res);
 
       if (res.result === 'approved') {
         await AsyncStorage.setItem('jobId', res.job_id);
@@ -244,7 +262,7 @@ export default function UploadDocument() {
       backIcon={loading ? false : true}
     >
       <View style={styles.container}>
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView style={{}} showsVerticalScrollIndicator={false}>
           <View style={styles.imageContainer}>
             {selectedImage ? (
               <Image source={{ uri: selectedImage }} style={styles.image} />
@@ -255,8 +273,8 @@ export default function UploadDocument() {
 
           <Text style={styles.description}>
             For National ID and Voter's Card, the image is optional; you can
-            just provide the ID number. However, for International Passport and Driver's
-            License, uploading an image is required.
+            just provide the ID number. However, for International Passport and
+            Driver's License, uploading an image is required.
           </Text>
 
           <TouchableOpacity
@@ -280,13 +298,79 @@ export default function UploadDocument() {
               />
             </>
           )}
-          <TouchableOpacity style={styles.button} onPress={handleImageUpload}>
-            <Text style={styles.buttonText}>Upload From Phone Library</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={handleImageCapture}>
-            <Text style={styles.buttonText}>Take a Picture</Text>
-          </TouchableOpacity>
+          {['NIN_SLIP', 'VOTER_ID'].includes(documentType.value) ? null : (
+            <>
+              <TouchableOpacity
+                disabled={['NIN_SLIP', 'VOTER_ID'].includes(documentType.value)}
+                style={styles.button}
+                onPress={handleImageUpload}
+              >
+                <Text style={styles.buttonText}>Upload From Phone Library</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                disabled={['NIN_SLIP', 'VOTER_ID'].includes(documentType.value)}
+                style={styles.button}
+                onPress={handleImageCapture}
+              >
+                <Text style={styles.buttonText}>Take a Picture</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          <View style={{ height: '100px', width: '100%' }}>
+            {documentType.value === 'VOTER_ID' && (
+              <View style={{ position: 'relative' }}>
+                <Text style={{ marginBottom: 4 }}>Sample Below</Text>
+                <Image
+                  source={{
+                    uri: 'https://dubawa.org/wp-content/uploads/2023/01/Last-5-digit.jpeg',
+                  }}
+                  style={{
+                    width: '100%',
+                    height: 200,
+                    objectFit: 'cover',
+                  }}
+                  resizeMode="contain"
+                />
+                <View
+                  style={{
+                    position: 'absolute',
+                    width: '40%',
+                    height: 50,
+                    backgroundColor: 'white',
+                    bottom: '30%',
+                    left: '25%',
+                  }}
+                ></View>
+              </View>
+            )}
+            {documentType.value === 'PASSPORT' && (
+              <>
+                <Text style={{ marginBottom: 4 }}>Sample Below</Text>
+                <Image
+                  source={{
+                    uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfE7znPo4QRYTXMXdBeuPxdILU31pX_PVWTQ&s',
+                  }}
+                  style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                  resizeMode="contain"
+                />
+              </>
+            )}
+            {documentType.value === 'DRIVERS_LICENSE' && (
+              <>
+                <Text style={{ marginBottom: 4 }}>Sample Below</Text>
+                <Image
+                  source={{
+                    uri: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiEL49_rKe8vGBHLcOctw32ImYwhH7gyencagpVcyIXCPsq8Cy2YNXkFBx-ibmB-PkwryqkB7aMhoEKQAvI9jGjk1O5wNnPG_SylKRdrRBVtUkyLLdNRy3TjiiPZ_olbk6Ct2WN/s1600/class-b-driving-license.JPG',
+                  }}
+                  style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                  resizeMode="contain"
+                />
+              </>
+            )}
+          </View>
         </ScrollView>
 
         <TouchableOpacity style={styles.finishButton} onPress={handleFinish}>
@@ -334,7 +418,9 @@ export default function UploadDocument() {
                   })
                 }
               >
-                <Text style={styles.modalOptionText}>INTERNATIONAL PASSPORT</Text>
+                <Text style={styles.modalOptionText}>
+                  INTERNATIONAL PASSPORT
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalOption}

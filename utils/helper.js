@@ -39,3 +39,10 @@ export const isAboutToExpire = async () => {
   }
   return true;
 };
+
+export const isLastDaysOfMonth = (date) => {
+  const testDate = new Date(date);
+  testDate.setMonth(testDate.getMonth() + 1);
+  testDate.setDate(0); // Last day of current month
+  return date.getDate() > testDate.getDate() - 4; // 28th or later
+};

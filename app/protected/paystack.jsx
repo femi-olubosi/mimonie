@@ -42,7 +42,7 @@ function Pay() {
   return (
     <View style={{ flex: 1 }}>
       <Paystack
-        paystackKey={process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY}
+        paystackKey={'pk_live_cefbf08241dbab924a1de9a4ffa7bf64a47b751f'}
         amount={'100.00'}
         billingEmail={currentUser.email}
         activityIndicatorColor={Colors.pri}

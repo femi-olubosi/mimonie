@@ -1,92 +1,49 @@
 import {
   Alert,
-  Button,
-  FlatList,
-  Image,
-  Modal,
   StyleSheet,
   Text,
-  Picker,
   TouchableOpacity,
   View,
   TextInput,
-  ActivityIndicator,
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
-import { getBankLogo } from '@/utils/bankLogo';
-import { AntDesign, FontAwesome } from '@expo/vector-icons';
 import {
-  createBankDetails,
-  createTransferRecipientForBank,
   deleteBankDetails,
   fetchBankDetails,
-  fetchBanks,
-  resolveBankAccount,
   updateBankDetails,
   withdrawFunds,
 } from '../../api/payment.service';
-import { SelectInput } from '@/components/Reusable';
-import { ErrorCheck } from '@/utils/errorCheck';
-import { sendOtp, verifyOTP } from '../../api/token.service';
-import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
+import Banks from '../../components/withdrawal/Banks';
+import AddBankModal from '../../components/withdrawal/AddBankModal';
+import PinInputModal from '../../components/withdrawal/PinInputModal';
+import ValidateUser from '../../components/withdrawal/ValidateUser';
+import { ErrorCheck } from '../../utils/errorCheck';
+import WithdrawalLoader from '../../components/withdrawal/WithrawalLoader';
+import { earlyWithdrawalCharge } from '../../constants/charges';
+import { post } from 'aws-amplify/api';
 
 const transfer_screen = () => {
   const { contribution, isEarly, participant } = useLocalSearchParams();
-  const {
-    userProfile,
-    setUserProfile,
-    setIsLoading,
-    setContributions,
-    currentUser,
-  } = useGlobalContext();
+  const { userProfile, setUserProfile, setIsLoading, currentUser } =
+    useGlobalContext();
   const [bankDetails, setBankDetails] = useState([]);
-  const [banks, setBanks] = useState([]);
-  const [selectedValue, setSelectedValue] = useState({});
-  const [accountNumber, setAccountNumber] = useState('');
   const [addBankModal, setAddBankModal] = useState(false);
   const parsedContribution = JSON.parse(contribution);
   const parsedParticipant = JSON.parse(participant);
-  const [verifying, setVerifying] = useState(false);
   const [createPinModal, setCreatePinModal] = useState(false);
   const [validateCustomerModal, setValidateCustomerModal] = useState(false);
   const [amountToWithdraw, setAmountToWithdraw] = useState('');
   const isEarlyWithdrawal = isEarly === 'false' ? false : true;
-  const [pin, setPin] = useState(['', '', '', '', '', '']);
-  const [pinRef, setPinRef] = useState(null);
-  const [userPin, setUserPin] = useState(null);
   const [recipientCode, setRecipientCode] = useState(null);
-
-  const pinRefs = useRef([]);
-
-  const handlePinChange = (value, index) => {
-    const newPin = [...pin];
-    newPin[index] = value;
-    setPin(newPin);
-
-    if (value && index < 5) {
-      pinRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === 'Backspace' && pin[index] === '' && index > 0) {
-      // Move focus to the previous input if deleting
-      pinRefs.current[index - 1].focus();
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      const banksList = await fetchBanks();
-      setBanks(banksList);
-    })();
-  }, []);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState('');
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     fetchBankDetails(setBankDetails, currentUser);
@@ -100,20 +57,33 @@ const transfer_screen = () => {
   }, [bankDetails]);
 
   const balance = parsedParticipant?.balance;
-  const penalty = balance * 0.1;
+  const penalty = balance * (earlyWithdrawalCharge / 100);
   const newBalance = balance - penalty;
 
   const handleWithdrawFund = async () => {
-    const amount = isEarlyWithdrawal ? balance : amountToWithdraw;
+    const withdrawableAmount = isEarlyWithdrawal
+      ? Number(newBalance)
+      : Number(balance);
+
+    const amount = isEarlyWithdrawal ? withdrawableAmount : amountToWithdraw;
 
     if (ErrorCheck({ amount })) {
       return;
     }
 
-    if (Number(amount) > Number(balance)) {
-      Alert.alert('Insufficient Balance', 'Insufficient balance to withdraw');
+    const numericAmount = parseFloat(amount);
+
+    // if (!amountToWithdraw || isNaN(numericAmount)) {
+    //   setError('Please enter a valid amount');
+    //   return;
+    // }
+
+    if (numericAmount > withdrawableAmount) {
+      setError(`Amount cannot exceed ${withdrawableAmount}`);
       return;
     }
+
+    setError('');
 
     if (userProfile.transfer_pin) {
       setValidateCustomerModal(true);
@@ -122,47 +92,43 @@ const transfer_screen = () => {
     }
   };
 
-  const isUser = async (t_pin) => {
+  const onVerified = async () => {
+    const amount = isEarlyWithdrawal
+      ? Number(balance)
+      : Number(amountToWithdraw);
+
+    const payload = {
+      userId: userProfile.userId,
+      contributionId: parsedContribution?.id,
+      amount: amount,
+      isEarlyWithdrawal,
+      recipientCode,
+    };
+
+    setAmountToWithdraw('');
+    setValidateCustomerModal(false);
+    setProcessing(true);
     try {
-      const amount = isEarlyWithdrawal ? newBalance : amountToWithdraw;
+      const restOperation = post({
+        apiName: 'userInfo',
+        path: '/request-withdrawal',
+        options: {
+          body: payload,
+        },
+      });
+      const response = await restOperation.response;
+      const withdrawalResponse = await response.body.json();
 
-      // Combine pin array into a single string and validate length
-      const pinString = pin.join('');
-      if (pinString.length !== 6) {
-        Alert.alert('Invalid PIN', 'Please enter a valid 6-digit PIN');
-        return false;
-      }
-
-      // Check if the entered pin matches the provided pin (t_pin)
-      if (pinString !== t_pin) {
-        Alert.alert('Invalid PIN', 'The PIN you entered is incorrect');
-        return false;
-      }
-
-      // Start the verification process
-      setValidateCustomerModal(false);
-      setIsLoading(true);
-      setVerifying(true);
-
-      // Attempt to withdraw funds
-      const withdrawalResponse = await withdrawFunds(
-        userProfile,
-        parsedContribution?.id,
-        amount,
-        recipientCode
-      );
-
-      // Handle withdrawal success
       if (withdrawalResponse?.success) {
-        setValidateCustomerModal(false);
+        setProcessing(false);
+        setCompleted(true);
         Alert.alert(
           'Withdrawal Processed',
-          'Your withdrawal request has been successfully processed',
+          'Your withdrawal request has been successfully processed. You will receive a notification once it is completed.',
           [
             {
               text: 'OK',
               onPress: () => {
-                setValidateCustomerModal(false);
                 router.push(`/protected/mimonie`);
               },
             },
@@ -170,73 +136,27 @@ const transfer_screen = () => {
           { cancelable: false }
         );
       } else {
-        // Handle withdrawal failure
-        setValidateCustomerModal(false);
+        setProcessing(false);
         Alert.alert(
           'Withdrawal Failed',
           `${withdrawalResponse?.message || 'Unknown error occurred'}`
         );
       }
     } catch (error) {
-      // Catch any unexpected errors and display them to the user
-      console.error('Error withdrawing funds:', error);
+      setProcessing(false);
       Alert.alert(
         'Error',
         `${error?.message || 'An unexpected error occurred, please try again.'}`
       );
     } finally {
-      // Reset states regardless of success or failure
-      setPin(['', '', '', '', '', '']);
-      setVerifying(false);
-      setIsLoading(false);
+      setProcessing(false);
     }
   };
 
-  const handleAddBank = async () => {
-    if (bankDetails.some((e) => e.bank_number === accountNumber)) {
-      Alert.alert('Error', 'Bank Account already exists');
-      return;
-    }
-
-    setVerifying(true);
-    try {
-      const res = await resolveBankAccount(
-        accountNumber,
-        selectedValue.value,
-        userProfile
-      );
-
-      if (res.success) {
-        const recipient_code = await createTransferRecipientForBank({
-          bank_code: selectedValue.value,
-          account_number: accountNumber,
-          account_name: userProfile.name,
-        });
-        const bank = await createBankDetails(
-          {
-            account_number: accountNumber,
-            bank_code: selectedValue.value,
-            bank_name: selectedValue.label,
-            recipient_code: recipient_code,
-            status: bankDetails?.length < 1 ? 'active' : 'inactive',
-          },
-          userProfile
-        );
-
-        setBankDetails((prev) => [...prev, bank]);
-        fetchBankDetails(setBankDetails, currentUser);
-        setAddBankModal(false);
-        setAccountNumber('');
-        setSelectedValue({});
-      } else {
-        Alert.alert('Verification failed', res.message);
-      }
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Error', e.message + '');
-    } finally {
-      setVerifying(false);
-    }
+  const onAddBankCompleted = (bank) => {
+    setBankDetails((prev) => [...prev, bank]);
+    fetchBankDetails(setBankDetails, currentUser);
+    setAddBankModal(false);
   };
 
   const handleDeleteCard = async () => {
@@ -264,343 +184,98 @@ const transfer_screen = () => {
     }
   };
 
-  const handleConfirmPin = async () => {
-    const pinString = pin.join('');
-    if (pinString.length < 6) {
-      Alert.alert('Error', 'Please enter a valid 6-digit pin');
-      return;
-    }
-
-    setVerifying(true);
-    try {
-      if (pinRef) {
-        const res = await verifyOTP(pinRef.pinId, pinString);
-        if (res.verified) {
-          setCreatePinModal(false);
-          setUserProfile((prev) => ({ ...prev, transfer_pin: userPin }));
-          await updateUserProfile({ transfer_pin: userPin }, currentUser);
-          const profile = await fetchUserProfile(setUserProfile, currentUser);
-          // await isUser(profile.transfer_pin);
-          setVerifying(false);
-          Alert.alert('Pin Created Successfully', 'Initiate your Transfer');
-        }
-      } else {
-        setUserPin(pinString);
-        const res = await sendOtp(userProfile.phone_number);
-        setPinRef(res);
-      }
-    } catch (e) {
-      console.error(e.message);
-      Alert.alert('Error', e.message + '');
-    } finally {
-      setPin(['', '', '', '', '', '']);
-      setVerifying(false);
-    }
-  };
-
-  const renderBanks = (item) => {
-    return (
-      <TouchableOpacity
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottomWidth: 1,
-          borderBottomColor: 'gray',
-          paddingVertical: 5,
-        }}
-        key={item.id}
-        onPress={() => handleSelectCard(item)}
-      >
-        <View
-          style={{ flexDirection: 'row', columnGap: 10, alignItems: 'center' }}
-        >
-          <View style={{ width: 20 }}>
-            {item.status === 'active' && (
-              <AntDesign name="check" size={22} color={Colors.pri} />
-            )}
-          </View>
-          <Image
-            source={getBankLogo(item.bank_name)}
-            style={{
-              width: 40,
-              height: 40,
-              objectFit: 'contain',
-            }}
-          />
-          <View style={{ rowGap: 5, marginLeft: 10 }}>
-            <Text style={{ fontSize: 14, fontFamily: 'ir' }}>
-              {item.bank_name}
-            </Text>
-
-            <Text style={{ fontSize: 12 }}>{item.bank_number}</Text>
-          </View>
-        </View>
-        <FontAwesome
-          name="trash"
-          size={24}
-          color="red"
-          onPress={() => {
-            Alert.alert(
-              'Delete Bank Account',
-              'Are you sure you want to delete this bank account?',
-              [
-                {
-                  text: 'Yes',
-                  onPress: () => handleDeleteCard(item),
-                  style: 'destructive',
-                },
-                { text: 'No', style: 'cancel' },
-              ]
-            );
-          }}
-        />
-      </TouchableOpacity>
-    );
-  };
-
   return (
-    <PageView
-      title={'Fund Withdraw'}
-      route={`/protected/mimonie/${parsedContribution?.id}`}
-    >
-      <View style={{ flex: 1, padding: 20 }}>
-        <View style={{ minHeight: '20%', width: '100%' }}>
-          {bankDetails.length > 0 ? (
-            bankDetails.map((item) => {
-              return renderBanks(item);
-            })
-          ) : (
-            <Text style={{ textAlign: 'center' }}>
-              You dont have any account to transfer to
-            </Text>
-          )}
-        </View>
-        <Button
-          title="Add Bank Account"
-          onPress={() => setAddBankModal(true)}
-          color={Colors.pri}
-        />
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={{ marginTop: 20 }}>
-            <View
-              style={{ alignItems: 'flex-end', rowGap: 4, marginBottom: 5 }}
-            >
-              <Text>Balance: (NGN) {balance}</Text>
-              {isEarlyWithdrawal ? (
-                <>
-                  <Text>Withdrawable Balance: (NGN) {newBalance}</Text>
-                  <Text style={{ fontSize: 10 }}>
-                    10% early withdrawal charge
-                  </Text>
-                </>
-              ) : (
-                <Text>Withdrawable Balance: (NGN) {balance}</Text>
-              )}
-            </View>
-            {!isEarlyWithdrawal && (
-              <TextInput
+    <>
+      <PageView
+        title={'Fund Withdraw'}
+        route={`/protected/mimonie/${parsedContribution?.id}`}
+      >
+        <View style={{ flex: 1, padding: 20 }}>
+          <Banks
+            bankDetails={bankDetails}
+            handleDeleteCard={handleDeleteCard}
+            handleSelectCard={handleSelectCard}
+            setAddBankModal={setAddBankModal}
+          />
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={{ marginTop: 20 }}>
+              <View
+                style={{ alignItems: 'flex-end', rowGap: 4, marginBottom: 5 }}
+              >
+                <Text>Balance: (NGN) {balance}</Text>
+                {isEarlyWithdrawal ? (
+                  <>
+                    <Text>Withdrawable Balance: (NGN) {newBalance}</Text>
+                    <Text style={{ fontSize: 10 }}>
+                      10% early withdrawal charge
+                    </Text>
+                  </>
+                ) : (
+                  <Text>Withdrawable Balance: (NGN) {balance}</Text>
+                )}
+              </View>
+
+              {/* <TextInput
                 style={styles.input}
                 placeholder="Enter Amount to withdraw"
                 value={amountToWithdraw}
                 onChangeText={setAmountToWithdraw}
                 keyboardType="number-pad"
-              />
-            )}
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleWithdrawFund}
-            >
-              <Text style={styles.buttonText}>Withdraw</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableWithoutFeedback>
-      </View>
-      <Modal visible={addBankModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Add Bank Account</Text>
-
-              <View style={{ rowGap: 14, width: '100%' }}>
-                <View style={{ width: '100%' }}>
-                  <Text style={styles.label}>Bank Name</Text>
-                  <SelectInput
-                    options={banks}
-                    selectedValue={selectedValue}
-                    setSelectedValue={setSelectedValue}
-                    defaultValue={selectedValue?.label}
-                  />
-                </View>
-
-                <View style={{ width: '100%' }}>
-                  <Text style={styles.label}>Account Number</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Enter account number"
-                    value={accountNumber}
-                    onChangeText={setAccountNumber}
-                    keyboardType="numeric"
-                  />
-                </View>
-                <Text style={{ marginTop: 10, fontFamily: 'ir', fontSize: 10 }}>
-                  Note that we will verify the account before adding it to your
-                  account list. Ensure the account belongs to you and the
-                  account name matches with your app name
-                </Text>
-              </View>
-              {verifying && (
-                <View style={{ marginTop: 10 }}>
-                  <ActivityIndicator size="small" color={Colors.pri} />
-                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
-                    Verifying account...
-                  </Text>
-                </View>
-              )}
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => setAddBankModal(false)}
-                  disabled={verifying}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={handleAddBank}
-                  disabled={verifying}
-                >
-                  <Text style={styles.modalButtonText}>Add Bank</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </Modal>
-      <Modal visible={validateCustomerModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>Input Transfer Pin</Text>
-
-              <View style={{ width: '100%' }}>
-                <Text style={styles.label}>Enter your 6 digit pin</Text>
-                <View style={styles.pinContainer}>
-                  {pin.map((digit, index) => (
+              /> */}
+              {!isEarlyWithdrawal && (
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.currencySymbol}>₦</Text>
                     <TextInput
-                      key={index}
-                      style={styles.pinInput}
-                      value={digit}
-                      onChangeText={(value) => handlePinChange(value, index)}
-                      onKeyPress={(e) => handleKeyPress(e, index)}
-                      ref={(ref) => (pinRefs.current[index] = ref)}
+                      style={styles.input}
                       keyboardType="numeric"
-                      maxLength={1}
-                      textAlign="center"
-                      secureTextEntry
+                      placeholder="Enter amount"
+                      value={amountToWithdraw}
+                      onChangeText={(text) => {
+                        setAmountToWithdraw(text.replace(/[^0-9.]/g, ''));
+                        setError('');
+                      }}
+                      placeholderTextColor="#999"
                     />
-                  ))}
-                </View>
-              </View>
-
-              {verifying && (
-                <View style={{ marginTop: 10 }}>
-                  <ActivityIndicator size="small" color={Colors.pri} />
-                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
-                    Verifying account...
-                  </Text>
+                  </View>
+                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
                 </View>
               )}
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => setValidateCustomerModal(false)}
-                  disabled={verifying}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={() => isUser(userProfile.transfer_pin)}
-                  disabled={verifying}
-                >
-                  <Text style={styles.modalButtonText}>Enter</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </TouchableWithoutFeedback>
-        </View>
-      </Modal>
-      <Modal visible={createPinModal} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.modalTitle}>
-                {pinRef ? 'Enter Code' : 'Create Transfer Pin'}
-              </Text>
-              <Text
-                style={{ marginVertical: 10, fontFamily: 'ir', fontSize: 10 }}
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleWithdrawFund}
+                disabled={completed}
               >
-                {pinRef
-                  ? 'Enter the code sent to your registered phone number'
-                  : ' A code will be sent to your registered phone number for verification'}
-              </Text>
-              <View style={{ rowGap: 14, width: '100%' }}>
-                <Text style={styles.label}>Enter your 6 digit pin</Text>
-                <View style={styles.pinContainer}>
-                  {pin.map((digit, index) => (
-                    <TextInput
-                      key={index}
-                      style={styles.pinInput}
-                      value={digit}
-                      onChangeText={(value) => handlePinChange(value, index)}
-                      onKeyPress={(e) => handleKeyPress(e, index)}
-                      ref={(ref) => (pinRefs.current[index] = ref)}
-                      keyboardType="numeric"
-                      maxLength={1}
-                      textAlign="center"
-                      onPress={Keyboard.dismiss}
-                    />
-                  ))}
-                </View>
-                {pinRef ? null : (
-                  <Text
-                    style={{ marginTop: 10, fontFamily: 'ir', fontSize: 10 }}
-                  >
-                    This pin will be use for all your transfers. Please keep it
-                    safe and secured
-                  </Text>
-                )}
-              </View>
-              {verifying && (
-                <View style={{ marginTop: 10 }}>
-                  <ActivityIndicator size="small" color={Colors.pri} />
-                  <Text style={{ marginTop: 5, fontFamily: 'ir' }}>
-                    Verifying account...
-                  </Text>
-                </View>
-              )}
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={styles.cancelButton}
-                  onPress={() => setCreatePinModal(false)}
-                  disabled={verifying}
-                >
-                  <Text style={styles.modalButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.confirmButton}
-                  onPress={handleConfirmPin}
-                  disabled={verifying}
-                >
-                  <Text style={styles.modalButtonText}>Create Pin</Text>
-                </TouchableOpacity>
-              </View>
+                <Text style={styles.buttonText}>Withdraw</Text>
+              </TouchableOpacity>
             </View>
           </TouchableWithoutFeedback>
         </View>
-      </Modal>
-    </PageView>
+        <AddBankModal
+          onCompleted={onAddBankCompleted}
+          bankDetails={bankDetails}
+          addBankModal={addBankModal}
+          setAddBankModal={setAddBankModal}
+          userProfile={userProfile}
+        />
+
+        <ValidateUser
+          visible={validateCustomerModal}
+          onClose={() => setValidateCustomerModal(false)}
+          userProfile={userProfile}
+          onVerified={onVerified}
+        />
+        <PinInputModal
+          setUserProfile={setUserProfile}
+          userProfile={userProfile}
+          visible={createPinModal}
+          onClose={() => setCreatePinModal(false)}
+          currentUser={currentUser}
+        />
+      </PageView>
+      <WithdrawalLoader isLoading={processing} />
+    </>
   );
 };
 
@@ -623,14 +298,44 @@ const styles = StyleSheet.create({
     fontFamily: 'ir',
     marginBottom: 10,
   },
-  input: {
-    backgroundColor: 'white',
-    borderRadius: 8,
+  // input: {
+  //   backgroundColor: 'white',
+  //   borderRadius: 8,
+  //   borderWidth: 1,
+  //   borderColor: '#9095A1',
+  //   padding: 12,
+  //   height: 53,
+  //   width: '100%',
+  // },
+  inputContainer: {
+    marginBottom: 24,
+    marginTop: 10,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#9095A1',
-    padding: 12,
-    height: 53,
-    width: '100%',
+    borderColor: '#DDD',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 50,
+  },
+  currencySymbol: {
+    fontSize: 16,
+    color: '#555',
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    height: '100%',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#D32F2F', // Red error color
+    marginTop: 4,
+    marginLeft: 4,
   },
   contributionContainer: {
     padding: 16,
