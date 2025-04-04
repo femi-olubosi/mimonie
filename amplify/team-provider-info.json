@@ -20,7 +20,7 @@
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-4f6e64627468436c6965-build.zip"
+          "s3Key": "amplify-builds/userInfo-4458627a307679624b6a-build.zip"
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
@@ -40,7 +40,7 @@
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/contributionTrigger-4643455443456d665364-build.zip",
+          "s3Key": "amplify-builds/contributionTrigger-6e35664a465651315733-build.zip",
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         },
         "contributionNotifications": {
@@ -54,7 +54,12 @@
         },
         "AdminQueriese69f7a79": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/AdminQueriese69f7a79-5a7331784735586e6849-build.zip"
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-4c6f74434a446c484439-build.zip"
+        },
+        "processWithdrawalRequest": {
+          "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3",
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/processWithdrawalRequest-702b4751316c46325151-build.zip"
         }
       },
       "auth": {

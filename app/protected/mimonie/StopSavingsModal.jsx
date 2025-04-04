@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors } from '../../../constants/Colors';
+import { isEarly, toDays } from '../../../utils/isEarlyWithdrawal';
 
 const StopSavingsModal = ({
   visible,
@@ -8,15 +9,38 @@ const StopSavingsModal = ({
   onConfirm,
   breakFeePercentage = 10,
   contribution,
+  isLoading,
 }) => {
-  const variant = contribution?.variant;
-  const totalMonths = contribution?.num_of_month;
+  const variant = contribution?.variant?.toLowerCase(); // Ensure lowercase
+  const totalDuration = contribution?.num_of_month;
   const currentProgress = contribution?.currently_at || 0;
-  const breakFeeAmount =
-    (breakFeePercentage / 100) * (contribution?.amount * currentProgress);
-  const completionPercentage = Math.round(
-    (currentProgress / totalMonths) * 100
-  );
+
+  // Calculate if early using the new method
+  const earlyWithdrawal = isEarly(currentProgress, totalDuration, variant);
+
+  // Calculate break fee only if early
+  const breakFeeAmount = earlyWithdrawal
+    ? (breakFeePercentage / 100) * (contribution?.amount * currentProgress)
+    : 0;
+
+  // Convert progress to days for accurate percentage calculation
+  const currentInDays = toDays(variant, currentProgress);
+  const totalInDays = toDays(variant, totalDuration);
+  const completionPercentage = Math.round((currentInDays / totalInDays) * 100);
+
+  // Format display text based on variant
+  const getVariantDisplay = () => {
+    switch (variant) {
+      case 'days':
+        return 'day(s)';
+      case 'weeks':
+        return 'week(s)';
+      case 'months':
+        return 'month(s)';
+      default:
+        return '';
+    }
+  };
 
   return (
     <Modal
@@ -36,8 +60,8 @@ const StopSavingsModal = ({
 
             <View style={styles.progressContainer}>
               <Text style={styles.progressText}>
-                Your progress: {currentProgress} of {totalMonths} {variant} (
-                {completionPercentage}%)
+                Your progress: {currentProgress} of {totalDuration}{' '}
+                {getVariantDisplay()} ({completionPercentage}%)
               </Text>
               <View style={styles.progressBar}>
                 <View
@@ -49,12 +73,14 @@ const StopSavingsModal = ({
               </View>
             </View>
 
-            <View style={styles.feeWarning}>
-              <Text style={styles.feeText}>
-                ⚠️ Early termination fee: {breakFeePercentage}% (₦
-                {breakFeeAmount.toFixed(2)})
-              </Text>
-            </View>
+            {earlyWithdrawal && (
+              <View style={styles.feeWarning}>
+                <Text style={styles.feeText}>
+                  ⚠️ Early termination fee: {breakFeePercentage}% (₦
+                  {breakFeeAmount.toFixed(2)})
+                </Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.buttonContainer}>
@@ -68,8 +94,11 @@ const StopSavingsModal = ({
             <TouchableOpacity
               style={[styles.button, styles.confirmButton]}
               onPress={onConfirm}
+              disabled={isLoading}
             >
-              <Text style={styles.confirmButtonText}>Stop Savings</Text>
+              <Text style={styles.confirmButtonText}>
+                {isLoading ? 'Processing...' : 'Stop Savings'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

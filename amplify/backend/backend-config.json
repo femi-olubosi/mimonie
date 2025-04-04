@@ -184,6 +184,12 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "processWithdrawalRequest": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "userInfo": {
       "build": true,
       "dependsOn": [],
@@ -386,6 +392,30 @@
         {
           "category": "function",
           "resourceName": "mimonief71364a4"
+        }
+      ]
+    },
+    "AMPLIFY_function_processWithdrawalRequest_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processWithdrawalRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_processWithdrawalRequest_paystackSecretKeyLive": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processWithdrawalRequest"
+        }
+      ]
+    },
+    "AMPLIFY_function_processWithdrawalRequest_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processWithdrawalRequest"
         }
       ]
     },

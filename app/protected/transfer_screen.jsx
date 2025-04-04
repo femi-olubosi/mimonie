@@ -43,6 +43,7 @@ const transfer_screen = () => {
   const [recipientCode, setRecipientCode] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
     fetchBankDetails(setBankDetails, currentUser);
@@ -64,16 +65,18 @@ const transfer_screen = () => {
       ? Number(newBalance)
       : Number(balance);
 
-    if (ErrorCheck({ amount: amountToWithdraw })) {
+    const amount = isEarlyWithdrawal ? withdrawableAmount : amountToWithdraw;
+
+    if (ErrorCheck({ amount })) {
       return;
     }
 
-    const numericAmount = parseFloat(amountToWithdraw);
+    const numericAmount = parseFloat(amount);
 
-    if (!amountToWithdraw || isNaN(numericAmount)) {
-      setError('Please enter a valid amount');
-      return;
-    }
+    // if (!amountToWithdraw || isNaN(numericAmount)) {
+    //   setError('Please enter a valid amount');
+    //   return;
+    // }
 
     if (numericAmount > withdrawableAmount) {
       setError(`Amount cannot exceed ${withdrawableAmount}`);
@@ -90,10 +93,14 @@ const transfer_screen = () => {
   };
 
   const onVerified = async () => {
+    const amount = isEarlyWithdrawal
+      ? Number(balance)
+      : Number(amountToWithdraw);
+
     const payload = {
       userId: userProfile.userId,
       contributionId: parsedContribution?.id,
-      amount: amountToWithdraw,
+      amount: amount,
       isEarlyWithdrawal,
       recipientCode,
     };
@@ -114,6 +121,7 @@ const transfer_screen = () => {
 
       if (withdrawalResponse?.success) {
         setProcessing(false);
+        setCompleted(true);
         Alert.alert(
           'Withdrawal Processed',
           'Your withdrawal request has been successfully processed. You will receive a notification once it is completed.',
@@ -214,28 +222,30 @@ const transfer_screen = () => {
                 onChangeText={setAmountToWithdraw}
                 keyboardType="number-pad"
               /> */}
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.currencySymbol}>₦</Text>
-                  <TextInput
-                    style={styles.input}
-                    keyboardType="numeric"
-                    placeholder="Enter amount"
-                    value={amountToWithdraw}
-                    onChangeText={(text) => {
-                      setAmountToWithdraw(text.replace(/[^0-9.]/g, ''));
-                      setError('');
-                    }}
-                    placeholderTextColor="#999"
-                  />
+              {!isEarlyWithdrawal && (
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.currencySymbol}>₦</Text>
+                    <TextInput
+                      style={styles.input}
+                      keyboardType="numeric"
+                      placeholder="Enter amount"
+                      value={amountToWithdraw}
+                      onChangeText={(text) => {
+                        setAmountToWithdraw(text.replace(/[^0-9.]/g, ''));
+                        setError('');
+                      }}
+                      placeholderTextColor="#999"
+                    />
+                  </View>
+                  {error ? <Text style={styles.errorText}>{error}</Text> : null}
                 </View>
-                {error ? <Text style={styles.errorText}>{error}</Text> : null}
-              </View>
+              )}
 
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleWithdrawFund}
-                disabled={!amountToWithdraw}
+                disabled={completed}
               >
                 <Text style={styles.buttonText}>Withdraw</Text>
               </TouchableOpacity>

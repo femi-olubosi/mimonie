@@ -41,6 +41,7 @@ import StopSavingsModal from './StopSavingsModal';
 import WithdrawalModal from './WithdrawalModal';
 import { earlyWithdrawalCharge } from '../../../constants/charges';
 import { get } from 'aws-amplify/api';
+import { isEarly } from '../../../utils/isEarlyWithdrawal';
 
 const ContributionDetails = () => {
   const {
@@ -310,8 +311,11 @@ const ContributionDetails = () => {
 
   const startDate = new Date(contribution?.start_date);
 
-  const isEarlyWithdrawal =
-    contribution?.currently_at < contribution?.num_of_month;
+  const isEarlyWithdrawal = isEarly(
+    contribution?.currently_at,
+    contribution?.num_of_month,
+    contribution?.variant
+  );
 
   const handleWithdrawFund = async () => {
     setWithdrawModal(false);
@@ -510,6 +514,7 @@ const ContributionDetails = () => {
         onConfirm={handleStopSavings}
         contribution={contribution}
         breakFeePercentage={earlyWithdrawalCharge}
+        isLoading={isLoading}
       />
       <WithdrawalModal
         visible={withdrawModal}
