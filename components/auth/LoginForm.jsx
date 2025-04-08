@@ -164,17 +164,14 @@ const LoginForm = (props) => {
 
   return (
     <KeyboardAvoidingView behavior="padding" enabled={false}>
-      <ScrollView
-        contentContainerStyle={styles.container}
-        nestedScrollEnabled={true}
-      >
+      <View style={styles.container}>
         <Image
           source={require('../../assets/logo/mimonie.png')}
           style={{
             width: 70,
             height: 70,
             marginBottom: 40,
-            borderRadius: 10,
+            borderRadius: 20,
             alignSelf: 'center',
           }}
         />
@@ -271,16 +268,16 @@ const LoginForm = (props) => {
             <Text style={styles.signUp}>Sign up</Text>
           </Pressable>
         </View>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     justifyContent: 'center',
     padding: 20,
-    flex: 1,
   },
   title: {
     fontSize: 24,
