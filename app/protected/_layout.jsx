@@ -1,33 +1,10 @@
-import { View, StyleSheet, Image } from 'react-native';
-import React, { useState } from 'react';
-import {
-  Authenticator,
-  ThemeProvider,
-  useAuthenticator,
-} from '@aws-amplify/ui-react-native';
-import { Redirect, Stack } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
+import React from 'react';
+import { Authenticator } from '@aws-amplify/ui-react-native';
+import { Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
-import { StatusBar } from 'expo-status-bar';
-
-const theme = {
-  tokens: {
-    colors: {
-      primary: {
-        10: '#006EBD',
-        20: '#006EBD',
-        40: '#006EBD',
-        60: '#006EBD',
-        80: '#006EBD',
-        90: '#006EBD',
-        100: '#006EBD',
-      },
-      font: {
-        primary: 'black',
-      },
-    },
-  },
-};
+import UserInactivityProvider from '../../components/UserInactivityProvider';
 
 const formFields = {
   signUp: {
@@ -58,43 +35,25 @@ const formFields = {
 
 const ProtectedLayout = () => {
   return (
-    // <ThemeProvider theme={theme}>
     <Authenticator.Provider>
-      <ProtectedContent />
+      <UserInactivityProvider>
+        <ProtectedContent />
+      </UserInactivityProvider>
     </Authenticator.Provider>
-    // </ThemeProvider>
   );
 };
 
 export default ProtectedLayout;
 
 const ProtectedContent = () => {
-  const { route } = useAuthenticator((context) => [context.route]);
-
   return (
     <View style={styles.safeArea}>
-      {/* <StatusBar style="light" /> */}
-      {route === 'signIn' || route === 'forgotPassword' ? (
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: '#006EBD',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <Image
-            source={require('../../assets/logo/mimonie-logo.png')}
-            style={{ width: 120, height: 120 }}
-          />
-        </View>
-      ) : null}
       <View
         style={{
-          flex: 2,
+          flex: 1,
           borderRadius: 10,
-          paddingTop: route === 'signIn' || route === 'forgotPassword' ? 10 : 0,
           backgroundColor: 'white',
+          justifyContent: 'center',
         }}
       >
         <Authenticator

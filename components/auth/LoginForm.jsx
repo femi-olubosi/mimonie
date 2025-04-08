@@ -10,6 +10,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Image,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
@@ -22,11 +23,13 @@ import * as Device from 'expo-device';
 import { fetchUserNotification } from '../../api/notifications.service';
 import { sendOtp } from '../../api/token.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Checkbox from 'expo-checkbox';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   const { toSignUp, toForgotPassword } = props;
   const {
     isLoading,
@@ -66,7 +69,7 @@ const LoginForm = (props) => {
           return;
         }
       }
-      // await DataStore.start()
+
       const user = await fetchCurrUser(setCurrentUser);
 
       const file = await AsyncStorage.getItem('profilePicture');
@@ -134,6 +137,7 @@ const LoginForm = (props) => {
       }
 
       await AsyncStorage.setItem('existingEmail', email);
+      await AsyncStorage.setItem('user_name', profile?.name);
       router.push('/');
     } catch (error) {
       Alert.alert('Error', error.message);
@@ -143,25 +147,63 @@ const LoginForm = (props) => {
     }
   };
 
+  useEffect(() => {
+    const checkExistingUser = async () => {
+      const user_name = await AsyncStorage.getItem('user_name');
+      const email = await AsyncStorage.getItem('existingEmail');
+      if (user_name && email) {
+        setUserInfo({
+          username: user_name,
+          email: email,
+        });
+        setEmail(email);
+      }
+    };
+    checkExistingUser();
+  }, []);
+
   return (
     <KeyboardAvoidingView behavior="padding" enabled={false}>
       <ScrollView
         contentContainerStyle={styles.container}
         nestedScrollEnabled={true}
       >
-        <Text style={styles.title}>Log in</Text>
-        <View>
-          <Text style={styles.label}>Email Address</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email address"
-            placeholderTextColor={'silver'}
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-        </View>
+        <Image
+          source={require('../../assets/logo/mimonie.png')}
+          style={{
+            width: 70,
+            height: 70,
+            marginBottom: 40,
+            borderRadius: 10,
+            alignSelf: 'center',
+          }}
+        />
+        {userInfo ? (
+          <View style={{ marginBottom: 20 }}>
+            <Text
+              style={{ textAlign: 'center', fontSize: 20, fontFamily: 'isb' }}
+            >
+              Welcome Back, {userInfo?.username?.split(' ')[0]}
+            </Text>
+          </View>
+        ) : (
+          <Text style={styles.title}>{'Log in'}</Text>
+        )}
+
+        {!userInfo && (
+          <View>
+            <Text style={styles.label}>Email Address</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your email address"
+              placeholderTextColor={'silver'}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
+        )}
         <View>
           <Text style={styles.label}>Password</Text>
           <View
@@ -204,6 +246,7 @@ const LoginForm = (props) => {
             justifyContent: 'center',
             alignItems: 'center',
             marginTop: 40,
+            width: '100%',
           }}
           onPress={handleSignIn}
           disabled={isLoading}
@@ -237,7 +280,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     padding: 20,
-    paddingTop: 30,
+    flex: 1,
   },
   title: {
     fontSize: 24,

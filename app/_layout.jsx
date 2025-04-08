@@ -34,15 +34,9 @@ function RootLayout() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const session = await fetchAuthSession({ forceRefresh: false });
-        const tokenExpiry = session?.tokens?.accessToken?.payload?.exp;
-        const currentTime = Math.floor(Date.now() / 1000);
-
-        if (!tokenExpiry || currentTime > tokenExpiry) {
-          throw new Error('Token has expired');
-        }
+        await fetchAuthSession();
       } catch (error) {
-        await signOut();
+        console.log(error);
       } finally {
         setIsSplashVisible(false);
       }
@@ -71,7 +65,7 @@ function RootLayout() {
 
   useEffect(() => {
     const checkFirstTimeUser = async () => {
-      const isFirstLaunch = await AsyncStorage.getItem('hasLaunched');
+      const isFirstLaunch = (await AsyncStorage.getItem('hasLaunched')) || null;
       if (isFirstLaunch === null) {
         setOnboard(true);
         await AsyncStorage.setItem('hasLaunched', 'true');
@@ -121,7 +115,7 @@ function RootLayout() {
 export default RootLayout;
 
 function RootContent() {
-  const { isLoading, userProfile } = useGlobalContext();
+  const { isLoading } = useGlobalContext();
 
   return (
     <>
