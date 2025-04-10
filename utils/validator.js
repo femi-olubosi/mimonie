@@ -2,8 +2,22 @@ export const validateField = (key, value) => {
   let errorMessage = '';
   switch (key) {
     case 'email':
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
         errorMessage = 'Please enter a valid email address.';
+      } else {
+        const domainMatch = value.toLowerCase().match(/@([^@]+)$/);
+        const domain = domainMatch ? domainMatch[1] : '';
+
+        const baseDomains = ['gmail', 'yahoo', 'hotmail'];
+
+        const domainParts = domain.split('.');
+        const base = domainParts[0];
+        const tld = domainParts[1];
+
+        if (baseDomains.includes(base) && tld !== 'com') {
+          errorMessage = `Only ${base}.com addresses are allowed.`;
+        }
       }
       break;
     case 'password':
