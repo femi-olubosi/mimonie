@@ -20,11 +20,11 @@
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-4458627a307679624b6a-build.zip"
+          "s3Key": "amplify-builds/userInfo-51775963306a57703248-build.zip"
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-6e4461436b2b36773448-build.zip",
+          "s3Key": "amplify-builds/callbackurl-5364694435762b756132-build.zip",
           "profileTableName": "UserProfile-d4itlx42uzhtrctybtkmaxruya-dev",
           "notificationsTableName": "UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev",
           "partnerId": "6982",
@@ -54,12 +54,12 @@
         },
         "AdminQueriese69f7a79": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/AdminQueriese69f7a79-4c6f74434a446c484439-build.zip"
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-31396e61374131457557-build.zip"
         },
         "processWithdrawalRequest": {
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3",
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/processWithdrawalRequest-702b4751316c46325151-build.zip"
+          "s3Key": "amplify-builds/processWithdrawalRequest-5a3970522b756c344364-build.zip"
         }
       },
       "auth": {

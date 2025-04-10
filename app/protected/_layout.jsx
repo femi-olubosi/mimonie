@@ -1,6 +1,6 @@
 import { View, StyleSheet, Image } from 'react-native';
 import React from 'react';
-import { Authenticator } from '@aws-amplify/ui-react-native';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
 import { Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
@@ -47,17 +47,20 @@ const ProtectedLayout = () => {
 export default ProtectedLayout;
 
 const ProtectedContent = () => {
+  const { route } = useAuthenticator((context) => [context.route]);
   return (
     <>
       <StatusBar style="dark" />
-      <View
-        style={{
-          height: 60,
-          backgroundColor: 'white',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      ></View>
+      {['forgotPassword', 'signIn', 'signUp'].includes(route) && (
+        <View
+          style={{
+            height: 60,
+            backgroundColor: 'white',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        ></View>
+      )}
       <Authenticator
         formFields={formFields}
         components={{
