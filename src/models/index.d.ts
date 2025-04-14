@@ -477,3 +477,53 @@ export declare type UserConnections = LazyLoading extends LazyLoadingDisabled ? 
 export declare const UserConnections: (new (init: ModelInit<UserConnections>) => UserConnections) & {
   copyOf(source: UserConnections, mutator: (draft: MutableModel<UserConnections>) => MutableModel<UserConnections> | void): UserConnections;
 }
+
+type EagerContributionParticipant = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<ContributionParticipant, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly contributionID: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly email?: string | null;
+  readonly picture?: string | null;
+  readonly status: string;
+  readonly index?: number | null;
+  readonly subaccount_code?: string | null;
+  readonly auth_url?: string | null;
+  readonly last_successful_round?: number | null;
+  readonly contributions?: number | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyContributionParticipant = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<ContributionParticipant, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly contributionID: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly email?: string | null;
+  readonly picture?: string | null;
+  readonly status: string;
+  readonly index?: number | null;
+  readonly subaccount_code?: string | null;
+  readonly auth_url?: string | null;
+  readonly last_successful_round?: number | null;
+  readonly contributions?: number | null;
+  readonly extra?: string | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type ContributionParticipant = LazyLoading extends LazyLoadingDisabled ? EagerContributionParticipant : LazyContributionParticipant
+
+export declare const ContributionParticipant: (new (init: ModelInit<ContributionParticipant>) => ContributionParticipant) & {
+  copyOf(source: ContributionParticipant, mutator: (draft: MutableModel<ContributionParticipant>) => MutableModel<ContributionParticipant> | void): ContributionParticipant;
+}

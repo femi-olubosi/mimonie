@@ -144,3 +144,19 @@ type UserConnections @model @auth(rules: [{ allow: public }]) {
   receiverDetails: AWSJSON
   status: String!
 }
+
+type ContributionParticipant @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  contributionID: ID!
+  userId: ID!
+  name: String!
+  email: AWSEmail
+  picture: AWSURL
+  status: String!
+  index: Int
+  subaccount_code: String
+  auth_url: AWSURL
+  last_successful_round: Int
+  contributions: Int
+  extra: AWSJSON
+}

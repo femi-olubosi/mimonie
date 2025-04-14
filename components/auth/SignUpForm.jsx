@@ -138,6 +138,9 @@ const SignUp = (props) => {
             onChangeText={setEmail}
             autoCapitalize="none"
           />
+          <Text style={{ marginBottom: 20, marginLeft: 4, fontSize: 10 }}>
+            Your country code followed by your phone number. e.g (+234)
+          </Text>
         </View>
         <View
           style={[

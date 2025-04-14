@@ -140,6 +140,14 @@ const LoginForm = (props) => {
       await AsyncStorage.setItem('user_name', profile?.name);
       router.push('/');
     } catch (error) {
+      if (error?.message?.includes('User is disabled')) {
+        Alert.alert(
+          'Account Deactivated',
+          'Your account has been deactivated. Please contact support for assistance.'
+        );
+        return;
+      }
+
       Alert.alert('Error', error.message);
       console.error(error.message);
     } finally {
