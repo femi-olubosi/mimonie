@@ -143,7 +143,7 @@ const LoginForm = (props) => {
       if (error?.message?.includes('User is disabled')) {
         Alert.alert(
           'Account Deactivated',
-          'Your account has been deactivated. Please contact support for assistance.'
+          'Your account has been deactivated. Please contact support for assistance. support@mimonie.net'
         );
         return;
       }

@@ -403,7 +403,7 @@ const CreateContribution = () => {
                     Group Contribution
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={[
                     styles.switchButton,
                     contributionType === 'personal' && styles.activeButton,
@@ -425,7 +425,7 @@ const CreateContribution = () => {
                   >
                     Personal Savings
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
               {contributionType === 'personal' && (
                 <Text style={{ fontSize: 12, color: '#000000' }}>
