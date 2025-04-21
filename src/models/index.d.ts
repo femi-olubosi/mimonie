@@ -486,16 +486,18 @@ type EagerContributionParticipant = {
   readonly id: string;
   readonly contributionID: string;
   readonly userId: string;
-  readonly name: string;
+  readonly name?: string | null;
   readonly email?: string | null;
-  readonly picture?: string | null;
-  readonly status: string;
+  readonly status?: string | null;
   readonly index?: number | null;
   readonly subaccount_code?: string | null;
   readonly auth_url?: string | null;
   readonly last_successful_round?: number | null;
   readonly contributions?: number | null;
+  readonly push_token?: string | null;
+  readonly recipient?: string | null;
   readonly extra?: string | null;
+  readonly type?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -508,16 +510,18 @@ type LazyContributionParticipant = {
   readonly id: string;
   readonly contributionID: string;
   readonly userId: string;
-  readonly name: string;
+  readonly name?: string | null;
   readonly email?: string | null;
-  readonly picture?: string | null;
-  readonly status: string;
+  readonly status?: string | null;
   readonly index?: number | null;
   readonly subaccount_code?: string | null;
   readonly auth_url?: string | null;
   readonly last_successful_round?: number | null;
   readonly contributions?: number | null;
+  readonly push_token?: string | null;
+  readonly recipient?: string | null;
   readonly extra?: string | null;
+  readonly type?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

@@ -1312,7 +1312,7 @@ export const schema = {
                     "name": "name",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "email": {
@@ -1322,18 +1322,11 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "picture": {
-                    "name": "picture",
-                    "isArray": false,
-                    "type": "AWSURL",
-                    "isRequired": false,
-                    "attributes": []
-                },
                 "status": {
                     "name": "status",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
                     "attributes": []
                 },
                 "index": {
@@ -1353,7 +1346,7 @@ export const schema = {
                 "auth_url": {
                     "name": "auth_url",
                     "isArray": false,
-                    "type": "AWSURL",
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -1371,10 +1364,31 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "push_token": {
+                    "name": "push_token",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "recipient": {
+                    "name": "recipient",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "extra": {
                     "name": "extra",
                     "isArray": false,
                     "type": "AWSJSON",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "type": {
+                    "name": "type",
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -1403,15 +1417,6 @@ export const schema = {
                     "properties": {}
                 },
                 {
-                    "type": "key",
-                    "properties": {
-                        "name": "byContribution",
-                        "fields": [
-                            "contributionID"
-                        ]
-                    }
-                },
-                {
                     "type": "auth",
                     "properties": {
                         "rules": [
@@ -1433,5 +1438,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "f931a9ce29a60f8351d48d08afd13ce4"
+    "version": "e6346b2a8a76639a456505b860a45927"
 };
