@@ -56,6 +56,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchUserConnections } from '@/api/network.service';
 import UserVerificationModal from '@/components/modals/UserVerificationModal';
 import * as Notifications from 'expo-notifications';
+import { useCopilot } from 'react-native-copilot';
 
 export default function HomeScreen() {
   const {
@@ -322,6 +323,28 @@ export default function HomeScreen() {
     }
   };
 
+  const { start } = useCopilot();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const hasEnoughConnections = parsed.length > 4;
+
+    setPilot((prev: any) => ({
+      ...prev,
+      network: !hasEnoughConnections,
+    }));
+
+    if (!hasEnoughConnections) {
+      console.log('show again');
+      setTimeout(() => {
+        start();
+      }, 1500);
+    } else {
+      console.log('no show');
+    }
+  }, [isLoading, userProfile, parsed]);
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
       <StatusBar style="dark" />
@@ -348,7 +371,6 @@ export default function HomeScreen() {
         >
           <Cards contributions={contributions} />
           <Options
-            userProfile={userProfile}
             priText={priText}
             setShowHelp={setShowHelp}
             connect={parsed?.length}

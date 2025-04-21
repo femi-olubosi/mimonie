@@ -9,27 +9,11 @@ import {
 import { Colors, ThemeColors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Platform, View } from 'react-native';
-import { CopilotStep, walkthroughable } from 'react-native-copilot';
-import { useGlobalContext } from '@/store/StoreContext';
-
-const CopilotView = walkthroughable(View);
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { userProfile, pilot } = useGlobalContext();
   const { priBg } = ThemeColors();
 
-  // const accountSetupText =
-  //   !userProfile?.is_bvn_verified && !userProfile?.is_nin_verified
-  //     ? 'Open the Account screen to start verification. Verifying your BVN and Identity is essential to creating or participating in contributions.'
-  //     : !userProfile?.is_bvn_verified
-  //     ? 'Your BVN is not verified. Please verify your BVN to continue creating or participating in contributions.'
-  //     : !userProfile?.is_nin_verified
-  //     ? 'Your Identity (NIN) is not verified. Please verify your NIN to continue creating or participating in contributions.'
-  //     : 'You are fully verified and ready to contribute!';
-
-  const accountSetupText =
-    'Open the Account screen to start verification. Verifying your BVN and Identity is essential to creating or participating in contributions.';
   return (
     <Tabs
       screenOptions={() => ({
@@ -144,32 +128,24 @@ export default function TabLayout() {
         options={{
           title: 'Account',
           tabBarIcon: ({ color, focused }) => (
-            <CopilotStep
-              text={accountSetupText}
-              order={0}
-              name="accountSetup"
-              active={pilot.account}
-              // active={true}
+            <View
+              style={{
+                borderTopWidth: focused ? 2 : 0,
+                width: '100%',
+                height: '100%',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                borderTopColor: focused
+                  ? Colors[colorScheme ?? 'light'].pri
+                  : 'transparent',
+              }}
             >
-              <CopilotView
-                style={{
-                  borderTopWidth: focused ? 2 : 0,
-                  width: '100%',
-                  height: '100%',
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  borderTopColor: focused
-                    ? Colors[colorScheme ?? 'light'].pri
-                    : 'transparent',
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="account-circle-outline"
-                  size={24}
-                  color={color}
-                />
-              </CopilotView>
-            </CopilotStep>
+              <MaterialCommunityIcons
+                name="account-circle-outline"
+                size={24}
+                color={color}
+              />
+            </View>
           ),
         }}
       />
