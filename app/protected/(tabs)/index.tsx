@@ -336,12 +336,9 @@ export default function HomeScreen() {
     }));
 
     if (!hasEnoughConnections) {
-      console.log('show again');
       setTimeout(() => {
         start();
       }, 1500);
-    } else {
-      console.log('no show');
     }
   }, [isLoading, userProfile, parsed]);
 

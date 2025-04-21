@@ -18,7 +18,6 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
 
     if (connect) {
       if (numConnect < 5) {
-        console.log('ys');
         setNetworkText(
           `Please connect with ${5 - numConnect} more friend${
             5 - numConnect > 1 ? 's' : ''
@@ -33,8 +32,6 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
       }
     }
   }, [connect]);
-
-  console.log('message', connect);
 
   return (
     <View
