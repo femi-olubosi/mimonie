@@ -18,8 +18,15 @@ import Button from '../../../components/Button';
 import { editContributionParticipant } from '../../../api/contributions.service';
 import { Colors } from '../../../constants/Colors';
 
-const Drag = ({ parsed, setParsed, imageUrls, contribution, onFinished }) => {
-  const [updatedParticipants, setUpdatedParticipants] = useState(parsed);
+const Drag = ({
+  participantList,
+  setParticipantList,
+  imageUrls,
+  contribution,
+  onFinished,
+}) => {
+  const [updatedParticipants, setUpdatedParticipants] =
+    useState(participantList);
   const [isLoading, setIsLoading] = useState(false);
 
   const renderItem = useCallback(
@@ -108,7 +115,7 @@ const Drag = ({ parsed, setParsed, imageUrls, contribution, onFinished }) => {
     setIsLoading(true);
     try {
       await editContributionParticipant(contribution.id, updatedParticipants);
-      setParsed(updatedParticipants);
+      setParticipantList(updatedParticipants);
       onFinished();
     } catch (err) {
       console.error('Error editing participants:', err);

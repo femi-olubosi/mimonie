@@ -1,5 +1,5 @@
 import { DataStore } from 'aws-amplify/datastore';
-import { Contribution } from '../src/models';
+import { Contribution, ContributionParticipant } from '../src/models';
 import { triggerNotificationForUser } from './pushNotification.service';
 import { createUserActivity } from './activities.service';
 import { createTransferRecipientForBank } from './payment.service';
@@ -30,32 +30,9 @@ export const createContribution = async (
   currentUser,
   userProfile
 ) => {
-  const recipient_code = userProfile.recipient_code
-    ? userProfile.recipient_code
-    : await createTransferRecipientForBank({
-      bank_code: userProfile.bank_details.bank_code,
-      account_number: userProfile.bank_details.account_number,
-      account_name: userProfile.name,
-    });
-
-  const userObj = {
-    name: userProfile.name || currentUser.preferred_username,
-    picture: currentUser.picture,
-    index: 1,
-    userId: currentUser.userId,
-    contributions: 0,
-    auth_url: userProfile.auth_url,
-    subaccount_code: userProfile.subaccount_code,
-    email: currentUser.email,
-    last_successful_round: 0,
-    push_token: userProfile.push_token,
-    recipient: recipient_code,
-    status: 'in progress',
-    type: 'owner',
-  };
-
-  const link = `https://mimonie.net/protected/mimonie?userId=${currentUser.userId
-    }&contributionName=${details.contributionName.split(' ').join('')}`;
+  const link = `https://mimonie.net/protected/mimonie?userId=${
+    currentUser.userId
+  }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -65,7 +42,7 @@ export const createContribution = async (
         category: details.groupName,
         invite_link: link,
         contributiongroupsID: details.groupId,
-        participant: [userObj],
+        participant: [],
         participant_ids: [currentUser.userId],
         owner: userProfile.name,
         target: details.target,
@@ -77,8 +54,11 @@ export const createContribution = async (
         type: 'group',
       })
     );
+
+    await addContributionParticipant(newContribution.id, userProfile, 0);
+
     setContributions((prev) => [...prev, newContribution]);
-    console.log(newContribution);
+
     return newContribution;
   } catch (error) {
     console.error('Error creating contribution group:', error);
@@ -92,23 +72,9 @@ export const createPersonalContribution = async (
   currentUser,
   userProfile
 ) => {
-  const userObj = {
-    name: userProfile.name || currentUser.preferred_username,
-    picture: currentUser.picture,
-    index: 1,
-    userId: currentUser.userId,
-    contributions: 0,
-    auth_url: userProfile.auth_url,
-    subaccount_code: userProfile.subaccount_code,
-    recipient_code: userProfile.recipient_code,
-    email: currentUser.email,
-    last_successful_round: 0,
-    push_token: userProfile.push_token,
-    status: 'active',
-  };
-
-  const link = `https://mimonie.net/protected/mimonie?userId=${currentUser.userId
-    }&contributionName=${details.contributionName.split(' ').join('')}`;
+  const link = `https://mimonie.net/protected/mimonie?userId=${
+    currentUser.userId
+  }&contributionName=${details.contributionName.split(' ').join('')}`;
 
   try {
     const newContribution = await DataStore.save(
@@ -118,7 +84,7 @@ export const createPersonalContribution = async (
         category: details.groupName,
         invite_link: link,
         contributiongroupsID: details.groupId,
-        participant: [userObj],
+        participant: [],
         participant_ids: [currentUser.userId],
         owner: userProfile.name,
         target: details.target,
@@ -131,6 +97,7 @@ export const createPersonalContribution = async (
         type: 'personal',
       })
     );
+    await addContributionParticipant(newContribution.id, userProfile, 0);
     setContributions((prev) => [...prev, newContribution]);
     return newContribution;
   } catch (error) {
@@ -250,24 +217,26 @@ export const editContributionParticipant = async (
   participants
 ) => {
   try {
-    // Fetch the existing contribution
-    const originalContribution = await DataStore.query(
-      Contribution,
-      contributionId
-    );
+    const updatedParticipants = [];
 
-    if (!originalContribution) {
-      throw new Error('Contribution not found');
+    for (const participant of participants) {
+      const original = await DataStore.query(ContributionParticipant, (c) =>
+        c.and((c) => [
+          c.contributionID.eq(contributionId),
+          c.userId.eq(participant.userId),
+        ])
+      );
+
+      const updated = await DataStore.save(
+        ContributionParticipant.copyOf(original[0], (updated) => {
+          updated.index = participant.index;
+        })
+      );
+
+      updatedParticipants.push(updated);
     }
 
-    // Update the contribution with the new participant
-    const updatedContribution = await DataStore.save(
-      Contribution.copyOf(originalContribution, (updated) => {
-        updated.participant = participants;
-      })
-    );
-
-    return updatedContribution;
+    return updatedParticipants;
   } catch (error) {
     console.error('Error joining contribution:', error);
     throw error;
@@ -336,10 +305,10 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   const updatedParticipants = participants.map((participant) =>
     participant.userId === userProfile.userId
       ? {
-        ...participant,
-        contributions: (participant.contributions || 0) + 1,
-        last_successful_round: originalContribution.current_count,
-      }
+          ...participant,
+          contributions: (participant.contributions || 0) + 1,
+          last_successful_round: originalContribution.current_count,
+        }
       : participant
   );
 
@@ -353,7 +322,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
     type: 'contribution',
     amount: contribution.amount,
     description: `Paid ${inProgressParticipant.name} for ${contribution.name}`,
-    extra: contribution.id
+    extra: contribution.id,
   });
 
   await triggerNotificationForUser(
@@ -366,7 +335,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
     type: 'collection',
     amount: contribution.amount,
     description: `Received payment from ${userProfile.name} for ${contribution.name}`,
-    extra: contribution.id
+    extra: contribution.id,
   });
 
   await DataStore.save(
@@ -386,7 +355,7 @@ export const updateContributionForUser = async (contribution, userProfile) => {
       type: 'collection',
       amount: contribution.amount * participants.length,
       description: `Final collection for ${contribution.name}`,
-      extra: contribution.id
+      extra: contribution.id,
     });
 
     updatedParticipants.forEach((participant) => {
@@ -421,7 +390,11 @@ export const updateContributionForUser = async (contribution, userProfile) => {
   }
 };
 
-export const updatePersonalContribution = async (contribution, userProfile, start_date) => {
+export const updatePersonalContribution = async (
+  contribution,
+  userProfile,
+  start_date
+) => {
   const originalContribution = await DataStore.query(
     Contribution,
     contribution.id
@@ -431,17 +404,22 @@ export const updatePersonalContribution = async (contribution, userProfile, star
     throw new Error('Contribution not found');
   }
 
-  const participants = JSON.parse(originalContribution.participant);
+  // const participants = JSON.parse(originalContribution.participant);
+  const participants = await DataStore.query(ContributionParticipant, (c) =>
+    c.and((c) => [
+      c.contributionID.eq(contribution.id),
+      c.userId.eq(userProfile.userId),
+    ])
+  );
   const participant = participants[0];
 
   if (participant.userId !== userProfile.userId) {
     throw new Error('User is not part of this contribution');
   }
 
-  participant.contributions = (participant.contributions || 0) + 1;
-  participant.last_successful_round = (participant.last_successful_round || 0) + 1;
-  participant.balance =
-    (participant.balance || 0) + originalContribution.amount;
+  const contributions = (participant.contributions || 0) + 1;
+  const last_successful_round = (participant.last_successful_round || 0) + 1;
+  const balance = (participant.balance || 0) + originalContribution.amount;
 
   await triggerNotificationForUser(
     userProfile?.push_token,
@@ -453,7 +431,7 @@ export const updatePersonalContribution = async (contribution, userProfile, star
     type: 'Personal savings',
     amount: contribution.amount,
     description: `You successfully saved to ${contribution.name}`,
-    extra: contribution.id
+    extra: contribution.id,
   });
 
   await DataStore.save(
@@ -462,7 +440,100 @@ export const updatePersonalContribution = async (contribution, userProfile, star
       updated.currently_at = (updated.currently_at ?? 0) + 1;
       updated.status = 'running';
       updated.current_count = (updated.current_count ?? 0) + 1;
-      updated.start_date = start_date
+      updated.start_date = start_date;
     })
   );
+
+  await DataStore.save(
+    ContributionParticipant.copyOf(participants[0], (updated) => {
+      updated.contributions = contributions;
+      updated.last_successful_round = last_successful_round;
+      updated.balance = balance;
+    })
+  );
+};
+
+export const addContributionParticipant = async (
+  contributionID,
+  newParticipant,
+  existingParticipant
+) => {
+  let recipient_code = null;
+
+  if (newParticipant.recipient_code) {
+    recipient_code = newParticipant.recipient_code;
+  } else {
+    recipient_code = await createTransferRecipientForBank({
+      bank_code: newParticipant.bank_details.bank_code,
+      account_number: newParticipant.bank_details.account_number,
+      account_name: newParticipant.name,
+    });
+  }
+
+  const index = (existingParticipant ?? 0) + 1;
+  const status = existingParticipant > 0 ? 'pending' : 'in progress';
+  const type = existingParticipant > 0 ? 'participant' : 'owner';
+
+  try {
+    const participantData = {
+      contributionID,
+      userId: newParticipant.userId,
+      name: newParticipant.name,
+      email: newParticipant.email,
+      status,
+      index,
+      subaccount_code: newParticipant.subaccount_code,
+      auth_url: newParticipant.auth_url,
+      last_successful_round: 0,
+      contributions: 0,
+      push_token: newParticipant.push_token,
+      recipient: recipient_code || null,
+      type,
+    };
+
+    const newParticipantData = await DataStore.save(
+      new ContributionParticipant(participantData)
+    );
+
+    const originalContribution = await DataStore.query(
+      Contribution,
+      contributionID
+    );
+
+    await DataStore.save(
+      Contribution.copyOf(originalContribution, (updated) => {
+        updated.participant_ids.push(newParticipant.userId);
+      })
+    );
+
+    return newParticipantData;
+  } catch (error) {
+    console.error('Error adding participant:', error);
+    throw error;
+  }
+};
+
+export const fetchParticipants = async (contributionId) => {
+  try {
+    const participants = await DataStore.query(ContributionParticipant, (c) =>
+      c.contributionID.eq(contributionId)
+    );
+
+    return participants || [];
+  } catch (error) {
+    console.error('Error fetching participants:', error);
+  }
+};
+
+export const fetchMeParticipants = async (contributionId, userId) => {
+  try {
+    const participants = await DataStore.query(ContributionParticipant, (c) =>
+      c.and((c) => [c.contributionID.eq(contributionId), c.userId.eq(userId)])
+    );
+
+    return participants || [];
+  } catch (error) {
+    console.error('Error fetching participants:', error);
+    return [];
+  }
 };

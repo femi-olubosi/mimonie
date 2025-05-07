@@ -498,6 +498,7 @@ type EagerContributionParticipant = {
   readonly recipient?: string | null;
   readonly extra?: string | null;
   readonly type?: string | null;
+  readonly balance?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -522,6 +523,7 @@ type LazyContributionParticipant = {
   readonly recipient?: string | null;
   readonly extra?: string | null;
   readonly type?: string | null;
+  readonly balance?: number | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

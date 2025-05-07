@@ -4,7 +4,7 @@ const {
   ScanCommand,
   PutCommand,
   GetCommand,
-  UpdateCommand
+  UpdateCommand,
 } = require('@aws-sdk/lib-dynamodb');
 
 const dynamoDB = new DynamoDBClient({ region: 'us-west-2' });
@@ -13,6 +13,8 @@ const ddbDocClient = DynamoDBDocumentClient.from(dynamoDB);
 const contributionTableName = 'Contribution-d4itlx42uzhtrctybtkmaxruya-dev';
 const userActivityTableName = 'UserActivity-d4itlx42uzhtrctybtkmaxruya-dev';
 const withdrawalRequestTableName = 'withdrawalRequests-dev';
+const contributionParticipantTableName =
+  'ContributionParticipant-d4itlx42uzhtrctybtkmaxruya-dev';
 
 const models = {
   // Function to save user activity
@@ -45,7 +47,8 @@ const models = {
     };
 
     try {
-      return await ddbDocClient.send(new GetCommand(params));
+      const result = await ddbDocClient.send(new GetCommand(params));
+      return result.Item;
     } catch (err) {
       console.error('Error getting contribution:', err);
       throw new Error('Could not get contribution');
@@ -67,12 +70,12 @@ const models = {
     }
   },
 
-  async updateRequestStatus(requestId, status, processing_status) {
+  async updateRequestStatus(requestId, created_at, status, processing_status) {
     const updatedAt = new Date().toISOString();
 
     const params = {
       TableName: withdrawalRequestTableName,
-      Key: { id: requestId },
+      Key: { id: requestId, created_at },
       UpdateExpression:
         'SET #status = :status, processing_status = :processing_status, updated_at = :updatedAt',
       ExpressionAttributeNames: {
@@ -92,6 +95,38 @@ const models = {
     } catch (err) {
       console.error('Error updating request:', err);
       throw err;
+    }
+  },
+
+  async getContributionParticipants(contributionId) {
+    const params = {
+      TableName: contributionParticipantTableName,
+      FilterExpression: 'contributionID = :contributionId',
+      ExpressionAttributeValues: {
+        ':contributionId': contributionId,
+      },
+    };
+
+    try {
+      const data = await ddbDocClient.send(new ScanCommand(params));
+      return data.Items || [];
+    } catch (err) {
+      console.error('Error fetching contribution participants:', err);
+      throw new Error('Could not fetch contribution participants');
+    }
+  },
+
+  async updateParticipant(participant) {
+    const params = {
+      TableName: contributionParticipantTableName,
+      Item: participant,
+    };
+
+    try {
+      return await ddbDocClient.send(new PutCommand(params));
+    } catch (err) {
+      console.error('Error updating participant:', err);
+      throw new Error('Could not update participant');
     }
   },
 };

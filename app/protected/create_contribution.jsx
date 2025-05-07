@@ -281,7 +281,7 @@ const CreateContribution = () => {
           'You can only create group contribution when you have up to 4 connections.',
           [
             {
-              text: 'Go to My Network',
+              text: 'Go to My Trust Circle',
               onPress: () => router.push('/protected/my_network'),
             },
             { text: 'OK', onPress: () => console.log('OK Pressed') },

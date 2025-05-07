@@ -3,15 +3,15 @@ import React from 'react';
 import { naira } from '@/constants/Currency';
 import { Colors } from '../../../constants/Colors';
 
-const Balance = ({ parsed, amount, contribution }) => {
+const Balance = ({ participantList, amount, contribution }) => {
   // const canGetAllFunds = contribution.cu;
   // const withdrawable = new Intl.NumberFormat('en-US').format(
-  //   parsed?.[0]?.balance - amount
+  //   participantList?.[0]?.balance - amount
   // );
 
   return (
     <>
-      {parsed?.[0]?.balance || parsed?.[0]?.balance === 0 ? (
+      {participantList?.[0]?.balance || participantList?.[0]?.balance === 0 ? (
         <View
           style={{
             height: 100,
@@ -35,7 +35,9 @@ const Balance = ({ parsed, amount, contribution }) => {
               }}
             >
               {naira}{' '}
-              {new Intl.NumberFormat('en-US').format(parsed?.[0]?.balance)}
+              {new Intl.NumberFormat('en-US').format(
+                participantList?.[0]?.balance
+              )}
             </Text>
           </View>
           {/* <View>

@@ -26,7 +26,11 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { getContacts } from '@/api/contact.service';
-import { fetchUserContributions } from '@/api/contributions.service';
+import {
+  addContributionParticipant,
+  fetchUserContributions,
+  updatePersonalContribution,
+} from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import { DataStore } from 'aws-amplify/datastore';
 import {
@@ -323,24 +327,38 @@ export default function HomeScreen() {
     }
   };
 
-  const { start } = useCopilot();
+  // const { start } = useCopilot();
 
-  useEffect(() => {
-    if (isLoading) return;
+  // useEffect(() => {
+  //   if (isLoading) return;
 
-    const hasEnoughConnections = parsed.length > 4;
+  //   const hasEnoughConnections = parsed.length > 4;
 
-    setPilot((prev: any) => ({
-      ...prev,
-      network: !hasEnoughConnections,
-    }));
+  //   setPilot((prev: any) => ({
+  //     ...prev,
+  //     network: !hasEnoughConnections,
+  //   }));
 
-    if (!hasEnoughConnections) {
-      setTimeout(() => {
-        start();
-      }, 1500);
-    }
-  }, [isLoading, userProfile, parsed]);
+  //   if (!hasEnoughConnections) {
+  //     setTimeout(() => {
+  //       start();
+  //     }, 1500);
+  //   }
+  // }, [isLoading, userProfile, parsed]);
+
+  // const addAll = async () => {
+  //   setIsLoading(true);
+  //   try {
+  //     await updatePersonalContribution(
+  //       { id: 'c4398c5a-ff81-4021-9f31-3be6d1aea7a4', name: 'Test' },
+  //       userProfile
+  //     );
+  //   } catch (error) {
+  //     console.log('error', error);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -374,7 +392,7 @@ export default function HomeScreen() {
             pilot={pilot}
           />
           <Advert />
-          {/* <Button title="SmileId" onPress={trigger} /> */}
+          {/* <Button title="SmileId" onPress={addAll} /> */}
           <View
             style={{
               paddingHorizontal: 20,

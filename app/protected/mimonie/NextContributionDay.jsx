@@ -2,8 +2,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { getNextDate } from '@/utils/savings_contribution_helper';
 import { endStatus } from '@/data/contributionStatuses';
 
-const NextContributionDay = ({ contribution, parsed, userProfile }) => {
-  const currentParticipant = parsed?.find(
+const NextContributionDay = ({
+  contribution,
+  participantList,
+  userProfile,
+}) => {
+  const currentParticipant = participantList?.find(
     (participant) => participant?.user_id === userProfile?.user_id
   );
 

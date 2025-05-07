@@ -16,27 +16,20 @@ import {
   removeUserConnection,
   updateUserConnection,
 } from '@/api/network.service';
-import { fetchUserProfile } from '@/api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
-import { triggerNotificationForUser } from '@/api/pushNotification.service';
 import { router } from 'expo-router';
 import { UserConnections } from '../../src/models';
 import { DataStore } from 'aws-amplify/datastore';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
-  const {
-    currentUser,
-    setUserProfile,
-    userProfile,
-    setIsLoading,
-    parsed,
-    setParsed,
-  } = useGlobalContext();
+  const { userProfile, setIsLoading } = useGlobalContext();
   const [myConnections, setConnectionList] = useState([]);
   const [pendingConnections, setPendingConnectionList] = useState([]);
+  const [isLoadingConnections, setIsLoadingConnections] = useState(false);
 
-  const syncConnections = async () => {
+  const listConnections = async () => {
+    setIsLoadingConnections(true);
     try {
       const response = await fetchUserConnections(userProfile.userId);
       setConnectionList(
@@ -47,30 +40,15 @@ const connect = () => {
       );
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoadingConnections(false);
     }
   };
 
   useEffect(() => {
-    const listConnections = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetchUserConnections(userProfile.userId);
-        setConnectionList(
-          response.filter((connection) => connection.status === 'accepted')
-        );
-        setPendingConnectionList(
-          response.filter((connection) => connection.status === 'pending')
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     listConnections();
-
     const subscription = DataStore.observe(UserConnections).subscribe(() => {
-      syncConnections();
+      listConnections();
     });
 
     return () => subscription.unsubscribe();
@@ -188,10 +166,11 @@ const connect = () => {
   };
 
   return (
-    <PageView title={'My Network'}>
+    <PageView title={'My Trusted Circle'}>
       <View style={{ padding: 20, flex: 1 }}>
         <Text style={{ fontSize: 13, marginBottom: 12, color: 'gray' }}>
-          Only people in your network can be invited to join your contributions.
+          Only people in your trusted circle can be invited to join your
+          contributions.
         </Text>
         <Pressable
           style={{
@@ -210,90 +189,115 @@ const connect = () => {
             Invite Friends
           </Text>
         </Pressable>
-        <View style={styles.headerContainer}>
-          <TouchableOpacity
-            onPress={() => setActiveTab(1)}
-            style={{
-              borderRadius: 4,
-              paddingVertical: 4,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderBottomWidth: activeTab === 1 ? 1 : 0,
-              borderBottomColor: activeTab === 1 ? Colors.pri : 'gray',
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: activeTab === 1 ? Colors.pri : 'gray',
-                paddingRight: 10,
-                fontFamily: activeTab === 1 ? 'ib' : 'ir',
-              }}
-            >
-              Connections
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setActiveTab(2)}
-            style={{
-              borderRadius: 4,
-              paddingVertical: 4,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderBottomWidth: activeTab === 2 ? 1 : 0,
-              borderBottomColor: activeTab === 2 ? Colors.pri : 'gray',
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 14,
-                color: activeTab === 2 ? Colors.pri : 'gray',
-                paddingRight: 10,
-                fontFamily: activeTab === 2 ? 'ib' : 'ir',
-              }}
-            >
-              Pending Requests
-            </Text>
-            <View
-              style={{
-                borderRadius: 100,
-                width: 15,
-                height: 15,
-                backgroundColor: 'red',
-                position: 'absolute',
-                top: -5,
-                right: 0,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
-                {pendingConnections?.length || 0}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
 
-        {myConnections.length < 1 && activeTab === 1 && (
-          <View style={styles.noConnectionsContainer}>
-            <Text style={styles.noConnectionsText}>
-              You do not have any connection, please click the button below to
-              invite or connect with friends.
-            </Text>
-            <Text style={styles.noConnectionsText}>
-              Note, that to create a group contribution, you must have at least
-              4 connections, as only people in your network can be invited to
-              join your contributions.
+        {isLoadingConnections ? (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <FontAwesome6
+              name="spinner"
+              size={24}
+              color={Colors.pri}
+              style={{ marginBottom: 10 }}
+            />
+            <Text style={{ fontSize: 14, color: Colors.pri }}>
+              Loading connections...
             </Text>
           </View>
-        )}
+        ) : (
+          <>
+            <View style={styles.headerContainer}>
+              <TouchableOpacity
+                onPress={() => setActiveTab(1)}
+                style={{
+                  borderRadius: 4,
+                  paddingVertical: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderBottomWidth: activeTab === 1 ? 1 : 0,
+                  borderBottomColor: activeTab === 1 ? Colors.pri : 'gray',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: activeTab === 1 ? Colors.pri : 'gray',
+                    paddingRight: 10,
+                    fontFamily: activeTab === 1 ? 'ib' : 'ir',
+                  }}
+                >
+                  Connections
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setActiveTab(2)}
+                style={{
+                  borderRadius: 4,
+                  paddingVertical: 4,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderBottomWidth: activeTab === 2 ? 1 : 0,
+                  borderBottomColor: activeTab === 2 ? Colors.pri : 'gray',
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: activeTab === 2 ? Colors.pri : 'gray',
+                    paddingRight: 10,
+                    fontFamily: activeTab === 2 ? 'ib' : 'ir',
+                  }}
+                >
+                  Pending Requests
+                </Text>
+                <View
+                  style={{
+                    borderRadius: 100,
+                    width: 15,
+                    height: 15,
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    top: -5,
+                    right: 0,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}
+                  >
+                    {pendingConnections?.length || 0}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
 
-        <FlatList
-          data={activeTab === 1 ? myConnections : pendingConnections}
-          renderItem={renderConnectionItem}
-          keyExtractor={(item, idx) => idx.toString()}
-          showsVerticalScrollIndicator={false}
-        />
+            {myConnections.length < 1 && activeTab === 1 && (
+              <View style={styles.noConnectionsContainer}>
+                <Text style={styles.noConnectionsText}>
+                  You do not have any connection, please click the button below
+                  to invite or connect with friends.
+                </Text>
+                <Text style={styles.noConnectionsText}>
+                  Note, that to create a group contribution, you must have at
+                  least 4 connections, as only people in your trusted circle can
+                  be invited to join your contributions.
+                </Text>
+              </View>
+            )}
+
+            <FlatList
+              data={activeTab === 1 ? myConnections : pendingConnections}
+              renderItem={renderConnectionItem}
+              keyExtractor={(item, idx) => idx.toString()}
+              showsVerticalScrollIndicator={false}
+            />
+          </>
+        )}
       </View>
     </PageView>
   );

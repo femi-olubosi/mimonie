@@ -30,6 +30,7 @@ import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
 import { ThemeColors } from '../../../constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DataStore } from 'aws-amplify/datastore';
 
 const Account = () => {
   const { signOut } = useAuthenticator();

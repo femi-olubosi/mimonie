@@ -40,7 +40,7 @@ const AccountSetup = () => {
 
       <Text style={styles.sectionTitle}>Step 6: Join Network of Friends</Text>
       <Text style={styles.text}>
-        Invite people to your network or accept connection request. It is
+        Invite people to your trust circle or accept connection request. It is
         recommended that you have a minimum of 4 connections before you can
         create a contribution
       </Text>

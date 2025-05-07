@@ -12,11 +12,7 @@ import { useRouter } from 'expo-router';
 import { useGlobalContext } from '@/store/StoreContext';
 import { PageView } from '@/components/Reusable';
 import { Colors } from '@/constants/Colors';
-import * as Linking from 'expo-linking';
-import {
-  fetchUserContributions,
-  findContributionByInviteLink,
-} from '@/api/contributions.service';
+import { findContributionByInviteLink } from '@/api/contributions.service';
 import { naira } from '@/constants/Currency';
 import { statusCheck } from '@/utils/statusCheck';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
@@ -166,7 +162,7 @@ const Mimonie = () => {
             )
           }
           renderItem={renderContribution}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />

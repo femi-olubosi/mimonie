@@ -25,7 +25,11 @@ import { safeParseJSON } from '@/utils/safeJSON';
 import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
 import { processFirstSavings } from '../../../api/payment.service';
-import { updateContribution } from '../../../api/contributions.service';
+import {
+  addContributionParticipant,
+  fetchParticipants,
+  updateContribution,
+} from '../../../api/contributions.service';
 import ModalWrapper from '../../../components/modals/ModalWrapper';
 import Drag from './Drag';
 import NextContributionDay from './NextContributionDay';
@@ -58,11 +62,10 @@ const ContributionDetails = () => {
   const { id } = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
   const [contribution, setContribution] = useState({});
-  const [parsed, setParsed] = useState([]);
+  const [participantList, setParticipantList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [imageUrls, setImageUrls] = useState({});
   const [refreshing, setRefreshing] = useState(false);
-  const [ownerProfile, setOwnerProfile] = useState({});
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [openParticipantEditModal, setOpenParticipantEditModal] =
     useState(false);
@@ -72,22 +75,22 @@ const ContributionDetails = () => {
   const [stopSavingsModal, setStopSavingsModal] = useState(false);
   const [isExisting, setIsExisting] = useState(false);
   const [checkingExisting, setCheckingExisting] = useState(false);
+  const [loadingParticipants, setLoadingParticipants] = useState(false);
 
   useEffect(() => {
     const fetchContribution = async () => {
       try {
-        setLoading(true); // Start loading
+        setLoading(true);
 
         const contribution = await findContributionByID(id, setContribution);
         if (contribution) {
-          setContribution(contribution); // Update state with the fetched contribution
-        } else {
-          console.error('Contribution not found.');
+          setContribution(contribution);
         }
       } catch (error) {
+        router.back();
         console.error('Error fetching contribution:', error);
       } finally {
-        setLoading(false); // End loading
+        setLoading(false);
       }
     };
 
@@ -97,17 +100,31 @@ const ContributionDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    if (contribution) {
-      const parsedData = safeParseJSON(contribution?.participant, []);
-      setParsed(parsedData);
-    }
-  }, [contribution]);
+    const fetchParticipant = async () => {
+      try {
+        setLoadingParticipants(true);
 
-  useEffect(() => {
-    fetchUserProfile(setOwnerProfile, {
-      userId: contribution?.participant_ids?.[0],
-    });
-  }, [contribution]);
+        const participants = await fetchParticipants(id);
+        if (participants) {
+          setParticipantList(participants);
+        }
+      } catch (error) {
+        console.error('Error fetching contribution:', error);
+      } finally {
+        setLoadingParticipants(false);
+      }
+    };
+    if (id) {
+      fetchParticipant();
+    }
+  }, [id]);
+
+  // useEffect(() => {
+  //   if (contribution) {
+  //     const parsedData = safeParseJSON(contribution?.participant, []);
+  //     setParsed(parsedData);
+  //   }
+  // }, [contribution]);
 
   useEffect(() => {
     const checkExistingRequest = async () => {
@@ -173,6 +190,8 @@ const ContributionDetails = () => {
       return;
     }
 
+    const ownerProfile = participantList.find((e) => e.type === 'owner');
+
     if (
       connected.find(
         (e) =>
@@ -185,7 +204,9 @@ const ContributionDetails = () => {
     }
 
     if (
-      parsed.some((participant) => participant.userId === currentUser.userId)
+      participantList.some(
+        (participant) => participant.userId === currentUser.userId
+      )
     ) {
       Alert.alert('Error', 'You are already a member of this contribution');
       return;
@@ -193,12 +214,20 @@ const ContributionDetails = () => {
 
     try {
       setIsLoading(true);
-      await joinContribution(
+      // await joinContribution(
+      //   contribution.id,
+      //   currentUser,
+      //   userProfile,
+      //   setContributions
+      // );
+      await addContributionParticipant(
         contribution.id,
-        currentUser,
         userProfile,
-        setContributions
+        participantList?.length
       );
+
+      const participants = await fetchParticipants(id);
+      setParticipantList(participants);
       setInviteArray((prev) => prev.filter((e) => e.id !== contribution.id));
       await updateInvite(userProfile.userId, contribution.id);
       setIsLoading(false);
@@ -245,7 +274,7 @@ const ContributionDetails = () => {
   const handleStartSavingContribution = async () => {
     setProcessingCharge(true);
 
-    const participant = parsed.find(
+    const participant = participantList.find(
       (participant) => participant.userId === currentUser.userId
     );
     const date = new Date();
@@ -324,7 +353,7 @@ const ContributionDetails = () => {
       params: {
         contribution: JSON.stringify(contribution),
         isEarly: isEarlyWithdrawal,
-        participant: JSON.stringify(parsed[0]),
+        participant: JSON.stringify(participantList[0]),
       },
     });
   };
@@ -362,7 +391,7 @@ const ContributionDetails = () => {
               setVisible={setVisible}
               setWithdrawModal={setWithdrawModal}
               contribution={contribution}
-              parsed={parsed}
+              participantList={participantList}
               userProfile={userProfile}
               isLoading={isLoading}
               setStopSavingsModal={setStopSavingsModal}
@@ -370,7 +399,10 @@ const ContributionDetails = () => {
               isExisting={isExisting}
             />
 
-            <Balance parsed={parsed} amount={contribution?.amount} />
+            <Balance
+              participantList={participantList}
+              amount={contribution?.amount}
+            />
 
             <ScrollView
               showsVerticalScrollIndicator={false}
@@ -419,12 +451,13 @@ const ContributionDetails = () => {
               </View>
               {contribution?.type === 'group' && (
                 <ParticipantList
-                  parsed={parsed}
+                  participantList={participantList}
                   contribution={contribution}
                   setOpenParticipantEditModal={setOpenParticipantEditModal}
                   imageUrls={imageUrls}
                   setImageUrls={setImageUrls}
                   userProfile={userProfile}
+                  loadingParticipants={loadingParticipants}
                 />
               )}
               <View style={styles.detailContainer}>
@@ -455,16 +488,16 @@ const ContributionDetails = () => {
                   <View style={styles.detailContainer}>
                     <Text style={styles.label}>Number of Contributors</Text>
                     <Text style={styles.value}>
-                      {parsed.length === contribution.num_of_month
-                        ? `${parsed.length} (Completed)`
-                        : `${parsed.length} contributor(s) joined out of ${contribution.num_of_month} expected contributors`}
+                      {participantList.length === contribution.num_of_month
+                        ? `${participantList.length} (Completed)`
+                        : `${participantList.length} contributor(s) joined out of ${contribution.num_of_month} expected contributors`}
                     </Text>
                   </View>
                 </>
               )}
               <NextContributionDay
                 contribution={contribution}
-                parsed={parsed}
+                participantList={participantList}
                 userProfile={userProfile}
               />
               {contribution?.type === 'group' && (
@@ -490,8 +523,8 @@ const ContributionDetails = () => {
         onClose={() => setOpenParticipantEditModal(false)}
       >
         <Drag
-          parsed={parsed}
-          setParsed={setParsed}
+          participantList={participantList}
+          setParticipantList={setParticipantList}
           imageUrls={imageUrls}
           contribution={contribution}
           onFinished={() => setOpenParticipantEditModal(false)}
@@ -521,7 +554,7 @@ const ContributionDetails = () => {
         onClose={() => setWithdrawModal(false)}
         onConfirm={handleWithdrawFund}
         isEarlyWithdrawal={isEarlyWithdrawal}
-        balance={parsed[0]?.balance}
+        balance={participantList[0]?.balance}
       />
     </PageView>
   );

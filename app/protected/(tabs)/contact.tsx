@@ -153,7 +153,10 @@ const Contact = () => {
   };
 
   const handleRemoveRequest = async () => {
-    Alert.alert('Notice', 'Please go to network page to remove the request');
+    Alert.alert(
+      'Notice',
+      'Please go to trust circle page to remove the request'
+    );
     return;
   };
 

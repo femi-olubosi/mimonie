@@ -3,6 +3,7 @@ const {
   saveUserActivity,
   updateContribution,
   updateRequestStatus,
+  updateParticipant,
 } = require('../models/models.js');
 const { transferToBank } = require('./paystack.js');
 const { v4: uuidv4 } = require('uuid');
@@ -20,7 +21,7 @@ const singleWithdraw = {
   ) {
     // Check if the participant exists
 
-    const participant = participants[0]?.find((p) => p?.userId === userId);
+    const participant = participants?.find((p) => p?.userId === userId);
 
     if (!participant) {
       throw new Error('User is not part of this contribution');
@@ -40,7 +41,19 @@ const singleWithdraw = {
     }
 
     if (withdrawalAmount > participantBalance) {
-      throw new Error('Insufficient balance');
+      contribution.status = 'closed';
+      await updateContribution(contribution);
+      await updateRequestStatus(
+        requestId,
+        created_at,
+        'completed',
+        'processed'
+      );
+      // throw new Error('Insufficient balance');
+      return {
+        success: false,
+        message: 'Insufficient balance',
+      };
     }
 
     // Execute bank transfer
@@ -51,7 +64,7 @@ const singleWithdraw = {
     );
 
     if (transferResponse?.data?.status !== 'pending') {
-      await updateRequestStatus(requestId, 'error', 'processed');
+      await updateRequestStatus(requestId, created_at, 'error', 'processed');
       await saveUserActivity({
         id: uuidv4(),
         userId: participant.userId,
@@ -80,7 +93,7 @@ const singleWithdraw = {
     }
 
     if (participant.balance === 0) {
-      contribution.status = 'closed'
+      contribution.status = 'closed';
     }
 
     await saveUserActivity({
@@ -119,8 +132,9 @@ const singleWithdraw = {
     }
 
     // Use versioning to prevent concurrent overwrites
-    contribution.participant = participants;
+    // contribution.participant = participants;
 
+    await updateParticipant(participant);
     await updateContribution(contribution);
     await updateRequestStatus(requestId, created_at, 'completed', 'processed');
   },

@@ -24,6 +24,7 @@ import { fetchUserNotification } from '../../api/notifications.service';
 import { sendOtp } from '../../api/token.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Checkbox from 'expo-checkbox';
+import { DataStore } from 'aws-amplify/datastore';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -50,6 +51,7 @@ const LoginForm = (props) => {
     }
     setIsLoading(true);
     try {
+      await DataStore.start();
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,

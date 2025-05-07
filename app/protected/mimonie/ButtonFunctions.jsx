@@ -25,7 +25,7 @@ const Button = ({ title, onPress, disabled, styleOverride }) => {
 
 const ButtonFunctions = ({
   contribution,
-  parsed,
+  participantList,
   userProfile,
   handleStartContribution,
   setVisible,
@@ -36,7 +36,7 @@ const ButtonFunctions = ({
   checkingExisting,
   isExisting,
 }) => {
-  const isParticipant = parsed?.some(
+  const isParticipant = participantList?.some(
     (participant) => participant.userId === userProfile.userId
   );
 
@@ -53,7 +53,7 @@ const ButtonFunctions = ({
   );
 
   const shouldShowStartButton =
-    ((parsed?.length === contribution?.num_of_month && isOwner) ||
+    ((participantList?.length === contribution?.num_of_month && isOwner) ||
       isPersonal) &&
     invisible;
 
