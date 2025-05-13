@@ -411,7 +411,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   infoContainer: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     backgroundColor: 'white',
     borderRadius: 8,
     borderWidth: 1,
@@ -426,6 +427,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     flex: 1,
+    height: 40,
   },
   buttonContainer: {
     paddingVertical: 10,

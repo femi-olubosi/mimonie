@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
@@ -35,6 +36,7 @@ const EmailConfirmation = () => {
         username: emailVeri,
         confirmationCode: code,
       });
+
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
         if (signInOutput) {
@@ -105,7 +107,7 @@ const EmailConfirmation = () => {
               columnGap: 40,
             }}
           >
-            <View
+            <TouchableOpacity
               style={{
                 height: 48,
                 flex: 1,
@@ -114,11 +116,12 @@ const EmailConfirmation = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
+              onPress={() => router.push('/protected')}
             >
-              <Link href={'/protected'}>
-                <Text style={styles.buttonText}>Later</Text>
-              </Link>
-            </View>
+              {/* <Link href={'/protected'}> */}
+              <Text style={styles.buttonText}>Later</Text>
+              {/* </Link> */}
+            </TouchableOpacity>
             <Pressable
               style={{
                 height: 48,
