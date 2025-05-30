@@ -1,7 +1,6 @@
 import { useFonts } from 'expo-font';
 import { Slot, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import SplashScreen from '../components/SplashScreen';
 import { Amplify } from 'aws-amplify';
 import amplifyconfig from '../src/amplifyconfiguration.json';
 import Loader from '@/components/Loader';
@@ -20,6 +19,9 @@ import SignUp from '@/components/auth/SignUpForm';
 import UserInactivityProvider from '@/components/UserInactivityProvider';
 import { formFields } from '@/data/authFormField';
 import { onFetchUpdateAsync } from '@/utils/helper';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -34,19 +36,9 @@ function RootLayout() {
     isb: require('../assets/fonts/Inter/static/Inter-SemiBold.ttf'),
   });
 
-  const [isSplashVisible, setIsSplashVisible] = useState(true);
-  const [onboard, setOnboard] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-
   useEffect(() => {
     const prepare = async () => {
       try {
-        // const isFirstLaunch = (await AsyncStorage.getItem('hasLaunched')) || null;
-        // if (isFirstLaunch === null) {
-        //   setOnboard(true);
-        //   await AsyncStorage.setItem('hasLaunched', 'true');
-        // }
-
         if (!__DEV__) {
           await onFetchUpdateAsync();
         }
@@ -58,24 +50,17 @@ function RootLayout() {
           // Handle tracking not granted
         }
         await mobileAds().initialize();
+
+        if (fontsLoaded) {
+          SplashScreen.hideAsync();
+        }
       } catch (error) {
         console.warn(error);
-      } finally {
-        setIsReady(true);
-        setIsSplashVisible(false);
       }
     };
 
     prepare();
-  }, []);
-
-  // if (!fontsLoaded || !isReady) {
-  //   return <SplashScreen />;
-  // }
-
-  // if (onboard) {
-  //   return <Onboarding setOnboard={setOnboard} />;
-  // }
+  }, [fontsLoaded]);
 
   return (
     <>

@@ -7,13 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mimonie",
     "userInterfaceStyle": "automatic",
-    "developmentClient": {
-      "silentLaunch": true
-    },
-    "splash": {
-      "image": "./assets/images/splash-bg.png",
-      "backgroundColor": "#006EBD"
-    },
     "ios": {
       "buildNumber": "24",
       "supportsTablet": true,
@@ -56,6 +49,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#006EBD"
+        }
+      ],
       [
         "expo-updates",
         {
