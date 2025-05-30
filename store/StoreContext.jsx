@@ -31,6 +31,7 @@ const StoreProvider = ({ children }) => {
     network: true,
   });
   const [kycForm, setKycForm] = useState({});
+  const [pushRoute, setPushRoute] = useState('/protected');
 
   // DataStore.start();
 
@@ -86,6 +87,8 @@ const StoreProvider = ({ children }) => {
     setPilot,
     kycForm,
     setKycForm,
+    pushRoute,
+    setPushRoute,
   };
 
   return (

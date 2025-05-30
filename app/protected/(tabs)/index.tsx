@@ -45,6 +45,7 @@ import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
 import {
   createUserActivity,
+  fetchHomeUserActivities,
   fetchUserActivities,
 } from '@/api/activities.service';
 import { Contribution, UserConnections } from '@/src/models';
@@ -60,7 +61,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchUserConnections } from '@/api/network.service';
 import UserVerificationModal from '@/components/modals/UserVerificationModal';
 import * as Notifications from 'expo-notifications';
-import { useCopilot } from 'react-native-copilot';
+import Blog from '@/components/home/Blog';
 
 export default function HomeScreen() {
   const {
@@ -161,9 +162,9 @@ export default function HomeScreen() {
     fetchUserNotification(currentUser?.userId, setNotifications);
   }, [currentUser]);
 
-  useEffect(() => {
-    fetchUserActivities(userProfile?.userId, setUserActivities);
-  }, [userProfile?.name]);
+  // useEffect(() => {
+  //   fetchUserActivities(userProfile?.userId, setUserActivities);
+  // }, [userProfile?.name]);
 
   useEffect(() => {
     (async () => {
@@ -302,6 +303,14 @@ export default function HomeScreen() {
           router.push('/protected/notifications');
         } else if (data?.type === 'contribution') {
           router.push('/protected/my_invites');
+        } else if (data?.type === 'kyc') {
+          router.push('/protected/smile_id');
+        } else if (data?.type === 'card') {
+          router.push('/protected/cards');
+        } else if (data?.type === 'bvn') {
+          router.push('/protected/bvn');
+        } else if (data?.type === 'blog') {
+          router.push('/protected/blog');
         } else {
           router.push('/');
         }
@@ -311,6 +320,16 @@ export default function HomeScreen() {
     return () =>
       Notifications.removeNotificationSubscription(responseListener.current);
   }, []);
+
+  // const fetchHomeActivity = async (userId: any) => {
+  //   const res = await fetchHomeUserActivities(userId);
+  //   console.log({ res });
+  // };
+  // useEffect(() => {
+  //   if (userProfile?.userId) {
+  //     fetchHomeActivity(userProfile.userId);
+  //   }
+  // }, [userProfile?.userId]);
 
   const triggerAppUpdate = async () => {
     try {
@@ -446,7 +465,7 @@ export default function HomeScreen() {
                   style={{
                     rowGap: 6,
                     width: '100%',
-                    minHeight: 400,
+                    minHeight: 100,
                     justifyContent: 'center',
                     alignItems: 'center',
                   }}
@@ -454,7 +473,7 @@ export default function HomeScreen() {
                   <Text>You do not have any activity yet</Text>
                 </View>
               ) : (
-                userActivities?.slice(0, 10)?.map((item: any, index: any) => {
+                userActivities?.slice(0, 2)?.map((item: any, index: any) => {
                   return (
                     <View
                       key={index}
@@ -552,6 +571,9 @@ export default function HomeScreen() {
                 })
               )}
             </View>
+          </View>
+          <View>
+            <Blog />
           </View>
         </ScrollView>
 

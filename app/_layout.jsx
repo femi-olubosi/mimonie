@@ -1,5 +1,5 @@
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Slot, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import SplashScreen from '../components/SplashScreen';
 import { Amplify } from 'aws-amplify';
@@ -11,9 +11,15 @@ import '@azure/core-asynciterator-polyfill';
 import Onboarding from './builder/Onboarding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 Amplify.configure(amplifyconfig);
-import * as Updates from 'expo-updates';
-import { CopilotProvider } from 'react-native-copilot';
 import mobileAds from 'react-native-google-mobile-ads';
+import { StatusBar } from 'expo-status-bar';
+import { View } from 'react-native';
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
+import LoginForm from '@/components/auth/LoginForm';
+import SignUp from '@/components/auth/SignUpForm';
+import UserInactivityProvider from '@/components/UserInactivityProvider';
+import { formFields } from '@/data/authFormField';
+import { onFetchUpdateAsync } from '@/utils/helper';
 
 function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -30,84 +36,54 @@ function RootLayout() {
 
   const [isSplashVisible, setIsSplashVisible] = useState(true);
   const [onboard, setOnboard] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const prepare = async () => {
       try {
-        await fetchAuthSession();
+        // const isFirstLaunch = (await AsyncStorage.getItem('hasLaunched')) || null;
+        // if (isFirstLaunch === null) {
+        //   setOnboard(true);
+        //   await AsyncStorage.setItem('hasLaunched', 'true');
+        // }
+
+        if (!__DEV__) {
+          await onFetchUpdateAsync();
+        }
+
+        // Initialize ads
+        const { status: trackingStatus } =
+          await requestTrackingPermissionsAsync();
+        if (trackingStatus !== 'granted') {
+          // Handle tracking not granted
+        }
+        await mobileAds().initialize();
       } catch (error) {
-        console.log(error);
+        console.warn(error);
       } finally {
+        setIsReady(true);
         setIsSplashVisible(false);
       }
     };
 
-    checkAuthStatus();
+    prepare();
   }, []);
 
-  async function onFetchUpdateAsync() {
-    try {
-      const update = await Updates.checkForUpdateAsync();
-      if (update.isAvailable) {
-        await Updates.fetchUpdateAsync();
-        await Updates.reloadAsync();
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  // if (!fontsLoaded || !isReady) {
+  //   return <SplashScreen />;
+  // }
 
-  useEffect(() => {
-    if (!__DEV__) {
-      onFetchUpdateAsync();
-    }
-  }, []);
-
-  useEffect(() => {
-    const checkFirstTimeUser = async () => {
-      const isFirstLaunch = (await AsyncStorage.getItem('hasLaunched')) || null;
-      if (isFirstLaunch === null) {
-        setOnboard(true);
-        await AsyncStorage.setItem('hasLaunched', 'true');
-      }
-    };
-    checkFirstTimeUser();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      // Google AdMob will show any messages here that you just set up on the AdMob Privacy & Messaging page
-      const { status: trackingStatus } =
-        await requestTrackingPermissionsAsync();
-      if (trackingStatus !== 'granted') {
-        // Do something here such as turn off Sentry tracking, store in context/redux to allow for personalized ads, etc.
-      }
-
-      // Initialize the ads
-      await mobileAds().initialize();
-    })();
-  }, []);
-
-  const style = {
-    borderRadius: 10,
-    padding: 5,
-    color: 'red',
-  };
+  // if (onboard) {
+  //   return <Onboarding setOnboard={setOnboard} />;
+  // }
 
   return (
     <>
-      {isSplashVisible ? (
-        <SplashScreen />
-      ) : (
-        // : onboard ? (
-        //   <Onboarding setOnboard={setOnboard} />
-        // )
-        <StoreProvider>
-          <CopilotProvider tooltipStyle={style}>
-            <RootContent />
-          </CopilotProvider>
-        </StoreProvider>
-      )}
+      <StoreProvider>
+        <UserInactivityProvider>
+          <RootContent />
+        </UserInactivityProvider>
+      </StoreProvider>
     </>
   );
 }
@@ -119,22 +95,30 @@ function RootContent() {
 
   return (
     <>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="email_verify" options={{ headerShown: false }} />
-        <Stack.Screen name="login_verify" options={{ headerShown: false }} />
-        <Stack.Screen name="device_verify" options={{ headerShown: false }} />
-        <Stack.Screen name="terms_condition" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="complete_profile"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="verification_check"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="protected" options={{ headerShown: false }} />
-      </Stack>
+      <StatusBar style="dark" />
+      <Authenticator.Provider>
+        <Authenticator
+          formFields={formFields}
+          components={{
+            SignIn: (props) => {
+              return <LoginForm {...props} />;
+            },
+            SignUp: (props) => {
+              return <SignUp {...props} />;
+            },
+          }}
+          services={{
+            handleSignUp: async ({ username, password, attributes }) => {
+              console.log(username, password, attributes);
+            },
+            handleSignIn: async ({ username, password }) => {
+              console.log(username, password);
+            },
+          }}
+        >
+          <Slot />
+        </Authenticator>
+      </Authenticator.Provider>
       <Loader isLoading={isLoading} />
     </>
   );

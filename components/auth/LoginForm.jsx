@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   TextInput,
   StyleSheet,
@@ -25,12 +25,14 @@ import { sendOtp } from '../../api/token.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Checkbox from 'expo-checkbox';
 import { DataStore } from 'aws-amplify/datastore';
+import * as Notifications from 'expo-notifications';
+import { fetchUserActivities } from '@/api/activities.service';
+import { fetchUserContributions } from '@/api/contributions.service';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
   const { toSignUp, toForgotPassword } = props;
   const {
     isLoading,
@@ -38,10 +40,10 @@ const LoginForm = (props) => {
     setEmailVeri,
     setCurrentUser,
     setUserProfile,
-    userProfile,
     setNotifications,
     setConfirmationResult,
-    setProfilePicture,
+    setUserActivities,
+    setContributions,
   } = useGlobalContext();
   const router = useRouter();
 
@@ -73,13 +75,7 @@ const LoginForm = (props) => {
       }
 
       const user = await fetchCurrUser(setCurrentUser);
-
-      const file = await AsyncStorage.getItem('profilePicture');
-      setProfilePicture(file);
-
       const profile = await fetchUserProfile(setUserProfile, user);
-
-      await fetchUserNotification(user.userId, setNotifications);
 
       if (!profile?.name) {
         router.push('/complete_profile');
@@ -139,38 +135,18 @@ const LoginForm = (props) => {
       }
 
       await AsyncStorage.setItem('existingEmail', email);
-      await AsyncStorage.setItem('user_name', profile?.name);
+
+      await fetchUserNotification(user.userId, setNotifications);
+      await fetchUserActivities(user.userId, setUserActivities);
+      await fetchUserContributions(user.userId, setContributions);
+
       router.push('/');
     } catch (error) {
-      if (error?.message?.includes('User is disabled')) {
-        Alert.alert(
-          'Account Deactivated',
-          'Your account has been deactivated. Please contact support for assistance. support@mimonie.net'
-        );
-        return;
-      }
-
-      Alert.alert('Error', error.message);
-      console.error(error.message);
+      Alert.alert('Error', error.message || 'Network Error. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const checkExistingUser = async () => {
-      const user_name = await AsyncStorage.getItem('user_name');
-      const email = await AsyncStorage.getItem('existingEmail');
-      if (user_name && email) {
-        setUserInfo({
-          username: user_name,
-          email: email,
-        });
-        setEmail(email);
-      }
-    };
-    checkExistingUser();
-  }, []);
 
   return (
     <KeyboardAvoidingView behavior="padding" enabled={false}>
@@ -185,32 +161,19 @@ const LoginForm = (props) => {
             alignSelf: 'center',
           }}
         />
-        {userInfo ? (
-          <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{ textAlign: 'center', fontSize: 20, fontFamily: 'isb' }}
-            >
-              Welcome Back, {userInfo?.username?.split(' ')[0]}
-            </Text>
-          </View>
-        ) : (
-          <Text style={styles.title}>{'Log in'}</Text>
-        )}
-
-        {!userInfo && (
-          <View>
-            <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email address"
-              placeholderTextColor={'silver'}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
-        )}
+        <Text style={styles.title}>{'Log in'}</Text>
+        <View>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email address"
+            placeholderTextColor={'silver'}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+        </View>
         <View>
           <Text style={styles.label}>Password</Text>
           <View

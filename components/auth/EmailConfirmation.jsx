@@ -15,16 +15,17 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { Link, router } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const EmailConfirmation = () => {
   const { emailVeri, setIsLoading, currentUser } = useGlobalContext();
   const [code, setCode] = useState(0);
+  const { signOut } = useAuthenticator();
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
 
   useEffect(() => {
     if (currentUser && currentUser.email_verified) {
-      console.log(currentUser.email_verified);
       setShowCompleteProfileModal(true);
     }
   }, [currentUser]);
@@ -40,7 +41,7 @@ const EmailConfirmation = () => {
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
         if (signInOutput) {
-          router.push('/complete_profile');
+          router.replace('/complete_profile');
         } else {
           Alert.alert(
             'Sign-in failed',
@@ -116,7 +117,7 @@ const EmailConfirmation = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
-              onPress={() => router.push('/protected')}
+              onPress={signOut}
             >
               {/* <Link href={'/protected'}> */}
               <Text style={styles.buttonText}>Later</Text>

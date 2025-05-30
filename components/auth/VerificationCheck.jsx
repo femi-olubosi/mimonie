@@ -13,12 +13,13 @@ import {
 import React, { useRef, useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { signOut } from 'aws-amplify/auth';
+// import { signOut } from 'aws-amplify/auth';
 import * as Device from 'expo-device';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { verifyOTP } from '../../api/token.service';
 import { downloadUrl, updateUserProfile } from '../../api/user.service';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const VerificationCheck = () => {
   const {
@@ -30,6 +31,7 @@ const VerificationCheck = () => {
   } = useGlobalContext();
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
+  const { signOut } = useAuthenticator();
 
   const pinRefs = useRef([]);
 
@@ -78,7 +80,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/');
+              router.push('/(protected)/(tabs)');
             },
           },
         ]);
@@ -108,7 +110,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/');
+              router.push('/(protected)/(tabs)');
             },
           },
         ]);
@@ -176,10 +178,7 @@ const VerificationCheck = () => {
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={styles.cancelButton}
-                  onPress={async () => {
-                    await signOut();
-                    router.push('/');
-                  }}
+                  onPress={signOut()}
                   disabled={verifying}
                 >
                   <Text style={styles.modalButtonText}>Not now</Text>

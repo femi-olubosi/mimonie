@@ -29,7 +29,16 @@ const {
   signUserOut,
 } = require('./cognitoActions');
 const { listNotifications } = require('./models/notificationModel');
-const { listUserProfiles, getUserSummary } = require('./models/userProfileModel');
+const {
+  listUserProfiles,
+  getUserSummary,
+} = require('./models/userProfileModel');
+const { SQSClient, SendMessageCommand } = require('@aws-sdk/client-sqs');
+const userProfileModel = require('./models/userProfileModel');
+const { getUploadUrl } = require('./utils/s3-upload');
+
+const sqs = new SQSClient({ region: 'us-west-2' });
+const SQS_QUEUE_URL = process.env.SQS_QUEUE_URL;
 
 const app = express();
 app.use(bodyParser.json());
@@ -83,7 +92,13 @@ const checkGroup = function (req, res, next) {
 
 // app.all('*', checkGroup);
 
-const sendPushNotification = async (pushToken, title, body, data = {}) => {
+const sendPushNotification = async (
+  pushToken,
+  title,
+  body,
+  imageUrl = null,
+  data = {}
+) => {
   if (!Expo.isExpoPushToken(pushToken)) {
     console.error(`Push token ${pushToken} is not a valid Expo push token`);
     return;
@@ -95,6 +110,9 @@ const sendPushNotification = async (pushToken, title, body, data = {}) => {
     title: title,
     body: body,
     data: data,
+    richContent: {
+      image: imageUrl,
+    },
   };
 
   try {
@@ -270,9 +288,9 @@ app.post('/signUserOut', async (req, res, next) => {
    */
   if (
     req.body.username !=
-    req.apiGateway.event.requestContext.authorizer.claims.username &&
+      req.apiGateway.event.requestContext.authorizer.claims.username &&
     req.body.username !=
-    /[^/]*$/.exec(req.apiGateway.event.requestContext.identity.userArn)[0]
+      /[^/]*$/.exec(req.apiGateway.event.requestContext.identity.userArn)[0]
   ) {
     const err = new Error('only the user can sign themselves out');
     err.statusCode = 400;
@@ -287,13 +305,91 @@ app.post('/signUserOut', async (req, res, next) => {
   }
 });
 
-app.post('/send-notification', async (req, res, next) => {
-  const { pushToken, title, body, data } = req.body;
+app.post('/upload-url', async (req, res) => {
   try {
-    await sendPushNotification(pushToken, title, body, data);
-    res.status(200).json({ success: true, message: 'Notification sent' });
-  } catch (err) {
-    next(err);
+    const uploadUrlObj = await getUploadUrl('image/jpeg');
+
+    res.status(200).json({
+      message: 'Upload URL generated successfully.',
+      data: uploadUrlObj,
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+const MAX_DYNAMO_BATCH_SIZE = 1000; // Users per DynamoDB query
+
+app.post('/send-notification', async (req, res) => {
+  const { title, body, data, target, users, imageUrl } = req.body;
+
+  try {
+    if (target === 'all') {
+      // Start async background work
+      let lastEvaluatedKey = null;
+
+      do {
+        const { items, nextToken } = await userProfileModel.listUserProfiles(
+          lastEvaluatedKey,
+          MAX_DYNAMO_BATCH_SIZE
+        );
+
+        const pushTokens = items
+          .filter((user) => user.push_token)
+          .map((user) => user.push_token);
+
+        if (pushTokens.length > 0) {
+          const message = {
+            push_tokens: pushTokens,
+            title,
+            body,
+            imageUrl,
+            data: data || {},
+          };
+
+          await sqs.send(
+            new SendMessageCommand({
+              QueueUrl: SQS_QUEUE_URL,
+              MessageBody: JSON.stringify(message),
+            })
+          );
+        }
+
+        lastEvaluatedKey = nextToken
+          ? JSON.parse(decodeURIComponent(nextToken))
+          : null;
+      } while (lastEvaluatedKey);
+
+      res.json({
+        success: true,
+        message: `Notifications queued and will be sent to users in batches`,
+      });
+    } else if (target === 'selected' && users?.length) {
+      const validUsers = users.filter((user) => user.push_token);
+      if (validUsers.length === 0) {
+        return res.status(400).json({ error: 'No valid push tokens' });
+      }
+
+      await Promise.all(
+        validUsers.map((user) =>
+          sendPushNotification(user.push_token, title, body, imageUrl, {
+            ...data,
+            userId: user.userId,
+          })
+        )
+      );
+
+      res.json({
+        success: true,
+        message: `Notifications sent to ${validUsers.length} users`,
+      });
+    } else {
+      res.status(400).json({ error: 'Invalid target or empty users array' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: error, message: error?.message });
   }
 });
 
@@ -301,11 +397,11 @@ app.get('/notifications', async (req, res, next) => {
   const { limit, nextToken: lastEvaluatedKey } = req.query;
 
   try {
-    const notifications = await listNotifications(lastEvaluatedKey, limit)
+    const notifications = await listNotifications(lastEvaluatedKey, limit);
     res.status(200).json({ success: true, notifications });
   } catch (err) {
     // next(err);
-    res.status(400).json({message: err.message, err})
+    res.status(400).json({ message: err.message, err });
   }
 });
 
@@ -313,25 +409,29 @@ app.get('/userProfiles', async (req, res, next) => {
   const { limit, nextToken, searchTerm } = req.query;
 
   const parsedLastEvaluatedKey = nextToken
-  ? JSON.parse(decodeURIComponent(nextToken))
-  : undefined;
-  const limitInt = searchTerm? 100000000 : parseInt(limit)
+    ? JSON.parse(decodeURIComponent(nextToken))
+    : undefined;
+  const limitInt = searchTerm ? 100000000 : parseInt(limit);
 
   try {
-    const userProfiles = await listUserProfiles(parsedLastEvaluatedKey, limitInt, searchTerm)
+    const userProfiles = await listUserProfiles(
+      parsedLastEvaluatedKey,
+      limitInt,
+      searchTerm
+    );
     res.status(200).json({ success: true, userProfiles });
   } catch (err) {
-    res.status(400).json({message: err.message, err})
+    res.status(400).json({ message: err.message, err });
   }
 });
 
 app.get('/userSummary', async (req, res, next) => {
   try {
-    const userSummary = await getUserSummary()
+    const userSummary = await getUserSummary();
     res.status(200).json({ success: true, userSummary });
   } catch (err) {
     // next(err);
-    res.status(400).json({message: err.message, err})
+    res.status(400).json({ message: err.message, err });
   }
 });
 

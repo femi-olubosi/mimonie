@@ -184,6 +184,11 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "processNotifications": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "processWithdrawalRequest": {
       "build": true,
       "dependsOn": [],
@@ -220,6 +225,14 @@
       ]
     },
     "AMPLIFY_function_AdminQueriese69f7a79_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ]
+    },
+    "AMPLIFY_function_AdminQueriese69f7a79_sqsQueueUrl": {
       "usedBy": [
         {
           "category": "function",
@@ -392,6 +405,22 @@
         {
           "category": "function",
           "resourceName": "mimonief71364a4"
+        }
+      ]
+    },
+    "AMPLIFY_function_processNotifications_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_processNotifications_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processNotifications"
         }
       ]
     },

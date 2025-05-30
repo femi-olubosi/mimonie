@@ -1,0 +1,8 @@
+{
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "sqsQueueUrl",
+      "environmentVariableName": "SQS_QUEUE_URL"
+    }
+  ]
+}

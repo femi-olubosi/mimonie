@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Updates from 'expo-updates';
 
 const EXPIRY_LIMIT_DAYS = 7;
 const DAY_IN_MS = 86400000;
@@ -46,3 +47,15 @@ export const isLastDaysOfMonth = (date) => {
   testDate.setDate(0); // Last day of current month
   return date.getDate() > testDate.getDate() - 4; // 28th or later
 };
+
+export async function onFetchUpdateAsync() {
+  try {
+    const update = await Updates.checkForUpdateAsync();
+    if (update.isAvailable) {
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}

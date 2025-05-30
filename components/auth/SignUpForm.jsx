@@ -98,7 +98,7 @@ const SignUp = (props) => {
       await createUserProfile(userId, device, email, normalizedPhoneNumber);
       setEmailVeri(email);
       await AsyncStorage.setItem('existingEmail', email);
-      router.push('/email_verify');
+      router.replace('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);
       console.error('Error signing up:', error);
