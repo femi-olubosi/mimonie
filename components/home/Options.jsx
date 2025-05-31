@@ -32,7 +32,7 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
           alignItems: 'center',
           position: 'relative',
         }}
-        onPress={() => router.push('/protected/my_network')}
+        onPress={() => router.push('/(protected)/my_network')}
       >
         <View
           style={{
@@ -64,7 +64,7 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => router.push('/protected/faq')}
+        onPress={() => router.push('/(protected)/faq')}
       >
         <MaterialCommunityIcons
           name="frequently-asked-questions"

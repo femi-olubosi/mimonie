@@ -66,7 +66,7 @@ const ProfileView = ({
               name="user-o"
               size={16}
               color={priText}
-              onPress={() => router.navigate('/protected/account')}
+              onPress={() => router.navigate('/(protected)/account')}
             />
           )}
         </View>
@@ -88,7 +88,7 @@ const ProfileView = ({
           onPress={() => setShowHelp(true)}
         /> */}
         <TouchableOpacity
-          onPress={() => router.push('/protected/notifications')}
+          onPress={() => router.push('/(protected)/notifications')}
           style={{ position: 'relative' }}
         >
           <Ionicons name="notifications-outline" size={24} color={priText} />

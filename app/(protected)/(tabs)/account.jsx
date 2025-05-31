@@ -49,7 +49,7 @@ const Account = () => {
   const { priBg, priText } = ThemeColors();
 
   const handleInviteFriends = () => {
-    router.push('/protected/contact');
+    router.push('/(protected)/contact');
   };
 
   const handleProfilePicture = async () => {
@@ -422,45 +422,45 @@ const menuItems = [
   {
     title: 'Personal Information',
     icon: <Ionicons name="person-outline" size={24} color="black" />,
-    route: '/protected/personal_info',
+    route: '/(protected)/personal_info',
   },
   {
     title: 'Verify Identity',
     icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
-    route: '/protected/smile_id',
+    route: '/(protected)/smile_id',
     extra: true,
   },
   {
     title: 'Verify BVN',
     icon: <Ionicons name="document-text-outline" size={24} color="black" />,
-    route: '/protected/bvn',
+    route: '/(protected)/bvn',
     extra: true,
   },
   {
     title: 'Cards management',
     icon: <AntDesign name="idcard" size={24} color="black" />,
-    route: '/protected/cards',
+    route: '/(protected)/cards',
   },
   {
     title: 'Contribution Invites',
     icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
-    route: '/protected/my_invites',
+    route: '/(protected)/my_invites',
     extra: true,
   },
   {
     title: 'Privacy & Security',
     icon: <MaterialIcons name="security" size={24} color="black" />,
-    route: '/protected/privacy',
+    route: '/(protected)/privacy',
   },
   {
     title: 'Support',
     icon: <MaterialIcons name="support-agent" size={24} color="black" />,
-    route: '/protected/support',
+    route: '/(protected)/support',
   },
   {
     title: 'Settings',
     icon: <AntDesign name="setting" size={24} color="black" />,
-    route: '/protected/settings',
+    route: '/(protected)/settings',
   },
   {
     authorizedUser: [
@@ -469,6 +469,6 @@ const menuItems = [
     ],
     title: 'Admin',
     icon: <AntDesign name="home" size={24} color="black" />,
-    route: '/protected/admin',
+    route: '/(protected)/admin',
   },
 ];

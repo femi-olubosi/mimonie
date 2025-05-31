@@ -176,7 +176,7 @@ export const CardTwo = () => {
             borderRadius: 5,
             width: 160,
           }}
-          onPress={() => router.push(`/protected/my_network`)}
+          onPress={() => router.push(`/(protected)/my_network`)}
         >
           <Text style={{ color: 'white', fontFamily: 'ib' }}>
             Create Trust Circle

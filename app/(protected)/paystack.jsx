@@ -33,7 +33,7 @@ function Pay() {
         setNotifications
       );
       await fetchUserProfile(setUserProfile, currentUser);
-      router.push('/protected/cards');
+      router.push('/(protected)/cards');
     } else {
       console.error('Transaction verification failed.');
     }
@@ -49,7 +49,7 @@ function Pay() {
         channels={['card']}
         onCancel={(e) => {
           // handle response here
-          router.push('/protected/cards');
+          router.push('/(protected)/cards');
         }}
         onSuccess={(res) => {
           // handle response here

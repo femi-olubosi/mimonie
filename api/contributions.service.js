@@ -30,7 +30,7 @@ export const createContribution = async (
   currentUser,
   userProfile
 ) => {
-  const link = `https://mimonie.net/protected/mimonie?userId=${
+  const link = `https://mimonie.net/(protected)/mimonie?userId=${
     currentUser.userId
   }&contributionName=${details.contributionName.split(' ').join('')}`;
 
@@ -72,7 +72,7 @@ export const createPersonalContribution = async (
   currentUser,
   userProfile
 ) => {
-  const link = `https://mimonie.net/protected/mimonie?userId=${
+  const link = `https://mimonie.net/(protected)/mimonie?userId=${
     currentUser.userId
   }&contributionName=${details.contributionName.split(' ').join('')}`;
 

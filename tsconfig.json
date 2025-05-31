@@ -14,6 +14,9 @@
     "components/home/Cards.jsx",
     "components/navigation/TabBarIcon.jsx",
     "app/_layout.jsx",
-    "app/index.tsx"
+    "app/index.tsx",
+    "hooks/useUserVerificationSteps.js",
+    "functions/fetchInitialData.js",
+    "hooks/usePushNotification.js"
   ]
 }

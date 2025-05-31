@@ -35,7 +35,7 @@ const my_invites = () => {
     return (
       <TouchableOpacity
         style={styles.contributionContainer}
-        onPress={() => router.push(`/protected/mimonie/${item.id}`)}
+        onPress={() => router.push(`/(protected)/mimonie/${item.id}`)}
       >
         <View
           style={{

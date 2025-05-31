@@ -6,7 +6,7 @@ import * as Clipboard from 'expo-clipboard';
 const CopyLink = ({ inviteLink }) => {
   const handleCopy = async () => {
     await Clipboard.setStringAsync(
-      `https://mimonie.net/protected/mimonie/${inviteLink}`
+      `https://mimonie.net/(protected)/mimonie/${inviteLink}`
     );
   };
 

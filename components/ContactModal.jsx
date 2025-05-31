@@ -223,7 +223,7 @@ const ContactModal = ({
               onPress={() => {
                 setVisible(false);
                 setSelected([]);
-                router.push('/protected/mimonie');
+                router.push('/(protected)/mimonie');
               }}
             >
               <Text style={{ fontSize: 16, color: 'white', fontFamily: 'isb' }}>

@@ -241,7 +241,7 @@ const CreateContribution = () => {
         [
           {
             text: 'OK',
-            onPress: () => router.push('/protected/mimonie'),
+            onPress: () => router.push('/(protected)/mimonie'),
           },
         ],
         { cancelable: false }
@@ -282,7 +282,7 @@ const CreateContribution = () => {
           [
             {
               text: 'Go to My Trust Circle',
-              onPress: () => router.push('/protected/my_network'),
+              onPress: () => router.push('/(protected)/my_network'),
             },
             { text: 'OK', onPress: () => console.log('OK Pressed') },
           ]
@@ -359,7 +359,7 @@ const CreateContribution = () => {
                 >
                   You cannot create a contribution at the moment. Please
                   complete your identity verification
-                  <Link href={'/protected/account'}>
+                  <Link href={'/(protected)/account'}>
                     <Text
                       style={{
                         color: 'white',
@@ -614,7 +614,7 @@ const CreateContribution = () => {
                   </>
                 ) : (
                   <Pressable
-                    onPress={() => router.push('/protected/settings')}
+                    onPress={() => router.push('/(protected)/settings')}
                     style={styles.warningContainer}
                   >
                     <Text style={styles.warningText}>
@@ -698,7 +698,7 @@ const CreateContribution = () => {
                 style={styles.modalButton}
                 onPress={() => {
                   setModalVisible(false);
-                  router.push('/protected/mimonie');
+                  router.push('/(protected)/mimonie');
                 }}
               >
                 <Text style={styles.modalButtonText}>Not Now</Text>

@@ -14,11 +14,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const fetchCurrUser = async (setCurrentUser) => {
   const user = await getCurrentUser();
   const attribute = await fetchUserAttributes();
-  setCurrentUser({
+  const userData = {
     ...user,
     ...attribute,
-  });
-  return user;
+  };
+  setCurrentUser(userData);
+  return userData;
 };
 
 export const uploadFile = async (file, userId) => {
@@ -52,7 +53,7 @@ export const downloadFile = async (userId) => {
     const imageBlob = await body.blob();
 
     return URL.createObjectURL(imageBlob);
-  } catch (e) { }
+  } catch (e) {}
 };
 
 export const downloadUrl = async (userId) => {
@@ -136,24 +137,22 @@ export const fetchUserProfileForInvite = async (userId) => {
 
 export const isDeviceExist = async (device_id) => {
   try {
-
     const device_ids = await DataStore.query(UserProfile, (c) =>
       c.device_id.eq(device_id)
     );
 
     if (device_ids && device_ids.length > 0) {
-      return true
+      return true;
     }
-    return false
+    return false;
   } catch (error) {
     console.error('Error fetching user user device id:', error);
-    return false
+    return false;
   }
 };
 
 export const isPhoneNumberExist = async (phone_number) => {
   try {
-
     await DataStore.start();
     await DataStore.query(UserProfile);
 
@@ -162,12 +161,12 @@ export const isPhoneNumberExist = async (phone_number) => {
     );
 
     if (phoneNumbers && phoneNumbers.length > 0) {
-      return true
+      return true;
     }
-    return false
+    return false;
   } catch (error) {
     console.error('Error fetching user user device id:', error);
-    return false
+    return false;
   }
 };
 
@@ -238,7 +237,7 @@ export const fetchExistingUser = async (contacts, type) => {
     }
     // Function to normalize phone numbers
     const normalizePhoneNumber = (phone) => {
-      if (!phone || typeof phone !== "string") return null;
+      if (!phone || typeof phone !== 'string') return null;
 
       // Remove spaces, dashes, and parentheses
       const sanitizedPhone = phone.replace(/[\s-()]/g, '');
@@ -257,13 +256,17 @@ export const fetchExistingUser = async (contacts, type) => {
     };
 
     // Normalize all contact phone numbers
-    const normalizedContacts = contacts.map(contact => ({
+    const normalizedContacts = contacts.map((contact) => ({
       ...contact,
-      phoneNumbers: contact.phoneNumbers.map(normalizePhoneNumber).filter(Boolean)
+      phoneNumbers: contact.phoneNumbers
+        .map(normalizePhoneNumber)
+        .filter(Boolean),
     }));
 
     // Collect all unique normalized phone numbers
-    const uniquePhoneNumbers = [...new Set(normalizedContacts.flatMap(contact => contact.phoneNumbers))];
+    const uniquePhoneNumbers = [
+      ...new Set(normalizedContacts.flatMap((contact) => contact.phoneNumbers)),
+    ];
 
     const batchSize = 500;
     const userProfiles = [];
@@ -278,7 +281,7 @@ export const fetchExistingUser = async (contacts, type) => {
 
     // Create a map of phone numbers to user profiles for quick lookup
     const phoneToProfileMap = new Map();
-    userProfiles.forEach(profile => {
+    userProfiles.forEach((profile) => {
       const normalizedPhone = normalizePhoneNumber(profile.phone_number);
       if (normalizedPhone) {
         phoneToProfileMap.set(normalizedPhone, profile);
@@ -286,8 +289,10 @@ export const fetchExistingUser = async (contacts, type) => {
     });
 
     // Map contacts to find matches in user profiles
-    const matchedUsers = normalizedContacts.map(contact => {
-      const matchingProfile = contact.phoneNumbers.find(phone => phoneToProfileMap.has(phone));
+    const matchedUsers = normalizedContacts.map((contact) => {
+      const matchingProfile = contact.phoneNumbers.find((phone) =>
+        phoneToProfileMap.has(phone)
+      );
 
       if (matchingProfile) {
         const profile = phoneToProfileMap.get(matchingProfile);
@@ -303,12 +308,15 @@ export const fetchExistingUser = async (contacts, type) => {
       return null;
     });
 
-    const existingUsers = matchedUsers.filter(match => match !== null);
+    const existingUsers = matchedUsers.filter((match) => match !== null);
 
     // Cache the results in AsyncStorage
-    await AsyncStorage.setItem('cachedExistingUsers', JSON.stringify(existingUsers));
+    await AsyncStorage.setItem(
+      'cachedExistingUsers',
+      JSON.stringify(existingUsers)
+    );
 
-    return existingUsers
+    return existingUsers;
   } catch (error) {
     console.error('Error fetching and matching user profiles:', error);
     return [];

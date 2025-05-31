@@ -11,9 +11,9 @@ const UserVerificationModal = ({
   completedSteps,
 }) => {
   const steps = [
-    { key: 'bvn', label: 'BVN Verification', path: '/protected/bvn' },
-    { key: 'kyc', label: 'KYC Verification', path: '/protected/smile_id' },
-    { key: 'card', label: 'Add Card', path: '/protected/cards' },
+    { key: 'bvn', label: 'BVN Verification', path: '/(protected)/bvn' },
+    { key: 'kyc', label: 'KYC Verification', path: '/(protected)/smile_id' },
+    { key: 'card', label: 'Add Card', path: '/(protected)/cards' },
   ];
 
   const remainingSteps = steps?.filter(

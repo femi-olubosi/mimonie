@@ -1,5 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
+import { useEffect } from 'react';
+import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
+import { fetchCurrUser, fetchUserProfile } from '@/api/user.service';
+import { sendOtp } from '@/api/token.service';
+import { fetchUserActivities } from '@/api/activities.service';
 
 const EXPIRY_LIMIT_DAYS = 7;
 const DAY_IN_MS = 86400000;
@@ -59,3 +65,32 @@ export async function onFetchUpdateAsync() {
     console.error(error);
   }
 }
+
+export const fetchAndCheckUser = async (
+  setCurrentUser,
+  setUserProfile,
+  setConfirmationResult,
+  setUserActivities
+) => {
+  try {
+    const authUser = await fetchCurrUser(setCurrentUser);
+    console.log('authUser', authUser);
+    await fetchUserProfile(setUserProfile, authUser);
+    await fetchUserActivities(authUser?.userId, setUserActivities);
+
+    const phoneVerified =
+      authUser?.phone_number_verified || authUser?.phone || true;
+
+    if (!authUser.name) {
+      router.push('/(protected)/complete_profile');
+    } else if (!phoneVerified) {
+      const res = await sendOtp(authUser.phone_number);
+      setConfirmationResult({ ...res, type: 'phone_verification' });
+      router.push('/verification_check');
+    } else {
+      console.log(authUser?.name);
+    }
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+  }
+};

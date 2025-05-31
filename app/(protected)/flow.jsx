@@ -32,7 +32,7 @@ const DocumentIdentification = () => {
       const code = await sendOtp(phone);
 
       setConfirmationResult(code);
-      router.push('/protected/device_verify');
+      router.push('/(protected)/device_verify');
     } catch (error) {
       console.error('Verification failed:', error);
       Alert.alert('Verification failed', 'Invalid phone number format');

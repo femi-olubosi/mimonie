@@ -37,7 +37,7 @@ const Cards = () => {
 
   const handlePay = () => {
     setModalVisible(false);
-    router.push('/protected/paystack');
+    router.push('/(protected)/paystack');
   };
 
   const handleDeleteCard = async () => {
@@ -111,7 +111,7 @@ const Cards = () => {
   };
 
   return (
-    <PageView title={'Bank Cards'} route={'/protected/account'}>
+    <PageView title={'Bank Cards'} route={'/(protected)/account'}>
       <View style={{ flex: 1, padding: 20 }}>
         <FlatList
           data={userCards}

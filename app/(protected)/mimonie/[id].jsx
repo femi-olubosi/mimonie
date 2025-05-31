@@ -349,7 +349,7 @@ const ContributionDetails = () => {
   const handleWithdrawFund = async () => {
     setWithdrawModal(false);
     router.push({
-      pathname: '/protected/transfer_screen',
+      pathname: '/(protected)/transfer_screen',
       params: {
         contribution: JSON.stringify(contribution),
         isEarly: isEarlyWithdrawal,
@@ -379,7 +379,7 @@ const ContributionDetails = () => {
   };
 
   return (
-    <PageView title={'Contribution Details'} route={'protected/mimonie'}>
+    <PageView title={'Contribution Details'} route={'(protected)/mimonie'}>
       <View style={styles.container}>
         {loading ? (
           <SkeletonLoaderComp />

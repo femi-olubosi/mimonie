@@ -31,7 +31,7 @@ const Blog = () => {
               style={{ rowGap: 16, width: 293, marginStart: 20 }}
               onPress={() =>
                 router.push({
-                  pathname: '/protected/blog',
+                  pathname: '/(protected)/blog',
                   params: { id: item.id },
                 })
               }

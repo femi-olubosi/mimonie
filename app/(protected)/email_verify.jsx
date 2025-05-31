@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import EmailConfirmation from '../components/auth/EmailConfirmation';
+import EmailConfirmation from '../../components/auth/EmailConfirmation';
 
 const email_confirm = () => {
   return <EmailConfirmation />;

@@ -206,7 +206,7 @@ export default function UploadDocument() {
           message: 'Your verification has been approved.',
           status: 'success',
         });
-        // router.push('/protected/completed_screen');
+        // router.push('/(protected)/completed_screen');
       } else if (res.result === 'rejected') {
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: false },
@@ -250,7 +250,7 @@ export default function UploadDocument() {
   const closeStatusModal = () => {
     if (modalContent.status === 'success') {
       setStatusModalVisible(false);
-      router.push('/protected');
+      router.push('/(protected)');
     } else {
       setStatusModalVisible(false);
     }

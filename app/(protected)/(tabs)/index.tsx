@@ -9,7 +9,6 @@ import {
   StyleSheet,
   RefreshControl,
   TouchableOpacity,
-  Button,
 } from 'react-native';
 import Cards from '@/components/home/Cards';
 import ProfileView from '@/components/home/ProfileView';
@@ -17,58 +16,38 @@ import Options from '@/components/home/Options';
 import Advert from '@/components/home/Advert';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useEffect, useRef, useState } from 'react';
-import {
-  downloadUrl,
-  fetchCurrUser,
-  fetchUserProfile,
-} from '@/api/user.service';
+import { useCallback, useEffect, useState } from 'react';
+import { fetchUserProfile } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
-import { getContacts } from '@/api/contact.service';
-import {
-  addContributionParticipant,
-  fetchUserContributions,
-  updatePersonalContribution,
-} from '@/api/contributions.service';
+import { fetchUserContributions } from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
-import { DataStore } from 'aws-amplify/datastore';
 import {
   FontAwesome,
   MaterialCommunityIcons,
   MaterialIcons,
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
-import {
-  createUserActivity,
-  fetchHomeUserActivities,
-  fetchUserActivities,
-} from '@/api/activities.service';
-import { Contribution, UserConnections } from '@/src/models';
-import {
-  registerForPushNotificationsAsync,
-  savePushToken,
-} from '@/api/pushNotification.service';
+import { fetchUserActivities } from '@/api/activities.service';
 import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
 import { Colors, ThemeColors } from '@/constants/Colors';
-import * as Updates from 'expo-updates';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchUserConnections } from '@/api/network.service';
 import UserVerificationModal from '@/components/modals/UserVerificationModal';
-import * as Notifications from 'expo-notifications';
 import Blog from '@/components/home/Blog';
+import usePushNotifications from '@/hooks/usePushNotification';
+import { getContacts } from '@/api/contact.service';
+import useUserVerificationSteps from '@/hooks/useUserVerificationSteps';
+import { listUserConnections } from '@/functions/connections';
+import useDataStoreObservers from '@/hooks/useDatastoreObserver';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 export default function HomeScreen() {
   const {
     currentUser,
-    setCurrentUser,
     setUserProfile,
-    isLoading,
     setIsLoading,
     setMyContacts,
     contributions,
@@ -78,287 +57,61 @@ export default function HomeScreen() {
     notifications,
     userActivities,
     setUserActivities,
-    setProfilePicture,
     profilePicture,
     setInviteArray,
     hideValues,
     parsed,
     setParsed,
-    updateAvailable,
-    setUpdateAvailable,
     pilot,
-    setPilot,
   } = useGlobalContext();
 
-  const { priBg, secBg, priText } = ThemeColors();
+  const { priBg, priText } = ThemeColors();
   const [refreshing, setRefreshing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [pushActive, setPushActive] = useState(false);
   const [showUserVerificationModal, setShowUserVerificationModal] =
     useState(false);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [hasShownModal, setHasShownModal] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchCurrUser(setCurrentUser);
-    await fetchUserProfile(setUserProfile, currentUser);
-    await fetchUserContributions(currentUser?.userId, setContributions);
-    await fetchUserNotification(currentUser?.userId, setNotifications);
-    await fetchUserActivities(userProfile?.userId, setUserActivities);
-    setRefreshing(false);
-  };
+  // hooks
+  usePushNotifications(currentUser);
+  useUserVerificationSteps({
+    currentUser,
+    hasShownModal,
+    setUserProfile,
+    setCompletedSteps,
+    setShowUserVerificationModal,
+    setHasShownModal,
+  });
+  useDataStoreObservers({ currentUser, setContributions, setParsed });
+  useUserProfile({ currentUser, setUserProfile, setIsLoading, userProfile });
 
-  useEffect(() => {
-    fetchUserProfile(setUserProfile, currentUser);
-    // const subscription = DataStore.observe(UserProfile).subscribe(() =>
-    //   fetchUserProfile(setUserProfile, currentUser)
-    // );
-    // return () => subscription.unsubscribe();
-  }, [currentUser]);
-
-  useEffect(() => {
-    setIsLoading(true);
-    if (userProfile) {
-      setIsLoading(false);
-    }
-  }, [userProfile]);
-
-  useEffect(() => {
-    (async () => {
-      const contact = await getContacts();
-      setMyContacts(contact);
-    })();
-  }, []);
-
-  useEffect(() => {
-    fetchUserContributions(currentUser?.userId, setContributions);
-    const subscription = DataStore.observe(Contribution).subscribe(() =>
-      fetchUserContributions(currentUser?.userId, setContributions)
-    );
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
-
-  useEffect(() => {
-    fetchUserNotification(currentUser?.userId, setNotifications);
-  }, [currentUser]);
-
-  // useEffect(() => {
-  //   fetchUserActivities(userProfile?.userId, setUserActivities);
-  // }, [userProfile?.name]);
-
-  useEffect(() => {
-    (async () => {
-      // const file = await AsyncStorage.getItem('profilePicture');
-      // if (!file) {
-      const remotePicture = await downloadUrl(userProfile?.userId);
-      if (remotePicture) {
-        setProfilePicture(remotePicture);
-        await AsyncStorage.setItem('profilePicture', remotePicture);
-      } else {
-        console.log('Failed to download profile picture');
-        setProfilePicture(null);
-      }
-      // } else {
-      //   console.log('file', file);
-      //   setProfilePicture(file);
-      // }
-    })();
-  }, [userProfile?.userId]);
-
-  useEffect(() => {
-    const listUserConnections = async () => {
-      try {
-        const response = await fetchUserConnections(userProfile?.userId);
-        setParsed(response?.filter((e) => e.status === 'accepted'));
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    listUserConnections();
-
-    const subscription = DataStore.observe(UserConnections).subscribe(() =>
-      listUserConnections()
-    );
-    return () => subscription.unsubscribe();
-  }, [userProfile]);
-
-  useEffect(() => {
-    const registerPushToken = async () => {
-      try {
-        const pushToken = await registerForPushNotificationsAsync();
-
-        if (pushToken && currentUser) {
-          await savePushToken(currentUser, pushToken);
-        }
-      } catch (error) {
-        console.log('Failed to get push token:', error);
-      }
-    };
-
-    if (userProfile && !pushActive) {
-      registerPushToken();
-      setPushActive(true);
+  const fetchData = useCallback(async () => {
+    try {
+      await Promise.all([
+        fetchUserContributions(currentUser?.userId, setContributions),
+        fetchUserNotification(currentUser?.userId, setNotifications),
+        fetchUserActivities(userProfile?.userId, setUserActivities),
+        listUserConnections(currentUser?.userId, setParsed),
+        getContacts().then(setMyContacts),
+        fetchInviteContributions(userProfile?.invites).then(setInviteArray),
+      ]);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
     }
   }, [currentUser, userProfile]);
 
+  // Refresh control handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  }, [fetchData]);
+
+  // Initial data load
   useEffect(() => {
-    const fetchContributions = async () => {
-      const fetchedContributions = await fetchInviteContributions(
-        userProfile?.invites
-      );
-      setInviteArray(fetchedContributions);
-    };
-
-    fetchContributions();
-  }, [userProfile?.invites]);
-
-  useEffect(() => {
-    const checkForUpdates = async () => {
-      try {
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          setUpdateAvailable(true);
-        }
-      } catch (error) {
-        console.error('Error checking for updates: ', error);
-      }
-    };
-
-    if (!__DEV__) {
-      checkForUpdates();
-    }
+    fetchData();
   }, []);
-
-  useEffect(() => {
-    if (hasShownModal) return;
-
-    const checkSteps = async () => {
-      try {
-        const profile = await fetchUserProfile(setUserProfile, currentUser);
-
-        if (profile && profile?.name && profile?.phone_verified) {
-          const steps = [];
-
-          if (profile?.is_bvn_verified) {
-            steps.push('bvn');
-          }
-          if (profile?.is_nin_verified) {
-            steps.push('kyc');
-          }
-          if (profile?.auth_url) {
-            steps.push('card');
-          }
-
-          setCompletedSteps(steps);
-
-          if (steps.length === 3) {
-            setHasShownModal(true);
-            return;
-          }
-
-          if (steps.length < 3) {
-            setShowUserVerificationModal(true);
-            setHasShownModal(true);
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching user profile:', err);
-      }
-    };
-
-    checkSteps();
-  }, [currentUser, hasShownModal]);
-
-  const responseListener = useRef();
-
-  useEffect(() => {
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener((response) => {
-        const { data } = response.notification.request.content;
-        console.log('Notification clicked:', data);
-
-        if (data?.type === 'connection') {
-          router.push('/protected/my_network');
-        } else if (data?.type === 'notification') {
-          router.push('/protected/notifications');
-        } else if (data?.type === 'contribution') {
-          router.push('/protected/my_invites');
-        } else if (data?.type === 'kyc') {
-          router.push('/protected/smile_id');
-        } else if (data?.type === 'card') {
-          router.push('/protected/cards');
-        } else if (data?.type === 'bvn') {
-          router.push('/protected/bvn');
-        } else if (data?.type === 'blog') {
-          router.push('/protected/blog');
-        } else {
-          router.push('/');
-        }
-      });
-
-    // Clean up listeners
-    return () =>
-      Notifications.removeNotificationSubscription(responseListener.current);
-  }, []);
-
-  // const fetchHomeActivity = async (userId: any) => {
-  //   const res = await fetchHomeUserActivities(userId);
-  //   console.log({ res });
-  // };
-  // useEffect(() => {
-  //   if (userProfile?.userId) {
-  //     fetchHomeActivity(userProfile.userId);
-  //   }
-  // }, [userProfile?.userId]);
-
-  const triggerAppUpdate = async () => {
-    try {
-      setUpdateAvailable(false);
-      setIsLoading(true);
-      const update = await Updates.fetchUpdateAsync();
-      if (update.isNew) {
-        await Updates.reloadAsync();
-      }
-    } catch (error) {
-      console.error('Error fetching update: ', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // const { start } = useCopilot();
-
-  // useEffect(() => {
-  //   if (isLoading) return;
-
-  //   const hasEnoughConnections = parsed.length > 4;
-
-  //   setPilot((prev: any) => ({
-  //     ...prev,
-  //     network: !hasEnoughConnections,
-  //   }));
-
-  //   if (!hasEnoughConnections) {
-  //     setTimeout(() => {
-  //       start();
-  //     }, 1500);
-  //   }
-  // }, [isLoading, userProfile, parsed]);
-
-  // const addAll = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     await updatePersonalContribution(
-  //       { id: 'c4398c5a-ff81-4021-9f31-3be6d1aea7a4', name: 'Test' },
-  //       userProfile
-  //     );
-  //   } catch (error) {
-  //     console.log('error', error);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -382,7 +135,6 @@ export default function HomeScreen() {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
-          // ref={scrollViewRef}
         >
           <Cards contributions={contributions} />
           <Options
@@ -417,7 +169,7 @@ export default function HomeScreen() {
                   alignItems: 'center',
                   columnGap: 4,
                 }}
-                onPress={() => router.push('/protected/activities')}
+                onPress={() => router.push('/activities')}
               >
                 <Text
                   style={{
@@ -558,7 +310,7 @@ export default function HomeScreen() {
           </View>
         </ScrollView>
 
-        <Modal
+        {/* <Modal
           animationType="slide"
           transparent={true}
           visible={updateAvailable}
@@ -589,7 +341,7 @@ export default function HomeScreen() {
               </View>
             </View>
           </View>
-        </Modal>
+        </Modal> */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -605,23 +357,23 @@ export default function HomeScreen() {
               {[
                 {
                   label: 'Account Setup',
-                  route: `/protected/help/Account Help`,
+                  route: `help/Account Help`,
                 },
                 {
                   label: 'Managing Group Contributions',
-                  route: '/protected/help/Group Contributions Help',
+                  route: 'help/Group Contributions Help',
                 },
                 {
                   label: 'Managing Personal Contributions',
-                  route: '/protected/help/Personal Contributions Help',
+                  route: 'help/Personal Contributions Help',
                 },
                 {
                   label: 'Verifications',
-                  route: '/protected/help/Verification Help',
+                  route: 'help/Verification Help',
                 },
                 {
                   label: 'Troubleshooting',
-                  route: '/protected/help/Troubleshooting Help',
+                  route: 'help/Troubleshooting Help',
                 },
               ].map((item, index) => (
                 <TouchableOpacity

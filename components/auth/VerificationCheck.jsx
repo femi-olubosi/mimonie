@@ -19,7 +19,7 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { verifyOTP } from '../../api/token.service';
 import { downloadUrl, updateUserProfile } from '../../api/user.service';
-import { useAuthenticator } from '@aws-amplify/ui-react-native';
+// import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const VerificationCheck = () => {
   const {

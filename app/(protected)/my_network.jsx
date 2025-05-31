@@ -183,7 +183,7 @@ const connect = () => {
             borderRadius: 4,
             marginBottom: 12,
           }}
-          onPress={() => router.push('/protected/contact')}
+          onPress={() => router.push('/(protected)/contact')}
         >
           <Text style={{ fontFamily: 'im', fontSize: 16, color: 'white' }}>
             Invite Friends

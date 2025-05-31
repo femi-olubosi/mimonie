@@ -1,110 +1,62 @@
-import { useFonts } from 'expo-font';
-import { Slot, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { Stack } from 'expo-router';
 import { Amplify } from 'aws-amplify';
 import amplifyconfig from '../src/amplifyconfiguration.json';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
-import { fetchAuthSession, signOut } from 'aws-amplify/auth';
 import '@azure/core-asynciterator-polyfill';
 import Onboarding from './builder/Onboarding';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-Amplify.configure(amplifyconfig);
-import mobileAds from 'react-native-google-mobile-ads';
-import { StatusBar } from 'expo-status-bar';
-import { View } from 'react-native';
-import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
-import LoginForm from '@/components/auth/LoginForm';
-import SignUp from '@/components/auth/SignUpForm';
-import UserInactivityProvider from '@/components/UserInactivityProvider';
-import { formFields } from '@/data/authFormField';
-import { onFetchUpdateAsync } from '@/utils/helper';
+import initializeApp from '@/utils/initializeApp';
+import useAppFonts from '@/hooks/useAppFonts';
+// import useNotificationObserver from '@/hooks/useNotificationObserver';
 import * as SplashScreen from 'expo-splash-screen';
 
+Amplify.configure(amplifyconfig);
 SplashScreen.preventAutoHideAsync();
 
 function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    er: require('../assets/fonts/Epilogue/static/Epilogue-Regular.ttf'),
-    em: require('../assets/fonts/Epilogue/static/Epilogue-Medium.ttf'),
-    eb: require('../assets/fonts/Epilogue/static/Epilogue-Bold.ttf'),
-    esb: require('../assets/fonts/Epilogue/static/Epilogue-SemiBold.ttf'),
-    ir: require('../assets/fonts/Inter/static/Inter-Regular.ttf'),
-    im: require('../assets/fonts/Inter/static/Inter-Medium.ttf'),
-    ib: require('../assets/fonts/Inter/static/Inter-Bold.ttf'),
-    isb: require('../assets/fonts/Inter/static/Inter-SemiBold.ttf'),
-  });
+  // useNotificationObserver();
+  const [fontsLoaded] = useAppFonts();
+  const [onboard, setOnboard] = useState(false);
 
   useEffect(() => {
-    const prepare = async () => {
-      try {
-        if (!__DEV__) {
-          await onFetchUpdateAsync();
-        }
+    initializeApp(setOnboard);
+  }, []);
 
-        // Initialize ads
-        const { status: trackingStatus } =
-          await requestTrackingPermissionsAsync();
-        if (trackingStatus !== 'granted') {
-          // Handle tracking not granted
-        }
-        await mobileAds().initialize();
-
-        if (fontsLoaded) {
-          SplashScreen.hideAsync();
-        }
-      } catch (error) {
-        console.warn(error);
-      }
-    };
-
-    prepare();
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
   }, [fontsLoaded]);
 
+  if (onboard) {
+    return <Onboarding setOnboard={setOnboard} />;
+  }
+
   return (
-    <>
-      <StoreProvider>
-        <UserInactivityProvider>
-          <RootContent />
-        </UserInactivityProvider>
-      </StoreProvider>
-    </>
+    <StoreProvider>
+      <RootContent />
+    </StoreProvider>
   );
 }
 
-export default RootLayout;
+const screenOptions = { headerShown: false };
 
 function RootContent() {
   const { isLoading } = useGlobalContext();
 
   return (
     <>
-      <StatusBar style="dark" />
-      <Authenticator.Provider>
-        <Authenticator
-          formFields={formFields}
-          components={{
-            SignIn: (props) => {
-              return <LoginForm {...props} />;
-            },
-            SignUp: (props) => {
-              return <SignUp {...props} />;
-            },
-          }}
-          services={{
-            handleSignUp: async ({ username, password, attributes }) => {
-              console.log(username, password, attributes);
-            },
-            handleSignIn: async ({ username, password }) => {
-              console.log(username, password);
-            },
-          }}
-        >
-          <Slot />
-        </Authenticator>
-      </Authenticator.Provider>
+      <Stack screenOptions={screenOptions}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="email_verify" />
+        <Stack.Screen name="device_verify" />
+        <Stack.Screen name="terms_condition" />
+        <Stack.Screen name="(protected)" />
+      </Stack>
       <Loader isLoading={isLoading} />
     </>
   );
 }
+
+export default RootLayout;

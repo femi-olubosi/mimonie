@@ -152,7 +152,7 @@ const Settings = () => {
           { text: 'OK', onPress: () => console.log('OK Pressed') },
           {
             text: 'Create Contribution',
-            onPress: () => router.push('/protected/create_contribution'),
+            onPress: () => router.push('/(protected)/create_contribution'),
           },
         ],
         { cancelable: false }

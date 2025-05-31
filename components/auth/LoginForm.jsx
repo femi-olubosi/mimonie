@@ -75,7 +75,6 @@ const LoginForm = (props) => {
       }
 
       const user = await fetchCurrUser(setCurrentUser);
-      const profile = await fetchUserProfile(setUserProfile, user);
 
       if (!profile?.name) {
         router.push('/complete_profile');
@@ -136,11 +135,10 @@ const LoginForm = (props) => {
 
       await AsyncStorage.setItem('existingEmail', email);
 
-      await fetchUserNotification(user.userId, setNotifications);
+      const profile = await fetchUserProfile(setUserProfile, user);
       await fetchUserActivities(user.userId, setUserActivities);
-      await fetchUserContributions(user.userId, setContributions);
 
-      router.push('/');
+      router.push('/(protected)');
     } catch (error) {
       Alert.alert('Error', error.message || 'Network Error. Please try again.');
     } finally {

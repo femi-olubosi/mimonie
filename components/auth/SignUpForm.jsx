@@ -58,13 +58,6 @@ const SignUp = (props) => {
 
     setIsLoading(true);
     try {
-      // const existing = await isDeviceExist(device?.device_id);
-
-      // if (existing) {
-      //   Alert.alert('Error', `Device is already associated with an account`);
-      //   return;
-      // }
-
       const existing = await AsyncStorage.getItem('existingEmail');
 
       if (existing) {

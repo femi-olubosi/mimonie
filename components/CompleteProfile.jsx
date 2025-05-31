@@ -15,7 +15,7 @@ import { Colors } from '@/constants/Colors';
 import { fetchUserProfile, updateUserProfile } from '@/api/user.service';
 import { createPaystackCustomer } from '@/api/payment.service';
 import { useGlobalContext } from '@/store/StoreContext';
-import { DateTimeSelector, PageView, SelectInput } from '@/components/Reusable';
+import { DateTimeSelector, PageView } from '@/components/Reusable';
 import { topBar } from '@/cStyle';
 import { naira } from '@/constants/Currency';
 import { fetchCurrUser } from '../api/user.service';
@@ -27,9 +27,8 @@ import {
 import { convertToAWSDate } from '../utils/toAWSDate';
 import { fetchCountries } from '../api/payment.service';
 import { sendOtp } from '../api/token.service';
-import { signOut } from 'aws-amplify/auth';
 import SelectModal from './modals/SelectModal';
-import { AntDesign, Entypo } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
 
 const dateOption = [
   'en-US',
@@ -175,7 +174,7 @@ const CompleteProfile = () => {
 
       const resOtp = await sendOtp(profile.phone_number);
       setConfirmationResult({ ...resOtp, type: 'phone_verification' });
-      router.push('/verification_check');
+      router.push('/(protected)/verification_check');
     } catch (error) {
       console.error(error);
     } finally {

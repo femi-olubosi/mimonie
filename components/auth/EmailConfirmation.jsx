@@ -12,7 +12,7 @@ import Container from '../Container';
 import { Colors } from '../../constants/Colors';
 import { autoSignIn, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
@@ -33,7 +33,7 @@ const EmailConfirmation = () => {
   const handleVerify = async () => {
     setIsLoading(true);
     try {
-      const { isSignUpComplete, nextStep } = await confirmSignUp({
+      const { isSignUpComplete } = await confirmSignUp({
         username: emailVeri,
         confirmationCode: code,
       });
@@ -41,7 +41,7 @@ const EmailConfirmation = () => {
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
         if (signInOutput) {
-          router.replace('/complete_profile');
+          router.replace('/(protected)/complete_profile');
         } else {
           Alert.alert(
             'Sign-in failed',
@@ -119,7 +119,7 @@ const EmailConfirmation = () => {
               }}
               onPress={signOut}
             >
-              {/* <Link href={'/protected'}> */}
+              {/* <Link href={'/(protected)'}> */}
               <Text style={styles.buttonText}>Later</Text>
               {/* </Link> */}
             </TouchableOpacity>

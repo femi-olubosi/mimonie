@@ -35,7 +35,7 @@ const PrivacySecurityScreen = () => {
         <Text style={styles.paragraph}>
           All communication between your device and our servers is encrypted
           using industry-standard encryption protocols (SSL/TLS). This ensures
-          that your data is protected against unauthorized access.
+          that your data is (protected) against unauthorized access.
         </Text>
 
         <Text style={styles.sectionTitle}>Your Rights</Text>

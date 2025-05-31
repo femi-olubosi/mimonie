@@ -49,7 +49,7 @@ const Mimonie = () => {
     return (
       <TouchableOpacity
         style={styles.contributionContainer}
-        onPress={() => router.push(`/protected/mimonie/${item.id}`)}
+        onPress={() => router.push(`/(protected)/mimonie/${item.id}`)}
       >
         <View
           style={{
@@ -168,7 +168,7 @@ const Mimonie = () => {
         />
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push('/protected/create_contribution')}
+          onPress={() => router.push('/(protected)/create_contribution')}
         >
           <AntDesign name="plus" size={24} color="white" />
           <Text style={styles.buttonText}>Create New Contribution</Text>

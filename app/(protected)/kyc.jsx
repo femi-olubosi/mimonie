@@ -61,7 +61,7 @@ const kyc = () => {
       },
       setNotifications
     );
-    router.push('/protected/account');
+    router.push('/(protected)/account');
   };
 
   useEffect(() => {
@@ -78,7 +78,7 @@ const kyc = () => {
     'https://links.sandbox.usesmileid.com/6982/955ebd44-e1b2-41a1-8f9d-804a7be4cdc0';
 
   return (
-    <PageView title={'Verification'} route={'/protected/account'}>
+    <PageView title={'Verification'} route={'/(protected)/account'}>
       <View style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
           {!userProfile.is_nin_verified ? (

@@ -129,7 +129,7 @@ const transfer_screen = () => {
             {
               text: 'OK',
               onPress: () => {
-                router.push(`/protected/mimonie`);
+                router.push(`/(protected)/mimonie`);
               },
             },
           ],
@@ -188,7 +188,7 @@ const transfer_screen = () => {
     <>
       <PageView
         title={'Fund Withdraw'}
-        route={`/protected/mimonie/${parsedContribution?.id}`}
+        route={`/(protected)/mimonie/${parsedContribution?.id}`}
       >
         <View style={{ flex: 1, padding: 20 }}>
           <Banks

@@ -188,7 +188,7 @@ export const PageView = ({
         </View>
         {right && (
           <TouchableOpacity
-            onPress={() => router.push('/protected/profile_edit')}
+            onPress={() => router.push('/(protected)/profile_edit')}
           >
             <AntDesign name="edit" size={20} color={'black'} />
           </TouchableOpacity>

@@ -13,23 +13,23 @@ const SupportPage = () => {
       {[
         {
           label: 'Account Setup',
-          route: `/protected/help/Account Help`,
+          route: `/(protected)/help/Account Help`,
         },
         {
           label: 'Managing Group Contributions',
-          route: '/protected/help/Group Contributions Help',
+          route: '/(protected)/help/Group Contributions Help',
         },
         {
           label: 'Managing Personal Contributions',
-          route: '/protected/help/Personal Contributions Help',
+          route: '/(protected)/help/Personal Contributions Help',
         },
         {
           label: 'Verifications',
-          route: '/protected/help/Verification Help',
+          route: '/(protected)/help/Verification Help',
         },
         {
           label: 'Troubleshooting',
-          route: '/protected/help/Troubleshooting Help',
+          route: '/(protected)/help/Troubleshooting Help',
         },
       ].map((item, index) => (
         <TouchableOpacity

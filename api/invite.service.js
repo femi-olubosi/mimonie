@@ -40,6 +40,10 @@ export const sendInvite = async (contact) => {
 
 export const fetchInviteContributions = async (inviteLinks) => {
   try {
+    if (!Array.isArray(inviteLinks) || inviteLinks.length === 0) {
+      return [];
+    }
+
     const allContributions = await DataStore.query(Contribution);
 
     const filteredContributions = allContributions.filter((contribution) =>

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
-  Modal,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -29,8 +28,10 @@ const Contact = () => {
   const [contacts, setContacts] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
-  const [connectionList, setConnectionList] = useState([]);
-  const [pendingConnectionList, setPendingConnectionList] = useState([]);
+  const [connectionList, setConnectionList] = useState<string[]>([]);
+  const [pendingConnectionList, setPendingConnectionList] = useState<string[]>(
+    []
+  );
 
   const listConnections = async () => {
     setIsLoading(true);
@@ -102,13 +103,13 @@ const Contact = () => {
       phoneContacts = phoneContacts?.filter(
         (contact) =>
           matchedUsers.findIndex(
-            (user) => user.phoneNumbers[0] === contact.phoneNumbers[0]
+            (user: any) => user.phoneNumbers[0] === contact.phoneNumbers[0]
           ) === -1
       );
 
       setContacts(phoneContacts);
       setFoundUsers(
-        matchedUsers.filter((e) => e.userId !== userProfile.userId)
+        matchedUsers.filter((e: any) => e.userId !== userProfile.userId)
       );
     } catch (error) {
       console.error(error);

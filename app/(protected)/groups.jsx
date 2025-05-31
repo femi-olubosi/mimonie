@@ -24,7 +24,7 @@ const groups = () => {
       alert('Your income cannot create this contribution');
       return;
     }
-    router.push('/protected/create_contribution');
+    router.push('/(protected)/create_contribution');
   };
   return (
     <PageView title={'Groups'}>
