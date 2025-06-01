@@ -30,17 +30,17 @@ import { StatusBar } from 'expo-status-bar';
 import { topBar } from '../../../cStyle';
 import { ThemeColors } from '../../../constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DataStore } from 'aws-amplify/datastore';
+import { updateAttributes, updateUserProfile } from '../../../api/user.service';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
   const {
     currentUser,
     setIsLoading,
-    isLoading,
     userProfile,
     profilePicture,
     setProfilePicture,
+    setIsAuth,
   } = useGlobalContext();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutModal, setLogoutModal] = useState(false);
@@ -59,11 +59,12 @@ const Account = () => {
       if (!file) {
         throw new Error('No file selected');
       }
-      setProfilePicture(file);
+      setProfilePicture(file.uri);
       setIsLoading(false);
-      await uploadFile(file, userProfile?.userId);
+      const url = await uploadFile(file, userProfile?.userId);
+      await updateAttributes({ picture: url });
 
-      await AsyncStorage.setItem('profilePicture', file);
+      await AsyncStorage.setItem('profilePicture', file.uri);
     } catch (error) {
       console.error('Error handling profile picture:', error);
     } finally {
@@ -372,7 +373,9 @@ const Account = () => {
                 onPress={async () => {
                   try {
                     setLoggingOut(true);
-                    await signOut();
+                    setIsAuth(null);
+                    await AsyncStorage.removeItem('isAuth');
+                    signOut();
                     setTimeout(() => {
                       setLoggingOut(false);
                     }, 3000);

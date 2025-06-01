@@ -241,7 +241,7 @@ const CreateContribution = () => {
         [
           {
             text: 'OK',
-            onPress: () => router.push('/(protected)/mimonie'),
+            onPress: () => router.replace('/(protected)/mimonie'),
           },
         ],
         { cancelable: false }

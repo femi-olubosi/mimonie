@@ -16,9 +16,11 @@ import { router } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EmailConfirmation = () => {
-  const { emailVeri, setIsLoading, currentUser } = useGlobalContext();
+  const { emailVeri, setIsLoading, currentUser, setIsAuth } =
+    useGlobalContext();
   const [code, setCode] = useState(0);
   const { signOut } = useAuthenticator();
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
@@ -74,6 +76,12 @@ const EmailConfirmation = () => {
     }
   };
 
+  const handleLater = async () => {
+    setIsAuth(null);
+    await AsyncStorage.removeItem('isAuth');
+    await signOut();
+  };
+
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -117,7 +125,7 @@ const EmailConfirmation = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
-              onPress={signOut}
+              onPress={handleLater}
             >
               {/* <Link href={'/(protected)'}> */}
               <Text style={styles.buttonText}>Later</Text>

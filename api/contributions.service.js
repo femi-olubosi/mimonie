@@ -5,6 +5,10 @@ import { createUserActivity } from './activities.service';
 import { createTransferRecipientForBank } from './payment.service';
 
 export const fetchUserContributions = async (userId, setContributions) => {
+  if (!userId) {
+    return [];
+  }
+
   try {
     await DataStore.start();
 

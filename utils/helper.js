@@ -70,16 +70,19 @@ export const fetchAndCheckUser = async (
   setCurrentUser,
   setUserProfile,
   setConfirmationResult,
-  setUserActivities
+  setUserActivities,
+  setProfilePicture
 ) => {
   try {
     const authUser = await fetchCurrUser(setCurrentUser);
-    console.log('authUser', authUser);
+
     await fetchUserProfile(setUserProfile, authUser);
     await fetchUserActivities(authUser?.userId, setUserActivities);
+    const picture = await AsyncStorage.getItem('profilePicture');
+    setProfilePicture(picture);
 
     const phoneVerified =
-      authUser?.phone_number_verified || authUser?.phone || true;
+      authUser?.phone_number_verified || authUser?.['custom:phone_verified'];
 
     if (!authUser.name) {
       router.push('/(protected)/complete_profile');

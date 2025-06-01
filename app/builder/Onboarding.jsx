@@ -87,30 +87,33 @@ const Onboarding = ({ setOnboard }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={onboardingScreens}
-        renderItem={renderOnboardingScreen}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        keyExtractor={(item) => item.id}
-      />
-      <View style={styles.indicatorContainer}>
-        {onboardingScreens.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.indicator,
-              currentIndex === index && styles.activeIndicator,
-            ]}
-          />
-        ))}
+    <>
+      <StatusBar hidden />
+      <View style={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={onboardingScreens}
+          renderItem={renderOnboardingScreen}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          keyExtractor={(item) => item.id}
+        />
+        <View style={styles.indicatorContainer}>
+          {onboardingScreens.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.indicator,
+                currentIndex === index && styles.activeIndicator,
+              ]}
+            />
+          ))}
+        </View>
+        {renderFooter()}
       </View>
-      {renderFooter()}
-    </View>
+    </>
   );
 };
 

@@ -18,7 +18,7 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { DateTimeSelector, PageView } from '@/components/Reusable';
 import { topBar } from '@/cStyle';
 import { naira } from '@/constants/Currency';
-import { fetchCurrUser } from '../api/user.service';
+import { fetchCurrUser, updateAttributes } from '../api/user.service';
 import { ErrorCheck } from '../utils/errorCheck';
 import {
   createNotification,
@@ -130,8 +130,9 @@ const CompleteProfile = () => {
   }, [selectedOrigin]);
 
   const handleSubmit = async () => {
+    const name = `${infoDetails?.firstname?.trim()} ${infoDetails?.lastname?.trim()}`;
     const data = {
-      name: `${infoDetails?.firstname?.trim()} ${infoDetails?.lastname?.trim()}`,
+      name: name,
       birthdate: convertToAWSDate(infoDetails?.birthdate),
       address: infoDetails?.address,
       occupation: infoDetails?.occupation,
@@ -158,6 +159,8 @@ const CompleteProfile = () => {
         { ...data, customer_code: res.data.customer_code },
         currentUser
       );
+
+      await updateAttributes({ name });
 
       await createNotification(
         {

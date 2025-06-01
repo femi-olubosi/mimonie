@@ -185,34 +185,6 @@ const ProfileEdit = () => {
               <Text style={styles.label}>{item.label}</Text>
 
               {item.eType === 'select' ? (
-                // <SelectInput
-                //   options={
-                //     item.name === 'income_from'
-                //       ? income_range_options
-                //       : countries
-                //   }
-                //   selectedValue={
-                //     item.name === 'income_from'
-                //       ? selectedValue
-                //       : item.name === 'country_of_origin'
-                //       ? selectedOrigin
-                //       : selectedCountry
-                //   }
-                //   setSelectedValue={
-                //     item.name === 'income_from'
-                //       ? setSelectedValue
-                //       : item.name === 'country_of_origin'
-                //       ? setSelectedOrigin
-                //       : setSelectedCountry
-                //   }
-                //   defaultValue={
-                //     item.name === 'income_from'
-                //       ? selectedValue.value
-                //       : item.name === 'country_of_origin'
-                //       ? selectedOrigin.value
-                //       : selectedCountry.value
-                //   }
-                // />
                 item.name === 'income_from' ? (
                   <TouchableOpacity
                     onPress={() => {

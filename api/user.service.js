@@ -25,19 +25,21 @@ export const fetchCurrUser = async (setCurrentUser) => {
 export const uploadFile = async (file, userId) => {
   const uploadPath = `public/profile/${userId}-profile.jpg`;
   try {
-    const response = await fetch(file);
+    const response = await fetch(file.uri);
     const img = await response.blob();
 
-    const res = await uploadData({
+    await uploadData({
       path: uploadPath,
       data: img,
       options: {
-        contentType: 'image/jpeg',
+        contentType: file.type || 'image/jpeg',
         // contentEncoding: 'compress',
       },
     }).result;
-    console.log('res', res);
-    return res;
+
+    const fileUrl = `https://mimonies3storageb7338-dev.s3.us-west-2.amazonaws.com/${uploadPath}`;
+    console.log('res', fileUrl);
+    return fileUrl;
   } catch (error) {
     console.error('Error uploading or getting file URL:', error);
   }
@@ -85,24 +87,8 @@ export const checkLinkExpiry = async (link) => {
 };
 
 export const updateAttributes = async (data) => {
-  const {
-    signInDetails,
-    sub,
-    userId,
-    email_verified,
-    phone_number_verified,
-    username,
-    preferred_username,
-    email,
-    occupation,
-    income_from,
-    income_to,
-    country_of_origin,
-    country_of_residence,
-    ...rest
-  } = data;
-  const res = await updateUserAttributes({
-    userAttributes: rest,
+  await updateUserAttributes({
+    userAttributes: data,
   });
 };
 

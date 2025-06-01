@@ -11,18 +11,13 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { PageView } from '@/components/Reusable';
 import { useGlobalContext } from '../../../store/StoreContext';
-import {
-  findContributionByID,
-  joinContribution,
-} from '@/api/contributions.service';
+import { findContributionByID } from '@/api/contributions.service';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { statusCheck } from '@/utils/statusCheck';
 import { naira } from '@/constants/Currency';
 import { Colors } from '@/constants/Colors';
 import ContactModal from '@/components/ContactModal';
 import { updateInvite } from '@/api/invite.service';
-import { safeParseJSON } from '@/utils/safeJSON';
-import { fetchUserProfile } from '@/api/user.service';
 import Hide from '@/components/Hide';
 import { processFirstSavings } from '../../../api/payment.service';
 import {
@@ -49,7 +44,6 @@ import { isEarly } from '../../../utils/isEarlyWithdrawal';
 
 const ContributionDetails = () => {
   const {
-    setContributions,
     contributions,
     currentUser,
     userProfile,
@@ -64,7 +58,6 @@ const ContributionDetails = () => {
   const [contribution, setContribution] = useState({});
   const [participantList, setParticipantList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [imageUrls, setImageUrls] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [withdrawModal, setWithdrawModal] = useState(false);
   const [openParticipantEditModal, setOpenParticipantEditModal] =
@@ -118,13 +111,6 @@ const ContributionDetails = () => {
       fetchParticipant();
     }
   }, [id]);
-
-  // useEffect(() => {
-  //   if (contribution) {
-  //     const parsedData = safeParseJSON(contribution?.participant, []);
-  //     setParsed(parsedData);
-  //   }
-  // }, [contribution]);
 
   useEffect(() => {
     const checkExistingRequest = async () => {
@@ -454,8 +440,6 @@ const ContributionDetails = () => {
                   participantList={participantList}
                   contribution={contribution}
                   setOpenParticipantEditModal={setOpenParticipantEditModal}
-                  imageUrls={imageUrls}
-                  setImageUrls={setImageUrls}
                   userProfile={userProfile}
                   loadingParticipants={loadingParticipants}
                 />

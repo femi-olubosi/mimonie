@@ -5,6 +5,7 @@ import {
   getUserInfo,
 } from '@/api/user.service';
 import { DataStore } from 'aws-amplify/datastore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const StoreContext = createContext();
 
@@ -32,6 +33,7 @@ const StoreProvider = ({ children }) => {
   });
   const [kycForm, setKycForm] = useState({});
   const [pushRoute, setPushRoute] = useState('/(protected)');
+  const [isAuth, setIsAuth] = useState(false);
 
   // DataStore.start();
 
@@ -40,12 +42,25 @@ const StoreProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCurrUser(setCurrentUser);
-  }, []);
+    if (isAuth) {
+      fetchCurrUser(setCurrentUser);
+    }
+  }, [isAuth]);
 
   useEffect(() => {
-    fetchUserProfile(setUserProfile, currentUser);
-  }, [currentUser]);
+    if (isAuth) {
+      fetchUserProfile(setUserProfile, currentUser);
+    }
+  }, [currentUser, isAuth]);
+
+  useEffect(() => {
+    const checkAuthState = async () => {
+      const authValue = await AsyncStorage.getItem('isAuth');
+      setIsAuth(authValue === 'true');
+    };
+
+    checkAuthState();
+  }, []);
 
   const value = {
     darkMode,
@@ -89,6 +104,8 @@ const StoreProvider = ({ children }) => {
     setKycForm,
     pushRoute,
     setPushRoute,
+    isAuth,
+    setIsAuth,
   };
 
   return (

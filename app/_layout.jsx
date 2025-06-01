@@ -43,14 +43,11 @@ function RootLayout() {
 const screenOptions = { headerShown: false };
 
 function RootContent() {
-  const { isLoading } = useGlobalContext();
-
+  const { isLoading, isAuth } = useGlobalContext();
   return (
     <>
       <Stack screenOptions={screenOptions}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="email_verify" />
-        <Stack.Screen name="device_verify" />
         <Stack.Screen name="terms_condition" />
         <Stack.Screen name="(protected)" />
       </Stack>

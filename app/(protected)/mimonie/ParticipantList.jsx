@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   AntDesign,
   Feather,
@@ -15,32 +15,16 @@ import {
   MaterialCommunityIcons,
 } from '@expo/vector-icons';
 import { capitalizeFirstLetter } from '../../../utils/capitalizeFirstLetter';
-import { downloadUrl } from '../../../api/user.service';
 import { Colors } from '../../../constants/Colors';
 
 const ParticipantList = ({
   participantList,
   contribution,
   setOpenParticipantEditModal,
-  imageUrls,
-  setImageUrls,
   userProfile,
   loadingParticipants,
 }) => {
   const next = participantList?.find((e) => e.status !== 'received');
-
-  useEffect(() => {
-    const fetchImageUrls = async () => {
-      const urls = {};
-      for (const eN of participantList) {
-        if (eN.userId) {
-          urls[eN.userId] = await downloadUrl(eN.userId);
-        }
-      }
-      setImageUrls(urls);
-    };
-    fetchImageUrls();
-  }, [participantList]);
 
   return (
     <>
@@ -120,9 +104,9 @@ const ParticipantList = ({
                     }}
                   >
                     <View>
-                      {imageUrls[eN.userId] ? (
+                      {eN?.picture ? (
                         <Image
-                          source={{ uri: imageUrls[eN.userId] }}
+                          source={{ uri: eN?.picture }}
                           style={{
                             width: 50,
                             height: 50,

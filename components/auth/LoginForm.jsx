@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   TextInput,
   StyleSheet,
@@ -7,27 +7,20 @@ import {
   Alert,
   TouchableOpacity,
   Pressable,
-  ScrollView,
   KeyboardAvoidingView,
-  Platform,
   Image,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { signIn, signOut } from 'aws-amplify/auth';
+import { signIn } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
-import * as Device from 'expo-device';
-import { fetchUserNotification } from '../../api/notifications.service';
-import { sendOtp } from '../../api/token.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Checkbox from 'expo-checkbox';
 import { DataStore } from 'aws-amplify/datastore';
-import * as Notifications from 'expo-notifications';
 import { fetchUserActivities } from '@/api/activities.service';
-import { fetchUserContributions } from '@/api/contributions.service';
+import { handleProfileChecks } from '../../utils/profileCheck';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -40,10 +33,10 @@ const LoginForm = (props) => {
     setEmailVeri,
     setCurrentUser,
     setUserProfile,
-    setNotifications,
     setConfirmationResult,
     setUserActivities,
-    setContributions,
+    setIsAuth,
+    setProfilePicture,
   } = useGlobalContext();
   const router = useRouter();
 
@@ -62,11 +55,11 @@ const LoginForm = (props) => {
       if (!isSignedIn) {
         if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
           setEmailVeri(email);
-          router.push('/email_verify');
+          router.replace('/(protected)/email_verify');
           return;
         } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_SMS_CODE') {
           setEmailVeri(email);
-          router.push('/login_verify');
+          router.replace('/(protected)/login_verify');
           return;
         } else {
           Alert.alert('', nextStep.signInStep);
@@ -76,69 +69,21 @@ const LoginForm = (props) => {
 
       const user = await fetchCurrUser(setCurrentUser);
 
-      if (!profile?.name) {
-        router.push('/complete_profile');
-        return;
-      }
+      const passed = handleProfileChecks(user, setConfirmationResult);
 
-      if (email !== 'admin@mountspiral.com' && !profile?.phone_verified) {
-        Alert.alert(
-          'Phone Number is not verified',
-          `Please verify your phone number to continue`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Okay',
-              onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
-                setConfirmationResult({ ...res, type: 'phone_verification' });
-                router.push('/verification_check');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
-
-      if (
-        !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
-        profile?.device_id &&
-        profile?.device_id !== Device.osInternalBuildId
-      ) {
-        Alert.alert(
-          'Device Mismatch',
-          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Register',
-              onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
-                setConfirmationResult({ ...res, type: 'device_registration' });
-                router.push('/verification_check');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
+      if (!passed) return;
 
       await AsyncStorage.setItem('existingEmail', email);
+      const picture = await AsyncStorage.getItem('profilePicture');
+      setProfilePicture(picture);
 
-      const profile = await fetchUserProfile(setUserProfile, user);
+      await fetchUserProfile(setUserProfile, user);
       await fetchUserActivities(user.userId, setUserActivities);
 
-      router.push('/(protected)');
+      await AsyncStorage.setItem('isAuth', 'true');
+      setIsAuth(true);
+
+      router.replace('/(protected)/(tabs)');
     } catch (error) {
       Alert.alert('Error', error.message || 'Network Error. Please try again.');
     } finally {

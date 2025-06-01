@@ -18,7 +18,12 @@ import * as Device from 'expo-device';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { verifyOTP } from '../../api/token.service';
-import { downloadUrl, updateUserProfile } from '../../api/user.service';
+import {
+  downloadUrl,
+  updateAttributes,
+  updateUserProfile,
+} from '../../api/user.service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const VerificationCheck = () => {
@@ -28,6 +33,7 @@ const VerificationCheck = () => {
     setUserProfile,
     userProfile,
     setProfilePicture,
+    setIsAuth,
   } = useGlobalContext();
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
@@ -74,6 +80,7 @@ const VerificationCheck = () => {
       if (confirmationResult.type === 'phone_verification') {
         setUserProfile((prev) => ({ ...prev, phone_verified: true }));
         await updateUserProfile({ phone_verified: true }, currentUser);
+        await updateAttributes({ 'custom:phone_verified': 'true' });
 
         // Show alert and navigate only after user taps 'OK'
         Alert.alert('Success', 'Phone number verified successfully.', [
@@ -128,6 +135,12 @@ const VerificationCheck = () => {
     }
   };
 
+  const handleLater = async () => {
+    setIsAuth(null);
+    await AsyncStorage.removeItem('isAuth');
+    await signOut();
+  };
+
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
@@ -178,7 +191,7 @@ const VerificationCheck = () => {
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={styles.cancelButton}
-                  onPress={signOut()}
+                  onPress={handleLater}
                   disabled={verifying}
                 >
                   <Text style={styles.modalButtonText}>Not now</Text>

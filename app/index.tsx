@@ -11,6 +11,7 @@ const index = () => {
     setUserProfile,
     setConfirmationResult,
     setUserActivities,
+    setProfilePicture,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -18,7 +19,8 @@ const index = () => {
       setCurrentUser,
       setUserProfile,
       setConfirmationResult,
-      setUserActivities
+      setUserActivities,
+      setProfilePicture
     );
   }, []);
 

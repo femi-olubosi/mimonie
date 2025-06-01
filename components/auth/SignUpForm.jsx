@@ -34,7 +34,8 @@ const SignUp = (props) => {
   const [showPass, setShowPass] = useState(false);
   const { handleSubmit, toSignIn } = props;
   const [isChecked, setChecked] = useState(false);
-  const { setIsLoading, isLoading, setEmailVeri } = useGlobalContext();
+  const { setIsLoading, isLoading, setEmailVeri, setIsAuth } =
+    useGlobalContext();
 
   const handleSignUp = async () => {
     if (ErrorCheck({ password, email, phone_number })) {
@@ -83,6 +84,7 @@ const SignUp = (props) => {
             email,
             preferred_username: email,
             phone_number: normalizedPhoneNumber,
+            'custom:device_id': device.device_id,
           },
           autoSignIn: true,
         },
@@ -91,6 +93,8 @@ const SignUp = (props) => {
       await createUserProfile(userId, device, email, normalizedPhoneNumber);
       setEmailVeri(email);
       await AsyncStorage.setItem('existingEmail', email);
+      await AsyncStorage.setItem('isAuth', 'true');
+      setIsAuth(true);
       router.replace('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);
