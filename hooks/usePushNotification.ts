@@ -2,7 +2,8 @@ import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import * as Notifications from 'expo-notifications';
 
 const usePushNotifications = (currentUser: any) => {
   const [pushActive, setPushActive] = useState(false);
@@ -28,3 +29,26 @@ const usePushNotifications = (currentUser: any) => {
 };
 
 export default usePushNotifications;
+
+export function useHandleNotifications() {
+  const [lastNotificationResponse, setLastNotificationResponse] = useState<
+    Notifications.NotificationResponse | undefined
+  >();
+
+  const responseListener = useRef<Notifications.EventSubscription>();
+
+  useEffect(() => {
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log('Notification response received (user tapped):', response);
+        setLastNotificationResponse(response);
+      });
+
+    return () => {
+      responseListener.current &&
+        Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
+  return { lastNotificationResponse };
+}

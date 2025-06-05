@@ -24,7 +24,7 @@ const useUserVerificationSteps = ({
           ].filter(Boolean);
 
           setCompletedSteps(steps);
-          setShowUserVerificationModal(steps.length < 3);
+          setShowUserVerificationModal(steps?.length < 3);
           setHasShownModal(true);
         }
       } catch (err) {

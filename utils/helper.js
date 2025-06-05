@@ -68,7 +68,6 @@ export async function onFetchUpdateAsync() {
 
 export const fetchAndCheckUser = async (
   setCurrentUser,
-  setUserProfile,
   setConfirmationResult,
   setUserActivities,
   setProfilePicture
@@ -76,7 +75,7 @@ export const fetchAndCheckUser = async (
   try {
     const authUser = await fetchCurrUser(setCurrentUser);
 
-    await fetchUserProfile(setUserProfile, authUser);
+    // await fetchUserProfile(setUserProfile, authUser);
     await fetchUserActivities(authUser?.userId, setUserActivities);
     const picture = await AsyncStorage.getItem('profilePicture');
     setProfilePicture(picture);
@@ -84,10 +83,10 @@ export const fetchAndCheckUser = async (
     const phoneVerified =
       authUser?.phone_number_verified || authUser?.['custom:phone_verified'];
 
-    if (!authUser.name) {
+    if (!authUser?.name) {
       router.push('/(protected)/complete_profile');
     } else if (!phoneVerified) {
-      const res = await sendOtp(authUser.phone_number);
+      const res = await sendOtp(authUser?.phone_number);
       setConfirmationResult({ ...res, type: 'phone_verification' });
       router.push('/verification_check');
     } else {

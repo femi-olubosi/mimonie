@@ -14,3 +14,12 @@ submit_android:
 
 submit_ios:
 	eas submit --platform ios
+
+update_prod:
+	eas update --branch production --message 'Update 1.0.07 Testing'
+
+build_dev_ios:
+	eas build --platform ios --profile development
+
+build_dev_android:
+	eas build --platform android --profile development

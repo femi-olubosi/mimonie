@@ -18,7 +18,7 @@ export const useUserProfile = ({
     const loadUserProfile = async () => {
       if (!currentUser) return;
 
-      if (userProfile?.name) return;
+      // if (userProfile?.name) return;
 
       setIsLoading(true);
 

@@ -110,9 +110,11 @@ const sendPushNotification = async (
     title: title,
     body: body,
     data: data,
-    richContent: {
-      image: imageUrl,
-    },
+    ...(imageUrl && {
+      richContent: {
+        image: imageUrl,
+      },
+    }),
   };
 
   try {

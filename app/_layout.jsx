@@ -5,7 +5,7 @@ import amplifyconfig from '../src/amplifyconfiguration.json';
 import Loader from '@/components/Loader';
 import { StoreProvider, useGlobalContext } from '@/store/StoreContext';
 import '@azure/core-asynciterator-polyfill';
-import Onboarding from './builder/Onboarding';
+// import Onboarding from './builder/Onboarding';
 import initializeApp from '@/utils/initializeApp';
 import useAppFonts from '@/hooks/useAppFonts';
 // import useNotificationObserver from '@/hooks/useNotificationObserver';
@@ -29,9 +29,9 @@ function RootLayout() {
     }
   }, [fontsLoaded]);
 
-  if (onboard) {
-    return <Onboarding setOnboard={setOnboard} />;
-  }
+  // if (onboard) {
+  //   return <Onboarding setOnboard={setOnboard} />;
+  // }
 
   return (
     <StoreProvider>
@@ -43,7 +43,7 @@ function RootLayout() {
 const screenOptions = { headerShown: false };
 
 function RootContent() {
-  const { isLoading, isAuth } = useGlobalContext();
+  const { isLoading } = useGlobalContext();
   return (
     <>
       <Stack screenOptions={screenOptions}>

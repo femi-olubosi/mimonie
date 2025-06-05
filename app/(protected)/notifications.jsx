@@ -80,13 +80,13 @@ const notifications = () => {
               onPress={() => handleNotificationPress(notification)}
             >
               <View style={styles.notificationContent}>
-                {notificationIcon(notification.type)}
+                {notificationIcon(notification?.type)}
                 <View style={styles.notificationTextContainer}>
                   <Text style={styles.notificationTitle}>
-                    {notification.title}
+                    {notification?.title}
                   </Text>
                   <Text numberOfLines={1} style={styles.notificationBody}>
-                    {notification.content}
+                    {notification?.content}
                   </Text>
                 </View>
               </View>
@@ -98,10 +98,10 @@ const notifications = () => {
                 }}
               >
                 <Text style={styles.notificationDate}>
-                  {formatTimestamp(notification.createdAt).split(',')[0]}
+                  {formatTimestamp(notification?.createdAt)?.split(',')[0]}
                 </Text>
                 <Text style={styles.notificationDate}>
-                  {formatTimestamp(notification.createdAt).split(',')[1]}
+                  {formatTimestamp(notification?.createdAt)?.split(',')[1]}
                 </Text>
               </View>
             </Pressable>
@@ -118,14 +118,14 @@ const notifications = () => {
             <View style={styles.modalOverlay}>
               <View style={styles.modalContainer}>
                 <Text style={styles.modalTitle}>
-                  {selectedNotification.title}
+                  {selectedNotification?.title}
                 </Text>
                 <Text style={styles.modalBody}>
-                  {selectedNotification.content}
+                  {selectedNotification?.content}
                 </Text>
                 <View style={{ marginTop: 20 }}>
                   <Text style={styles.modalDate}>
-                    {formatTimestamp(selectedNotification.createdAt)}
+                    {formatTimestamp(selectedNotification?.createdAt)}
                   </Text>
                   <View style={{ rowGap: 10 }}>
                     {Platform.OS === 'ios' ? (

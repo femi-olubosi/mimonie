@@ -20,9 +20,11 @@ const pushNotification = {
       title,
       body,
       data,
-      richContent: {
-        image: imageUrl,
-      },
+      ...(imageUrl && {
+        richContent: {
+          image: imageUrl,
+        },
+      }),
     }));
 
     // Chunk into max of 100 (Expo limit)

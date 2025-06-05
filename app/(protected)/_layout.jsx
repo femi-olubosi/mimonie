@@ -6,6 +6,8 @@ import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { formFields } from '../../data/authFormField';
 import { StatusBar } from 'expo-status-bar';
+// import UserInactivityProvider from '../../components/UserInactivityProvider';
+import { useHandleNotifications } from '../../hooks/usePushNotification';
 
 const ProtectedLayout = () => {
   return (
@@ -19,6 +21,7 @@ export default ProtectedLayout;
 
 const ProtectedContent = () => {
   const { route } = useAuthenticator((context) => [context.route]);
+  useHandleNotifications();
 
   return (
     <>
@@ -52,6 +55,7 @@ const ProtectedContent = () => {
           },
         }}
       >
+        {/* <UserInactivityProvider> */}
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="personal_info" options={{ headerShown: false }} />
@@ -98,6 +102,7 @@ const ProtectedContent = () => {
             options={{ headerShown: false }}
           />
         </Stack>
+        {/* </UserInactivityProvider> */}
       </Authenticator>
     </>
   );

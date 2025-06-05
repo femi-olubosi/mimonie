@@ -35,23 +35,22 @@ const StoreProvider = ({ children }) => {
   const [pushRoute, setPushRoute] = useState('/(protected)');
   const [isAuth, setIsAuth] = useState(false);
 
-  // DataStore.start();
+  DataStore.start();
 
   const toggleMode = () => {
     setDarkMode((prevMode) => !prevMode);
   };
 
   useEffect(() => {
-    if (isAuth) {
-      fetchCurrUser(setCurrentUser);
-    }
+    fetchCurrUser(setCurrentUser);
   }, [isAuth]);
 
   useEffect(() => {
     if (isAuth) {
+      if (userProfile?.name) return;
       fetchUserProfile(setUserProfile, currentUser);
     }
-  }, [currentUser, isAuth]);
+  }, [currentUser, isAuth, userProfile]);
 
   useEffect(() => {
     const checkAuthState = async () => {

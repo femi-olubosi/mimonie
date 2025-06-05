@@ -56,6 +56,49 @@ export async function registerForPushNotificationsAsync() {
   return token;
 }
 
+export async function reRegisterForPushNotificationsAsync() {
+  let token;
+
+  // Set notification channel for Android
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (!Device.isDevice) {
+    console.log('Must use physical device for push notifications');
+    return null;
+  }
+
+  // Step 1: Get existing permissions
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  // Step 2: If not granted, request
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  // Step 3: If granted (either already or just now), get token
+  if (finalStatus === 'granted') {
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ??
+      Constants?.easConfig?.projectId;
+
+    token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    console.log('Push Token:', token);
+  } else {
+    console.log('Permission not granted for push notifications');
+  }
+
+  return token;
+}
+
 // Function to save the push token to the backend
 export async function savePushToken(currentUser, pushToken) {
   try {

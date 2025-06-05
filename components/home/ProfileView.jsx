@@ -106,7 +106,7 @@ const ProfileView = ({
             }}
           >
             <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
-              {notifications?.filter((e) => !e.read).length || 0}
+              {notifications?.filter((e) => !e.read)?.length || 0}
             </Text>
           </View>
         </TouchableOpacity>

@@ -20,7 +20,7 @@ const useDataStoreObservers = ({
     if (!currentUser?.userId) return;
 
     const subscription = DataStore.observe(Contribution).subscribe(() => {
-      fetchUserContributions(currentUser.userId, setContributions);
+      fetchUserContributions(currentUser?.userId, setContributions);
     });
 
     return () => subscription.unsubscribe();
@@ -30,7 +30,7 @@ const useDataStoreObservers = ({
     if (!currentUser?.userId) return;
 
     const subscription = DataStore.observe(UserConnections).subscribe(() => {
-      listUserConnections(currentUser.userId, setParsed);
+      listUserConnections(currentUser?.userId, setParsed);
     });
 
     return () => subscription.unsubscribe();

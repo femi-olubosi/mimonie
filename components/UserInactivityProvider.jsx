@@ -1,14 +1,16 @@
 import { useEffect, useRef } from 'react';
 import { AppState } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '../store/StoreContext';
+import { router } from 'expo-router';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const INACTIVITY_TIMEOUT = 2 * 60 * 1000;
 
 const UserInactivityProvider = ({ children }) => {
   const appState = useRef(AppState.currentState);
   const { setIsAuth } = useGlobalContext();
+  const { signOut } = useAuthenticator();
 
   const recordStartTime = async () =>
     await AsyncStorage.setItem('lastActiveTime', Date.now().toString());

@@ -21,32 +21,8 @@ import { createTransferRecipientForBank } from '../../api/payment.service';
 import { createRequest } from '../../api/request.service';
 import DeleteRequestModal from '../../components/modals/DeleteRequestModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const triggerAccountDeletion = () => {
-  Alert.alert(
-    'Delete Account',
-    'Are you sure you want to delete your account? A message will be sent to the admin to process the request',
-    [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        onPress: async () => {
-          console.log('Account deletion triggered');
-          // Add your delete account logic here
-          await createRequest({
-            type: 'delete_account',
-            username: userProfile.username,
-            userId: userProfile.userId,
-            user_email: userProfile.email,
-            status: 'open',
-          });
-        },
-        style: 'destructive',
-      },
-    ],
-    { cancelable: true }
-  );
-};
+import { useGetPushTokenFromLocalStorage } from '../../hooks/useGetPushToken';
+import { reRegisterForPushNotificationsAsync } from '../../api/pushNotification.service';
 
 const Settings = () => {
   const {
@@ -69,6 +45,8 @@ const Settings = () => {
   const [deleting, setDeleting] = useState(false);
   const [requested, setRequested] = useState(false);
 
+  const pushToken = useGetPushTokenFromLocalStorage();
+
   useEffect(() => {
     const checkForUpdates = async () => {
       try {
@@ -81,23 +59,38 @@ const Settings = () => {
       }
     };
 
-    checkForUpdates();
+    if (!__DEV__) {
+      checkForUpdates();
+    }
   }, []);
 
-  const toggleNotifications = async () => {
-    setNotificationsEnabled(!notificationsEnabled);
-    if (!notificationsEnabled) {
-      const registerPushToken = async () => {
-        try {
-          const pushToken = await registerForPushNotificationsAsync();
-          if (pushToken && currentUser) {
-            await savePushToken(currentUser, pushToken);
-          }
-        } catch (error) {
-          console.log('Failed to get push token:', error);
-        }
-      };
-      registerPushToken();
+  const toggleNotifications = async (enabled) => {
+    setNotificationsEnabled(!false);
+    if (enabled) {
+      const pushToken = await reRegisterForPushNotificationsAsync();
+      if (pushToken) {
+        setNotificationsEnabled(true);
+        await savePushToken(currentUser, pushToken);
+        await AsyncStorage.setItem('pushToken', JSON.stringify(pushToken));
+        Alert.alert(
+          'Notifications Enabled',
+          'You will now receive push notifications.'
+        );
+      } else {
+        setNotificationsEnabled(false);
+        Alert.alert(
+          'Error',
+          'Failed to register for push notifications. Please try again later.'
+        );
+      }
+    } else {
+      setNotificationsEnabled(false);
+      await savePushToken(currentUser, null);
+      await AsyncStorage.removeItem('pushToken');
+      Alert.alert(
+        'Notifications Disabled',
+        'You will no longer receive push notifications.'
+      );
     }
   };
 
@@ -117,53 +110,53 @@ const Settings = () => {
     }
   };
 
-  const handleEnablePersonalContribution = async () => {
-    setIsLoading(true);
+  // const handleEnablePersonalContribution = async () => {
+  //   setIsLoading(true);
 
-    if (pCEnable) {
-      setIsLoading(false);
-      return;
-    }
+  //   if (pCEnable) {
+  //     setIsLoading(false);
+  //     return;
+  //   }
 
-    try {
-      const customerRecipientCode = await createTransferRecipientForBank({
-        bank_code: userProfile.bank_details.bank_code,
-        account_number: userProfile.bank_details.account_number,
-        account_name: userProfile.name,
-      });
+  //   try {
+  //     const customerRecipientCode = await createTransferRecipientForBank({
+  //       bank_code: userProfile.bank_details.bank_code,
+  //       account_number: userProfile.bank_details.account_number,
+  //       account_name: userProfile.name,
+  //     });
 
-      const toStore = {
-        customer_recipient_code: customerRecipientCode,
-        enabled: true,
-      };
+  //     const toStore = {
+  //       customer_recipient_code: customerRecipientCode,
+  //       enabled: true,
+  //     };
 
-      await updateUserProfile(
-        { dva: toStore, recipient_code: customerRecipientCode },
-        currentUser
-      );
-      await fetchUserProfile(setUserProfile, currentUser);
-      setPCEnable(true);
-      setIsLoading(false);
+  //     await updateUserProfile(
+  //       { dva: toStore, recipient_code: customerRecipientCode },
+  //       currentUser
+  //     );
+  //     await fetchUserProfile(setUserProfile, currentUser);
+  //     setPCEnable(true);
+  //     setIsLoading(false);
 
-      Alert.alert(
-        'Success',
-        'Personal contribution enabled successfully!',
-        [
-          { text: 'OK', onPress: () => console.log('OK Pressed') },
-          {
-            text: 'Create Contribution',
-            onPress: () => router.push('/(protected)/create_contribution'),
-          },
-        ],
-        { cancelable: false }
-      );
-    } catch (error) {
-      console.error('Error creating personal contribution:', error);
-      setIsLoading(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     Alert.alert(
+  //       'Success',
+  //       'Personal contribution enabled successfully!',
+  //       [
+  //         { text: 'OK', onPress: () => console.log('OK Pressed') },
+  //         {
+  //           text: 'Create Contribution',
+  //           onPress: () => router.push('/(protected)/create_contribution'),
+  //         },
+  //       ],
+  //       { cancelable: false }
+  //     );
+  //   } catch (error) {
+  //     console.error('Error creating personal contribution:', error);
+  //     setIsLoading(false);
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     const getRequestStatus = async () => {
@@ -209,9 +202,9 @@ const Settings = () => {
         <View style={styles.setting}>
           <Text style={styles.settingText}>Enable Push Notifications</Text>
           <Switch
-            onValueChange={toggleNotifications}
-            value={!!userProfile?.push_token}
-            disabled={!!userProfile?.push_token}
+            onValueChange={(e) => toggleNotifications(e)}
+            value={notificationsEnabled || !!pushToken}
+            disabled={!!pushToken}
           />
         </View>
 
@@ -230,19 +223,16 @@ const Settings = () => {
           />
         </View>
         {/* Enable personal contribution */}
-        <View style={styles.setting}>
+        {/* <View style={styles.setting}>
           <View>
             <Text style={styles.settingText}>Enable Personal Contribution</Text>
-            {/* <Text style={{ fontSize: 10, fontFamily: 'ir' }}>
-              You will not be able to disable it again until after 3 months
-            </Text> */}
           </View>
           <Switch
             onValueChange={handleEnablePersonalContribution}
             value={userProfile?.dva?.enabled || pCEnable}
             disabled={userProfile?.dva?.enabled || pCEnable}
           />
-        </View>
+        </View> */}
 
         {/* Update App - Show an indicator if update is available */}
         <TouchableOpacity
