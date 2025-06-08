@@ -6,7 +6,7 @@ import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { formFields } from '../../data/authFormField';
 import { StatusBar } from 'expo-status-bar';
-// import UserInactivityProvider from '../../components/UserInactivityProvider';
+import UserInactivityProvider from '../../components/UserInactivityProvider';
 import { useHandleNotifications } from '../../hooks/usePushNotification';
 
 const ProtectedLayout = () => {

@@ -37,7 +37,7 @@ import Hide from '@/components/Hide';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import UserVerificationModal from '@/components/modals/UserVerificationModal';
 import Blog from '@/components/home/Blog';
-// import usePushNotifications from '@/hooks/usePushNotification';
+import usePushNotifications from '@/hooks/usePushNotification';
 import { getContacts } from '@/api/contact.service';
 import useUserVerificationSteps from '@/hooks/useUserVerificationSteps';
 import { listUserConnections } from '@/functions/connections';
@@ -84,7 +84,7 @@ export default function HomeScreen() {
     setHasShownModal,
   });
   useDataStoreObservers({ currentUser, setContributions, setParsed });
-  useUserProfile({ currentUser, setUserProfile, setIsLoading, userProfile });
+  // useUserProfile({ currentUser, setUserProfile, setIsLoading, userProfile });
 
   const fetchData = useCallback(async () => {
     try {

@@ -70,12 +70,15 @@ export const fetchAndCheckUser = async (
   setCurrentUser,
   setConfirmationResult,
   setUserActivities,
-  setProfilePicture
+  setProfilePicture,
+  setUserProfile,
+  setInitializing
 ) => {
+  setInitializing(true);
   try {
     const authUser = await fetchCurrUser(setCurrentUser);
 
-    // await fetchUserProfile(setUserProfile, authUser);
+    await fetchUserProfile(setUserProfile, authUser);
     await fetchUserActivities(authUser?.userId, setUserActivities);
     const picture = await AsyncStorage.getItem('profilePicture');
     setProfilePicture(picture);
@@ -84,15 +87,23 @@ export const fetchAndCheckUser = async (
       authUser?.phone_number_verified || authUser?.['custom:phone_verified'];
 
     if (!authUser?.name) {
+      setInitializing(false);
       router.push('/(protected)/complete_profile');
     } else if (!phoneVerified) {
+      setInitializing(false);
       const res = await sendOtp(authUser?.phone_number);
       setConfirmationResult({ ...res, type: 'phone_verification' });
-      router.push('/verification_check');
+      router.push('/(protected)/verification_check');
     } else {
+      // router.push('/(protected)/(tabs)');
+      setInitializing(false);
       console.log(authUser?.name);
     }
   } catch (error) {
+    setInitializing(false);
     console.error('Error fetching current user:', error);
+  } finally {
+    // router.push('/(protected)/(tabs)');
+    setInitializing(false);
   }
 };
