@@ -196,7 +196,8 @@ export default function UploadDocument() {
         await AsyncStorage.setItem('jobId', res.job_id);
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: true },
-          currentUser
+          currentUser,
+          userProfile
         );
 
         await fetchUserProfile(setUserProfile, currentUser);
@@ -210,7 +211,8 @@ export default function UploadDocument() {
       } else if (res.result === 'rejected') {
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: false },
-          currentUser
+          currentUser,
+          userProfile
         );
         setLoading(false);
         setModalContent({

@@ -32,14 +32,6 @@ const notifications = () => {
 
   const fetchMoreNotifications = () => {};
 
-  useEffect(() => {
-    fetchUserNotification(currentUser?.userId, setNotifications);
-    const subscription = DataStore.observe(UserNotifications).subscribe(() =>
-      fetchUserNotification(currentUser?.userId, setNotifications)
-    );
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
-
   const handleNotificationPress = async (notification) => {
     try {
       setSelectedNotification(notification);

@@ -1,22 +1,27 @@
-import { DataStore } from 'aws-amplify/datastore';
-import { UserNotifications } from '../src/models';
+import { DataStore, Predicates, SortDirection } from 'aws-amplify/datastore';
+import { GlobalNotifications, UserNotifications } from '../src/models';
 
-export const fetchUserNotification = async (userId, setNotifications) => {
+export const fetchUserNotification = async (
+  userId,
+  setNotifications,
+  limit = 10
+) => {
   try {
-    const userNotifications = await DataStore.query(UserNotifications, (c) =>
-      c.or((c) => [c.userId.eq(userId), c.global.eq(true)])
+    const userNotifications = await DataStore.query(
+      UserNotifications,
+      (c) => c.or((c) => [c.userId.eq(userId), c.global.eq(true)]),
+      {
+        limit: limit,
+        sort: (c) => c.createdAt(SortDirection.DESCENDING),
+      }
     );
 
-    const sorted = userNotifications.sort((a, b) =>
-      a.createdAt > b.createdAt ? -1 : 1
-    );
+    setNotifications(userNotifications || []);
 
-    setNotifications(sorted);
-
-    return sorted;
+    return userNotifications || [];
   } catch (error) {
     console.error('Error fetching user notifications:', error);
-    return [];
+    throw error;
   }
 };
 

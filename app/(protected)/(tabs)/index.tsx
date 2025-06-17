@@ -17,10 +17,13 @@ import Advert from '@/components/home/Advert';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useCallback, useEffect, useState } from 'react';
-import { fetchUserProfile } from '@/api/user.service';
+import { fetchUserProfile, updateUserProfile } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
-import { fetchUserContributions } from '@/api/contributions.service';
+import {
+  fetchUserContributions,
+  fetchUserInvitedContributions,
+} from '@/api/contributions.service';
 import { fetchUserNotification } from '@/api/notifications.service';
 import {
   FontAwesome,
@@ -43,6 +46,18 @@ import useUserVerificationSteps from '@/hooks/useUserVerificationSteps';
 import { listUserConnections } from '@/functions/connections';
 import useDataStoreObservers from '@/hooks/useDatastoreObserver';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { Button } from 'react-native';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
+import {
+  Contribution,
+  ContributionParticipant,
+  UserActivity,
+  UserNotifications,
+  UserProfile,
+} from '@/src/models';
+import { DataStore } from '@aws-amplify/datastore';
+import { signOut } from 'aws-amplify/auth';
+import { updateContributionOwners } from '@/scripts/populateAccessField';
 
 export default function HomeScreen() {
   const {
@@ -63,6 +78,9 @@ export default function HomeScreen() {
     parsed,
     setParsed,
     pilot,
+    isReady,
+    isLoading,
+    inviteArray,
   } = useGlobalContext();
 
   const { priBg, priText } = ThemeColors();
@@ -73,45 +91,77 @@ export default function HomeScreen() {
   const [completedSteps, setCompletedSteps] = useState([]);
   const [hasShownModal, setHasShownModal] = useState(false);
 
-  // hooks
-  // usePushNotifications(currentUser);
+  const { user } = useAuthenticator((context) => [context.user]);
+
+  useEffect(() => {
+    if (!userProfile) {
+      setIsLoading(true);
+    } else {
+      setIsLoading(false);
+    }
+  }, [userProfile]);
+
+  useDataStoreObservers({
+    currentUser: user,
+    setContributions,
+    setParsed,
+    setInviteArray,
+  });
+
   useUserVerificationSteps({
-    currentUser,
+    currentUser: user,
     hasShownModal,
-    setUserProfile,
     setCompletedSteps,
     setShowUserVerificationModal,
     setHasShownModal,
   });
-  useDataStoreObservers({ currentUser, setContributions, setParsed });
-  // useUserProfile({ currentUser, setUserProfile, setIsLoading, userProfile });
 
-  const fetchData = useCallback(async () => {
+  // useUserProfile({
+  //   currentUser,
+  //   setUserProfile,
+  //   setIsLoading,
+  //   userProfile,
+  // });
+
+  usePushNotifications(user, userProfile);
+
+  const fetchData = async (user: any) => {
     try {
       await Promise.all([
-        fetchUserContributions(currentUser?.userId, setContributions),
-        fetchUserNotification(currentUser?.userId, setNotifications),
-        fetchUserActivities(userProfile?.userId, setUserActivities),
-        listUserConnections(currentUser?.userId, setParsed),
+        fetchUserProfile(setUserProfile, user),
+        fetchUserContributions(user?.userId, setContributions, 50),
+        fetchUserNotification(user?.userId, setNotifications, 20),
+        listUserConnections(user?.userId, setParsed),
         getContacts().then(setMyContacts),
-        fetchInviteContributions(userProfile?.invites).then(setInviteArray),
+        fetchUserActivities(user?.userId, setUserActivities, 20),
+        fetchUserInvitedContributions(user.userId, setInviteArray, 20),
       ]);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     }
-  }, [currentUser, userProfile]);
+  };
 
   // Refresh control handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchData();
+    await fetchData(user);
     setRefreshing(false);
   }, [fetchData]);
 
   // Initial data load
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(user);
+  }, [isReady, user]);
+
+  // const test = async () => {
+  //   try {
+  //     const activity = await DataStore.query(ContributionParticipant);
+  //     // await updateContributionOwners();
+  //     console.log(activity);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>
@@ -144,7 +194,7 @@ export default function HomeScreen() {
             pilot={pilot}
           />
           <Advert />
-          {/* <Button title="SmileId" onPress={addAll} /> */}
+          {/* <Button title="SmileId" onPress={test} /> */}
           <View
             style={{
               paddingHorizontal: 20,

@@ -82,7 +82,8 @@ const Bvn = () => {
             bvn,
           },
         },
-        currentUser
+        currentUser,
+        userProfile
       );
       await fetchUserProfile(setUserProfile, currentUser);
 

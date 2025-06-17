@@ -100,9 +100,13 @@ export async function reRegisterForPushNotificationsAsync() {
 }
 
 // Function to save the push token to the backend
-export async function savePushToken(currentUser, pushToken) {
+export async function savePushToken(currentUser, pushToken, userProfile) {
   try {
-    await updateUserProfile({ push_token: pushToken }, currentUser);
+    await updateUserProfile(
+      { push_token: pushToken },
+      currentUser,
+      userProfile
+    );
   } catch (error) {
     console.error('Error saving push token:', error);
   }

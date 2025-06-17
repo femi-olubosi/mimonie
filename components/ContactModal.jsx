@@ -19,6 +19,7 @@ import { sendUserInvite } from '../api/invite.service';
 import {
   fetchUserProfile,
   fetchUserProfileForInvite,
+  getUser,
 } from '../api/user.service';
 import { safeParseJSON } from '@/utils/safeJSON';
 import { UserProfile } from '@/src/models';
@@ -53,45 +54,46 @@ const ContactModal = ({
     }
     setProcessing(true);
 
-    const inviteeUser = await fetchUserProfileForInvite(invitee.userId);
+    // const inviteeUser = await fetchUserProfileForInvite(invitee.userId);
+    // const inviteeUser = await getUser(userId);
 
-    if (!inviteeUser) {
-      setProcessing(false);
-      Alert.alert('Error', 'User not found');
-      return;
-    }
+    // if (!inviteeUser) {
+    //   setProcessing(false);
+    //   Alert.alert('Error', 'User not found');
+    //   return;
+    // }
 
-    if (!inviteeUser.is_bvn_verified || !inviteeUser.is_nin_verified) {
-      setProcessing(false);
-      Alert.alert('Sorry!!', `${invitee?.name} is not fully verified`);
-      return;
-    }
+    // if (!inviteeUser.is_bvn_verified || !inviteeUser.is_nin_verified) {
+    //   setProcessing(false);
+    //   Alert.alert('Sorry!!', `${invitee?.name} is not fully verified`);
+    //   return;
+    // }
 
-    if (
-      Number(inviteeUser.income_from) &&
-      Number(inviteeUser.income_from) < Number(amount)
-    ) {
-      setProcessing(false);
-      Alert.alert(
-        'Sorry!!',
-        `${item?.name} income is too low to join this contribution`
-      );
-      return;
-    }
+    // if (
+    //   Number(inviteeUser.income_from) &&
+    //   Number(inviteeUser.income_from) < Number(amount)
+    // ) {
+    //   setProcessing(false);
+    //   Alert.alert(
+    //     'Sorry!!',
+    //     `${item?.name} income is too low to join this contribution`
+    //   );
+    //   return;
+    // }
 
     try {
-      const hisContributions = await fetchUserContributions(
-        invitee.userId,
-        setInviteeContributions
-      );
+      // const hisContributions = await fetchUserContributions(
+      //   invitee.userId,
+      //   setInviteeContributions
+      // );
 
-      if (validateUserContributions(hisContributions, 'group')) {
-        Alert.alert(
-          'Error',
-          'The user you are trying to invite is currently not available to join contributions.'
-        );
-        return;
-      }
+      // if (validateUserContributions(hisContributions, 'group')) {
+      //   Alert.alert(
+      //     'Error',
+      //     'The user you are trying to invite is currently not available to join contributions.'
+      //   );
+      //   return;
+      // }
 
       await sendUserInvite(invitee.userId, invite_link);
 

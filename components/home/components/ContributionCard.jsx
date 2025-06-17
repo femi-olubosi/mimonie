@@ -44,7 +44,15 @@ const ContributionCard = ({ item }) => {
   return (
     <Pressable
       style={[styles.card, { overflow: 'hidden', position: 'relative' }]}
-      onPress={() => router.push(`/(protected)/mimonie/${item.id}`)}
+      onPress={() =>
+        router.push({
+          pathname: '/(protected)/mimonie/[id]',
+          params: {
+            id: item.id,
+            owner_id: item.owner_id,
+          },
+        })
+      }
     >
       <ThemedView
         style={{

@@ -8,7 +8,8 @@ import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 import { verifyTransaction } from '../../api/payment.service';
 import { createNotification } from '../../api/notifications.service';
 function Pay() {
-  const { currentUser, setNotifications, setUserProfile } = useGlobalContext();
+  const { currentUser, setNotifications, setUserProfile, userProfile } =
+    useGlobalContext();
 
   const handleSuccess = async (res) => {
     const response = await verifyTransaction(
@@ -19,7 +20,8 @@ function Pay() {
     if (response) {
       await updateUserProfile(
         { auth_url: response.authorization_code },
-        currentUser
+        currentUser,
+        userProfile
       );
 
       await createNotification(

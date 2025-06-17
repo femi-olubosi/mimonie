@@ -132,7 +132,8 @@ const Settings = () => {
 
   //     await updateUserProfile(
   //       { dva: toStore, recipient_code: customerRecipientCode },
-  //       currentUser
+  //       currentUser,
+  //       userProfile
   //     );
   //     await fetchUserProfile(setUserProfile, currentUser);
   //     setPCEnable(true);

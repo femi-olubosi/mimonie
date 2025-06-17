@@ -1,4 +1,4 @@
-import { fetchUserProfile } from '@/api/user.service';
+import { fetchProfile, fetchUserProfile } from '@/api/user.service';
 import { useEffect } from 'react';
 
 interface UseUserProfileParams {
@@ -16,19 +16,15 @@ export const useUserProfile = ({
 }: UseUserProfileParams) => {
   useEffect(() => {
     const loadUserProfile = async () => {
-      if (!currentUser) return;
-
-      // if (userProfile?.name) return;
-
+      if (userProfile?.name) return;
       setIsLoading(true);
 
       try {
-        const profile = await fetchUserProfile(setUserProfile, currentUser);
+        const profile = await fetchProfile(currentUser);
+        console.log('reached', profile?.name);
         setUserProfile(profile);
       } catch (err) {
         console.error('Failed to fetch user profile:', err);
-      } finally {
-        setIsLoading(false);
       }
     };
 

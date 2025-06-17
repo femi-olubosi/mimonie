@@ -13,21 +13,34 @@ import { naira } from '@/constants/Currency';
 import { statusCheck } from '@/utils/statusCheck';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { router } from 'expo-router';
-import { fetchInviteContributions } from '../../api/invite.service';
+import { FontAwesome } from '@expo/vector-icons';
+
+const EmptyInvitations = () => (
+  <View style={styles.emptyContainer}>
+    <FontAwesome
+      name="envelope-open-o"
+      size={60}
+      color={Colors.pri}
+      style={styles.emptyIcon}
+    />
+    <Text style={styles.emptyText}>No invitations yet!</Text>
+    <Text style={styles.emptySubText}>
+      When someone invites you to a contribution, it will appear here.
+    </Text>
+    <Text style={styles.emptySubText}>
+      You can also create your own contribution and invite your trusted network
+    </Text>
+    <TouchableOpacity
+      style={styles.findFriendsButton}
+      onPress={() => router.push('/create_contribution')}
+    >
+      <Text style={styles.findFriendsButtonText}>Create Contribution</Text>
+    </TouchableOpacity>
+  </View>
+);
 
 const my_invites = () => {
-  const { inviteArray, setInviteArray, userProfile } = useGlobalContext();
-
-  useEffect(() => {
-    const fetchContributions = async () => {
-      const fetchedContributions = await fetchInviteContributions(
-        userProfile?.invites
-      );
-      setInviteArray(fetchedContributions);
-    };
-
-    fetchContributions();
-  }, [userProfile?.invites]);
+  const { inviteArray } = useGlobalContext();
 
   const renderContribution = ({ item }) => {
     const createdAtDate = new Date(item.createdAt);
@@ -65,12 +78,6 @@ const my_invites = () => {
             </Text>
           </View>
         </View>
-        {/* <View style={styles.contributionInfo}>
-          <Text style={styles.contributionAmount}>
-            Joined: {item.participant.length}
-          </Text>
-          <Text style={styles.contributionAmount}>Target: {item.target}</Text>
-        </View> */}
         <View style={styles.contributionInfo}>
           <Text style={styles.contributionAmount}>
             {createdAtDate.toLocaleDateString()}
@@ -90,6 +97,7 @@ const my_invites = () => {
           keyExtractor={(item, idx) => idx.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<EmptyInvitations />}
         />
       </View>
     </PageView>
@@ -156,5 +164,40 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     color: 'gray',
+  },
+  emptyContainer: {
+    flex: 1, // Take full height when empty
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyIcon: {
+    marginBottom: 15,
+    opacity: 0.7,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#555',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  findFriendsButton: {
+    backgroundColor: Colors.pri,
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+  },
+  findFriendsButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -20,7 +20,7 @@
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-51775963306a57703248-build.zip"
+          "s3Key": "amplify-builds/userInfo-5464626857394f6a5244-build.zip"
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
@@ -54,7 +54,7 @@
         },
         "AdminQueriese69f7a79": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/AdminQueriese69f7a79-7a49503837545a767545-build.zip",
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-4161375978747a7a786e-build.zip",
           "sqsQueueUrl": "https://sqs.us-west-2.amazonaws.com/922409042591/notificationQueue"
         },
         "processWithdrawalRequest": {
@@ -64,7 +64,7 @@
         },
         "processNotifications": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/processNotifications-786659615646357a5467-build.zip"
+          "s3Key": "amplify-builds/processNotifications-532b6b4e325458385056-build.zip"
         }
       },
       "auth": {

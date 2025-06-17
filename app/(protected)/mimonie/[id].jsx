@@ -53,7 +53,7 @@ const ContributionDetails = () => {
     isLoading,
     parsed: connected,
   } = useGlobalContext();
-  const { id } = useLocalSearchParams();
+  const { id, owner_id } = useLocalSearchParams();
   const [visible, setVisible] = useState(false);
   const [contribution, setContribution] = useState({});
   const [participantList, setParticipantList] = useState([]);
@@ -97,7 +97,11 @@ const ContributionDetails = () => {
       try {
         setLoadingParticipants(true);
 
-        const participants = await fetchParticipants(id);
+        const participants = await fetchParticipants(
+          id,
+          owner_id,
+          userProfile.userId
+        );
         if (participants) {
           setParticipantList(participants);
         }
@@ -209,13 +213,19 @@ const ContributionDetails = () => {
       await addContributionParticipant(
         contribution.id,
         userProfile,
-        participantList?.length
+        participantList?.length,
+        currentUser?.picture,
+        contribution.owner_id
       );
 
-      const participants = await fetchParticipants(id);
+      const participants = await fetchParticipants(
+        id,
+        owner_id,
+        userProfile.userId
+      );
       setParticipantList(participants);
-      setInviteArray((prev) => prev.filter((e) => e.id !== contribution.id));
-      await updateInvite(userProfile.userId, contribution.id);
+      // setInviteArray((prev) => prev.filter((e) => e.id !== contribution.id));
+      // await updateInvite(userProfile.userId, contribution.id);
       setIsLoading(false);
       Alert.alert(
         'Success',
@@ -509,7 +519,6 @@ const ContributionDetails = () => {
         <Drag
           participantList={participantList}
           setParticipantList={setParticipantList}
-          imageUrls={imageUrls}
           contribution={contribution}
           onFinished={() => setOpenParticipantEditModal(false)}
         />

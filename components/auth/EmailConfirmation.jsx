@@ -19,8 +19,7 @@ import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EmailConfirmation = () => {
-  const { emailVeri, setIsLoading, currentUser, setIsAuth } =
-    useGlobalContext();
+  const { emailVeri, setIsLoading, currentUser, noAuth } = useGlobalContext();
   const [code, setCode] = useState(0);
   const { signOut } = useAuthenticator();
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
@@ -77,9 +76,8 @@ const EmailConfirmation = () => {
   };
 
   const handleLater = async () => {
-    setIsAuth(null);
-    await AsyncStorage.removeItem('isAuth');
-    await signOut();
+    noAuth();
+    signOut();
   };
 
   return (

@@ -21,7 +21,6 @@ import { Colors } from '../../../constants/Colors';
 const Drag = ({
   participantList,
   setParticipantList,
-  imageUrls,
   contribution,
   onFinished,
 }) => {
@@ -61,9 +60,9 @@ const Drag = ({
             }}
           >
             <View>
-              {imageUrls[item.userId] ? (
+              {item?.picture ? (
                 <Image
-                  source={{ uri: imageUrls[item.userId] }}
+                  source={{ uri: item?.picture }}
                   style={{
                     width: 50,
                     height: 50,

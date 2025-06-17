@@ -34,8 +34,7 @@ const StoreProvider = ({ children }) => {
   const [kycForm, setKycForm] = useState({});
   const [pushRoute, setPushRoute] = useState('/(protected)');
   const [isAuth, setIsAuth] = useState(false);
-
-  DataStore.start();
+  const [isReady, setIsReady] = useState(false);
 
   const toggleMode = () => {
     setDarkMode((prevMode) => !prevMode);
@@ -45,12 +44,12 @@ const StoreProvider = ({ children }) => {
     fetchCurrUser(setCurrentUser);
   }, [isAuth]);
 
-  useEffect(() => {
-    if (isAuth) {
-      if (userProfile?.name) return;
-      fetchUserProfile(setUserProfile, currentUser);
-    }
-  }, [currentUser, isAuth, userProfile]);
+  // useEffect(() => {
+  //   if (isAuth) {
+  //     if (userProfile?.name) return;
+  //     fetchUserProfile(setUserProfile, currentUser);
+  //   }
+  // }, [currentUser, isAuth, userProfile]);
 
   useEffect(() => {
     const checkAuthState = async () => {
@@ -60,6 +59,16 @@ const StoreProvider = ({ children }) => {
 
     checkAuthState();
   }, []);
+
+  const noAuth = async () => {
+    setIsAuth(false);
+    await AsyncStorage.removeItem('isAuth');
+  };
+
+  const yesAuth = async () => {
+    setIsAuth(true);
+    await AsyncStorage.setItem('isAuth', 'true');
+  };
 
   const value = {
     darkMode,
@@ -105,6 +114,10 @@ const StoreProvider = ({ children }) => {
     setPushRoute,
     isAuth,
     setIsAuth,
+    noAuth,
+    yesAuth,
+    isReady,
+    setIsReady,
   };
 
   return (

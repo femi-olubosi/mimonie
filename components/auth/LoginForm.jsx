@@ -12,15 +12,14 @@ import {
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
-import { signIn } from 'aws-amplify/auth';
+import { signIn, signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useRouter } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
+import { fetchCurrUser, getUser } from '../../api/user.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DataStore } from 'aws-amplify/datastore';
-import { fetchUserActivities } from '@/api/activities.service';
-import { handleProfileChecks } from '../../utils/profileCheck';
+import * as Device from 'expo-device';
+import { sendOtp } from '../../api/token.service';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -31,11 +30,9 @@ const LoginForm = (props) => {
     isLoading,
     setIsLoading,
     setEmailVeri,
+    yesAuth,
     setCurrentUser,
-    setUserProfile,
     setConfirmationResult,
-    setUserActivities,
-    setIsAuth,
     setProfilePicture,
   } = useGlobalContext();
   const router = useRouter();
@@ -46,7 +43,7 @@ const LoginForm = (props) => {
     }
     setIsLoading(true);
     try {
-      await DataStore.start();
+      // await DataStore.clear();
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,
@@ -67,29 +64,91 @@ const LoginForm = (props) => {
         }
       }
 
+      yesAuth();
+
       const user = await fetchCurrUser(setCurrentUser);
 
-      const passed = handleProfileChecks(user, setConfirmationResult);
+      const profile = await getUser(user.userId);
 
-      if (!passed) return;
+      if (!profile?.name) {
+        router.push('/complete_profile');
+        return;
+      }
 
-      await AsyncStorage.setItem('existingEmail', email);
-      const picture = await AsyncStorage.getItem('profilePicture');
-      setProfilePicture(picture);
+      if (email !== 'admin@mountspiral.com' && !profile?.phone_verified) {
+        Alert.alert(
+          'Phone Number is not verified',
+          `Please verify your phone number to continue`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Okay',
+              onPress: async () => {
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'phone_verification' });
+                router.push('/verification_check');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
 
-      await fetchUserProfile(setUserProfile, user);
-      await fetchUserActivities(user.userId, setUserActivities);
+      if (
+        !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
+        profile?.device_id &&
+        profile?.device_id !== Device.osInternalBuildId
+      ) {
+        Alert.alert(
+          'Device Mismatch',
+          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => signOut(),
+              style: 'cancel',
+            },
+            {
+              text: 'Register',
+              onPress: async () => {
+                const res = await sendOtp(profile.phone_number);
+                setConfirmationResult({ ...res, type: 'device_registration' });
+                router.push('/verification_check');
+              },
+            },
+          ],
+          { cancelable: false }
+        );
+        return;
+      }
 
-      await AsyncStorage.setItem('isAuth', 'true');
-      setIsAuth(true);
+      const file = await AsyncStorage.getItem('profilePicture');
+      setProfilePicture(file);
 
-      router.replace('/(protected)/(tabs)');
+      router.replace('/(protected)');
     } catch (error) {
       Alert.alert('Error', error.message || 'Network Error. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // const test = async () => {
+  //   try {
+  //     const ready = await DataStore.stop();
+  //     console.log('read', ready);
+  //     return;
+  //     const notification = await DataStore.query(UserNotifications);
+  //     console.log('notification service', notification);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   return (
     <KeyboardAvoidingView behavior="padding" enabled={false}>

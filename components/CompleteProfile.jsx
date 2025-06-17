@@ -29,6 +29,8 @@ import { fetchCountries } from '../api/payment.service';
 import { sendOtp } from '../api/token.service';
 import SelectModal from './modals/SelectModal';
 import { Entypo } from '@expo/vector-icons';
+import { UserNotifications, UserProfile } from '../src/models';
+import { DataStore } from 'aws-amplify/datastore';
 
 const dateOption = [
   'en-US',
@@ -157,7 +159,8 @@ const CompleteProfile = () => {
 
       await updateUserProfile(
         { ...data, customer_code: res.data.customer_code },
-        currentUser
+        currentUser,
+        userProfile
       );
 
       await updateAttributes({ name });
@@ -188,6 +191,15 @@ const CompleteProfile = () => {
   const toggleDatePicker = () => {
     setShowDatePicker(!showDatePicker);
   };
+
+  // const test = async () => {
+  //   try {
+  //     const userProfile = await DataStore.query(UserProfile);
+  //     console.log('profile service', userProfile);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   return (
     <PageView title={'Complete Sign Up'} backIcon={false}>
@@ -350,6 +362,7 @@ const CompleteProfile = () => {
           title={'Complete'}
           color={Colors.pri}
           onPress={handleSubmit}
+          // onPress={test}
           outline={true}
         />
       </View>

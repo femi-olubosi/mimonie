@@ -48,7 +48,8 @@ const kyc = () => {
       {
         verification_in_progress_id: true,
       },
-      currentUser
+      currentUser,
+      userProfile
     );
     await fetchUserProfile(setUserProfile, currentUser);
     await createNotification(

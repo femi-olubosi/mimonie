@@ -8,11 +8,15 @@ import {
 import { createUserActivity } from './activities.service';
 import { triggerNotificationForUser } from './pushNotification.service';
 import { countries } from '@/data/countries';
-import { updateContribution, updatePersonalContribution } from './contributions.service';
+import {
+  updateContribution,
+  updatePersonalContribution,
+} from './contributions.service';
 
 const PAYSTACK_SECRET_KEY = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY_TEST;
 // const PAYSTACK_SECRET_KEY_LIVE = process.env.EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY;
-const PAYSTACK_SECRET_KEY_LIVE = "sk_live_018197960c67614111a22568257da65f67191fb3";
+const PAYSTACK_SECRET_KEY_LIVE =
+  'sk_live_018197960c67614111a22568257da65f67191fb3';
 
 const makePaystackRequest = async (endpoint, method, data) => {
   const url = `https://api.paystack.co${endpoint}`;
@@ -397,7 +401,6 @@ export const fetchCountries = async () => {
 };
 
 export const fetchCards = async (setUserCards, currentUser) => {
-  await DataStore.start();
   try {
     const userCards = await DataStore.query(UserCardDetails, (c) =>
       c.userId.eq(currentUser.userId)
@@ -729,7 +732,7 @@ export const withdrawFunds = async (
       type: 'collection',
       amount: withdrawalAmount,
       description: `Fund withdrawal from ${contribution.name} savings`,
-      extra: contribution.id
+      extra: contribution.id,
     });
 
     // await createUserActivity(userId, {
@@ -752,7 +755,7 @@ export const withdrawFunds = async (
         type: 'Personal Savings',
         amount: penalty,
         description: `Penalty of 10% applied for early withdrawal from ${contribution?.name}`,
-        extra: contribution.id
+        extra: contribution.id,
       });
 
       await triggerNotificationForUser(
@@ -839,14 +842,19 @@ export const chargeCardForPersonalContribution = async (payer, amount) => {
       data
     );
 
-    return result
+    return result;
   } catch (error) {
-    console.log('charge error', error)
-    return error.message || 'Error processing payment. Please try again'
+    console.log('charge error', error);
+    return error.message || 'Error processing payment. Please try again';
   }
 };
 
-export const processFirstSavings = async (participant, contribution, userProfile, start_date) => {
+export const processFirstSavings = async (
+  participant,
+  contribution,
+  userProfile,
+  start_date
+) => {
   try {
     const flow = await chargeCardForPersonalContribution(
       participant,
@@ -854,14 +862,13 @@ export const processFirstSavings = async (participant, contribution, userProfile
     );
 
     if (flow?.data?.status === 'success') {
-      await updatePersonalContribution(contribution, userProfile, start_date)
-      return { success: true, message: 'Card charged successfully.' }
+      await updatePersonalContribution(contribution, userProfile, start_date);
+      return { success: true, message: 'Card charged successfully.' };
     } else {
-      return { success: false, message: flow?.data?.gateway_response }
+      return { success: false, message: flow?.data?.gateway_response };
     }
   } catch (error) {
-    console.log('first savings error', error)
-    throw error
+    console.log('first savings error', error);
+    throw error;
   }
-
-}
+};

@@ -23,7 +23,7 @@ const Mimonie = () => {
   const [contributionSearch, setContributionSearch] = useState('');
   const [searchedContribution, setSearchedContribution] = useState(null);
 
-  const handleSearchContribution = async (searchTerm) => {
+  const handleSearchContribution = async (searchTerm: any) => {
     setIsLoading(true);
     try {
       const searchQuery =
@@ -49,7 +49,16 @@ const Mimonie = () => {
     return (
       <TouchableOpacity
         style={styles.contributionContainer}
-        onPress={() => router.push(`/(protected)/mimonie/${item.id}`)}
+        // onPress={() => router.push(`/(protected)/mimonie/${item.id}`)}
+        onPress={() =>
+          router.push({
+            pathname: '/(protected)/mimonie/[id]',
+            params: {
+              id: item.id,
+              owner_id: item.owner_id,
+            },
+          })
+        }
       >
         <View
           style={{

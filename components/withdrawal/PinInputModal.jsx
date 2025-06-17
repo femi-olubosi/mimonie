@@ -41,7 +41,11 @@ const PinInputModal = ({
         const res = await verifyOTP(pinRef.pinId, pinString);
         if (res.verified) {
           setUserProfile((prev) => ({ ...prev, transfer_pin: userPin }));
-          await updateUserProfile({ transfer_pin: userPin }, currentUser);
+          await updateUserProfile(
+            { transfer_pin: userPin },
+            currentUser,
+            userProfile
+          );
           await fetchUserProfile(setUserProfile, currentUser);
           setVerifying(false);
           onClose();

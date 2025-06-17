@@ -1,25 +1,17 @@
+
+
 /**
- * @type {import('@types/aws-lambda').SQSEvent}
+ * @type {import('@types/aws-lambda').APIGatewayProxyHandler}
  */
-
-const pushNotification = require('./functions/pushNotification');
-
 exports.handler = async (event) => {
-  for (const record of event.Records) {
-    const request = JSON.parse(record.body);
-    console.log('Processing SQS message:', request);
-
-    try {
-      const { push_tokens, title, body, imageUrl, data } = request;
-      await pushNotification.sendBatch(
-        push_tokens,
-        title,
-        body,
-        imageUrl,
-        data
-      );
-    } catch (error) {
-      console.error('Failed to process notification batch:', error);
-    }
-  }
+    console.log(`EVENT: ${JSON.stringify(event)}`);
+    return {
+        statusCode: 200,
+    //  Uncomment below to enable CORS requests
+    //  headers: {
+    //      "Access-Control-Allow-Origin": "*",
+    //      "Access-Control-Allow-Headers": "*"
+    //  },
+        body: JSON.stringify('Hello from Lambda!'),
+    };
 };

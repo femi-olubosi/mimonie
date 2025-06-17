@@ -33,7 +33,7 @@ const VerificationCheck = () => {
     setUserProfile,
     userProfile,
     setProfilePicture,
-    setIsAuth,
+    noAuth,
   } = useGlobalContext();
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
@@ -79,7 +79,11 @@ const VerificationCheck = () => {
       // Success handling based on the confirmation type
       if (confirmationResult.type === 'phone_verification') {
         setUserProfile((prev) => ({ ...prev, phone_verified: true }));
-        await updateUserProfile({ phone_verified: true }, currentUser);
+        await updateUserProfile(
+          { phone_verified: true },
+          currentUser,
+          userProfile
+        );
         await updateAttributes({ 'custom:phone_verified': 'true' });
 
         // Show alert and navigate only after user taps 'OK'
@@ -87,7 +91,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/(protected)/(tabs)');
+              router.push('/(protected)');
             },
           },
         ]);
@@ -106,7 +110,7 @@ const VerificationCheck = () => {
           device_name: device.device_name,
         }));
 
-        await updateUserProfile(device, currentUser);
+        await updateUserProfile(device, currentUser, userProfile);
 
         // Fetch and set profile picture URL
         const url = await downloadUrl(userProfile.userId);
@@ -117,7 +121,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/(protected)/(tabs)');
+              router.push('/(protected)');
             },
           },
         ]);
@@ -136,8 +140,7 @@ const VerificationCheck = () => {
   };
 
   const handleLater = async () => {
-    setIsAuth(null);
-    await AsyncStorage.removeItem('isAuth');
+    noAuth();
     await signOut();
   };
 

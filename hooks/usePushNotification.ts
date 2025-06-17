@@ -5,7 +5,7 @@ import {
 import { useEffect, useState, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 
-const usePushNotifications = (currentUser: any) => {
+const usePushNotifications = (currentUser: any, userProfile: any) => {
   const [pushActive, setPushActive] = useState(false);
 
   useEffect(() => {
@@ -14,18 +14,18 @@ const usePushNotifications = (currentUser: any) => {
         const pushToken = await registerForPushNotificationsAsync();
 
         if (pushToken && currentUser) {
-          await savePushToken(currentUser, pushToken);
+          await savePushToken(currentUser, pushToken, userProfile);
         }
       } catch (error) {
         console.log('Failed to get push token:', error);
       }
     };
 
-    if (currentUser && !pushActive) {
+    if (currentUser && userProfile?.name && !pushActive) {
       registerPushToken();
       setPushActive(true);
     }
-  }, [currentUser, pushActive]);
+  }, [currentUser, pushActive, userProfile]);
 };
 
 export default usePushNotifications;

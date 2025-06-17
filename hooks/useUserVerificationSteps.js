@@ -1,10 +1,9 @@
-import { fetchUserProfile } from '@/api/user.service';
+import { fetchProfile, fetchUserProfile } from '@/api/user.service';
 import { useEffect } from 'react';
 
 const useUserVerificationSteps = ({
   currentUser,
   hasShownModal,
-  setUserProfile,
   setCompletedSteps,
   setShowUserVerificationModal,
   setHasShownModal,
@@ -14,7 +13,7 @@ const useUserVerificationSteps = ({
 
     const checkSteps = async () => {
       try {
-        const profile = await fetchUserProfile(setUserProfile, currentUser);
+        const profile = await fetchProfile(currentUser);
 
         if (profile?.name && profile?.phone_verified) {
           const steps = [

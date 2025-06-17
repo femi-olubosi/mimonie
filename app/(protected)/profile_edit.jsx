@@ -150,7 +150,7 @@ const ProfileEdit = () => {
 
     setIsLoading(true);
     try {
-      await updateUserProfile(data, currentUser);
+      await updateUserProfile(data, currentUser, userProfile);
       await fetchUserProfile(setUserProfile, currentUser);
       router.back();
     } catch (error) {

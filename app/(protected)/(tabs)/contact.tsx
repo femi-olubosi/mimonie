@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Modal,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -10,107 +11,48 @@ import {
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { sendInvite } from '@/api/invite.service';
-import { fetchUserConnections, createConnection } from '@/api/network.service';
-import { fetchExistingUser } from '@/api/user.service';
+import { createConnection } from '@/api/network.service';
 import { triggerNotificationForUser } from '@/api/pushNotification.service';
 import { getContacts } from '@/api/contact.service';
-import { DataStore } from 'aws-amplify/dist/esm/datastore';
-import { UserConnections } from '@/src/models';
+import { checkUser } from '@/api/user.service';
+import { formatNigerianPhoneNumber } from '@/utils/helper';
 
 const Contact = () => {
-  const { userProfile, isLoading, setIsLoading } = useGlobalContext();
+  const {
+    userProfile,
+    isLoading,
+    setIsLoading,
+    parsed: connections,
+  } = useGlobalContext();
   const [contactSearch, setContactSearch] = useState('');
-  const [foundUsers, setFoundUsers] = useState([]);
   const [contacts, setContacts] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
-  const [connectionList, setConnectionList] = useState<string[]>([]);
-  const [pendingConnectionList, setPendingConnectionList] = useState<string[]>(
-    []
-  );
-
-  const listConnections = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetchUserConnections(userProfile.userId);
-
-      // Extract sender and receiver IDs from accepted connections
-      const acceptedConnections = response
-        .filter((connection) => connection.status === 'accepted')
-        .flatMap((connection) =>
-          connection.senderId === userProfile.userId
-            ? [connection.receiverId]
-            : [connection.senderId]
-        );
-
-      // Extract sender and receiver IDs from pending connections
-      const pendingConnections = response
-        .filter((connection) => connection.status === 'pending')
-        .flatMap((connection) =>
-          connection.senderId === userProfile.userId
-            ? [connection.receiverId]
-            : [connection.senderId]
-        );
-
-      setConnectionList(acceptedConnections);
-      setPendingConnectionList(pendingConnections);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const syncConnections = async () => {
-    try {
-      const response = await fetchUserConnections(userProfile.userId);
-
-      // Extract sender and receiver IDs from accepted connections
-      const acceptedConnections = response
-        .filter((connection) => connection.status === 'accepted')
-        .flatMap((connection) =>
-          connection.senderId === userProfile.userId
-            ? [connection.receiverId]
-            : [connection.senderId]
-        );
-
-      // Extract sender and receiver IDs from pending connections
-      const pendingConnections = response
-        .filter((connection) => connection.status === 'pending')
-        .flatMap((connection) =>
-          connection.senderId === userProfile.userId
-            ? [connection.receiverId]
-            : [connection.senderId]
-        );
-
-      setConnectionList(acceptedConnections);
-      setPendingConnectionList(pendingConnections);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const [foundUser, setFoundUser] = useState(null);
+  const [checkModalVisible, setCheckModalVisible] = useState(false);
+  const [modalPhone, setModalPhone] = useState('');
 
   const initializeContacts = async (auto: string) => {
     try {
       setIsLoading(true);
       let phoneContacts = await getContacts();
-      const matchedUsers = await fetchExistingUser(phoneContacts, auto);
-
       phoneContacts = phoneContacts?.filter(
         (contact) =>
-          matchedUsers.findIndex(
-            (user: any) => user.phoneNumbers[0] === contact.phoneNumbers[0]
-          ) === -1
+          connections.findIndex((connection: any) => {
+            const formattedNumber = formatNigerianPhoneNumber(
+              contact.phoneNumbers[0]
+            );
+            return (
+              connection.senderDetails.phone_number === formattedNumber ||
+              connection.receiverDetails.phone_number === formattedNumber
+            );
+          }) === -1
       );
 
       setContacts(phoneContacts);
-      setFoundUsers(
-        matchedUsers.filter((e: any) => e.userId !== userProfile.userId)
-      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -120,13 +62,6 @@ const Contact = () => {
 
   useEffect(() => {
     initializeContacts('auto');
-    listConnections();
-
-    const subscription = DataStore.observe(UserConnections).subscribe(() => {
-      syncConnections();
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const handleInvite = async (item: any) => {
@@ -145,7 +80,7 @@ const Contact = () => {
           type: 'connection',
         }
       );
-      setModalVisible(true);
+      Alert.alert('Sent', 'Request sent successfully');
     } catch (error) {
       console.error(error);
     } finally {
@@ -153,52 +88,33 @@ const Contact = () => {
     }
   };
 
-  const handleRemoveRequest = async () => {
-    Alert.alert(
-      'Notice',
-      'Please go to trust circle page to remove the request'
-    );
-    return;
-  };
+  // const handleRemoveRequest = async () => {
+  //   Alert.alert(
+  //     'Notice',
+  //     'Please go to trust circle page to remove the request'
+  //   );
+  //   return;
+  // };
 
-  const renderUser = ({ item }) => {
-    const connected = connectionList.includes(item?.userId);
-    const requested = pendingConnectionList.includes(item?.userId);
-
-    return (
-      <View style={styles.contactContainer}>
-        <View style={styles.contactInfo}>
-          <FontAwesome name="user-circle-o" size={26} color={'gray'} />
-          <View>
-            <Text style={styles.contactName}>{item?.name}</Text>
-            <Text style={styles.contactOccupation}>
-              {item?.phoneNumbers?.[0]}
-            </Text>
-          </View>
-        </View>
-        {requested ? (
-          <TouchableOpacity
-            style={styles.requestSentButton}
-            onPress={handleRemoveRequest}
-          >
-            <Text style={styles.requestSentText}>Request Sent</Text>
-          </TouchableOpacity>
-        ) : connected ? (
-          <View style={styles.connectedContainer}>
-            <MaterialIcons name="check-circle" size={20} color={'green'} />
-            <Text style={styles.connectedText}>Connected</Text>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.connectButton}
-            onPress={() => handleRequestConnect(item.userProfile)}
-          >
-            <MaterialIcons name="add-circle" size={20} color={Colors.pri} />
-            <Text style={styles.connectText}>Connect</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
+  const handleCheckPhoneNumber = async (number) => {
+    const formattedNumber = formatNigerianPhoneNumber(number);
+    setModalPhone(number);
+    setIsLoading(true);
+    try {
+      const user = await checkUser(formattedNumber);
+      if (user) {
+        // setFoundUser(user);
+        // setCheckModalVisible(true);
+        await handleRequestConnect(user);
+      } else {
+        setFoundUser(null);
+        setCheckModalVisible(true);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Error finding user');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const renderContact = ({ item }) => (
@@ -214,44 +130,24 @@ const Contact = () => {
       </View>
       <TouchableOpacity
         style={styles.inviteButton}
-        onPress={() => handleInvite(item)}
+        onPress={() => handleCheckPhoneNumber(item?.phoneNumbers?.[0])}
       >
-        <Text style={styles.inviteText}>Invite</Text>
+        <Text style={styles.inviteText}>Connect</Text>
       </TouchableOpacity>
     </View>
   );
 
-  const filteredContacts =
-    activeTab === 'users'
-      ? contactSearch
-        ? foundUsers.filter((item) =>
-            item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
-          )
-        : foundUsers
-      : contactSearch
-      ? contacts.filter((item) =>
-          item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
-        )
-      : contacts;
+  const filteredContacts = contactSearch
+    ? contacts.filter((item) =>
+        item?.name?.toLowerCase()?.includes(contactSearch?.toLowerCase())
+      )
+    : contacts;
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
       <Text style={styles.headerText}>My Contacts</Text>
       <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tabButton, activeTab === 'users' && styles.activeTab]}
-          onPress={() => setActiveTab('users')}
-        >
-          <Text
-            style={[
-              styles.tabText,
-              activeTab === 'users' && styles.activeTabText,
-            ]}
-          >
-            Registered Users
-          </Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabButton, activeTab === 'invite' && styles.activeTab]}
           onPress={() => setActiveTab('invite')}
@@ -276,7 +172,7 @@ const Contact = () => {
       <FlatList
         data={filteredContacts}
         keyExtractor={(item, idx) => idx.toString()}
-        renderItem={activeTab === 'users' ? renderUser : renderContact}
+        renderItem={renderContact}
         showsVerticalScrollIndicator={false}
       />
       <TouchableOpacity
@@ -297,11 +193,93 @@ const Contact = () => {
           {isLoading ? 'Refreshing' : 'Refresh Contacts'}
         </Text>
       </TouchableOpacity>
+
+      <CheckUserModal
+        isVisible={checkModalVisible}
+        onClose={() => setCheckModalVisible(false)}
+        foundUser={foundUser}
+        phoneNumber={modalPhone}
+        onConnect={handleRequestConnect}
+        onInvite={handleInvite}
+        userProfile={userProfile}
+      />
     </SafeAreaView>
   );
 };
 
 export default Contact;
+
+const CheckUserModal = ({
+  isVisible,
+  onClose,
+  foundUser,
+  phoneNumber,
+  onConnect,
+  onInvite,
+  userProfile,
+}) => {
+  if (!isVisible) return null;
+
+  return (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={isVisible}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalContainer}>
+        <View style={styles.modalView}>
+          {foundUser ? (
+            <>
+              <Text style={styles.modalTitle}>User Found!</Text>
+              <Text style={styles.modalText}>
+                <Text style={{ fontWeight: 'bold' }}>
+                  {foundUser.name || 'Unknown User'}
+                </Text>{' '}
+                is already on the app.
+              </Text>
+              {userProfile?.userId === foundUser.userId ? (
+                <TouchableOpacity style={styles.connectButton} disabled>
+                  <Text style={styles.connectedText}>This is you!</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => {
+                    onConnect(foundUser);
+                    onClose();
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Connect</Text>
+                </TouchableOpacity>
+              )}
+            </>
+          ) : (
+            <>
+              <Text style={styles.modalTitle}>No User Found</Text>
+              <Text style={styles.modalText}>
+                Sorry, no user found with this number ({phoneNumber}). Would you
+                like to invite them?
+              </Text>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  onInvite(phoneNumber);
+                  onClose(); // Close modal after action
+                }}
+              >
+                <Text style={styles.modalButtonText}>Invite</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          <TouchableOpacity style={styles.closeModalButton} onPress={onClose}>
+            <Text style={styles.closeModalButtonText}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -452,6 +430,17 @@ const styles = StyleSheet.create({
   floatingButtonText: {
     color: '#fff',
     fontSize: 12,
+    fontWeight: 'bold',
+  },
+  closeModalButton: {
+    marginTop: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    backgroundColor: '#cccccc', // Gray for close
+  },
+  closeModalButtonText: {
+    color: '#333333',
     fontWeight: 'bold',
   },
 });

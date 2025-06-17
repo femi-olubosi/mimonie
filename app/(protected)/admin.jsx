@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
 // import { fetchAllUserProfile, fetchAllUserContributions } from '../../services/service'; // assuming it's inside a services folder
 import { PageView } from '@/components/Reusable';
 import { fetchAllUserProfile } from '../../api/user.service';
@@ -13,20 +20,20 @@ function Admin() {
   const [loading, setLoading] = useState(true); // Loader state
 
   // Fetch user profiles
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true); // Start loading
-      if (viewMode === 'users') {
-        const userProfileData = await fetchAllUserProfile();
-        setUsers(userProfileData);
-      } else {
-        const contributionsData = await fetchAllUserContributions();
-        setContributions(contributionsData);
-      }
-      setLoading(false); // End loading
-    }
-    fetchData();
-  }, [viewMode]);
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     setLoading(true); // Start loading
+  //     if (viewMode === 'users') {
+  //       const userProfileData = await fetchAllUserProfile();
+  //       setUsers(userProfileData);
+  //     } else {
+  //       const contributionsData = await fetchAllUserContributions();
+  //       setContributions(contributionsData);
+  //     }
+  //     setLoading(false); // End loading
+  //   }
+  //   fetchData();
+  // }, [viewMode]);
 
   return (
     <PageView title={'Admin View'}>
@@ -54,8 +61,12 @@ function Admin() {
                   <Text style={styles.title}>Name: {user.name}</Text>
                   <Text>Email: {user.email}</Text>
                   <Text>Phone: {user.phone_number}</Text>
-                  <Text>BVN Verified: {user.is_bvn_verified ? 'Yes' : 'No'}</Text>
-                  <Text>NIN Verified: {user.is_nin_verified ? 'Yes' : 'No'}</Text>
+                  <Text>
+                    BVN Verified: {user.is_bvn_verified ? 'Yes' : 'No'}
+                  </Text>
+                  <Text>
+                    NIN Verified: {user.is_nin_verified ? 'Yes' : 'No'}
+                  </Text>
                 </View>
               ))}
             </View>

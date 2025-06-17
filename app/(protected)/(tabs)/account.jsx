@@ -31,6 +31,7 @@ import { topBar } from '../../../cStyle';
 import { ThemeColors } from '../../../constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateAttributes, updateUserProfile } from '../../../api/user.service';
+import { DataStore } from 'aws-amplify/datastore';
 
 const Account = () => {
   const { signOut } = useAuthenticator();
@@ -40,7 +41,8 @@ const Account = () => {
     userProfile,
     profilePicture,
     setProfilePicture,
-    setIsAuth,
+    noAuth,
+    inviteArray,
   } = useGlobalContext();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutModal, setLogoutModal] = useState(false);
@@ -282,7 +284,7 @@ const Account = () => {
                                 color: 'white',
                               }}
                             >
-                              {userProfile?.invites?.length || 0}
+                              {inviteArray?.length || 0}
                             </Text>
                           </View>
                         </View>
@@ -373,9 +375,9 @@ const Account = () => {
                 onPress={async () => {
                   try {
                     setLoggingOut(true);
-                    setIsAuth(null);
-                    await AsyncStorage.removeItem('isAuth');
+                    noAuth();
                     signOut();
+                    await DataStore.clear();
                     setTimeout(() => {
                       setLoggingOut(false);
                     }, 3000);
@@ -465,13 +467,13 @@ const menuItems = [
     icon: <AntDesign name="setting" size={24} color="black" />,
     route: '/(protected)/settings',
   },
-  {
-    authorizedUser: [
-      '1831b390-4051-707e-e882-01ce028e7735',
-      '089153d0-70d1-7084-dc69-f41032bfaefb',
-    ],
-    title: 'Admin',
-    icon: <AntDesign name="home" size={24} color="black" />,
-    route: '/(protected)/admin',
-  },
+  // {
+  //   authorizedUser: [
+  //     '1831b390-4051-707e-e882-01ce028e7735',
+  //     '089153d0-70d1-7084-dc69-f41032bfaefb',
+  //   ],
+  //   title: 'Admin',
+  //   icon: <AntDesign name="home" size={24} color="black" />,
+  //   route: '/(protected)/admin',
+  // },
 ];

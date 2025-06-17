@@ -1,4 +1,12 @@
-type UserBankDetails @model @auth(rules: [{ allow: public }]) {
+type UserBankDetails
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "userId", identityClaim: "sub" }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   userId: String!
   bank_code: String!
@@ -9,7 +17,15 @@ type UserBankDetails @model @auth(rules: [{ allow: public }]) {
   bank_name: String!
 }
 
-type PersonalContribution @model @auth(rules: [{ allow: public }]) {
+type PersonalContribution
+  @model
+  @auth(
+    rules: [
+      { allow: private }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   name: String
   status: String
@@ -21,7 +37,15 @@ type PersonalContribution @model @auth(rules: [{ allow: public }]) {
   extra: AWSJSON
 }
 
-type UserActivity @model @auth(rules: [{ allow: public }]) {
+type UserActivity
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "userId", identityClaim: "sub" }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   type: String
   amount: Int
@@ -31,7 +55,15 @@ type UserActivity @model @auth(rules: [{ allow: public }]) {
   extra: AWSJSON
 }
 
-type UserNotifications @model @auth(rules: [{ allow: public }]) {
+type UserNotifications
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "userId", identityClaim: "sub" }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   type: String
   content: String
@@ -41,7 +73,15 @@ type UserNotifications @model @auth(rules: [{ allow: public }]) {
   global: Boolean
 }
 
-type UserProfile @model @auth(rules: [{ allow: public }]) {
+type UserProfile
+  @model
+  @auth(
+    rules: [
+      { allow: private }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   name: String
   preferred_username: String
@@ -77,7 +117,15 @@ type UserProfile @model @auth(rules: [{ allow: public }]) {
   is_admin: Boolean
 }
 
-type UserCardDetails @model @auth(rules: [{ allow: public }]) {
+type UserCardDetails
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "userId", identityClaim: "sub" }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   last4: String
   bank: String
@@ -88,7 +136,15 @@ type UserCardDetails @model @auth(rules: [{ allow: public }]) {
   status: String
 }
 
-type Contribution @model @auth(rules: [{ allow: public }]) {
+type Contribution
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "access" }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   name: String
   title: String
@@ -98,18 +154,28 @@ type Contribution @model @auth(rules: [{ allow: public }]) {
   contributiongroupsID: ID! @index(name: "byContributionGroups")
   participant: [AWSJSON]
   owner: String!
+  owner_id: String
   target: Int!
   amount: Int!
   num_of_month: Int!
   status: String
   participant_ids: [ID]
+  access: [String]
   currently_at: Int
   variant: String
   current_count: Int
   type: String
 }
 
-type ContributionGroups @model @auth(rules: [{ allow: public }]) {
+type ContributionGroups
+  @model
+  @auth(
+    rules: [
+      { allow: private }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   description: String
   status: String!
@@ -125,7 +191,15 @@ type ContributionGroups @model @auth(rules: [{ allow: public }]) {
   variant: String!
 }
 
-type Request @model @auth(rules: [{ allow: public }]) {
+type Request
+  @model
+  @auth(
+    rules: [
+      { allow: owner, ownerField: "userId", identityClaim: "sub" }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   type: String
   userId: String
@@ -136,7 +210,15 @@ type Request @model @auth(rules: [{ allow: public }]) {
   extra: AWSJSON
 }
 
-type UserConnections @model @auth(rules: [{ allow: public }]) {
+type UserConnections
+  @model
+  @auth(
+    rules: [
+      { allow: private }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
   senderId: String!
   receiverId: String!
@@ -145,9 +227,18 @@ type UserConnections @model @auth(rules: [{ allow: public }]) {
   status: String!
 }
 
-type ContributionParticipant @model @auth(rules: [{ allow: public }]) {
+type ContributionParticipant
+  @model
+  @auth(
+    rules: [
+      { allow: private }
+      { allow: groups, groups: ["Admin"] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID!
-  contributionID: ID!
+  contributionID: ID! @index(name: "byContribution")
+  contribution_owner_id: String
   userId: ID!
   name: String
   email: AWSEmail
@@ -162,4 +253,5 @@ type ContributionParticipant @model @auth(rules: [{ allow: public }]) {
   extra: AWSJSON
   type: String
   balance: Int
+  picture: String
 }

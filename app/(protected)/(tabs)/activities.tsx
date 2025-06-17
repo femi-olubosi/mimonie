@@ -14,11 +14,11 @@ const Activities = () => {
   const { userProfile, userActivities, setUserActivities, hideValues } =
     useGlobalContext();
 
-  useEffect(() => {
-    (async () => {
-      await fetchUserActivities(userProfile.userId, setUserActivities);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     await fetchUserActivities(userProfile.userId, setUserActivities, 20);
+  //   })();
+  // }, []);
 
   const renderItem = ({ item }) => (
     <View
