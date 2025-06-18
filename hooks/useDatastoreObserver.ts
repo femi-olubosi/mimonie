@@ -1,4 +1,3 @@
-// hooks/useDataStoreObservers.ts
 import { useEffect } from 'react';
 import { DataStore } from 'aws-amplify/datastore';
 import {

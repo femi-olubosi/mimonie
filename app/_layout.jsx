@@ -11,7 +11,11 @@ import useAppFonts from '@/hooks/useAppFonts';
 import * as SplashScreen from 'expo-splash-screen';
 import useAuthHubListener, { getCurrentUserId } from '@/hooks/hubListener';
 import useNotificationObserver from '@/hooks/useNotificationObserver';
-import { DataStore, syncExpression } from '@aws-amplify/datastore';
+import {
+  AuthModeStrategyType,
+  DataStore,
+  syncExpression,
+} from '@aws-amplify/datastore';
 import {
   Contribution,
   ContributionGroups,
@@ -27,6 +31,7 @@ import {
 import useSyncListener from '@/hooks/useSyncListener';
 
 DataStore.configure({
+  authModeStrategyType: AuthModeStrategyType.MULTI_AUTH,
   syncExpressions: [
     syncExpression(UserProfile, () => {
       const id = getCurrentUserId();

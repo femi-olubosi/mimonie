@@ -17,12 +17,15 @@ import {
   signOut,
 } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
+import { createUserProfile } from '../../api/user.service';
+import * as Device from 'expo-device';
 
 const EmailConfirmation = () => {
   const { emailVeri, setIsLoading, currentUser, noAuth } = useGlobalContext();
+  const { email, userId, normalizedPhoneNumber } = useLocalSearchParams();
   const [code, setCode] = useState(0);
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
@@ -34,6 +37,12 @@ const EmailConfirmation = () => {
   }, [currentUser]);
 
   const handleVerify = async () => {
+    const device = {
+      device_id: Device.osInternalBuildId || null,
+      device_name: Device.deviceName || null,
+      device_brand: Device.brand || null,
+    };
+
     setIsLoading(true);
     try {
       const { isSignUpComplete } = await confirmSignUp({
@@ -44,6 +53,7 @@ const EmailConfirmation = () => {
       if (isSignUpComplete) {
         const signInOutput = await autoSignIn();
         if (signInOutput) {
+          await createUserProfile(userId, device, email, normalizedPhoneNumber);
           router.replace('/(protected)/complete_profile');
         } else {
           Alert.alert(

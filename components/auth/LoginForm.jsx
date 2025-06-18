@@ -43,7 +43,6 @@ const LoginForm = (props) => {
     }
     setIsLoading(true);
     try {
-      // await DataStore.clear();
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,
@@ -137,18 +136,6 @@ const LoginForm = (props) => {
       setIsLoading(false);
     }
   };
-
-  // const test = async () => {
-  //   try {
-  //     const ready = await DataStore.stop();
-  //     console.log('read', ready);
-  //     return;
-  //     const notification = await DataStore.query(UserNotifications);
-  //     console.log('notification service', notification);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
 
   return (
     <KeyboardAvoidingView behavior="padding" enabled={false}>

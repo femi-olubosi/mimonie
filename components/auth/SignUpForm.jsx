@@ -1,6 +1,5 @@
 import {
   Alert,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -10,24 +9,16 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { Link, router } from 'expo-router';
-import { AntDesign, Feather, Fontisto } from '@expo/vector-icons';
+import { Feather, Fontisto } from '@expo/vector-icons';
 import Container from '../Container';
-import { confirmSignUp, signUp } from 'aws-amplify/auth';
+import { signUp } from 'aws-amplify/auth';
 import Checkbox from 'expo-checkbox';
 import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
-import {
-  createUserProfile,
-  isDeviceExist,
-  isPhoneNumberExist,
-} from '../../api/user.service';
+import { isPhoneNumberExist } from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { KeyboardAvoidingView, Platform } from 'react-native';
-import { setCurrentUserId } from '../../hooks/hubListener';
-import { DataStore } from 'aws-amplify/datastore';
-import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const SignUp = (props) => {
   // const [username, setUsername] = useState('');
@@ -92,17 +83,18 @@ const SignUp = (props) => {
         },
       });
 
-      console.log('user', userId);
-      setCurrentUserId(userId);
-      await DataStore.start();
-
-      await createUserProfile(userId, device, email, normalizedPhoneNumber);
-
       setEmailVeri(email);
       await AsyncStorage.setItem('existingEmail', email);
       yesAuth();
-      console.log('last');
-      router.replace('/email_verify');
+
+      router.replace({
+        pathname: '/email_verify',
+        params: {
+          userId,
+          email,
+          normalizedPhoneNumber,
+        },
+      });
     } catch (error) {
       Alert.alert('Error', error?.message);
       console.error('Error signing up:', error);
