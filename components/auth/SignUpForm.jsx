@@ -25,6 +25,9 @@ import {
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KeyboardAvoidingView, Platform } from 'react-native';
+import { setCurrentUserId } from '../../hooks/hubListener';
+import { DataStore } from 'aws-amplify/datastore';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const SignUp = (props) => {
   // const [username, setUsername] = useState('');
@@ -89,10 +92,16 @@ const SignUp = (props) => {
         },
       });
 
+      console.log('user', userId);
+      setCurrentUserId(userId);
+      await DataStore.start();
+
       await createUserProfile(userId, device, email, normalizedPhoneNumber);
+
       setEmailVeri(email);
       await AsyncStorage.setItem('existingEmail', email);
       yesAuth();
+      console.log('last');
       router.replace('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);

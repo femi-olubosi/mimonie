@@ -87,7 +87,6 @@ const ProtectedContent = () => {
             name="verification_check"
             options={{ headerShown: false }}
           />
-          <Stack.Screen name="email_verify" options={{ headerShown: false }} />
           <Stack.Screen name="notifications" options={{ headerShown: false }} />
           <Stack.Screen name="bvn" options={{ headerShown: false }} />
           <Stack.Screen name="login_verify" options={{ headerShown: false }} />

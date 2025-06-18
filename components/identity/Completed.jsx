@@ -7,7 +7,7 @@ export default function Completed() {
   const router = useRouter();
 
   const handleGoHome = () => {
-    router.push('/(protected)'); // Adjust the path to match your home route
+    router.push('/(protected)/(tabs)'); // Adjust the path to match your home route
   };
 
   return (

@@ -252,7 +252,7 @@ export default function UploadDocument() {
   const closeStatusModal = () => {
     if (modalContent.status === 'success') {
       setStatusModalVisible(false);
-      router.push('/(protected)');
+      router.push('/(protected)/(tabs)');
     } else {
       setStatusModalVisible(false);
     }

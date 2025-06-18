@@ -24,7 +24,7 @@ import {
   updateUserProfile,
 } from '../../api/user.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { useAuthenticator } from '@aws-amplify/ui-react-native';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const VerificationCheck = () => {
   const {
@@ -91,7 +91,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/(protected)');
+              router.replace('/(protected)/(tabs)');
             },
           },
         ]);
@@ -121,7 +121,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/(protected)');
+              router.replace('/(protected)/(tabs)');
             },
           },
         ]);

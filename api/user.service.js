@@ -123,7 +123,7 @@ export const getUser = async (userId) => {
 
     return profile.data;
   } catch (error) {
-    console.error('Error fetching user user profile:', error);
+    console.log('GET call failed: ', JSON.parse(error.response.body));
     throw error;
   }
 };
@@ -191,7 +191,7 @@ export const isPhoneNumberExist = async (phone_number) => {
 
     return false;
   } catch (error) {
-    console.error('Error fetching user user device id:', error);
+    console.log('GET call failed: ', JSON.parse(error.response.body));
     return false;
   }
 };

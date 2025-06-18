@@ -10,18 +10,20 @@ import {
 import React, { useEffect, useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { autoSignIn, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
+import {
+  autoSignIn,
+  confirmSignUp,
+  resendSignUpCode,
+  signOut,
+} from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
-import { useAuthenticator } from '@aws-amplify/ui-react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EmailConfirmation = () => {
   const { emailVeri, setIsLoading, currentUser, noAuth } = useGlobalContext();
   const [code, setCode] = useState(0);
-  const { signOut } = useAuthenticator();
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
 

@@ -9,7 +9,7 @@ import '@azure/core-asynciterator-polyfill';
 import initializeApp from '@/utils/initializeApp';
 import useAppFonts from '@/hooks/useAppFonts';
 import * as SplashScreen from 'expo-splash-screen';
-import useAuthHubListener, { userId } from '@/hooks/hubListener';
+import useAuthHubListener, { getCurrentUserId } from '@/hooks/hubListener';
 import useNotificationObserver from '@/hooks/useNotificationObserver';
 import { DataStore, syncExpression } from '@aws-amplify/datastore';
 import {
@@ -29,36 +29,45 @@ import useSyncListener from '@/hooks/useSyncListener';
 DataStore.configure({
   syncExpressions: [
     syncExpression(UserProfile, () => {
-      return (profile) => profile.userId.eq(userId);
+      const id = getCurrentUserId();
+      return (profile) => profile.userId.eq(id);
     }),
     syncExpression(UserNotifications, () => {
+      const id = getCurrentUserId();
       return (notification) =>
-        notification.or((n) => [n.userId.eq(userId), n.global.eq(true)]);
+        notification.or((n) => [n.userId.eq(id), n.global.eq(true)]);
     }),
     syncExpression(UserActivity, () => {
-      return (activity) => activity.userId.eq(userId);
+      const id = getCurrentUserId();
+      return (activity) => activity.userId.eq(id);
     }),
     syncExpression(UserBankDetails, () => {
-      return (bank) => bank.userId.eq(userId);
+      const id = getCurrentUserId();
+      return (bank) => bank.userId.eq(id);
     }),
     syncExpression(Request, () => {
-      return (request) => request.userId.eq(userId);
+      const id = getCurrentUserId();
+      return (request) => request.userId.eq(id);
     }),
     syncExpression(UserCardDetails, () => {
-      return (card) => card.userId.eq(userId);
+      const id = getCurrentUserId();
+      return (card) => card.userId.eq(id);
     }),
     syncExpression(UserConnections, () => {
+      const id = getCurrentUserId();
       return (connection) =>
-        connection.or((c) => [c.senderId.eq(userId), c.receiverId.eq(userId)]);
+        connection.or((c) => [c.senderId.eq(id), c.receiverId.eq(id)]);
     }),
     syncExpression(Contribution, () => {
-      return (contribution) => contribution.access.contains(userId);
+      const id = getCurrentUserId();
+      return (contribution) => contribution.access.contains(id);
     }),
     syncExpression(ContributionParticipant, () => {
+      const id = getCurrentUserId();
       return (participant) =>
         participant.or((p) => [
-          p.contribution_owner_id.eq(userId),
-          p.userId.eq(userId),
+          p.contribution_owner_id.eq(id),
+          p.userId.eq(id),
         ]);
     }),
     syncExpression(ContributionGroups, () => {
@@ -112,6 +121,7 @@ function RootContent() {
     <>
       <Stack screenOptions={screenOptions}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="email_verify" />
         <Stack.Screen name="terms_condition" />
         <Stack.Screen name="(protected)" />
       </Stack>

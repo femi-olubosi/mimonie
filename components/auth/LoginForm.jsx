@@ -52,7 +52,7 @@ const LoginForm = (props) => {
       if (!isSignedIn) {
         if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
           setEmailVeri(email);
-          router.replace('/(protected)/email_verify');
+          router.replace('/email_verify');
           return;
         } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_SMS_CODE') {
           setEmailVeri(email);
@@ -71,7 +71,7 @@ const LoginForm = (props) => {
       const profile = await getUser(user.userId);
 
       if (!profile?.name) {
-        router.push('/complete_profile');
+        router.replace('/(protected)/complete_profile');
         return;
       }
 
@@ -90,7 +90,7 @@ const LoginForm = (props) => {
               onPress: async () => {
                 const res = await sendOtp(profile.phone_number);
                 setConfirmationResult({ ...res, type: 'phone_verification' });
-                router.push('/verification_check');
+                router.replace('/(protected)/verification_check');
               },
             },
           ],
@@ -118,7 +118,7 @@ const LoginForm = (props) => {
               onPress: async () => {
                 const res = await sendOtp(profile.phone_number);
                 setConfirmationResult({ ...res, type: 'device_registration' });
-                router.push('/verification_check');
+                router.replace('/(protected)/verification_check');
               },
             },
           ],
