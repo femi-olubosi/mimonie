@@ -20,6 +20,8 @@ import { triggerNotificationForUser } from '@/api/pushNotification.service';
 import { getContacts } from '@/api/contact.service';
 import { checkUser } from '@/api/user.service';
 import { formatNigerianPhoneNumber } from '@/utils/helper';
+import { UserConnections } from '@/src/models';
+import { DataStore } from '@aws-amplify/datastore';
 
 const Contact = () => {
   const {
@@ -34,11 +36,13 @@ const Contact = () => {
   const [foundUser, setFoundUser] = useState(null);
   const [checkModalVisible, setCheckModalVisible] = useState(false);
   const [modalPhone, setModalPhone] = useState('');
+  const [requested, setRequested] = useState([]);
 
   const initializeContacts = async (auto: string) => {
     try {
       setIsLoading(true);
       let phoneContacts = await getContacts();
+
       phoneContacts = phoneContacts?.filter(
         (contact) =>
           connections.findIndex((connection: any) => {
@@ -62,7 +66,7 @@ const Contact = () => {
 
   useEffect(() => {
     initializeContacts('auto');
-  }, []);
+  }, [connections]);
 
   const handleInvite = async (item: any) => {
     await sendInvite(item);
@@ -97,6 +101,11 @@ const Contact = () => {
   // };
 
   const handleCheckPhoneNumber = async (number) => {
+    if (requested.includes(number)) {
+      Alert.alert('Duplicate', 'Sorry you already send request to this number');
+      return;
+    }
+
     const formattedNumber = formatNigerianPhoneNumber(number);
     setModalPhone(number);
     setIsLoading(true);
@@ -105,6 +114,7 @@ const Contact = () => {
       if (user) {
         // setFoundUser(user);
         // setCheckModalVisible(true);
+        setRequested((prev) => [...prev, number]);
         await handleRequestConnect(user);
       } else {
         setFoundUser(null);

@@ -23,7 +23,12 @@ import { DataStore } from 'aws-amplify/datastore';
 
 const connect = () => {
   const [activeTab, setActiveTab] = useState(1);
-  const { userProfile, setIsLoading } = useGlobalContext();
+  const {
+    userProfile,
+    setIsLoading,
+    parsed: connections,
+    setParsed,
+  } = useGlobalContext();
   const [myConnections, setConnectionList] = useState([]);
   const [pendingConnections, setPendingConnectionList] = useState([]);
   const [isLoadingConnections, setIsLoadingConnections] = useState(false);
@@ -31,12 +36,11 @@ const connect = () => {
   const listConnections = async () => {
     setIsLoadingConnections(true);
     try {
-      const response = await fetchUserConnections(userProfile.userId);
       setConnectionList(
-        response.filter((connection) => connection.status === 'accepted')
+        connections.filter((connection) => connection.status === 'accepted')
       );
       setPendingConnectionList(
-        response.filter((connection) => connection.status === 'pending')
+        connections.filter((connection) => connection.status === 'pending')
       );
     } catch (error) {
       console.error(error);
@@ -47,12 +51,7 @@ const connect = () => {
 
   useEffect(() => {
     listConnections();
-    const subscription = DataStore.observe(UserConnections).subscribe(() => {
-      listConnections();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  }, [connections]);
 
   const handleRemoveRequest = async (data) => {
     try {

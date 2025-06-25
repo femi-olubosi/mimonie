@@ -157,7 +157,7 @@ const CreateContribution = () => {
     if (validateUserContributions(contributions, 'group')) {
       Alert.alert(
         'Error',
-        'You can only be in one active group contribution at a time.'
+        'You can only be in two active group contribution at a time.'
       );
       return;
     }
@@ -221,7 +221,7 @@ const CreateContribution = () => {
     if (validateUserContributions(contributions, 'personal')) {
       Alert.alert(
         'Error',
-        'You can only be in one active personal savings at a time.'
+        'You can only be in two active personal savings at a time.'
       );
       return;
     }

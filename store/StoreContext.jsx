@@ -6,6 +6,7 @@ import {
 } from '@/api/user.service';
 import { DataStore } from 'aws-amplify/datastore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Contribution, UserConnections } from '@/src/models';
 
 const StoreContext = createContext();
 
@@ -69,6 +70,44 @@ const StoreProvider = ({ children }) => {
     setIsAuth(true);
     await AsyncStorage.setItem('isAuth', 'true');
   };
+
+  useEffect(() => {
+    if (!currentUser) return;
+    DataStore.observeQuery(UserConnections).subscribe((snapshot) => {
+      const { items, isSynced } = snapshot;
+      setParsed(items);
+      if (isSynced) {
+        console.log('connections is fully synced! context');
+      }
+    });
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    DataStore.observeQuery(Contribution).subscribe((snapshot) => {
+      const { items, isSynced } = snapshot;
+      setContributions(items);
+      if (isSynced) {
+        console.log('contribution is fully synced! context');
+      }
+    });
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    DataStore.observeQuery(Contribution).subscribe((snapshot) => {
+      const { items, isSynced } = snapshot;
+      const invites = items.filter(
+        (e) =>
+          !e.participant_ids.includes(currentUser.userId) &&
+          e.access.includes(currentUser.userId)
+      );
+      setInviteArray(invites);
+      if (isSynced) {
+        console.log('contribution is fully synced! context');
+      }
+    });
+  }, [currentUser]);
 
   const value = {
     darkMode,

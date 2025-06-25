@@ -1,11 +1,6 @@
 import { useEffect } from 'react';
 import { DataStore } from 'aws-amplify/datastore';
-import {
-  fetchUserContributions,
-  fetchUserInvitedContributions,
-} from '@/api/contributions.service';
 import { Contribution, UserConnections } from '@/src/models';
-import { listUserConnections } from '@/functions/connections';
 
 interface UseDataStoreObserversProps {
   currentUser?: { userId: string };
@@ -16,30 +11,21 @@ interface UseDataStoreObserversProps {
 
 const useDataStoreObservers = ({
   currentUser,
-  setContributions,
   setParsed,
-  setInviteArray,
 }: UseDataStoreObserversProps) => {
-  useEffect(() => {
-    if (!currentUser?.userId) return;
-
-    const subscription = DataStore.observe(Contribution).subscribe(() => {
-      fetchUserContributions(currentUser?.userId, setContributions, 50);
-      fetchUserInvitedContributions(currentUser?.userId, setInviteArray, 20);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
-
-  useEffect(() => {
-    if (!currentUser?.userId) return;
-
-    const subscription = DataStore.observe(UserConnections).subscribe(() => {
-      listUserConnections(currentUser?.userId, setParsed);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [currentUser]);
+  // useEffect(() => {
+  //   if (!currentUser?.userId) return;
+  //   DataStore.observe(Contribution);
+  // }, [currentUser]);
+  // useEffect(() => {
+  //   if (!currentUser?.userId || !setParsed) return;
+  //   DataStore.observeQuery(UserConnections).subscribe((snapshot) => {
+  //     const { items, isSynced } = snapshot;
+  //     if (isSynced) {
+  //       console.log('Data is fully synced! hook');
+  //     }
+  //   });
+  // }, [currentUser]);
 };
 
 export default useDataStoreObservers;

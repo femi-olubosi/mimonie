@@ -48,16 +48,9 @@ import useDataStoreObservers from '@/hooks/useDatastoreObserver';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { Button } from 'react-native';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
-import {
-  Contribution,
-  ContributionParticipant,
-  UserActivity,
-  UserNotifications,
-  UserProfile,
-} from '@/src/models';
+import { UserConnections } from '@/src/models';
 import { DataStore } from '@aws-amplify/datastore';
 import { signOut } from 'aws-amplify/auth';
-import { updateContributionOwners } from '@/scripts/populateAccessField';
 
 export default function HomeScreen() {
   const {

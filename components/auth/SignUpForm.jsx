@@ -85,6 +85,8 @@ const SignUp = (props) => {
 
       setEmailVeri(email);
       await AsyncStorage.setItem('existingEmail', email);
+      await AsyncStorage.setItem('phone', normalizedPhoneNumber);
+      await AsyncStorage.setItem('userId', userId);
       yesAuth();
 
       router.replace({

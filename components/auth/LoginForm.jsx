@@ -51,7 +51,17 @@ const LoginForm = (props) => {
       if (!isSignedIn) {
         if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
           setEmailVeri(email);
-          router.replace('/email_verify');
+          // router.replace('/email_verify');
+          const normalizedPhoneNumber = await AsyncStorage.getItem('phone');
+          const userId = await AsyncStorage.getItem('userId');
+          router.replace({
+            pathname: '/email_verify',
+            params: {
+              userId,
+              email,
+              normalizedPhoneNumber,
+            },
+          });
           return;
         } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_SMS_CODE') {
           setEmailVeri(email);
