@@ -6,7 +6,21 @@ import {
 } from '@/api/user.service';
 import { DataStore } from 'aws-amplify/datastore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Contribution, UserConnections } from '@/src/models';
+import {
+  Contribution,
+  UserActivity,
+  UserConnections,
+  UserNotifications,
+  UserProfile,
+} from '@/src/models';
+import { getContacts } from '@/api/contact.service';
+import {
+  fetchUserContributions,
+  fetchUserInvitedContributions,
+} from '@/api/contributions.service';
+import { fetchUserActivities } from '@/api/activities.service';
+import { fetchUserNotification } from '@/api/notifications.service';
+import { listUserConnections } from '@/functions/connections';
 
 const StoreContext = createContext();
 
@@ -45,13 +59,6 @@ const StoreProvider = ({ children }) => {
     fetchCurrUser(setCurrentUser);
   }, [isAuth]);
 
-  // useEffect(() => {
-  //   if (isAuth) {
-  //     if (userProfile?.name) return;
-  //     fetchUserProfile(setUserProfile, currentUser);
-  //   }
-  // }, [currentUser, isAuth, userProfile]);
-
   useEffect(() => {
     const checkAuthState = async () => {
       const authValue = await AsyncStorage.getItem('isAuth');
@@ -71,42 +78,97 @@ const StoreProvider = ({ children }) => {
     await AsyncStorage.setItem('isAuth', 'true');
   };
 
-  useEffect(() => {
-    if (!currentUser) return;
-    DataStore.observeQuery(UserConnections).subscribe((snapshot) => {
-      const { items, isSynced } = snapshot;
-      setParsed(items);
-      if (isSynced) {
-        console.log('connections is fully synced! context');
-      }
-    });
-  }, [currentUser]);
+  const fetchData = async (user) => {
+    try {
+      await Promise.all([
+        fetchUserProfile(setUserProfile, user),
+        fetchUserContributions(user?.userId, setContributions, 50),
+        fetchUserNotification(user?.userId, setNotifications, 20),
+        listUserConnections(user?.userId, setParsed),
+        getContacts().then(setMyContacts),
+        fetchUserActivities(user?.userId, setUserActivities, 20),
+        fetchUserInvitedContributions(user.userId, setInviteArray, 20),
+      ]);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
+  };
 
   useEffect(() => {
-    if (!currentUser) return;
-    DataStore.observeQuery(Contribution).subscribe((snapshot) => {
-      const { items, isSynced } = snapshot;
-      setContributions(items);
-      if (isSynced) {
-        console.log('contribution is fully synced! context');
-      }
-    });
-  }, [currentUser]);
+    const pullData = () => {
+      DataStore.observeQuery(UserProfile).subscribe((snapshot) => {
+        const { items, isSynced } = snapshot;
 
-  useEffect(() => {
-    if (!currentUser) return;
-    DataStore.observeQuery(Contribution).subscribe((snapshot) => {
-      const { items, isSynced } = snapshot;
-      const invites = items.filter(
-        (e) =>
-          !e.participant_ids.includes(currentUser.userId) &&
-          e.access.includes(currentUser.userId)
-      );
-      setInviteArray(invites);
-      if (isSynced) {
-        console.log('contribution is fully synced! context');
-      }
-    });
+        if (isSynced) {
+          const profile = items.find((e) => e.userId === currentUser.userId);
+          setUserProfile(profile);
+        }
+      });
+
+      DataStore.observeQuery(Contribution).subscribe((snapshot) => {
+        const { items, isSynced } = snapshot;
+
+        if (isSynced) {
+          const invites = items.filter(
+            (e) =>
+              !e.participant_ids.includes(currentUser.userId) &&
+              e.access.includes(currentUser.userId)
+          );
+          setInviteArray(invites);
+        }
+      });
+
+      DataStore.observeQuery(Contribution).subscribe((snapshot) => {
+        const { items, isSynced } = snapshot;
+
+        if (isSynced) {
+          const contriList = items.filter((e) =>
+            e.participant_ids.includes(currentUser.userId)
+          );
+          setContributions(contriList);
+        }
+      });
+
+      DataStore.observeQuery(UserConnections).subscribe((snapshot) => {
+        const { items, isSynced } = snapshot;
+
+        if (isSynced) {
+          const connectList = items.filter(
+            (e) =>
+              e.senderId.includes(currentUser.userId) ||
+              e.receiverId.includes(currentUser.userId)
+          );
+          setParsed(connectList);
+        }
+      });
+
+      DataStore.observeQuery(UserActivity).subscribe((snapshot) => {
+        const { items, isSynced } = snapshot;
+
+        if (isSynced) {
+          const activities = items.filter(
+            (e) => e.userId === currentUser.userId
+          );
+          setUserActivities(activities);
+        }
+      });
+
+      DataStore.observeQuery(UserNotifications).subscribe((snapshot) => {
+        const { items, isSynced } = snapshot;
+
+        if (isSynced) {
+          const notificationList = items.filter(
+            (e) => e.userId === currentUser.userId || e.type === 'global'
+          );
+          setNotifications(notificationList);
+        }
+      });
+    };
+
+    if (currentUser.userId) {
+      pullData();
+      fetchData(currentUser);
+    }
   }, [currentUser]);
 
   const value = {

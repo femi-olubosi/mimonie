@@ -44,6 +44,8 @@ const variantOptionsPersonal = [
 ];
 
 const amountOptions = [
+  { label: '₦1,000', value: 1000 },
+  { label: '₦2,000', value: 2000 },
   { label: '₦5,000', value: 5000 },
   { label: '₦10,000', value: 10000 },
   { label: '₦20,000', value: 20000 },
@@ -275,7 +277,7 @@ const CreateContribution = () => {
     }
 
     if (contributionType === 'group') {
-      if (myConnections?.length < 4) {
+      if (myConnections?.length < 2) {
         Alert.alert(
           'Sorry!!',
           'You can only create group contribution when you have up to 4 connections.',

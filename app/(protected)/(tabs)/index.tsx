@@ -17,14 +17,8 @@ import Advert from '@/components/home/Advert';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useCallback, useEffect, useState } from 'react';
-import { fetchUserProfile, updateUserProfile } from '@/api/user.service';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
-import {
-  fetchUserContributions,
-  fetchUserInvitedContributions,
-} from '@/api/contributions.service';
-import { fetchUserNotification } from '@/api/notifications.service';
 import {
   FontAwesome,
   MaterialCommunityIcons,
@@ -34,46 +28,28 @@ import { router } from 'expo-router';
 import { capitalizeFirstLetter } from '@/utils/capitalizeFirstLetter';
 import { formatTimestamp } from '@/utils/formatTimestamp';
 import { naira } from '@/constants/Currency';
-import { fetchUserActivities } from '@/api/activities.service';
-import { fetchInviteContributions } from '@/api/invite.service';
 import Hide from '@/components/Hide';
 import { Colors, ThemeColors } from '@/constants/Colors';
 import UserVerificationModal from '@/components/modals/UserVerificationModal';
 import Blog from '@/components/home/Blog';
 import usePushNotifications from '@/hooks/usePushNotification';
-import { getContacts } from '@/api/contact.service';
 import useUserVerificationSteps from '@/hooks/useUserVerificationSteps';
-import { listUserConnections } from '@/functions/connections';
-import useDataStoreObservers from '@/hooks/useDatastoreObserver';
-import { useUserProfile } from '@/hooks/useUserProfile';
 import { Button } from 'react-native';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
-import { UserConnections } from '@/src/models';
-import { DataStore } from '@aws-amplify/datastore';
 import { signOut } from 'aws-amplify/auth';
 
 export default function HomeScreen() {
   const {
     currentUser,
-    setUserProfile,
     setIsLoading,
-    setMyContacts,
     contributions,
-    setContributions,
     userProfile,
-    setNotifications,
     notifications,
     userActivities,
-    setUserActivities,
     profilePicture,
-    setInviteArray,
     hideValues,
     parsed,
-    setParsed,
     pilot,
-    isReady,
-    isLoading,
-    inviteArray,
   } = useGlobalContext();
 
   const { priBg, priText } = ThemeColors();
@@ -95,13 +71,6 @@ export default function HomeScreen() {
     }
   }, [userProfile]);
 
-  useDataStoreObservers({
-    currentUser: user,
-    setContributions,
-    setParsed,
-    setInviteArray,
-  });
-
   useUserVerificationSteps({
     currentUser: user,
     hasShownModal,
@@ -110,52 +79,13 @@ export default function HomeScreen() {
     setHasShownModal,
   });
 
-  // useUserProfile({
-  //   currentUser,
-  //   setUserProfile,
-  //   setIsLoading,
-  //   userProfile,
-  // });
-
   usePushNotifications(user, userProfile);
 
-  const fetchData = async (user: any) => {
-    try {
-      await Promise.all([
-        fetchUserProfile(setUserProfile, user),
-        fetchUserContributions(user?.userId, setContributions, 50),
-        fetchUserNotification(user?.userId, setNotifications, 20),
-        listUserConnections(user?.userId, setParsed),
-        getContacts().then(setMyContacts),
-        fetchUserActivities(user?.userId, setUserActivities, 20),
-        fetchUserInvitedContributions(user.userId, setInviteArray, 20),
-      ]);
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
-    }
-  };
-
-  // Refresh control handler
+  // // Refresh control handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchData(user);
     setRefreshing(false);
-  }, [fetchData]);
-
-  // Initial data load
-  useEffect(() => {
-    fetchData(user);
-  }, [isReady, user]);
-
-  // const test = async () => {
-  //   try {
-  //     const activity = await DataStore.query(ContributionParticipant);
-  //     // await updateContributionOwners();
-  //     console.log(activity);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F0F9FF' }}>

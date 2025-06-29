@@ -6,11 +6,7 @@ import {
 import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
-import { Storage } from 'aws-amplify';
-import { Buffer } from 'buffer';
-import { safeParseJSON } from '@/utils/safeJSON';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { get, post, put } from 'aws-amplify/api';
+import { get } from 'aws-amplify/api';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   try {
@@ -118,12 +114,12 @@ export const getUser = async (userId) => {
       path: `/user-info/${userId}`,
     });
 
-    const response = await restOperation.response;
-    const profile = await response.body.json();
+    const response = await restOperation?.response;
+    const profile = await response?.body?.json();
 
-    return profile.data;
+    return profile?.data;
   } catch (error) {
-    console.log('GET call failed: ', JSON.parse(error.response.body));
+    // console.log('GET call failed: ', JSON.parse(error.response.body));
     throw error;
   }
 };
@@ -178,8 +174,8 @@ export const isPhoneNumberExist = async (phone_number) => {
       path: `/user-info/phone/${encodedPhone}`,
     });
 
-    const response = await restOperation.response;
-    const phone = await response.body.json();
+    const response = await restOperation?.response;
+    const phone = await response?.body?.json();
 
     if (phone) {
       return true;
@@ -191,7 +187,7 @@ export const isPhoneNumberExist = async (phone_number) => {
 
     return false;
   } catch (error) {
-    console.log('GET call failed: ', JSON.parse(error.response.body));
+    // console.log('GET call failed: ', JSON.parse(error.response.body));
     return false;
   }
 };
@@ -292,11 +288,11 @@ export const checkUser = async (phone) => {
       path: `/user-info/phone/${encodedPhone}`,
     });
 
-    const response = await restOperation.response;
-    const user = await response.body.json();
-    return user.data;
+    const response = await restOperation?.response;
+    const user = await response?.body?.json();
+    return user?.data;
   } catch (error) {
-    console.log('GET call failed: ', JSON.parse(error.response.body));
+    // console.log('GET call failed: ', JSON.parse(error.response.body));
     return null;
   }
 };

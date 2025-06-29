@@ -5,7 +5,7 @@ import { useGlobalContext } from '../store/StoreContext';
 import { router } from 'expo-router';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
-const INACTIVITY_TIMEOUT = 2 * 60 * 1000;
+const INACTIVITY_TIMEOUT = 4 * 60 * 1000;
 
 const UserInactivityProvider = ({ children }) => {
   const appState = useRef(AppState.currentState);

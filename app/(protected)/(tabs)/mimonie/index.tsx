@@ -162,13 +162,15 @@ const Mimonie = () => {
         <FlatList
           data={
             searchedContribution ||
-            contributions.filter((e) =>
-              contributionSearch.trim() !== ''
-                ? e.name
-                    .toLowerCase()
-                    .includes(contributionSearch.toLowerCase())
-                : e
-            )
+            contributions
+              .filter((e) =>
+                contributionSearch.trim() !== ''
+                  ? e.name
+                      .toLowerCase()
+                      .includes(contributionSearch.toLowerCase())
+                  : e
+              )
+              .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
           }
           renderItem={renderContribution}
           keyExtractor={(item, index) => `${item.id}-${index}`}

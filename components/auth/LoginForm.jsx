@@ -16,10 +16,15 @@ import { signIn, signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
 import { useRouter } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { fetchCurrUser, getUser } from '../../api/user.service';
+import {
+  fetchCurrUser,
+  fetchUserProfile,
+  getUser,
+} from '../../api/user.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import { sendOtp } from '../../api/token.service';
+import { DataStore } from 'aws-amplify/datastore';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
@@ -34,6 +39,7 @@ const LoginForm = (props) => {
     setCurrentUser,
     setConfirmationResult,
     setProfilePicture,
+    setUserProfile,
   } = useGlobalContext();
   const router = useRouter();
 
@@ -43,6 +49,7 @@ const LoginForm = (props) => {
     }
     setIsLoading(true);
     try {
+      await signOut();
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,
