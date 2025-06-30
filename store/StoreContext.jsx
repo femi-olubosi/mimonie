@@ -4,7 +4,7 @@ import {
   fetchUserProfile,
   getUserInfo,
 } from '@/api/user.service';
-import { DataStore } from 'aws-amplify/datastore';
+import { DataStore, SortDirection } from 'aws-amplify/datastore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Contribution,
@@ -96,71 +96,86 @@ const StoreProvider = ({ children }) => {
 
   useEffect(() => {
     const pullData = () => {
-      DataStore.observeQuery(UserProfile).subscribe((snapshot) => {
+      DataStore.observeQuery(UserProfile, (u) =>
+        u.userId.eq(currentUser?.userId)
+      ).subscribe((snapshot) => {
         const { items, isSynced } = snapshot;
-
         if (isSynced) {
-          const profile = items.find((e) => e.userId === currentUser.userId);
-          setUserProfile(profile);
+          setUserProfile(items[0]);
         }
       });
 
-      DataStore.observeQuery(Contribution).subscribe((snapshot) => {
+      DataStore.observeQuery(
+        Contribution,
+        (c) =>
+          c.and((c) => [
+            c.participant_ids.notContains(currentUser?.userId),
+            c.access.contains(currentUser?.userId),
+          ]),
+        {
+          sort: (c) => c.createdAt(SortDirection.DESCENDING),
+        }
+      ).subscribe((snapshot) => {
         const { items, isSynced } = snapshot;
 
         if (isSynced) {
-          const invites = items.filter(
-            (e) =>
-              !e.participant_ids.includes(currentUser.userId) &&
-              e.access.includes(currentUser.userId)
-          );
-          setInviteArray(invites);
+          setInviteArray(items);
         }
       });
 
-      DataStore.observeQuery(Contribution).subscribe((snapshot) => {
+      DataStore.observeQuery(
+        Contribution,
+        (c) => c.participant_ids.contains(currentUser?.userId),
+        {
+          sort: (c) => c.createdAt(SortDirection.DESCENDING),
+        }
+      ).subscribe((snapshot) => {
         const { items, isSynced } = snapshot;
 
         if (isSynced) {
-          const contriList = items.filter((e) =>
-            e.participant_ids.includes(currentUser.userId)
-          );
-          setContributions(contriList);
+          setContributions(items);
         }
       });
 
-      DataStore.observeQuery(UserConnections).subscribe((snapshot) => {
+      DataStore.observeQuery(
+        UserConnections,
+        (c) =>
+          c.or((c) => [
+            c.senderId.eq(currentUser?.userId),
+            c.receiverId.eq(currentUser?.userId),
+          ]),
+        {
+          sort: (c) => c.createdAt(SortDirection.DESCENDING),
+        }
+      ).subscribe((snapshot) => {
         const { items, isSynced } = snapshot;
 
         if (isSynced) {
-          const connectList = items.filter(
-            (e) =>
-              e.senderId.includes(currentUser.userId) ||
-              e.receiverId.includes(currentUser.userId)
-          );
-          setParsed(connectList);
+          setParsed(items);
         }
       });
 
-      DataStore.observeQuery(UserActivity).subscribe((snapshot) => {
+      DataStore.observeQuery(
+        UserActivity,
+        (a) => a.userId.eq(currentUser?.userId),
+        {
+          sort: (c) => c.createdAt(SortDirection.DESCENDING),
+        }
+      ).subscribe((snapshot) => {
         const { items, isSynced } = snapshot;
 
         if (isSynced) {
-          const activities = items.filter(
-            (e) => e.userId === currentUser.userId
-          );
-          setUserActivities(activities);
+          setUserActivities(items);
         }
       });
 
-      DataStore.observeQuery(UserNotifications).subscribe((snapshot) => {
+      DataStore.observeQuery(UserNotifications, (n) =>
+        n.or((n) => [n.userId.eq(currentUser?.userId), n.type.eq('global')])
+      ).subscribe((snapshot) => {
         const { items, isSynced } = snapshot;
 
         if (isSynced) {
-          const notificationList = items.filter(
-            (e) => e.userId === currentUser.userId || e.type === 'global'
-          );
-          setNotifications(notificationList);
+          setNotifications(items);
         }
       });
     };
