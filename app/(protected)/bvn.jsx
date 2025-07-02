@@ -11,7 +11,11 @@ import {
 import React, { useState, useEffect, useRef } from 'react';
 import { Colors } from '../../constants/Colors';
 import { PageView, SelectInput } from '../../components/Reusable';
-import { fetchBanks, verifyBVN } from '../../api/payment.service';
+import {
+  createSubAccount,
+  fetchBanks,
+  verifyBVN,
+} from '../../api/payment.service';
 import { ErrorCheck } from '../../utils/errorCheck';
 import { useGlobalContext } from '../../store/StoreContext';
 import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
@@ -111,6 +115,53 @@ const Bvn = () => {
       );
     } catch (error) {
       console.log(error);
+      if (
+        error?.message ===
+        'Customer already validated using the same credentials'
+      ) {
+        await updateUserProfile(
+          {
+            verification_in_progress: false,
+            is_bvn_verified: true,
+            bank_details: {
+              bank_code: selectedValue.value,
+              account_number: accountNumber,
+              bvn,
+            },
+          },
+          currentUser,
+          userProfile
+        );
+
+        await createSubAccount(userProfile);
+
+        await fetchUserProfile(setUserProfile, currentUser);
+
+        await createNotification(
+          {
+            title: 'Bvn verified successfully',
+            content: 'Your bvn is verified successfully',
+            type: 'alert',
+            userId: currentUser.userId,
+            read: false,
+          },
+          setNotifications
+        );
+
+        Alert.alert(
+          'BVN Already Verified',
+          'This BVN has already been verified. Please check your bank details.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.back(),
+            },
+          ],
+          { cancelable: false }
+        );
+
+        return;
+      }
       Alert.alert('error', error.message);
     } finally {
       setIsLoading(false);

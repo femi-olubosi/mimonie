@@ -358,7 +358,7 @@ export const verifyBVN = async (input, userProfile) => {
     first_name,
     last_name,
   };
-  console.log({ data });
+
   return await makePaystackRequest(
     `/customer/${customer_code}/identification`,
     'POST',
