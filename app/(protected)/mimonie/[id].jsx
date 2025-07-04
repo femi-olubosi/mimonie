@@ -24,6 +24,7 @@ import {
   addContributionParticipant,
   fetchParticipants,
   updateContribution,
+  updateContributionParticipantList,
 } from '../../../api/contributions.service';
 import ModalWrapper from '../../../components/modals/ModalWrapper';
 import Drag from './Drag';
@@ -41,6 +42,7 @@ import WithdrawalModal from './WithdrawalModal';
 import { earlyWithdrawalCharge } from '../../../constants/charges';
 import { get } from 'aws-amplify/api';
 import { isEarly } from '../../../utils/isEarlyWithdrawal';
+import { triggerNotificationForUser } from '../../../api/pushNotification.service';
 
 const ContributionDetails = () => {
   const {
@@ -154,17 +156,17 @@ const ContributionDetails = () => {
       return;
     }
 
-    if (!userProfile.is_bvn_verified) {
+    if (!userProfile?.is_bvn_verified) {
       Alert.alert('Please verify your bvn');
       return;
     }
 
-    if (!userProfile.is_nin_verified) {
+    if (!userProfile?.is_nin_verified) {
       Alert.alert('Please verify your identity');
       return;
     }
 
-    if (!userProfile.auth_url) {
+    if (!userProfile?.auth_url) {
       Alert.alert(
         'Sorry!!',
         'You cannot create/join contribution at the moment. Add a card to continue'
@@ -180,22 +182,25 @@ const ContributionDetails = () => {
       return;
     }
 
-    const ownerProfile = participantList.find((e) => e.type === 'owner');
+    const ownerProfile = participantList?.find((e) => e.type === 'owner');
 
-    if (
-      connected.find(
-        (e) =>
-          e.senderId !== ownerProfile.userId ||
-          e.receiverId !== ownerProfile.userId
-      )
-    ) {
+    const isConnectedToOwner = await connected?.some(
+      (e) =>
+        e.status === 'accepted' &&
+        ((e.senderId === ownerProfile?.userId &&
+          e.receiverId === currentUser?.userId) ||
+          (e.receiverId === ownerProfile?.userId &&
+            e.senderId === currentUser?.userId))
+    );
+
+    if (!isConnectedToOwner) {
       Alert.alert('Error joining', 'You are not connected to this user');
       return;
     }
 
     if (
-      participantList.some(
-        (participant) => participant.userId === currentUser.userId
+      participantList?.some(
+        (participant) => participant?.userId === currentUser?.userId
       )
     ) {
       Alert.alert('Error', 'You are already a member of this contribution');
@@ -204,28 +209,33 @@ const ContributionDetails = () => {
 
     try {
       setIsLoading(true);
-      // await joinContribution(
-      //   contribution.id,
-      //   currentUser,
-      //   userProfile,
-      //   setContributions
-      // );
       await addContributionParticipant(
-        contribution.id,
+        contribution?.id,
         userProfile,
         participantList?.length,
         currentUser?.picture,
-        contribution.owner_id
+        contribution?.owner_id
+      );
+
+      await updateContributionParticipantList(
+        contribution?.id,
+        currentUser?.userId
       );
 
       const participants = await fetchParticipants(
         id,
         owner_id,
-        userProfile.userId
+        userProfile?.userId
       );
       setParticipantList(participants);
-      // setInviteArray((prev) => prev.filter((e) => e.id !== contribution.id));
-      // await updateInvite(userProfile.userId, contribution.id);
+
+      await triggerNotificationForUser(
+        ownerProfile?.push_token,
+        'Contribution Invite Accepted',
+        `${userProfile?.name} has joined your contribution: ${contribution?.name}`,
+        { type: 'invite' }
+      );
+
       setIsLoading(false);
       Alert.alert(
         'Success',

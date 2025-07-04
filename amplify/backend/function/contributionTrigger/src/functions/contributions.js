@@ -99,25 +99,30 @@ const contributions = {
         id: uuidv4(),
         userId: inProgressParticipant.userId,
         type: 'collection',
-        amount: contribution.amount * (participants[0].length - 1),
+        amount: contribution.amount * (participants.length - 1),
         extra: JSON.stringify({ contribution_id: contribution.id }) || null,
         description: `Final collection for ${contribution.name}`,
       });
 
-      inProgressParticipant.status = 'received';
-      inProgressParticipant.last_successful_round =
-        (inProgressParticipant.last_successful_round || 0) + 1;
+      const currentIndex = inProgressParticipant.index + 1;
+      const nextParticipant = participants.find(
+        (p) => p.index === currentIndex
+      );
 
-      const nextParticipant = participants.find((p) => p.status === 'pending');
       if (nextParticipant) {
         nextParticipant.status = 'in progress';
       }
+
+      inProgressParticipant.status = 'received';
+      inProgressParticipant.last_successful_round =
+        (inProgressParticipant.last_successful_round || 0) + 1;
 
       const allReceived = participants.every(
         (participant) => participant.status === 'received'
       );
 
       // contribution.participant = participants;
+      await updateParticipant(nextParticipant);
       await updateParticipant(inProgressParticipant);
       if (allReceived) {
         const owner = participants.find((p) => p.type === 'owner');

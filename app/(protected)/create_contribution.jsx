@@ -27,6 +27,7 @@ import { naira } from '@/constants/Currency';
 import { validateUserContributions } from '../../utils/validateUserContributions';
 
 const variantOptions = [
+  { label: 'Daily', value: 'days' },
   { label: 'Weekly', value: 'weeks' },
   { label: 'Monthly', value: 'months' },
 ];
@@ -63,9 +64,8 @@ const amountOptions = [
   // { label: '₦10,000,000', value: 10000000 },
 ];
 const adminAmountOptions = [
-  { label: '₦100', value: 100 },
-  { label: '₦200', value: 200 },
-  { label: '₦500', value: 500 },
+  { label: '₦1,000', value: 1000 },
+  { label: '₦2,000', value: 2000 },
   { label: '₦5,000', value: 5000 },
   { label: '₦10,000', value: 10000 },
   { label: '₦20,000', value: 20000 },

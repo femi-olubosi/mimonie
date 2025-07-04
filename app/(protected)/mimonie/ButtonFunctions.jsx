@@ -64,7 +64,8 @@ const ButtonFunctions = ({
   const shouldShowWithdrawButton =
     isPersonal && !isClosed && !isExisting && (isCompleted || isStopped);
 
-  const shouldShowCopyLink = isGroup && !isCompleted;
+  // const shouldShowCopyLink = isGroup && isOwner && !isCompleted;
+  const shouldShowCopyLink = isGroup && isOwner && isOpen;
 
   const shouldShowStopSavings = isPersonal && isRunning;
 

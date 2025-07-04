@@ -77,6 +77,7 @@ export const createContribution = async (
         contributiongroupsID: details.groupId,
         participant: [],
         participant_ids: [currentUser.userId],
+        access: [currentUser.userId],
         picture: currentUser.picture,
         owner: userProfile.name,
         owner_id: userProfile.userId,
@@ -279,6 +280,7 @@ export const editContributionParticipant = async (
       const updated = await DataStore.save(
         ContributionParticipant.copyOf(original[0], (updated) => {
           updated.index = participant.index;
+          updated.status = participant.index === 1 ? 'in progress' : 'pending';
         })
       );
 
@@ -545,18 +547,6 @@ export const addContributionParticipant = async (
       new ContributionParticipant(participantData)
     );
 
-    const originalContribution = await DataStore.query(
-      Contribution,
-      contributionID
-    );
-
-    await DataStore.save(
-      Contribution.copyOf(originalContribution, (updated) => {
-        updated.participant_ids.push(newParticipant.userId);
-        // updated.owners.push(newParticipant.userId);
-      })
-    );
-
     return newParticipantData;
   } catch (error) {
     console.error('Error adding participant:', error);
@@ -564,17 +554,21 @@ export const addContributionParticipant = async (
   }
 };
 
-// export const fetchParticipants = async (contributionId, owner_id, currentUser) => {
-//   try {
-//     const participants = await DataStore.query(ContributionParticipant, (c) =>
-//       c.contributionID.eq(contributionId)
-//     );
+export const updateContributionParticipantList = async (
+  contributionID,
+  userId
+) => {
+  const originalContribution = await DataStore.query(
+    Contribution,
+    contributionID
+  );
 
-//     return participants || [];
-//   } catch (error) {
-//     console.error('Error fetching participants:', error);
-//   }
-// };
+  await DataStore.save(
+    Contribution.copyOf(originalContribution, (updated) => {
+      updated.participant_ids.push(userId);
+    })
+  );
+};
 
 export const fetchParticipants = async (contributionId, owner_id, userId) => {
   console.log(owner_id === userId);

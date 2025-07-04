@@ -6,9 +6,8 @@ import { endStatus } from '@/data/contributionStatuses';
 const NextContributionDay = ({ contribution, currentParticipant }) => {
   const current_count = contribution?.current_count || 0;
   const lastSuccessfulRound = currentParticipant?.last_successful_round || 0;
-  const updateMe =
-    currentParticipant?.status !== 'in progress' &&
-    current_count > lastSuccessfulRound;
+  const inProgress = currentParticipant?.status === 'in progress';
+  const updateMe = !inProgress && current_count > lastSuccessfulRound;
 
   const getNextContributionDay = () => {
     if (endStatus.includes(contribution?.status)) {
@@ -33,7 +32,7 @@ const NextContributionDay = ({ contribution, currentParticipant }) => {
           },
         ]}
       >
-        Due Date: {getNextContributionDay() || '-'}
+        {`Due Date: ${getNextContributionDay() || '-'}`}
       </Text>
     </View>
   );

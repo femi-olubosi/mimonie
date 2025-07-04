@@ -24,7 +24,9 @@ const ParticipantList = ({
   userProfile,
   loadingParticipants,
 }) => {
-  const next = participantList?.find((e) => e.status !== 'received');
+  const current = participantList.find((e) => e.status === 'in progress');
+  const currentIndex = current.index + 1;
+  const next = participantList.find((e) => e.index === currentIndex);
 
   return (
     <>

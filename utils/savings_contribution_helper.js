@@ -43,6 +43,13 @@ export const getNextDate = (contribution, currentParticipant) => {
   }
 
   if (
+    currentParticipant?.status !== 'in progress' &&
+    contribution.current_count === currentParticipant?.last_successful_round
+  ) {
+    return `Paid for this round`;
+  }
+
+  if (
     nextDate.getTime() === today.getTime() &&
     current_count > lastSuccessfulRound
   ) {
@@ -100,7 +107,7 @@ export const getCollectionDate = (
     // Group savings - rotated collection
     switch (variant) {
       case 'days':
-        collectionDate.setDate(start.getDate() + participantIndex - 1);
+        collectionDate.setDate(start.getDate() + participantIndex);
         break;
 
       case 'weeks':
