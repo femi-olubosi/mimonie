@@ -35,7 +35,7 @@ import ButtonFunctions from './ButtonFunctions';
 import Balance from './Balance';
 import { validateUserContributions } from '../../../utils/validateUserContributions';
 import ConfirmJoinModal from './ConfirmJoinModal';
-import { isLastDaysOfMonth } from '../../../utils/helper';
+import { isLastDaysOfMonth, isWeekend } from '../../../utils/helper';
 import StartSavingsModal from './StartSavingsModal';
 import StopSavingsModal from './StopSavingsModal';
 import WithdrawalModal from './WithdrawalModal';
@@ -320,6 +320,17 @@ const ContributionDetails = () => {
 
   const triggerStartButton = () => {
     if (!contribution) return;
+
+    const today = new Date();
+
+    if (isWeekend(today)) {
+      Alert.alert(
+        'Weekend Restriction',
+        'Contributions cannot be started during the weekend (Saturday or Sunday).',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
 
     if (contribution?.variant === 'months' && isLastDaysOfMonth(new Date())) {
       Alert.alert(

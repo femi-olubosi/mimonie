@@ -24,9 +24,9 @@ const ParticipantList = ({
   userProfile,
   loadingParticipants,
 }) => {
-  const current = participantList.find((e) => e.status === 'in progress');
-  const currentIndex = current.index + 1;
-  const next = participantList.find((e) => e.index === currentIndex);
+  const current = participantList?.find((e) => e.status === 'in progress');
+  const currentIndex = current?.index + 1;
+  const next = participantList?.find((e) => e.index === currentIndex);
 
   return (
     <>
@@ -77,116 +77,118 @@ const ParticipantList = ({
             nestedScrollEnabled={true}
             horizontal={true}
           >
-            {participantList?.map((eN, id) => {
-              return (
-                <View
-                  key={id}
-                  style={{
-                    justifyContent: 'center',
-                    height: 100,
-                    minWidth: 200,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: '#E5E7EB',
-                    backgroundColor: 'white',
-                    paddingHorizontal: 8,
-                    rowGap: 10,
-                    shadowColor: 'gray',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 3.84,
-                    elevation: 5,
-                  }}
-                >
+            {participantList
+              ?.sort((a, b) => a.index - b.index)
+              ?.map((eN, id) => {
+                return (
                   <View
+                    key={id}
                     style={{
-                      flexDirection: 'row',
-                      columnGap: 10,
-                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: 100,
+                      minWidth: 200,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: '#E5E7EB',
+                      backgroundColor: 'white',
+                      paddingHorizontal: 8,
+                      rowGap: 10,
+                      shadowColor: 'gray',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.25,
+                      shadowRadius: 3.84,
+                      elevation: 5,
                     }}
                   >
-                    <View>
-                      {eN?.picture ? (
-                        <Image
-                          source={{ uri: eN?.picture }}
-                          style={{
-                            width: 50,
-                            height: 50,
-                            borderRadius: 8,
-                            backgroundColor: '#E5E7EB',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      ) : (
-                        <Feather
-                          name="image"
-                          color={'gray'}
-                          size={40}
-                          style={{
-                            padding: 0,
-                            margin: 0,
-                          }}
-                        />
-                      )}
-                    </View>
-                    <View style={{ rowGap: 4 }}>
-                      <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        columnGap: 10,
+                        alignItems: 'center',
+                      }}
+                    >
                       <View>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            columnGap: 6,
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Text>{capitalizeFirstLetter(eN.status)}</Text>
-                          {eN.status === 'received' ? (
-                            <Fontisto
-                              name="checkbox-active"
-                              size={14}
-                              color="green"
-                            />
-                          ) : eN.status === 'in progress' ? (
-                            <MaterialCommunityIcons
-                              name="progress-check"
-                              size={14}
-                              color="#ecb753"
-                            />
-                          ) : eN.status === 'pending' ? (
-                            <AntDesign
-                              name="minussquareo"
-                              size={14}
-                              color="gray"
-                            />
-                          ) : null}
-                          {contribution?.type !== 'personal' &&
-                          next?.userId === eN.userId ? (
-                            <Text
-                              style={{
-                                color: 'lightgreen',
-                                fontFamily: 'ir',
-                              }}
-                            >
-                              Next
-                            </Text>
-                          ) : null}
+                        {eN?.picture ? (
+                          <Image
+                            source={{ uri: eN?.picture }}
+                            style={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: 8,
+                              backgroundColor: '#E5E7EB',
+                              objectFit: 'cover',
+                            }}
+                          />
+                        ) : (
+                          <Feather
+                            name="image"
+                            color={'gray'}
+                            size={40}
+                            style={{
+                              padding: 0,
+                              margin: 0,
+                            }}
+                          />
+                        )}
+                      </View>
+                      <View style={{ rowGap: 4 }}>
+                        <Text style={{ fontFamily: 'ir' }}>{eN.name}</Text>
+                        <View>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              columnGap: 6,
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Text>{capitalizeFirstLetter(eN.status)}</Text>
+                            {eN.status === 'received' ? (
+                              <Fontisto
+                                name="checkbox-active"
+                                size={14}
+                                color="green"
+                              />
+                            ) : eN.status === 'in progress' ? (
+                              <MaterialCommunityIcons
+                                name="progress-check"
+                                size={14}
+                                color="#ecb753"
+                              />
+                            ) : eN.status === 'pending' ? (
+                              <AntDesign
+                                name="minussquareo"
+                                size={14}
+                                color="gray"
+                              />
+                            ) : null}
+                            {contribution?.type !== 'personal' &&
+                            next?.userId === eN.userId ? (
+                              <Text
+                                style={{
+                                  color: 'lightgreen',
+                                  fontFamily: 'ir',
+                                }}
+                              >
+                                Next
+                              </Text>
+                            ) : null}
+                          </View>
                         </View>
                       </View>
                     </View>
+                    {eN?.status !== 'in progress' &&
+                    eN?.last_successful_round < contribution?.current_count ? (
+                      <Text style={{ fontSize: 10, color: 'red' }}>
+                        Attention: {'Missed last contribution'}
+                      </Text>
+                    ) : (
+                      <Text style={{ fontSize: 10 }}>
+                        Note: {'In good standing'}
+                      </Text>
+                    )}
                   </View>
-                  {eN?.status !== 'in progress' &&
-                  eN?.last_successful_round < contribution?.current_count ? (
-                    <Text style={{ fontSize: 10, color: 'red' }}>
-                      Attention: {'Missed last contribution'}
-                    </Text>
-                  ) : (
-                    <Text style={{ fontSize: 10 }}>
-                      Note: {'In good standing'}
-                    </Text>
-                  )}
-                </View>
-              );
-            })}
+                );
+              })}
           </ScrollView>
         )}
       </View>

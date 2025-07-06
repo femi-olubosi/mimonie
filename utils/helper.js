@@ -54,6 +54,11 @@ export const isLastDaysOfMonth = (date) => {
   return date.getDate() > testDate.getDate() - 4; // 28th or later
 };
 
+export const isWeekend = (date) => {
+  const day = new Date(date).getDay();
+  return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+};
+
 export async function onFetchUpdateAsync() {
   try {
     const update = await Updates.checkForUpdateAsync();
