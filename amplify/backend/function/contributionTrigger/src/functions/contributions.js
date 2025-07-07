@@ -48,7 +48,7 @@ const contributions = {
 
           // Send notification to the debited participant
           await sendNotification(
-            participant?.push_token,
+            participant.push_token,
             'Payment Successful',
             `You successfully paid ${inProgressParticipant.name} for ${contribution.name}`
           );
@@ -86,7 +86,7 @@ const contributions = {
 
           // Send notification for failed payment
           await sendNotification(
-            participant?.push_token,
+            participant.push_token,
             'Payment Failed',
             `Your payment to ${inProgressParticipant.name} for ${contribution.name} failed.`
           );
@@ -130,10 +130,10 @@ const contributions = {
         const numOfTimes = participants.length * (participants.length - 1);
         const ownerAmount = contribution.amount * numOfTimes * 0.01;
 
-        await transferToBank(owner?.recipient_code, ownerAmount, contribution);
+        await transferToBank(owner.recipient, ownerAmount, contribution);
 
         await sendNotification(
-          owner?.push_token,
+          owner.push_token,
           'Payment Processed',
           `Your ownership payment for ${contribution.name} is processed`
         );
@@ -180,7 +180,7 @@ const contributions = {
 
         // Send notification to the debited participant
         await sendNotification(
-          participant?.push_token,
+          participant.push_token,
           'Payment Successful',
           `Successfully completed this round of ${contribution.name} contribution`
         );
@@ -207,7 +207,7 @@ const contributions = {
 
         // Send notification for failed payment
         await sendNotification(
-          participant?.push_token,
+          participant.push_token,
           'Payment Failed',
           `Your payment for ${contribution.name} failed. Your savings will be closed after ${BREAK_POINT} consecutive failed charges (48 hours)`
         );
@@ -230,7 +230,7 @@ const contributions = {
 
           // Send notification for closed savings
           await sendNotification(
-            participant?.push_token,
+            participant.push_token,
             'Savings Closed',
             `Your payment for ${contribution.name} has failed ${BREAK_POINT} times and your savings is now stopped`
           );

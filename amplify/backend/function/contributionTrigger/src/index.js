@@ -22,7 +22,7 @@ const processContribution = async (contribution) => {
     const currentAt = parseInt(contribution.currently_at) || 0;
 
     // Skip if currently_at matches currentCount or if currentCount is 0 (same day as start date)
-    if (currentAt === currentCount || currentCount === 0) return;
+    if (currentAt >= currentCount || currentCount === 0) return;
 
     // const participants = contribution?.participant;
     const participants = await models.getContributionParticipants(
