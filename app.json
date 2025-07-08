@@ -8,7 +8,7 @@
     "scheme": "mimonie",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "buildNumber": "31",
+      "buildNumber": "32",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"],
@@ -18,7 +18,7 @@
       }
     },
     "android": {
-      "versionCode": 31,
+      "versionCode": 32,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
