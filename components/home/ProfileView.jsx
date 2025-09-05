@@ -5,10 +5,12 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
+  Easing,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Colors } from '@/constants/Colors';
-import { Feather, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const ProfileView = ({
@@ -20,6 +22,46 @@ const ProfileView = ({
 }) => {
   const [loading, setLoading] = useState(true);
 
+  const unreadCount = notifications?.filter((e) => !e.read)?.length || 0;
+
+  // Animation for dangle effect
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (unreadCount > 0) {
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(rotateAnim, {
+            toValue: 1,
+            duration: 250,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rotateAnim, {
+            toValue: -1,
+            duration: 250,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rotateAnim, {
+            toValue: 0,
+            duration: 250,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      loop.start();
+
+      return () => loop.stop();
+    }
+  }, [unreadCount, rotateAnim]);
+
+  const rotation = rotateAnim.interpolate({
+    inputRange: [-1, 1],
+    outputRange: ['-20deg', '20deg'], // small swinging motion
+  });
+
   return (
     <View
       style={{
@@ -29,6 +71,7 @@ const ProfileView = ({
         padding: 20,
       }}
     >
+      {/* Left side - Profile */}
       <View
         style={{
           flexDirection: 'row',
@@ -70,10 +113,12 @@ const ProfileView = ({
             />
           )}
         </View>
-        <Text style={{ fontSize: 20, fontWeight: 'er', color: priText }}>
+        <Text style={{ fontSize: 20, fontFamily: 'er', color: priText }}>
           Hi, {name?.split(' ')[0]}
         </Text>
       </View>
+
+      {/* Right side - Notification */}
       <View
         style={{
           flexDirection: 'row',
@@ -81,34 +126,32 @@ const ProfileView = ({
           alignItems: 'center',
         }}
       >
-        {/* <Feather
-          name="help-circle"
-          size={24}
-          color="black"
-          onPress={() => setShowHelp(true)}
-        /> */}
         <TouchableOpacity
           onPress={() => router.push('/(protected)/notifications')}
           style={{ position: 'relative' }}
         >
-          <Ionicons name="notifications-outline" size={24} color={priText} />
-          <View
-            style={{
-              borderRadius: 100,
-              width: 15,
-              height: 15,
-              backgroundColor: 'red',
-              position: 'absolute',
-              top: -5,
-              right: 0,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
-              {notifications?.filter((e) => !e.read)?.length || 0}
-            </Text>
-          </View>
+          <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+            <Ionicons name="notifications-outline" size={24} color={priText} />
+          </Animated.View>
+          {unreadCount > 0 && (
+            <View
+              style={{
+                borderRadius: 100,
+                width: 15,
+                height: 15,
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: -5,
+                right: 0,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: 'white', fontSize: 10, fontFamily: 'im' }}>
+                {1}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
     </View>
