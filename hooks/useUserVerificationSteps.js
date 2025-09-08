@@ -1,4 +1,5 @@
 import { fetchProfile, fetchUserProfile } from '@/api/user.service';
+import { modalSteps } from '@/components/modals/UserVerificationModal';
 import { useEffect } from 'react';
 
 const useUserVerificationSteps = ({
@@ -23,7 +24,7 @@ const useUserVerificationSteps = ({
           ].filter(Boolean);
 
           setCompletedSteps(steps);
-          setShowUserVerificationModal(steps?.length < 3);
+          setShowUserVerificationModal(steps?.length < modalSteps.length);
           setHasShownModal(true);
         }
       } catch (err) {

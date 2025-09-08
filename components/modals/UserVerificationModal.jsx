@@ -4,19 +4,20 @@ import ModalWrapper from './ModalWrapper';
 import Button from '@/components/Button';
 import { router } from 'expo-router';
 
+export const modalSteps = [
+  { key: 'invite', label: 'Invite Friends', path: '/(protected)/contact' },
+  { key: 'bvn', label: 'BVN Verification', path: '/(protected)/bvn' },
+  { key: 'kyc', label: 'KYC Verification', path: '/(protected)/smile_id' },
+  { key: 'card', label: 'Add Card', path: '/(protected)/cards' },
+];
+
 const UserVerificationModal = ({
   visible,
   onClose,
   userName,
   completedSteps,
 }) => {
-  const steps = [
-    { key: 'bvn', label: 'BVN Verification', path: '/(protected)/bvn' },
-    { key: 'kyc', label: 'KYC Verification', path: '/(protected)/smile_id' },
-    { key: 'card', label: 'Add Card', path: '/(protected)/cards' },
-  ];
-
-  const remainingSteps = steps?.filter(
+  const remainingSteps = modalSteps?.filter(
     (step) => !completedSteps?.includes(step.key)
   );
 

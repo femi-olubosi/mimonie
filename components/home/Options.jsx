@@ -1,5 +1,5 @@
 import { Pressable, Text, View, Animated } from 'react-native';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   FontAwesome6,
   MaterialCommunityIcons,
@@ -8,28 +8,6 @@ import {
 import { router } from 'expo-router';
 
 const Options = ({ priText, setShowHelp, connect, pilot }) => {
-  const blinkAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(blinkAnim, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(blinkAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop.start();
-
-    return () => loop.stop();
-  }, [blinkAnim]);
-
   return (
     <View
       style={{
@@ -83,18 +61,6 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
         <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
           My Trust Circle
         </Text>
-
-        {/* Blinking "Invite Friends" */}
-        <Animated.Text
-          style={{
-            fontSize: 12,
-            fontFamily: 'im',
-            color: 'red',
-            opacity: blinkAnim,
-          }}
-        >
-          Invite Friends
-        </Animated.Text>
       </Pressable>
 
       {/* FAQ */}
