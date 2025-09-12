@@ -22,6 +22,7 @@ const {
   disableUser,
   enableUser,
   getUser,
+  deleteUser,
   listUsers,
   listGroups,
   listGroupsForUser,
@@ -215,6 +216,22 @@ app.get('/getUser', async (req, res, next) => {
 
   try {
     const response = await getUser(req.query.username);
+    res.status(200).json(response);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/deleteUser', async (req, res, next) => {
+  const data = req.body;
+  if (!data.username || !data.email) {
+    const err = new Error('username and email is required');
+    err.statusCode = 400;
+    return next(err);
+  }
+
+  try {
+    const response = await deleteUser(data);
     res.status(200).json(response);
   } catch (err) {
     next(err);

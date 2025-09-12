@@ -28,7 +28,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGetPushTokenFromLocalStorage } from '../../hooks/useGetPushToken';
 import { reRegisterForPushNotificationsAsync } from '../../api/pushNotification.service';
 import { hasActiveContribution } from '../../utils/validateUserContributions';
-import { deleteUser } from 'aws-amplify/auth';
+import { deleteUser, signOut } from 'aws-amplify/auth';
+import { DataStore } from 'aws-amplify/datastore';
 
 const Settings = () => {
   const {
@@ -43,6 +44,7 @@ const Settings = () => {
     updateAvailable,
     setUpdateAvailable,
     contributions,
+    noAuth,
   } = useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -195,10 +197,12 @@ const Settings = () => {
     setDeleting(true);
     try {
       await createRequest(data);
-      await deleteUserProfile(currentUser);
+      await deleteUserProfile(userProfile);
       await deleteUser();
       setDeleteRequestModal(false);
-      router.replace('/login');
+      noAuth();
+      await DataStore.clear();
+      signOut();
     } catch (e) {
       console.error('Error sending delete request:', e);
       Alert.alert('Error', 'Failed to send delete request');

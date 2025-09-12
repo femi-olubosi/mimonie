@@ -30,7 +30,18 @@ const DeleteRequestModal = ({ visible, onClose, onDelete, deleting }) => {
           multiline
           numberOfLines={6}
         />
-        {deleting && <ActivityIndicator size={'large'} color={Colors.pri} />}
+        {deleting && (
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <ActivityIndicator size={'large'} color={Colors.pri} />
+            <Text>Please wait while we process your request</Text>
+          </View>
+        )}
         <View style={styles.buttonContainer}>
           <Button
             title="Cancel"

@@ -64,7 +64,6 @@ export default function HomeScreen() {
 
   useEffect(() => {
     if (!userProfile) {
-      // signOut();
       setIsLoading(true);
     } else {
       setIsLoading(false);

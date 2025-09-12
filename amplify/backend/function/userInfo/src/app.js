@@ -163,6 +163,19 @@ app.get('/contributions/:contribution_id', async (req, res) => {
   }
 });
 
+app.delete('/user-info/:id', async (req, res) => {
+  const { id } = req.params;
+  const { email } = req.query;
+
+  try {
+    const response = await models.deleteUserProfile({ id, email });
+    res.json({ success: true, message: response.message });
+  } catch (error) {
+    console.error('Error deleting user profile:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.listen(3000, function () {
   console.log('App started');
 });

@@ -7,8 +7,10 @@ const {
   GetCommand,
 } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
+const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 
 const ddbClient = new DynamoDBClient({ region: 'us-west-2' });
+const ses = new SESClient({ region: process.env.AWS_REGION });
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
 const withdrawalRequestTableName = 'withdrawalRequests-dev';
@@ -239,6 +241,47 @@ const models = {
     } catch (err) {
       console.error('Error getting user profile by phone number:', err);
       throw err;
+    }
+  },
+
+  async deleteUserProfile(data) {
+    const { id, email } = data;
+    const params = {
+      TableName: userProfileTableName,
+      Key: { id },
+    };
+
+    const emailParams = {
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Body: {
+          Text: {
+            Data: `Hello, your account (${email}) has been successfully deleted from our platform.`,
+          },
+        },
+        Subject: { Data: 'Account Deletion Confirmation' },
+      },
+      Source: 'support@mimonie.net',
+    };
+
+    try {
+      await ddbDocClient.send(new DeleteCommand(params));
+
+      if (email) {
+        await ses.send(new SendEmailCommand(emailParams));
+      }
+
+      return {
+        success: true,
+        message: `User profile with id ${userId} deleted.`,
+      };
+    } catch (err) {
+      console.error('Error deleting user profile:', err);
+      return {
+        success: false,
+        message: 'Failed to delete user profile.',
+        error: err,
+      };
     }
   },
 };
