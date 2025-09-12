@@ -17,3 +17,6 @@ export const validateUserContributions = (contributions, type) => {
 
   return false;
 };
+
+export const hasActiveContribution = (contributions) =>
+  contributions.some((e) => e.status === 'running');

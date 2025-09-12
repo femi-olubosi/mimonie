@@ -17,7 +17,10 @@ const DeleteRequestModal = ({ visible, onClose, onDelete, deleting }) => {
     <ModalWrapper visible={visible} onClose={onClose}>
       <View style={styles.modal}>
         <Text style={styles.modalText}>
-          Are you sure you want to delete this request?
+          Are you sure you want to delete your account?
+        </Text>
+        <Text style={{ fontSize: 12 }}>
+          All your data will be deleted entire from system.
         </Text>
         <TextInput
           style={styles.textInput}

@@ -309,3 +309,10 @@ export const fetchProfile = async (currentUser) => {
     throw error;
   }
 };
+
+export const deleteUserProfile = async (currentUser) => {
+  const toDelete = await DataStore.query(UserProfile, currentUser.userId);
+  if (toDelete) {
+    DataStore.delete(toDelete);
+  }
+};

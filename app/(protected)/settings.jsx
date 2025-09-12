@@ -15,7 +15,11 @@ import {
   registerForPushNotificationsAsync,
   savePushToken,
 } from '@/api/pushNotification.service';
-import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
+import {
+  deleteUserProfile,
+  fetchUserProfile,
+  updateUserProfile,
+} from '../../api/user.service';
 import { router } from 'expo-router';
 import { createTransferRecipientForBank } from '../../api/payment.service';
 import { createRequest } from '../../api/request.service';
@@ -23,6 +27,8 @@ import DeleteRequestModal from '../../components/modals/DeleteRequestModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useGetPushTokenFromLocalStorage } from '../../hooks/useGetPushToken';
 import { reRegisterForPushNotificationsAsync } from '../../api/pushNotification.service';
+import { hasActiveContribution } from '../../utils/validateUserContributions';
+import { deleteUser } from 'aws-amplify/auth';
 
 const Settings = () => {
   const {
@@ -36,6 +42,7 @@ const Settings = () => {
     darkMode,
     updateAvailable,
     setUpdateAvailable,
+    contributions,
   } = useGlobalContext();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
@@ -159,35 +166,39 @@ const Settings = () => {
   //   }
   // };
 
-  useEffect(() => {
-    const getRequestStatus = async () => {
-      const request = await AsyncStorage.getItem('requested');
-      setRequested(!!request);
-    };
+  // useEffect(() => {
+  //   const getRequestStatus = async () => {
+  //     const request = await AsyncStorage.getItem('requested');
+  //     setRequested(!!request);
+  //   };
 
-    getRequestStatus();
-  }, [deleting]);
+  //   getRequestStatus();
+  // }, [deleting]);
 
   const onDelete = async (reason) => {
+    if (hasActiveContribution(contributions)) {
+      Alert.alert(
+        'Error',
+        'You can not delete your account when you have a contribution still running'
+      );
+      return;
+    }
+
     const data = {
       type: 'delete_request',
       username: userProfile.username,
       userId: userProfile.userId,
       user_email: userProfile.email,
-      status: 'open',
+      status: 'closed',
       reason,
     };
     setDeleting(true);
     try {
       await createRequest(data);
-      AsyncStorage.setItem('requested', 'true');
-      Alert.alert(
-        'Request sent',
-        'Your request has been sent to the admin for processing. You deletion request status will be sent to you email.',
-        [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
-        { cancelable: false }
-      );
+      await deleteUserProfile(currentUser);
+      await deleteUser();
       setDeleteRequestModal(false);
+      router.replace('/login');
     } catch (e) {
       console.error('Error sending delete request:', e);
       Alert.alert('Error', 'Failed to send delete request');
@@ -255,12 +266,12 @@ const Settings = () => {
         {/* Delete Account */}
         <TouchableOpacity
           style={styles.setting}
-          onPress={() => (requested ? {} : setDeleteRequestModal(true))}
+          onPress={() => setDeleteRequestModal(true)}
         >
           <Text
             style={[styles.settingText, { color: requested ? 'gray' : 'red' }]}
           >
-            Request Account Deletion
+            Delete My Account
           </Text>
           {requested && (
             <Text style={{ color: 'gray', fontSize: 10 }}>Request Pending</Text>
