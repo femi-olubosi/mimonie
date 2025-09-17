@@ -1,5 +1,6 @@
 import {
   Alert,
+  BackHandler,
   Pressable,
   StyleSheet,
   Text,
@@ -14,6 +15,7 @@ import {
   autoSignIn,
   confirmSignUp,
   resendSignUpCode,
+  signIn,
   signOut,
 } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
@@ -22,21 +24,49 @@ import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
 import { createUserProfile } from '../../api/user.service';
 import * as Device from 'expo-device';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EmailConfirmation = () => {
   const { emailVeri, setIsLoading, currentUser, noAuth } = useGlobalContext();
-  const { email, userId, normalizedPhoneNumber } = useLocalSearchParams();
   const [code, setCode] = useState(0);
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
 
   useEffect(() => {
-    if (currentUser && currentUser.email_verified) {
-      setShowCompleteProfileModal(true);
+    const checkAuthState = async () => {
+      const local_details = await AsyncStorage.getItem('local_details');
+      if (local_details) {
+        const parsed = JSON.parse(local_details);
+        if (parsed.email_verified) {
+          // setShowCompleteProfileModal(true);
+          router.push('/(protected)/complete_profile');
+        }
+      }
+    };
+    checkAuthState();
+  }, []);
+
+  const markEmailVerified = async () => {
+    const data = await AsyncStorage.getItem('local_details');
+    if (data) {
+      const parsed = JSON.parse(data);
+      parsed.email_verified = true;
+      await AsyncStorage.setItem('local_details', JSON.stringify(parsed));
     }
-  }, [currentUser]);
+  };
 
   const handleVerify = async () => {
+    const data = await AsyncStorage.getItem('local_details');
+    const signupData = data ? JSON.parse(data) : null;
+
+    if (!signupData) {
+      Alert.alert('Error', 'Signup details not found. Please try again.');
+      router.replace('/(protected)');
+      return;
+    }
+
+    const { email, userId, normalizedPhoneNumber, password } = signupData;
+
     const device = {
       device_id: Device.osInternalBuildId || null,
       device_name: Device.deviceName || null,
@@ -46,21 +76,15 @@ const EmailConfirmation = () => {
     setIsLoading(true);
     try {
       const { isSignUpComplete } = await confirmSignUp({
-        username: emailVeri,
+        username: email,
         confirmationCode: code,
       });
 
       if (isSignUpComplete) {
-        const signInOutput = await autoSignIn();
-        if (signInOutput) {
-          await createUserProfile(userId, device, email, normalizedPhoneNumber);
-          router.replace('/(protected)/complete_profile');
-        } else {
-          Alert.alert(
-            'Sign-in failed',
-            'Unable to sign in automatically. Please try manually.'
-          );
-        }
+        await signIn({ username: email, password: password });
+        await createUserProfile(userId, device, email, normalizedPhoneNumber);
+        await markEmailVerified();
+        router.replace('/(protected)/complete_profile');
       } else {
         Alert.alert(
           'Warning',
@@ -76,20 +100,26 @@ const EmailConfirmation = () => {
   };
 
   const handleResend = async () => {
+    const data = await AsyncStorage.getItem('local_details');
+    const signupData = data ? JSON.parse(data) : null;
+
+    if (!signupData) {
+      Alert.alert('Error', 'Signup details not found. Please try again.');
+      router.replace('/(protected)');
+      return;
+    }
+
+    const { email } = signupData;
+
     setIsLoading(true);
     try {
-      await resendSignUpCode({ username: emailVeri });
+      await resendSignUpCode({ username: email });
       alert('Code resent successful');
     } catch (error) {
       console.log(error);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleLater = async () => {
-    noAuth();
-    signOut();
   };
 
   return (
@@ -126,7 +156,7 @@ const EmailConfirmation = () => {
               columnGap: 40,
             }}
           >
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={{
                 height: 48,
                 flex: 1,
@@ -137,10 +167,8 @@ const EmailConfirmation = () => {
               }}
               onPress={handleLater}
             >
-              {/* <Link href={'/(protected)'}> */}
               <Text style={styles.buttonText}>Later</Text>
-              {/* </Link> */}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
             <Pressable
               style={{
                 height: 48,
@@ -166,9 +194,9 @@ const EmailConfirmation = () => {
           </Pressable>
         </View>
       </View>
-      <ModalComp modalVisible={showCompleteProfileModal}>
+      {/* <ModalComp modalVisible={showCompleteProfileModal}>
         <CompleteProfile />
-      </ModalComp>
+      </ModalComp> */}
     </Container>
   );
 };

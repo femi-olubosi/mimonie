@@ -4,9 +4,9 @@ import { Hub } from '@aws-amplify/core';
 
 // export let currentUserId = null;
 
-let currentUserId = null;
+let currentUserId: string | null = null;
 
-export const setCurrentUserId = (id) => {
+export const setCurrentUserId = (id: string) => {
   currentUserId = id;
 };
 

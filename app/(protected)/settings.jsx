@@ -198,10 +198,11 @@ const Settings = () => {
     try {
       await createRequest(data);
       await deleteUserProfile(userProfile);
+      await DataStore.clear();
       await deleteUser();
+      await AsyncStorage.removeItem('local_details');
       setDeleteRequestModal(false);
       noAuth();
-      await DataStore.clear();
       signOut();
     } catch (e) {
       console.error('Error sending delete request:', e);

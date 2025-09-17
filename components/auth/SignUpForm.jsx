@@ -19,6 +19,7 @@ import { ErrorCheck } from '../../utils/errorCheck';
 import { isPhoneNumberExist } from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DataStore } from 'aws-amplify/datastore';
 
 const SignUp = (props) => {
   // const [username, setUsername] = useState('');
@@ -52,22 +53,27 @@ const SignUp = (props) => {
 
     setIsLoading(true);
     try {
-      const existing = await AsyncStorage.getItem('existingEmail');
+      await DataStore.clear();
+      const local_details = await AsyncStorage.getItem('local_details');
+      const existing = local_details ? JSON.parse(local_details) : null;
 
-      if (existing) {
-        Alert.alert('Error', `Device already registered with ${existing}`);
-        return;
-      }
-
-      const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
-
-      if (phonExisting) {
+      if (existing && existing.email) {
         Alert.alert(
           'Error',
-          `Phone number is already associated with an account`
+          `Device already registered with ${existing.email}`
         );
         return;
       }
+
+      // const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
+
+      // if (phonExisting) {
+      //   Alert.alert(
+      //     'Error',
+      //     `Phone number is already associated with an account`
+      //   );
+      //   return;
+      // }
 
       const { userId } = await signUp({
         username: email,
@@ -82,21 +88,20 @@ const SignUp = (props) => {
           autoSignIn: true,
         },
       });
-
       setEmailVeri(email);
-      await AsyncStorage.setItem('existingEmail', email);
-      await AsyncStorage.setItem('phone', normalizedPhoneNumber);
-      await AsyncStorage.setItem('userId', userId);
-      yesAuth();
-
-      router.replace({
-        pathname: '/email_verify',
-        params: {
+      await AsyncStorage.setItem(
+        'local_details',
+        JSON.stringify({
           userId,
           email,
           normalizedPhoneNumber,
-        },
-      });
+          email_verified: false,
+          password,
+        })
+      );
+      yesAuth();
+
+      router.replace('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);
       console.error('Error signing up:', error);

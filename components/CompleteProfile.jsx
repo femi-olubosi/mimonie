@@ -132,7 +132,10 @@ const CompleteProfile = () => {
   }, [selectedOrigin]);
 
   const handleSubmit = async () => {
-    const name = `${infoDetails?.firstname?.trim()} ${infoDetails?.lastname?.trim()}`;
+    const fname = infoDetails?.firstname?.trim?.() || '';
+    const lname = infoDetails?.lastname?.trim?.() || '';
+    const name = `${fname} ${lname}`.trim();
+
     const data = {
       name: name,
       birthdate: convertToAWSDate(infoDetails?.birthdate),

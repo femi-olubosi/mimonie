@@ -5,6 +5,7 @@ const {
   UpdateCommand,
   QueryCommand,
   GetCommand,
+  DeleteCommand,
 } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');

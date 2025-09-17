@@ -1,7 +1,7 @@
 import { View, StyleSheet, Image } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { formFields } from '../../data/authFormField';
@@ -10,6 +10,7 @@ import UserInactivityProvider from '../../components/UserInactivityProvider';
 import { useHandleNotifications } from '../../hooks/usePushNotification';
 import useDataStoreObservers from '../../hooks/useDatastoreObserver';
 import { useGlobalContext } from '../../store/StoreContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProtectedLayout = () => {
   return (
@@ -31,6 +32,24 @@ const ProtectedContent = () => {
   //   setParsed,
   //   setInviteArray,
   // });
+
+  useEffect(() => {
+    const loadSignupData = async () => {
+      try {
+        const data = await AsyncStorage.getItem('local_details');
+        if (data) {
+          const signupData = JSON.parse(data);
+          if (!signupData.email_verified) {
+            router.replace('/email_verify');
+          }
+        }
+      } catch (error) {
+        console.error('Error reading signup_details:', error);
+      }
+    };
+
+    loadSignupData();
+  }, []);
 
   return (
     <>

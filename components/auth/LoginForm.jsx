@@ -43,13 +43,24 @@ const LoginForm = (props) => {
   } = useGlobalContext();
   const router = useRouter();
 
+  const updateLocalDetails = async (email) => {
+    const data = await AsyncStorage.getItem('local_details');
+    if (data) {
+      const parsed = JSON.parse(data);
+      parsed.email = email;
+      await AsyncStorage.setItem('local_details', JSON.stringify(parsed));
+    }
+  };
+
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
       return;
     }
+
     setIsLoading(true);
     try {
       await signOut();
+
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,
@@ -145,6 +156,8 @@ const LoginForm = (props) => {
 
       const file = await AsyncStorage.getItem('profilePicture');
       setProfilePicture(file);
+
+      await updateLocalDetails(email);
 
       router.replace('/(protected)');
     } catch (error) {
