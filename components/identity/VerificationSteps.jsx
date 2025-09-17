@@ -22,7 +22,7 @@ export default function VerificationSteps() {
       return;
     }
 
-    router.push('/protected/take_selfie');
+    router.push('/(protected)/take_selfie');
   };
 
   return (

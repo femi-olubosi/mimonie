@@ -1,6 +1,5 @@
 import {
   Alert,
-  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -10,21 +9,17 @@ import {
 } from 'react-native';
 import React, { useState } from 'react';
 import { Link, router } from 'expo-router';
-import { AntDesign, Feather, Fontisto } from '@expo/vector-icons';
+import { Feather, Fontisto } from '@expo/vector-icons';
 import Container from '../Container';
-import { confirmSignUp, signUp } from 'aws-amplify/auth';
+import { signUp } from 'aws-amplify/auth';
 import Checkbox from 'expo-checkbox';
 import { Colors } from '../../constants/Colors';
 import { useGlobalContext } from '@/store/StoreContext';
 import { ErrorCheck } from '../../utils/errorCheck';
-import {
-  createUserProfile,
-  isDeviceExist,
-  isPhoneNumberExist,
-} from '../../api/user.service';
+import { isPhoneNumberExist } from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { KeyboardAvoidingView, Platform } from 'react-native';
+import { DataStore } from 'aws-amplify/datastore';
 
 const SignUp = (props) => {
   // const [username, setUsername] = useState('');
@@ -34,7 +29,7 @@ const SignUp = (props) => {
   const [showPass, setShowPass] = useState(false);
   const { handleSubmit, toSignIn } = props;
   const [isChecked, setChecked] = useState(false);
-  const { setIsLoading, isLoading, setEmailVeri } = useGlobalContext();
+  const { setIsLoading, isLoading, setEmailVeri, yesAuth } = useGlobalContext();
 
   const handleSignUp = async () => {
     if (ErrorCheck({ password, email, phone_number })) {
@@ -58,29 +53,27 @@ const SignUp = (props) => {
 
     setIsLoading(true);
     try {
-      // const existing = await isDeviceExist(device?.device_id);
+      await DataStore.clear();
+      const local_details = await AsyncStorage.getItem('local_details');
+      const existing = local_details ? JSON.parse(local_details) : null;
 
-      // if (existing) {
-      //   Alert.alert('Error', `Device is already associated with an account`);
-      //   return;
-      // }
-
-      const existing = await AsyncStorage.getItem('existingEmail');
-
-      if (existing) {
-        Alert.alert('Error', `Device already registered with ${existing}`);
-        return;
-      }
-
-      const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
-
-      if (phonExisting) {
+      if (existing && existing.email) {
         Alert.alert(
           'Error',
-          `Phone number is already associated with an account`
+          `Device already registered with ${existing.email}`
         );
         return;
       }
+
+      // const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
+
+      // if (phonExisting) {
+      //   Alert.alert(
+      //     'Error',
+      //     `Phone number is already associated with an account`
+      //   );
+      //   return;
+      // }
 
       const { userId } = await signUp({
         username: email,
@@ -90,15 +83,25 @@ const SignUp = (props) => {
             email,
             preferred_username: email,
             phone_number: normalizedPhoneNumber,
+            'custom:device_id': device.device_id,
           },
           autoSignIn: true,
         },
       });
-
-      await createUserProfile(userId, device, email, normalizedPhoneNumber);
       setEmailVeri(email);
-      await AsyncStorage.setItem('existingEmail', email);
-      router.push('/email_verify');
+      await AsyncStorage.setItem(
+        'local_details',
+        JSON.stringify({
+          userId,
+          email,
+          normalizedPhoneNumber,
+          email_verified: false,
+          password,
+        })
+      );
+      yesAuth();
+
+      router.replace('/email_verify');
     } catch (error) {
       Alert.alert('Error', error?.message);
       console.error('Error signing up:', error);

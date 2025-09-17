@@ -63,7 +63,7 @@ export default function TakeSelfie() {
           color={Colors.pri}
           disabled={!selfie}
           styleOverride={!selfie && styles.disabledButton}
-          onPress={() => router.push('/protected/upload_doc')}
+          onPress={() => router.push('/(protected)/upload_doc')}
         />
       </View>
     </PageView>

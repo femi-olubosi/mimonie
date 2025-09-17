@@ -53,11 +53,11 @@ const withdrawFunds = async (request) => {
 exports.handler = async (event) => {
   for (const record of event.Records) {
     const request = JSON.parse(record.body);
-    console.log('Processing contribution:', request);
+    console.log('Processing withdrawal:', request);
     try {
       await withdrawFunds(request);
     } catch (error) {
-      console.error('Failed processing contribution:', error);
+      console.error('Failed processing withdrawal:', error);
     }
   }
 };

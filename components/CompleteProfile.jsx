@@ -15,10 +15,10 @@ import { Colors } from '@/constants/Colors';
 import { fetchUserProfile, updateUserProfile } from '@/api/user.service';
 import { createPaystackCustomer } from '@/api/payment.service';
 import { useGlobalContext } from '@/store/StoreContext';
-import { DateTimeSelector, PageView, SelectInput } from '@/components/Reusable';
+import { DateTimeSelector, PageView } from '@/components/Reusable';
 import { topBar } from '@/cStyle';
 import { naira } from '@/constants/Currency';
-import { fetchCurrUser } from '../api/user.service';
+import { fetchCurrUser, updateAttributes } from '../api/user.service';
 import { ErrorCheck } from '../utils/errorCheck';
 import {
   createNotification,
@@ -27,9 +27,10 @@ import {
 import { convertToAWSDate } from '../utils/toAWSDate';
 import { fetchCountries } from '../api/payment.service';
 import { sendOtp } from '../api/token.service';
-import { signOut } from 'aws-amplify/auth';
 import SelectModal from './modals/SelectModal';
-import { AntDesign, Entypo } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
+import { UserNotifications, UserProfile } from '../src/models';
+import { DataStore } from 'aws-amplify/datastore';
 
 const dateOption = [
   'en-US',
@@ -131,8 +132,12 @@ const CompleteProfile = () => {
   }, [selectedOrigin]);
 
   const handleSubmit = async () => {
+    const fname = infoDetails?.firstname?.trim?.() || '';
+    const lname = infoDetails?.lastname?.trim?.() || '';
+    const name = `${fname} ${lname}`.trim();
+
     const data = {
-      name: `${infoDetails?.firstname?.trim()} ${infoDetails?.lastname?.trim()}`,
+      name: name,
       birthdate: convertToAWSDate(infoDetails?.birthdate),
       address: infoDetails?.address,
       occupation: infoDetails?.occupation,
@@ -148,9 +153,6 @@ const CompleteProfile = () => {
 
     setIsLoading(true);
     try {
-      // await updateUserProfile(data, currentUser);
-      // const user = await fetchUserProfile(setUserProfile, currentUser);
-      // console.log({ user });
       const res = await createPaystackCustomer(
         currentUser.email,
         infoDetails.firstname,
@@ -158,10 +160,13 @@ const CompleteProfile = () => {
         currentUser.phone_number
       );
 
-      const update = await updateUserProfile(
+      await updateUserProfile(
         { ...data, customer_code: res.data.customer_code },
-        currentUser
+        currentUser,
+        userProfile
       );
+
+      await updateAttributes({ name });
 
       await createNotification(
         {
@@ -178,7 +183,7 @@ const CompleteProfile = () => {
 
       const resOtp = await sendOtp(profile.phone_number);
       setConfirmationResult({ ...resOtp, type: 'phone_verification' });
-      router.push('/verification_check');
+      router.push('/(protected)/verification_check');
     } catch (error) {
       console.error(error);
     } finally {
@@ -189,6 +194,15 @@ const CompleteProfile = () => {
   const toggleDatePicker = () => {
     setShowDatePicker(!showDatePicker);
   };
+
+  // const test = async () => {
+  //   try {
+  //     const userProfile = await DataStore.query(UserProfile);
+  //     console.log('profile service', userProfile);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   return (
     <PageView title={'Complete Sign Up'} backIcon={false}>
@@ -351,6 +365,7 @@ const CompleteProfile = () => {
           title={'Complete'}
           color={Colors.pri}
           onPress={handleSubmit}
+          // onPress={test}
           outline={true}
         />
       </View>

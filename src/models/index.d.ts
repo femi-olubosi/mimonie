@@ -308,11 +308,13 @@ type EagerContribution = {
   readonly contributiongroupsID: string;
   readonly participant?: (string | null)[] | null;
   readonly owner: string;
+  readonly owner_id?: string | null;
   readonly target: number;
   readonly amount: number;
   readonly num_of_month: number;
   readonly status?: string | null;
   readonly participant_ids?: (string | null)[] | null;
+  readonly access?: (string | null)[] | null;
   readonly currently_at?: number | null;
   readonly variant?: string | null;
   readonly current_count?: number | null;
@@ -335,11 +337,13 @@ type LazyContribution = {
   readonly contributiongroupsID: string;
   readonly participant?: (string | null)[] | null;
   readonly owner: string;
+  readonly owner_id?: string | null;
   readonly target: number;
   readonly amount: number;
   readonly num_of_month: number;
   readonly status?: string | null;
   readonly participant_ids?: (string | null)[] | null;
+  readonly access?: (string | null)[] | null;
   readonly currently_at?: number | null;
   readonly variant?: string | null;
   readonly current_count?: number | null;
@@ -485,6 +489,7 @@ type EagerContributionParticipant = {
   };
   readonly id: string;
   readonly contributionID: string;
+  readonly contribution_owner_id?: string | null;
   readonly userId: string;
   readonly name?: string | null;
   readonly email?: string | null;
@@ -499,6 +504,7 @@ type EagerContributionParticipant = {
   readonly extra?: string | null;
   readonly type?: string | null;
   readonly balance?: number | null;
+  readonly picture?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -510,6 +516,7 @@ type LazyContributionParticipant = {
   };
   readonly id: string;
   readonly contributionID: string;
+  readonly contribution_owner_id?: string | null;
   readonly userId: string;
   readonly name?: string | null;
   readonly email?: string | null;
@@ -524,6 +531,7 @@ type LazyContributionParticipant = {
   readonly extra?: string | null;
   readonly type?: string | null;
   readonly balance?: number | null;
+  readonly picture?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   TextInput,
   StyleSheet,
@@ -7,51 +7,60 @@ import {
   Alert,
   TouchableOpacity,
   Pressable,
-  ScrollView,
   KeyboardAvoidingView,
-  Platform,
   Image,
 } from 'react-native';
 import { Colors } from '../../constants/Colors';
 import { Feather } from '@expo/vector-icons';
 import { signIn, signOut } from 'aws-amplify/auth';
 import { useGlobalContext } from '@/store/StoreContext';
-import { Link, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { fetchCurrUser, fetchUserProfile } from '../../api/user.service';
-import * as Device from 'expo-device';
-import { fetchUserNotification } from '../../api/notifications.service';
-import { sendOtp } from '../../api/token.service';
+import {
+  fetchCurrUser,
+  fetchUserProfile,
+  getUser,
+} from '../../api/user.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Checkbox from 'expo-checkbox';
+import * as Device from 'expo-device';
+import { sendOtp } from '../../api/token.service';
 import { DataStore } from 'aws-amplify/datastore';
 
 const LoginForm = (props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
   const { toSignUp, toForgotPassword } = props;
   const {
     isLoading,
     setIsLoading,
     setEmailVeri,
+    yesAuth,
     setCurrentUser,
-    setUserProfile,
-    userProfile,
-    setNotifications,
     setConfirmationResult,
     setProfilePicture,
+    setUserProfile,
   } = useGlobalContext();
   const router = useRouter();
+
+  const updateLocalDetails = async (email) => {
+    const data = await AsyncStorage.getItem('local_details');
+    if (data) {
+      const parsed = JSON.parse(data);
+      parsed.email = email;
+      await AsyncStorage.setItem('local_details', JSON.stringify(parsed));
+    }
+  };
 
   const handleSignIn = async () => {
     if (ErrorCheck({ email })) {
       return;
     }
+
     setIsLoading(true);
     try {
-      await DataStore.start();
+      await signOut();
+
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,
@@ -60,11 +69,21 @@ const LoginForm = (props) => {
       if (!isSignedIn) {
         if (nextStep.signInStep === 'CONFIRM_SIGN_UP') {
           setEmailVeri(email);
-          router.push('/email_verify');
+          // router.replace('/email_verify');
+          const normalizedPhoneNumber = await AsyncStorage.getItem('phone');
+          const userId = await AsyncStorage.getItem('userId');
+          router.replace({
+            pathname: '/email_verify',
+            params: {
+              userId,
+              email,
+              normalizedPhoneNumber,
+            },
+          });
           return;
         } else if (nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_SMS_CODE') {
           setEmailVeri(email);
-          router.push('/login_verify');
+          router.replace('/(protected)/login_verify');
           return;
         } else {
           Alert.alert('', nextStep.signInStep);
@@ -72,17 +91,14 @@ const LoginForm = (props) => {
         }
       }
 
+      yesAuth();
+
       const user = await fetchCurrUser(setCurrentUser);
 
-      const file = await AsyncStorage.getItem('profilePicture');
-      setProfilePicture(file);
-
-      const profile = await fetchUserProfile(setUserProfile, user);
-
-      await fetchUserNotification(user.userId, setNotifications);
+      const profile = await getUser(user.userId);
 
       if (!profile?.name) {
-        router.push('/complete_profile');
+        router.replace('/(protected)/complete_profile');
         return;
       }
 
@@ -101,7 +117,7 @@ const LoginForm = (props) => {
               onPress: async () => {
                 const res = await sendOtp(profile.phone_number);
                 setConfirmationResult({ ...res, type: 'phone_verification' });
-                router.push('/verification_check');
+                router.replace('/(protected)/verification_check');
               },
             },
           ],
@@ -129,7 +145,7 @@ const LoginForm = (props) => {
               onPress: async () => {
                 const res = await sendOtp(profile.phone_number);
                 setConfirmationResult({ ...res, type: 'device_registration' });
-                router.push('/verification_check');
+                router.replace('/(protected)/verification_check');
               },
             },
           ],
@@ -138,39 +154,18 @@ const LoginForm = (props) => {
         return;
       }
 
-      await AsyncStorage.setItem('existingEmail', email);
-      await AsyncStorage.setItem('user_name', profile?.name);
-      router.push('/');
-    } catch (error) {
-      if (error?.message?.includes('User is disabled')) {
-        Alert.alert(
-          'Account Deactivated',
-          'Your account has been deactivated. Please contact support for assistance. support@mimonie.net'
-        );
-        return;
-      }
+      const file = await AsyncStorage.getItem('profilePicture');
+      setProfilePicture(file);
 
-      Alert.alert('Error', error.message);
-      console.error(error.message);
+      await updateLocalDetails(email);
+
+      router.replace('/(protected)');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Network Error. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const checkExistingUser = async () => {
-      const user_name = await AsyncStorage.getItem('user_name');
-      const email = await AsyncStorage.getItem('existingEmail');
-      if (user_name && email) {
-        setUserInfo({
-          username: user_name,
-          email: email,
-        });
-        setEmail(email);
-      }
-    };
-    checkExistingUser();
-  }, []);
 
   return (
     <KeyboardAvoidingView behavior="padding" enabled={false}>
@@ -185,32 +180,19 @@ const LoginForm = (props) => {
             alignSelf: 'center',
           }}
         />
-        {userInfo ? (
-          <View style={{ marginBottom: 20 }}>
-            <Text
-              style={{ textAlign: 'center', fontSize: 20, fontFamily: 'isb' }}
-            >
-              Welcome Back, {userInfo?.username?.split(' ')[0]}
-            </Text>
-          </View>
-        ) : (
-          <Text style={styles.title}>{'Log in'}</Text>
-        )}
-
-        {!userInfo && (
-          <View>
-            <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email address"
-              placeholderTextColor={'silver'}
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-            />
-          </View>
-        )}
+        <Text style={styles.title}>{'Log in'}</Text>
+        <View>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email address"
+            placeholderTextColor={'silver'}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+        </View>
         <View>
           <Text style={styles.label}>Password</Text>
           <View

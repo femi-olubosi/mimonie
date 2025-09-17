@@ -196,7 +196,8 @@ export default function UploadDocument() {
         await AsyncStorage.setItem('jobId', res.job_id);
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: true },
-          currentUser
+          currentUser,
+          userProfile
         );
 
         await fetchUserProfile(setUserProfile, currentUser);
@@ -206,11 +207,12 @@ export default function UploadDocument() {
           message: 'Your verification has been approved.',
           status: 'success',
         });
-        // router.push('/protected/completed_screen');
+        // router.push('/(protected)/completed_screen');
       } else if (res.result === 'rejected') {
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: false },
-          currentUser
+          currentUser,
+          userProfile
         );
         setLoading(false);
         setModalContent({
@@ -250,7 +252,7 @@ export default function UploadDocument() {
   const closeStatusModal = () => {
     if (modalContent.status === 'success') {
       setStatusModalVisible(false);
-      router.push('/protected');
+      router.push('/(protected)/(tabs)');
     } else {
       setStatusModalVisible(false);
     }

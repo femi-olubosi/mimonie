@@ -51,21 +51,35 @@
       "service": "API Gateway"
     },
     "mimonie": {
-      "dependsOn": [],
+      "dependsOn": [
+        {
+          "attributes": [
+            "UserPoolId"
+          ],
+          "category": "auth",
+          "resourceName": "mimonie"
+        }
+      ],
       "output": {
         "authConfig": {
           "additionalAuthenticationProviders": [
+            {
+              "apiKeyConfig": {
+                "apiKeyExpirationDate": "2026-06-13T04:30:29.067Z",
+                "apiKeyExpirationDays": 365,
+                "description": "mimonie api"
+              },
+              "authenticationType": "API_KEY"
+            },
             {
               "authenticationType": "AWS_IAM"
             }
           ],
           "defaultAuthentication": {
-            "apiKeyConfig": {
-              "apiKeyExpirationDate": "2025-11-12T01:50:10.847Z",
-              "apiKeyExpirationDays": 365,
-              "description": "API KEY"
-            },
-            "authenticationType": "API_KEY"
+            "authenticationType": "AMAZON_COGNITO_USER_POOLS",
+            "userPoolConfig": {
+              "userPoolId": "authmimonie"
+            }
           }
         }
       },
@@ -184,6 +198,11 @@
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
+    "processNotifications": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "processWithdrawalRequest": {
       "build": true,
       "dependsOn": [],
@@ -220,6 +239,14 @@
       ]
     },
     "AMPLIFY_function_AdminQueriese69f7a79_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "AdminQueriese69f7a79"
+        }
+      ]
+    },
+    "AMPLIFY_function_AdminQueriese69f7a79_sqsQueueUrl": {
       "usedBy": [
         {
           "category": "function",
@@ -392,6 +419,22 @@
         {
           "category": "function",
           "resourceName": "mimonief71364a4"
+        }
+      ]
+    },
+    "AMPLIFY_function_processNotifications_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processNotifications"
+        }
+      ]
+    },
+    "AMPLIFY_function_processNotifications_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "processNotifications"
         }
       ]
     },

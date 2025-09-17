@@ -23,15 +23,12 @@ export const sendSMSInvite = async (contact, inviteLink) => {
 };
 
 export const sendInvite = async (contact) => {
-  const contributionLink = `https://mimonie.net`;
-  const message = `You are invited to join mimonie app. Click the link to open: ${contributionLink}`;
+  const appLink = `https://onelink.to/v28cvx`;
+  const message = `🚀 Discover Mimonie! Your new way to create contribution groups and grow savings with your trusted circle. Download the app now and get started 👉: ${appLink}`;
 
   const isAvailable = await SMS.isAvailableAsync();
   if (isAvailable) {
-    const { result } = await SMS.sendSMSAsync(
-      [contact.phoneNumbers[0]],
-      message
-    );
+    const { result } = await SMS.sendSMSAsync([contact], message);
     console.log(result);
   } else {
     Alert.alert('SMS is not available on this device');
@@ -40,11 +37,13 @@ export const sendInvite = async (contact) => {
 
 export const fetchInviteContributions = async (inviteLinks) => {
   try {
-    const allContributions = await DataStore.query(Contribution);
+    if (!Array.isArray(inviteLinks) || inviteLinks.length === 0) {
+      return [];
+    }
 
-    const filteredContributions = allContributions.filter((contribution) =>
-      inviteLinks.includes(contribution.id)
-    );
+    const filteredContributions = await Promise.all(
+      inviteLinks.map((id) => DataStore.query(Contribution, id))
+    ).then((results) => results.flat().filter(Boolean));
 
     // Sort the filtered contributions by creation date
     const sorted = filteredContributions.sort((a, b) =>
@@ -58,21 +57,27 @@ export const fetchInviteContributions = async (inviteLinks) => {
 
 export const sendUserInvite = async (userId, invite_link) => {
   try {
-    const invitee = await DataStore.query(UserProfile, (c) =>
-      c.userId.eq(userId)
-    );
+    // const invitee = await DataStore.query(UserProfile, (c) =>
+    //   c.userId.eq(userId)
+    // );
 
-    if (!invitee[0]) {
-      throw new Error('User profile not found');
+    const contribution = await DataStore.query(Contribution, invite_link);
+
+    // if (!invitee[0]) {
+    //   throw new Error('User profile not found');
+    // }
+
+    if (!contribution) {
+      throw new Error('Contribution not found');
     }
 
     DataStore.save(
-      UserProfile.copyOf(invitee[0], (updated) => {
-        updated.invites.push(invite_link);
+      Contribution.copyOf(contribution, (updated) => {
+        updated.access.push(userId);
       })
     );
   } catch (error) {
-    console.error('Error updating user invite:', error);
+    console.error('Error inviting user:', error);
     throw error;
   }
 };

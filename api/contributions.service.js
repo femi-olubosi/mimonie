@@ -1,26 +1,59 @@
-import { DataStore } from 'aws-amplify/datastore';
+import { DataStore, SortDirection } from 'aws-amplify/datastore';
 import { Contribution, ContributionParticipant } from '../src/models';
 import { triggerNotificationForUser } from './pushNotification.service';
 import { createUserActivity } from './activities.service';
 import { createTransferRecipientForBank } from './payment.service';
+import { get } from 'aws-amplify/api';
 
-export const fetchUserContributions = async (userId, setContributions) => {
+export const fetchUserContributions = async (
+  userId,
+  setContributions,
+  limit = 10
+) => {
+  if (!userId) {
+    return [];
+  }
+
   try {
-    await DataStore.start();
-
-    const userContributions = await DataStore.query(Contribution, (c) =>
-      c.participant_ids.contains(userId)
+    const userContributions = await DataStore.query(
+      Contribution,
+      (c) => c.participant_ids.contains(userId),
+      {
+        limit: limit,
+        sort: (c) => c.createdAt(SortDirection.DESCENDING),
+      }
     );
 
-    const sorted = userContributions?.sort((a, b) =>
-      a.createdAt > b.createdAt ? -1 : 1
-    );
+    setContributions(userContributions || []);
 
-    setContributions(sorted);
-
-    return sorted || [];
+    return userContributions || [];
   } catch (error) {
     console.error('Error fetching user contributions:', error);
+    throw error;
+  }
+};
+
+export const fetchUserInvitedContributions = async (
+  userId,
+  setInviteArray,
+  limit = 10
+) => {
+  if (!userId) {
+    return [];
+  }
+
+  try {
+    const userInviteContributions = await DataStore.query(Contribution, (c) =>
+      c.and((c) => [
+        c.participant_ids.notContains(userId),
+        c.access.contains(userId),
+      ])
+    );
+    setInviteArray(userInviteContributions || []);
+    return userInviteContributions || [];
+  } catch (error) {
+    console.error('Error fetching user contributions:', error);
+    throw error;
   }
 };
 
@@ -30,7 +63,7 @@ export const createContribution = async (
   currentUser,
   userProfile
 ) => {
-  const link = `https://mimonie.net/protected/mimonie?userId=${
+  const link = `https://mimonie.net/(protected)/mimonie?userId=${
     currentUser.userId
   }&contributionName=${details.contributionName.split(' ').join('')}`;
 
@@ -44,7 +77,10 @@ export const createContribution = async (
         contributiongroupsID: details.groupId,
         participant: [],
         participant_ids: [currentUser.userId],
+        access: [currentUser.userId],
+        picture: currentUser.picture,
         owner: userProfile.name,
+        owner_id: userProfile.userId,
         target: details.target,
         amount: details.amount,
         num_of_month: details.num_of_month,
@@ -55,7 +91,13 @@ export const createContribution = async (
       })
     );
 
-    await addContributionParticipant(newContribution.id, userProfile, 0);
+    await addContributionParticipant(
+      newContribution.id,
+      userProfile,
+      0,
+      currentUser?.picture,
+      userProfile?.userId
+    );
 
     setContributions((prev) => [...prev, newContribution]);
 
@@ -72,7 +114,7 @@ export const createPersonalContribution = async (
   currentUser,
   userProfile
 ) => {
-  const link = `https://mimonie.net/protected/mimonie?userId=${
+  const link = `https://mimonie.net/(protected)/mimonie?userId=${
     currentUser.userId
   }&contributionName=${details.contributionName.split(' ').join('')}`;
 
@@ -86,7 +128,9 @@ export const createPersonalContribution = async (
         contributiongroupsID: details.groupId,
         participant: [],
         participant_ids: [currentUser.userId],
+        picture: currentUser.picture,
         owner: userProfile.name,
+        owner_id: userProfile.userId,
         target: details.target,
         amount: details.amount,
         num_of_month: details.num_of_month,
@@ -97,7 +141,13 @@ export const createPersonalContribution = async (
         type: 'personal',
       })
     );
-    await addContributionParticipant(newContribution.id, userProfile, 0);
+    await addContributionParticipant(
+      newContribution.id,
+      userProfile,
+      0,
+      currentUser?.picture,
+      userProfile.userId
+    );
     setContributions((prev) => [...prev, newContribution]);
     return newContribution;
   } catch (error) {
@@ -230,6 +280,7 @@ export const editContributionParticipant = async (
       const updated = await DataStore.save(
         ContributionParticipant.copyOf(original[0], (updated) => {
           updated.index = participant.index;
+          updated.status = participant.index === 1 ? 'in progress' : 'pending';
         })
       );
 
@@ -256,7 +307,6 @@ export const findContributionByInviteLink = async (invite_link) => {
 };
 
 export const findContributionByID = async (id, setContribution) => {
-  await DataStore.start();
   try {
     const contributions = await DataStore.query(Contribution, id);
 
@@ -273,8 +323,6 @@ export const findContributionByID = async (id, setContribution) => {
 
 export const fetchAllUserContributions = async () => {
   try {
-    await DataStore.start();
-
     const userContributions = await DataStore.query(Contribution);
 
     const sorted = userContributions.sort((a, b) =>
@@ -456,7 +504,9 @@ export const updatePersonalContribution = async (
 export const addContributionParticipant = async (
   contributionID,
   newParticipant,
-  existingParticipant
+  existingParticipant,
+  picture,
+  owner_id
 ) => {
   let recipient_code = null;
 
@@ -480,11 +530,13 @@ export const addContributionParticipant = async (
       userId: newParticipant.userId,
       name: newParticipant.name,
       email: newParticipant.email,
+      contribution_owner_id: owner_id,
       status,
       index,
       subaccount_code: newParticipant.subaccount_code,
       auth_url: newParticipant.auth_url,
       last_successful_round: 0,
+      picture: picture,
       contributions: 0,
       push_token: newParticipant.push_token,
       recipient: recipient_code || null,
@@ -495,17 +547,6 @@ export const addContributionParticipant = async (
       new ContributionParticipant(participantData)
     );
 
-    const originalContribution = await DataStore.query(
-      Contribution,
-      contributionID
-    );
-
-    await DataStore.save(
-      Contribution.copyOf(originalContribution, (updated) => {
-        updated.participant_ids.push(newParticipant.userId);
-      })
-    );
-
     return newParticipantData;
   } catch (error) {
     console.error('Error adding participant:', error);
@@ -513,17 +554,65 @@ export const addContributionParticipant = async (
   }
 };
 
-export const fetchParticipants = async (contributionId) => {
-  try {
-    const participants = await DataStore.query(ContributionParticipant, (c) =>
-      c.contributionID.eq(contributionId)
-    );
+export const updateContributionParticipantList = async (
+  contributionID,
+  userId
+) => {
+  const originalContribution = await DataStore.query(
+    Contribution,
+    contributionID
+  );
 
-    return participants || [];
+  await DataStore.save(
+    Contribution.copyOf(originalContribution, (updated) => {
+      updated.participant_ids.push(userId);
+    })
+  );
+};
+
+export const fetchParticipants = async (contributionId, owner_id, userId) => {
+  console.log(owner_id === userId);
+  try {
+    if (owner_id === userId) {
+      // Owner uses local sync (DataStore)
+      const participants = await DataStore.query(ContributionParticipant, (c) =>
+        c.contributionID.eq(contributionId)
+      );
+      return participants || [];
+    } else {
+      // Others fetch via REST API (listParticipants)
+      const restOperation = get({
+        apiName: 'userInfo',
+        path: `/contributions/${contributionId}`,
+      });
+
+      const response = await restOperation.response;
+      const participants = await response.body.json();
+
+      return participants.data || [];
+    }
   } catch (error) {
-    console.error('Error fetching participants:', error);
+    console.log('GET call failed: ', JSON.parse(error.response.body));
+    return [];
   }
 };
+
+// export const listParticipants = async (contributionId) => {
+//   try {
+//     const restOperation = get({
+//       apiName: 'userInfo',
+//       path: `/contributions/${contributionId}`,
+//     });
+
+//     const response = await restOperation.response;
+//     const participants = await response.body.json();
+
+//     return participants.data;
+//   } catch (error) {
+//     console.error('Error fetching participants:', error);
+//     throw error;
+//   }
+// };
 
 export const fetchMeParticipants = async (contributionId, userId) => {
   try {

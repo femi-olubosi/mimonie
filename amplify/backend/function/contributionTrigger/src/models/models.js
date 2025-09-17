@@ -33,7 +33,8 @@ const models = {
       await ddbDocClient.send(new PutCommand(params));
     } catch (err) {
       console.error('Error saving user activity:', err);
-      throw new Error('Could not save user activity');
+      return err;
+      // throw new Error('Could not save user activity');
     }
   },
 
@@ -48,7 +49,8 @@ const models = {
       return await ddbDocClient.send(new PutCommand(params));
     } catch (err) {
       console.error('Error updating contribution:', err);
-      throw new Error('Could not update contribution');
+      return err;
+      // throw new Error('Could not update contribution');
     }
   },
 
@@ -80,7 +82,8 @@ const models = {
       return await ddbDocClient.send(new PutCommand(params));
     } catch (err) {
       console.error('Error updating participant:', err);
-      throw new Error('Could not update participant');
+      return err;
+      // throw new Error('Could not update participant');
     }
   },
 };

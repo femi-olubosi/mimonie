@@ -4,12 +4,16 @@
     "apiName": "mimonie",
     "serviceName": "AppSync",
     "defaultAuthType": {
-      "mode": "API_KEY",
-      "expirationTime": 365,
-      "apiKeyExpirationDate": "2025-11-12T01:50:10.847Z",
-      "keyDescription": "API KEY"
+      "mode": "AMAZON_COGNITO_USER_POOLS",
+      "cognitoUserPoolId": "authmimonie"
     },
     "additionalAuthTypes": [
+      {
+        "mode": "API_KEY",
+        "expirationTime": 365,
+        "apiKeyExpirationDate": "2026-06-13T04:30:29.067Z",
+        "keyDescription": "mimonie api"
+      },
       {
         "mode": "AWS_IAM"
       }

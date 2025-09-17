@@ -161,51 +161,6 @@ export const undoRequest = async (data, userProfile) => {
   await saveUpdatedProfiles(data, userProfile);
 };
 
-// export const createConnection = async () => {
-//   const senderDetails = {
-//     "occupation": "Electrical Engineering",
-//   "name": "ONYEBUCHI PHILIP OZUNGWA",
-//   "verified": true,
-//   "invites": ["c353378a-8ea5-4832-aa4c-84ce8209df22"],
-//   "phone_number": "+2347035842750",
-//   "type": "user",
-//   "userId": "78714350-c0a1-70e4-695a-6d13475a98e7",
-//   "email": "ozungwao@gmail.com",
-//   "push_token": "ExponentPushToken[Kbu1QVPk-QfY-qSIYhaQOY]",
-//     income_from: 100000,
-//   };
-
-//   const receiverDetails = {
-//     income_from: 750000,
-//     occupation: 'Secretary',
-//     name: 'Gloria Joseph',
-//     verified: true,
-//     phoneNumber: '+2348141861543',
-//     userId: '18d1c320-6001-70cf-e7a5-fccdc5d0fe82',
-//     email: 'josephgloria67@gmail.com',
-//     pushToken: 'ExponentPushToken[zwx-EFOdwp5ArvVOZmu9P9]',
-//     invites: null,
-//   };
-
-//   const data = {
-//     senderId: senderDetails.userId,
-//     receiverId: receiverDetails.userId,
-//     status: 'pending',
-//     senderDetails,
-//     receiverDetails,
-//   };
-
-//   try {
-//     // Save the connection to DataStore
-//     const result = await DataStore.save(new UserConnections(data));
-//     console.log('Connection saved:', result);
-//     return true;
-//   } catch (error) {
-//     console.error('Error saving connection:', error);
-//     return false;
-//   }
-// };
-
 export const createConnection = async (userProfile, connectDetails) => {
   const senderDetails = {
     occupation: userProfile.occupation,

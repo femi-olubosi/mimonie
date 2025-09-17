@@ -1,4 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Updates from 'expo-updates';
+import { useEffect } from 'react';
+import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
+import { fetchCurrUser, fetchUserProfile, getUser } from '@/api/user.service';
+import { sendOtp } from '@/api/token.service';
+import { fetchUserActivities } from '@/api/activities.service';
 
 const EXPIRY_LIMIT_DAYS = 7;
 const DAY_IN_MS = 86400000;
@@ -46,3 +53,96 @@ export const isLastDaysOfMonth = (date) => {
   testDate.setDate(0); // Last day of current month
   return date.getDate() > testDate.getDate() - 4; // 28th or later
 };
+
+export const isWeekend = (date) => {
+  const day = new Date(date).getDay();
+  return day === 0 || day === 6; // 0 = Sunday, 6 = Saturday
+};
+
+export async function onFetchUpdateAsync() {
+  try {
+    const update = await Updates.checkForUpdateAsync();
+    if (update.isAvailable) {
+      await Updates.fetchUpdateAsync();
+      await Updates.reloadAsync();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export const fetchAndCheckUser = async (
+  setCurrentUser,
+  setConfirmationResult,
+  setUserActivities,
+  setProfilePicture,
+  setUserProfile
+) => {
+  try {
+    const authUser = await fetchCurrUser(setCurrentUser);
+
+    if (!authUser) {
+      console.log('Helper: No authenticated user found, returning /');
+      throw new Error('No authenticated user found');
+    }
+
+    const userProfile = await getUser(authUser);
+    // await fetchUserProfile(setUserProfile, authUser);
+    // setUserProfile(userProfile);
+    await fetchUserActivities(authUser?.userId, setUserActivities, 20);
+
+    const picture = await AsyncStorage.getItem('profilePicture');
+    setProfilePicture(picture);
+
+    const phoneVerified =
+      authUser?.phone_number_verified || authUser?.['custom:phone_verified'];
+
+    if (!userProfile?.name) {
+      return '/(protected)/complete_profile';
+    } else if (!phoneVerified) {
+      const res = await sendOtp(authUser?.phone_number);
+      setConfirmationResult({ ...res, type: 'phone_verification' });
+      return '/(protected)/verification_check';
+    } else {
+      return '/(protected)/(tabs)';
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const sevenDaysAgo = new Date(
+  Date.now() - 7 * 24 * 60 * 60 * 1000
+).toISOString();
+
+export function formatNigerianPhoneNumber(phone) {
+  if (typeof phone !== 'string') {
+    phone = String(phone);
+  }
+
+  // Remove whitespace, dashes, parentheses, etc.
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+
+  // Nigerian formats
+  const localPattern = /^0\d{10}$/;
+  const intlPattern = /^\+234\d{10}$/;
+  const rawIntlPattern = /^234\d{10}$/;
+
+  if (intlPattern.test(cleaned)) {
+    // Already properly formatted
+    return cleaned;
+  }
+
+  if (localPattern.test(cleaned)) {
+    // Convert from 080... to +23480...
+    return '+234' + cleaned.slice(1);
+  }
+
+  if (rawIntlPattern.test(cleaned)) {
+    // Convert from 23480... to +23480...
+    return '+' + cleaned;
+  }
+
+  // Not Nigerian, return original
+  return phone;
+}

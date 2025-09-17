@@ -13,12 +13,18 @@ import {
 import React, { useRef, useState } from 'react';
 import Container from '../Container';
 import { Colors } from '../../constants/Colors';
-import { signOut } from 'aws-amplify/auth';
+// import { signOut } from 'aws-amplify/auth';
 import * as Device from 'expo-device';
 import { useGlobalContext } from '@/store/StoreContext';
 import { router } from 'expo-router';
 import { verifyOTP } from '../../api/token.service';
-import { downloadUrl, updateUserProfile } from '../../api/user.service';
+import {
+  downloadUrl,
+  updateAttributes,
+  updateUserProfile,
+} from '../../api/user.service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthenticator } from '@aws-amplify/ui-react-native';
 
 const VerificationCheck = () => {
   const {
@@ -27,9 +33,11 @@ const VerificationCheck = () => {
     setUserProfile,
     userProfile,
     setProfilePicture,
+    noAuth,
   } = useGlobalContext();
   const [pin, setPin] = useState(['', '', '', '', '', '']);
   const [verifying, setVerifying] = useState(false);
+  const { signOut } = useAuthenticator();
 
   const pinRefs = useRef([]);
 
@@ -71,14 +79,19 @@ const VerificationCheck = () => {
       // Success handling based on the confirmation type
       if (confirmationResult.type === 'phone_verification') {
         setUserProfile((prev) => ({ ...prev, phone_verified: true }));
-        await updateUserProfile({ phone_verified: true }, currentUser);
+        await updateUserProfile(
+          { phone_verified: true },
+          currentUser,
+          userProfile
+        );
+        await updateAttributes({ 'custom:phone_verified': 'true' });
 
         // Show alert and navigate only after user taps 'OK'
         Alert.alert('Success', 'Phone number verified successfully.', [
           {
             text: 'Next',
             onPress: () => {
-              router.push('/');
+              router.replace('/(protected)/(tabs)');
             },
           },
         ]);
@@ -97,7 +110,7 @@ const VerificationCheck = () => {
           device_name: device.device_name,
         }));
 
-        await updateUserProfile(device, currentUser);
+        await updateUserProfile(device, currentUser, userProfile);
 
         // Fetch and set profile picture URL
         const url = await downloadUrl(userProfile.userId);
@@ -108,7 +121,7 @@ const VerificationCheck = () => {
           {
             text: 'Next',
             onPress: () => {
-              router.push('/');
+              router.replace('/(protected)/(tabs)');
             },
           },
         ]);
@@ -124,6 +137,11 @@ const VerificationCheck = () => {
       setPin(['', '', '', '', '', '']);
       setVerifying(false);
     }
+  };
+
+  const handleLater = async () => {
+    noAuth();
+    await signOut();
   };
 
   return (
@@ -176,10 +194,7 @@ const VerificationCheck = () => {
               <View style={styles.modalButtons}>
                 <TouchableOpacity
                   style={styles.cancelButton}
-                  onPress={async () => {
-                    await signOut();
-                    router.push('/');
-                  }}
+                  onPress={handleLater}
                   disabled={verifying}
                 >
                   <Text style={styles.modalButtonText}>Not now</Text>

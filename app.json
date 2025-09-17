@@ -2,20 +2,13 @@
   "expo": {
     "name": "Mimonie",
     "slug": "mimonie",
-    "version": "1.1.06",
+    "version": "1.1.07",
     "orientation": "default",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/logo/mimonie.png",
     "scheme": "mimonie",
     "userInterfaceStyle": "automatic",
-    "developmentClient": {
-      "silentLaunch": true
-    },
-    "splash": {
-      "image": "./assets/images/splash-bg.png",
-      "backgroundColor": "#006EBD"
-    },
     "ios": {
-      "buildNumber": "24",
+      "buildNumber": "32",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"],
@@ -25,7 +18,7 @@
       }
     },
     "android": {
-      "versionCode": 24,
+      "versionCode": 32,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"
@@ -56,6 +49,15 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#006EBD"
+        }
+      ],
       [
         "expo-updates",
         {

@@ -13,6 +13,10 @@
     "expo-env.d.ts",
     "components/home/Cards.jsx",
     "components/navigation/TabBarIcon.jsx",
-    "app/_layout.jsx"
+    "app/_layout.jsx",
+    "app/index.tsx",
+    "hooks/useUserVerificationSteps.js",
+    "functions/fetchInitialData.js",
+    "hooks/usePushNotification.js"
   ]
 }

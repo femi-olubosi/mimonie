@@ -2,5 +2,11 @@
   "AppSyncApiName": "mimonie",
   "DynamoDBBillingMode": "PAY_PER_REQUEST",
   "DynamoDBEnableServerSideEncryption": false,
-  "AuthModeLastUpdated": "2024-11-12T01:50:23.010Z"
+  "AuthModeLastUpdated": "2025-06-13T04:30:36.851Z",
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authmimonie",
+      "Outputs.UserPoolId"
+    ]
+  }
 }

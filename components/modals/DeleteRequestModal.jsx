@@ -17,7 +17,10 @@ const DeleteRequestModal = ({ visible, onClose, onDelete, deleting }) => {
     <ModalWrapper visible={visible} onClose={onClose}>
       <View style={styles.modal}>
         <Text style={styles.modalText}>
-          Are you sure you want to delete this request?
+          Are you sure you want to delete your account?
+        </Text>
+        <Text style={{ fontSize: 12 }}>
+          All your data will be deleted entire from system.
         </Text>
         <TextInput
           style={styles.textInput}
@@ -27,7 +30,18 @@ const DeleteRequestModal = ({ visible, onClose, onDelete, deleting }) => {
           multiline
           numberOfLines={6}
         />
-        {deleting && <ActivityIndicator size={'large'} color={Colors.pri} />}
+        {deleting && (
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <ActivityIndicator size={'large'} color={Colors.pri} />
+            <Text>Please wait while we process your request</Text>
+          </View>
+        )}
         <View style={styles.buttonContainer}>
           <Button
             title="Cancel"

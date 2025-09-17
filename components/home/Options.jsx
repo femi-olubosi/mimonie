@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View, Animated } from 'react-native';
 import React from 'react';
 import {
   FontAwesome6,
@@ -16,6 +16,7 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
         padding: 20,
       }}
     >
+      {/* Help */}
       <Pressable
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
         onPress={() => setShowHelp(true)}
@@ -25,6 +26,8 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
           Help
         </Text>
       </Pressable>
+
+      {/* My Trust Circle */}
       <Pressable
         style={{
           rowGap: 5,
@@ -32,8 +35,9 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
           alignItems: 'center',
           position: 'relative',
         }}
-        onPress={() => router.push('/protected/my_network')}
+        onPress={() => router.push('/(protected)/my_network')}
       >
+        {/* Red badge */}
         <View
           style={{
             width: 15,
@@ -58,13 +62,15 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
           My Trust Circle
         </Text>
       </Pressable>
+
+      {/* FAQ */}
       <Pressable
         style={{
           rowGap: 5,
           justifyContent: 'center',
           alignItems: 'center',
         }}
-        onPress={() => router.push('/protected/faq')}
+        onPress={() => router.push('/(protected)/faq')}
       >
         <MaterialCommunityIcons
           name="frequently-asked-questions"

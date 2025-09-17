@@ -20,11 +20,11 @@
         },
         "userInfo": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/userInfo-51775963306a57703248-build.zip"
+          "s3Key": "amplify-builds/userInfo-333741576d5575507969-build.zip"
         },
         "callbackurl": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/callbackurl-5364694435762b756132-build.zip",
+          "s3Key": "amplify-builds/callbackurl-4a4e4a6141347653332b-build.zip",
           "profileTableName": "UserProfile-d4itlx42uzhtrctybtkmaxruya-dev",
           "notificationsTableName": "UserNotifications-d4itlx42uzhtrctybtkmaxruya-dev",
           "partnerId": "6982",
@@ -40,7 +40,7 @@
         },
         "contributionTrigger": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/contributionTrigger-7065336e77576a4d5433-build.zip",
+          "s3Key": "amplify-builds/contributionTrigger-4c6270764e786459352b-build.zip",
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3"
         },
         "contributionNotifications": {
@@ -54,12 +54,17 @@
         },
         "AdminQueriese69f7a79": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/AdminQueriese69f7a79-31396e61374131457557-build.zip"
+          "s3Key": "amplify-builds/AdminQueriese69f7a79-47434d2f716b306b7031-build.zip",
+          "sqsQueueUrl": "https://sqs.us-west-2.amazonaws.com/922409042591/notificationQueue"
         },
         "processWithdrawalRequest": {
           "paystackSecretKeyLive": "sk_live_018197960c67614111a22568257da65f67191fb3",
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
-          "s3Key": "amplify-builds/processWithdrawalRequest-537066733742734b6153-build.zip"
+          "s3Key": "amplify-builds/processWithdrawalRequest-61796742333136764e52-build.zip"
+        },
+        "processNotifications": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/processNotifications-532b6b4e325458385056-build.zip"
         }
       },
       "auth": {
