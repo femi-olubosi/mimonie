@@ -6,7 +6,7 @@ import {
 import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
-import { del, get, post } from 'aws-amplify/api';
+import { get } from 'aws-amplify/api';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   try {
@@ -306,25 +306,6 @@ export const fetchProfile = async (currentUser) => {
     return userProfile[0];
   } catch (error) {
     console.error('Error fetching user user profile:', error);
-    throw error;
-  }
-};
-
-export const deleteUserProfile = async (userProfile) => {
-  try {
-    const restOperation = del({
-      apiName: 'userInfo',
-      path: `/user-info/${userProfile.id}?email=${encodeURIComponent(
-        userProfile.email
-      )}`,
-    });
-
-    const response = await restOperation?.response;
-    const backendResponse = await response?.body?.json();
-
-    return backendResponse?.data;
-  } catch (error) {
-    console.log('DELETE call failed: ', error);
     throw error;
   }
 };

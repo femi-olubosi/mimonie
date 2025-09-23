@@ -88,11 +88,13 @@ type UserProfile
   phone_number: String
   birthdate: AWSDate
   address: String
+  state_of_residence: String
+  country_of_origin: String
+  gender: String
   income_from: Int
   income_to: Int
   occupation: String
   country_of_residence: String
-  country_of_origin: String
   email: AWSEmail
   auth_url: String
   invites: [String]

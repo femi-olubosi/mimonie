@@ -118,7 +118,6 @@ const ProfileView = ({
         </Text>
       </View>
 
-      {/* Right side - Notification */}
       <View
         style={{
           flexDirection: 'row',

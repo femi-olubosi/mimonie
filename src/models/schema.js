@@ -547,6 +547,27 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "state_of_residence": {
+                    "name": "state_of_residence",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "country_of_origin": {
+                    "name": "country_of_origin",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "gender": {
+                    "name": "gender",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "income_from": {
                     "name": "income_from",
                     "isArray": false,
@@ -570,13 +591,6 @@ export const schema = {
                 },
                 "country_of_residence": {
                     "name": "country_of_residence",
-                    "isArray": false,
-                    "type": "String",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "country_of_origin": {
-                    "name": "country_of_origin",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -1765,5 +1779,5 @@ export const schema = {
     "enums": {},
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "9bbf162b32361a15156512d8c51a7437"
+    "version": "3fe34ba7e08cf5183852cf2280d71e26"
 };

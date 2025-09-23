@@ -52,6 +52,14 @@ const PersonalInformation = () => {
             />
           </View>
           <View style={styles.infoContainer}>
+            <Text style={styles.label}>{'State of Residence'}</Text>
+            <TextInput
+              style={styles.value}
+              value={userProfile?.state_of_residence || '-'}
+              editable={false}
+            />
+          </View>
+          <View style={styles.infoContainer}>
             <Text style={styles.label}>{'Occupation'}</Text>
             <TextInput
               style={styles.value}
@@ -64,22 +72,6 @@ const PersonalInformation = () => {
             <TextInput
               style={styles.value}
               value={userProfile?.income_from + ' - ' + userProfile?.income_to}
-              editable={false}
-            />
-          </View>
-          <View style={styles.infoContainer}>
-            <Text style={styles.label}>{'Country of Origin'}</Text>
-            <TextInput
-              style={styles.value}
-              value={userProfile?.country_of_origin}
-              editable={false}
-            />
-          </View>
-          <View style={styles.infoContainer}>
-            <Text style={styles.label}>{'Country of Residence'}</Text>
-            <TextInput
-              style={styles.value}
-              value={userProfile?.country_of_residence}
               editable={false}
             />
           </View>

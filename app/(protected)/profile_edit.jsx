@@ -14,69 +14,27 @@ import Button from '../../components/Button';
 import { Colors } from '../../constants/Colors';
 import { fetchUserProfile, updateUserProfile } from '../../api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
-import {
-  DateTimeSelector,
-  PageView,
-  SelectInput,
-} from '../../components/Reusable';
+import { PageView } from '../../components/Reusable';
 import { topBar } from '../../cStyle';
 import { naira } from '../../constants/Currency';
 import { ErrorCheck } from '../../utils/errorCheck';
-import { fetchCountries } from '../../api/payment.service';
-import { convertToAWSDate } from '../../utils/toAWSDate';
 import { Entypo } from '@expo/vector-icons';
 import SelectModal from '../../components/modals/SelectModal';
 
-const dateOption = [
-  'en-US',
-  {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  },
-];
-
 const ProfileEdit = () => {
   const [infoDetails, setInfoDetails] = useState({});
-  const {
-    currentUser,
-    setCurrentUser,
-    setIsLoading,
-    userProfile,
-    setUserProfile,
-  } = useGlobalContext();
+  const { currentUser, setIsLoading, userProfile, setUserProfile } =
+    useGlobalContext();
   const router = useRouter();
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [date, setDate] = useState(new Date());
   const [selectedValue, setSelectedValue] = useState({});
-  const [selectedCountry, setSelectedCountry] = useState({});
-  const [selectedOrigin, setSelectedOrigin] = useState({});
-  const [countries, setCountries] = useState([]);
-  const [cOfOModal, setCOfOModal] = useState(false);
-  const [cOfRModal, setCOfRModal] = useState(false);
+  const [selectedStateOfResidence, setSelectedStateOfResidence] = useState({});
+  const [sOfRModal, setSOfRModal] = useState(false);
   const [incomeModal, setIncomeModal] = useState(false);
 
   useEffect(() => {
-    const fetchCountry = async () => {
-      const res = await fetchCountries();
-      setCountries(res);
-    };
-    fetchCountry();
-  }, []);
-
-  useEffect(() => {
-    setInfoDetails({
-      ...userProfile,
-      firstname: userProfile.name.split(' ')[0],
-      lastname: userProfile.name.split(' ')[1],
-    });
-    setSelectedCountry({
-      value: userProfile.country_of_residence,
-      label: userProfile.country_of_residence,
-    });
-    setSelectedOrigin({
-      value: userProfile.country_of_origin,
-      label: userProfile.country_of_origin,
+    setSelectedStateOfResidence({
+      value: userProfile.state_of_residence,
+      label: userProfile.state_of_residence,
     });
   }, [userProfile]);
 
@@ -96,16 +54,18 @@ const ProfileEdit = () => {
         value: userProfile?.income_from + ' - ' + userProfile?.income_to,
       });
     }
-  }, [userProfile]);
 
-  const handleDateChange = (selectedDate) => {
-    setDate(selectedDate);
-    setInfoDetails((prev) => ({
-      ...prev,
-      birthdate: selectedDate.toLocaleDateString(...dateOption),
-    }));
-    setShowDatePicker(false);
-  };
+    if (userProfile.address) {
+      setInfoDetails((prev) => ({ ...prev, address: userProfile.address }));
+    }
+
+    if (userProfile.occupation) {
+      setInfoDetails((prev) => ({
+        ...prev,
+        occupation: userProfile.occupation,
+      }));
+    }
+  }, [userProfile]);
 
   useEffect(() => {
     if (Object.keys(selectedValue || {})?.length > 0) {
@@ -118,31 +78,21 @@ const ProfileEdit = () => {
   }, [selectedValue]);
 
   useEffect(() => {
-    if (Object.keys(selectedCountry || {})?.length > 0) {
+    if (Object.keys(selectedStateOfResidence || {})?.length > 0) {
       setInfoDetails((prev) => ({
         ...prev,
-        country_of_residence: selectedCountry.value,
+        state_of_residence: selectedStateOfResidence.value,
       }));
     }
-  }, [selectedCountry]);
-
-  useEffect(() => {
-    if (Object.keys(selectedOrigin || {})?.length > 0) {
-      setInfoDetails((prev) => ({
-        ...prev,
-        country_of_origin: selectedOrigin.value,
-      }));
-    }
-  }, [selectedOrigin]);
+  }, [selectedStateOfResidence]);
 
   const handleSubmit = async () => {
     const data = {
       address: infoDetails.address,
+      state_of_residence: infoDetails.state_of_residence,
       occupation: infoDetails.occupation,
       income_from: infoDetails.income_from,
       income_to: infoDetails.income_to,
-      country_of_residence: infoDetails.country_of_residence,
-      country_of_origin: infoDetails.country_of_origin,
     };
     if (ErrorCheck(data)) {
       return;
@@ -160,10 +110,6 @@ const ProfileEdit = () => {
     }
   };
 
-  const toggleDatePicker = () => {
-    setShowDatePicker(!showDatePicker);
-  };
-
   return (
     <PageView title={'Edit Personal Information'}>
       <ScrollView
@@ -178,9 +124,6 @@ const ProfileEdit = () => {
                 styles.infoContainer,
                 { marginBottom: item.helperText ? 2 : 16 },
               ]}
-              onPress={() =>
-                item.name === 'birthdate' ? toggleDatePicker() : {}
-              }
             >
               <Text style={styles.label}>{item.label}</Text>
 
@@ -200,27 +143,10 @@ const ProfileEdit = () => {
                     <Text>{selectedValue.label || `Select Income Range`}</Text>
                     <Entypo name="triangle-down" size={24} color="black" />
                   </TouchableOpacity>
-                ) : item.name === 'country_of_origin' ? (
-                  <TouchableOpacity
-                    onPress={() => {
-                      setCOfOModal(true);
-                    }}
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginTop: 5,
-                    }}
-                  >
-                    <Text>
-                      {selectedCountry.label || `Select Country of Residence`}
-                    </Text>
-                    <Entypo name="triangle-down" size={24} color="black" />
-                  </TouchableOpacity>
                 ) : (
                   <TouchableOpacity
                     onPress={() => {
-                      setCOfRModal(true);
+                      setSOfRModal(true);
                     }}
                     style={{
                       flexDirection: 'row',
@@ -230,7 +156,8 @@ const ProfileEdit = () => {
                     }}
                   >
                     <Text>
-                      {selectedOrigin.label || `Select Country of Origin`}
+                      {selectedStateOfResidence.label ||
+                        `Select State of Residence`}
                     </Text>
                     <Entypo name="triangle-down" size={24} color="black" />
                   </TouchableOpacity>
@@ -244,33 +171,15 @@ const ProfileEdit = () => {
                 >
                   <TextInput
                     style={styles.value}
-                    value={
-                      item.name === 'birthdate'
-                        ? date.toLocaleDateString(...dateOption)
-                        : infoDetails[item.name]
-                    }
+                    value={infoDetails[item.name]}
                     onChangeText={(value) =>
                       handleInputChange(value, item.name)
                     }
                     editable={item.editable}
                     placeholder={item.placeholder}
-                    onPress={() =>
-                      item.name === 'birthdate' ? toggleDatePicker() : {}
-                    }
-                    keyboardType={
-                      item.name === 'phone_number' ? 'number-pad' : 'default'
-                    }
+                    keyboardType={'default'}
                     scrollEnabled={true}
                   />
-                  {item.name === 'birthdate' && (
-                    <DateTimeSelector
-                      show={showDatePicker}
-                      setShow={setShowDatePicker}
-                      date={date}
-                      setDate={handleDateChange}
-                      mode={'date'}
-                    />
-                  )}
                 </View>
               )}
             </Pressable>
@@ -307,25 +216,14 @@ const ProfileEdit = () => {
       </View>
 
       <SelectModal
-        visible={cOfOModal}
-        onClose={() => setCOfOModal(false)}
-        data={countries}
-        selectedItem={selectedOrigin}
+        visible={sOfRModal}
+        onClose={() => setSOfRModal(false)}
+        data={nigerianStates}
+        selectedItem={selectedStateOfResidence}
         onSelect={(item) => {
-          setSelectedOrigin(item);
+          setSelectedStateOfResidence(item);
         }}
-        title="Select Country of Origin"
-      />
-
-      <SelectModal
-        visible={cOfRModal}
-        onClose={() => setCOfRModal(false)}
-        data={countries}
-        selectedItem={selectedCountry}
-        onSelect={(item) => {
-          setSelectedCountry(item);
-        }}
-        title="Select Country of Residence"
+        title="Select State of Residence"
       />
 
       <SelectModal
@@ -391,26 +289,6 @@ const styles = StyleSheet.create({
 export default ProfileEdit;
 
 const formElement = [
-  // {
-  //   label: 'First Name',
-  //   name: 'firstname',
-  //   placeholder: 'Jimoh',
-  //   helperText: 'Use  first name as on official document',
-  //   editable: false,
-  // },
-  // {
-  //   label: 'Last Name',
-  //   name: 'lastname',
-  //   placeholder: 'Alfonso',
-  //   helperText: 'Use  last name as on official document',
-  //   editable: false,
-  // },
-  // {
-  //   label: 'Phone Number',
-  //   name: 'phone_number',
-  //   placeholder: '+234 0X17 XX4 24X3',
-  // },
-  // { label: 'Date of Birth', name: 'birthdate', placeholder: '30 July, 1950', editable: true, },
   {
     label: 'Contact Address',
     name: 'address',
@@ -418,6 +296,13 @@ const formElement = [
     editable: true,
     helperText:
       'Warning: incomplete or fake addresses may delay or prevent account verification.',
+  },
+  {
+    label: 'State of Residence',
+    name: 'state_of_residence',
+    eType: 'select',
+    placeholder: 'Lagos',
+    editable: true,
   },
   {
     label: 'Occupation',
@@ -430,25 +315,6 @@ const formElement = [
     name: 'income_from',
     eType: 'select',
     placeholder: '',
-    editable: true,
-  },
-  // {
-  //   label: 'Income To',
-  //   name: 'custom:income_to',
-  //   placeholder: '200000',
-  // },
-  {
-    label: 'County of Origin',
-    name: 'country_of_origin',
-    eType: 'select',
-    placeholder: 'Nigeria',
-    editable: true,
-  },
-  {
-    label: 'County of Residence',
-    name: 'country_of_residence',
-    eType: 'select',
-    placeholder: 'Nigeria',
     editable: true,
   },
 ];
@@ -485,3 +351,43 @@ const income_range_options = [
     id: 6,
   },
 ];
+
+const nigerianStates = [
+  'Abia',
+  'Adamawa',
+  'Akwa Ibom',
+  'Anambra',
+  'Bauchi',
+  'Bayelsa',
+  'Benue',
+  'Borno',
+  'Cross River',
+  'Delta',
+  'Ebonyi',
+  'Edo',
+  'Ekiti',
+  'Enugu',
+  'FCT - Abuja',
+  'Gombe',
+  'Imo',
+  'Jigawa',
+  'Kaduna',
+  'Kano',
+  'Katsina',
+  'Kebbi',
+  'Kogi',
+  'Kwara',
+  'Lagos',
+  'Nasarawa',
+  'Niger',
+  'Ogun',
+  'Ondo',
+  'Osun',
+  'Oyo',
+  'Plateau',
+  'Rivers',
+  'Sokoto',
+  'Taraba',
+  'Yobe',
+  'Zamfara',
+].map((state, index) => ({ label: state, value: state, id: index + 1 }));

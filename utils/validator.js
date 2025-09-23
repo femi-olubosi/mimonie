@@ -50,8 +50,11 @@ export const validateField = (key, value) => {
       }
       break;
     case 'phone_number':
-      if (!/^\+?[1-9]\d{1,14}$/.test(value)) {
-        errorMessage = 'Please enter a valid phone number. Should start with +';
+      const nigeriaPhoneRegex = /^\+234\d{10}$/;
+
+      if (!nigeriaPhoneRegex.test(value)) {
+        errorMessage =
+          'Please enter a valid Nigerian phone number (e.g., +2348012345678).';
       }
       break;
     case 'accountNumber':

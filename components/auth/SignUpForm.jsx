@@ -65,15 +65,15 @@ const SignUp = (props) => {
         return;
       }
 
-      // const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
+      const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
 
-      // if (phonExisting) {
-      //   Alert.alert(
-      //     'Error',
-      //     `Phone number is already associated with an account`
-      //   );
-      //   return;
-      // }
+      if (phonExisting) {
+        Alert.alert(
+          'Error',
+          `Phone number is already associated with an account`
+        );
+        return;
+      }
 
       const { userId } = await signUp({
         username: email,
@@ -170,7 +170,7 @@ const SignUp = (props) => {
           />
         </View>
         <Text style={{ marginBottom: 20, marginLeft: 4, fontSize: 10 }}>
-          Your country code followed by your phone number. e.g (+234)
+          Your nigeria phone number. e.g (+234)
         </Text>
         <View
           style={[
