@@ -68,7 +68,7 @@
       }
     },
     "staging": {
-      "channel": "production",
+      "channel": "staging",
       "distribution": "store",
       "env": {
         "EXPO_PUBLIC_PAYSTACK_PRIVATE_KEY": "sk_live_018197960c67614111a22568257da65f67191fb3",
