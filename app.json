@@ -8,7 +8,7 @@
     "scheme": "mimonie",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "buildNumber": "36",
+      "buildNumber": "37",
       "supportsTablet": true,
       "bundleIdentifier": "com.femiolubosi.mimonie",
       "associatedDomains": ["applinks:mimonie.net"],
@@ -18,14 +18,14 @@
         "UIBackgroundModes": ["remote-notification"]
       },
       "entitlements": {
-        "aps-environment": "development",
+        "aps-environment": "production",
         "com.apple.security.application-groups": [
           "group.${ios.bundleIdentifier}.onesignal"
         ]
       }
     },
     "android": {
-      "versionCode": 36,
+      "versionCode": 37,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#006EBD"

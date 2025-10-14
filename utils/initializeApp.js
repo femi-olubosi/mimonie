@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { onFetchUpdateAsync } from './helper';
 import mobileAds from 'react-native-google-mobile-ads';
-import { OneSignal, LogLevel } from 'react-native-onesignal';
+import { OneSignal } from 'react-native-onesignal';
+import { ONE_SIGNAL_APP_ID } from '@/constants/cfg';
 
 export default initializeApp = async (setOnboard) => {
   try {
@@ -14,8 +15,6 @@ export default initializeApp = async (setOnboard) => {
     if (isFirstLaunch === null) {
       await AsyncStorage.setItem('hasLaunched', 'true');
     }
-
-    const ONE_SIGNAL_APP_ID = process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID;
 
     OneSignal.initialize(ONE_SIGNAL_APP_ID);
 

@@ -1,21 +1,40 @@
-import { OneSignal } from 'react-native-onesignal';
-import { useEffect, useRef } from 'react';
+import { OneSignal, LogLevel } from 'react-native-onesignal';
+import { useEffect } from 'react';
 
 export function useOneSignalSetup(user: {
   userId: string;
   email?: string;
   phone_number?: string;
 }) {
-  const hasRequested = useRef(false);
-
   useEffect(() => {
-    if (!user.userId || hasRequested.current) return;
-    OneSignal.login(user.userId);
+    if (!user?.userId) return;
 
-    if (user.email) OneSignal.User.addEmail(user.email);
-    if (user.phone_number) OneSignal.User.addSms(user.phone_number);
+    const setupOneSignal = async () => {
+      try {
+        OneSignal.Debug.setLogLevel(LogLevel.Verbose);
+        OneSignal.login(user.userId);
 
-    OneSignal.Notifications.requestPermission(false);
-    console.log('completed');
-  }, [user.userId]);
+        const hasPermission =
+          await OneSignal.Notifications.getPermissionAsync();
+
+        if (!hasPermission) {
+          await OneSignal.Notifications.requestPermission(true);
+        }
+
+        if (user.email) {
+          OneSignal.User.addEmail(user.email);
+        }
+
+        if (user.phone_number) {
+          OneSignal.User.addSms(user.phone_number);
+        }
+
+        console.log('OneSignal setup completed.');
+      } catch (err) {
+        console.error('Error setting up OneSignal:', err);
+      }
+    };
+
+    setupOneSignal();
+  }, [user?.userId]);
 }

@@ -25,7 +25,7 @@ const ProtectedContent = () => {
   const { route } = useAuthenticator((context) => [context.route]);
   const { currentUser } = useGlobalContext();
 
-  // useOneSignalSetup(currentUser);
+  useOneSignalSetup(currentUser);
 
   useEffect(() => {
     const loadSignupData = async () => {
@@ -127,7 +127,6 @@ const ProtectedContent = () => {
               name="login_verify"
               options={{ headerShown: false }}
             />
-            <Stack.Screen name="flow" options={{ headerShown: false }} />
             <Stack.Screen name="my_invites" options={{ headerShown: false }} />
             <Stack.Screen name="my_network" options={{ headerShown: false }} />
             <Stack.Screen name="faq" options={{ headerShown: false }} />
