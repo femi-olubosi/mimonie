@@ -7,10 +7,9 @@ import SignUp from '../../components/auth/SignUpForm';
 import { formFields } from '../../data/authFormField';
 import { StatusBar } from 'expo-status-bar';
 import UserInactivityProvider from '../../components/UserInactivityProvider';
-import { useHandleNotifications } from '../../hooks/usePushNotification';
-import useDataStoreObservers from '../../hooks/useDatastoreObserver';
-import { useGlobalContext } from '../../store/StoreContext';
+import { useOneSignalSetup } from '../../hooks/useOneSignalSetup';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useGlobalContext } from '../../store/StoreContext';
 
 const ProtectedLayout = () => {
   return (
@@ -23,15 +22,10 @@ const ProtectedLayout = () => {
 export default ProtectedLayout;
 
 const ProtectedContent = () => {
-  const { route, user } = useAuthenticator((context) => [context.route]);
-  // const { setParsed, setContributions, setInviteArray } = useGlobalContext();
-  // // useHandleNotifications();
-  // useDataStoreObservers({
-  //   currentUser: user,
-  //   setContributions,
-  //   setParsed,
-  //   setInviteArray,
-  // });
+  const { route } = useAuthenticator((context) => [context.route]);
+  const { currentUser } = useGlobalContext();
+
+  // useOneSignalSetup(currentUser);
 
   useEffect(() => {
     const loadSignupData = async () => {
