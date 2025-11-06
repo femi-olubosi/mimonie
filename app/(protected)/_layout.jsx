@@ -1,5 +1,5 @@
-import { View, StyleSheet, Image } from 'react-native';
-import React, { useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
 import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
 import { router, Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
@@ -7,9 +7,6 @@ import SignUp from '../../components/auth/SignUpForm';
 import { formFields } from '../../data/authFormField';
 import { StatusBar } from 'expo-status-bar';
 import UserInactivityProvider from '../../components/UserInactivityProvider';
-import { useHandleNotifications } from '../../hooks/usePushNotification';
-import useDataStoreObservers from '../../hooks/useDatastoreObserver';
-import { useGlobalContext } from '../../store/StoreContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProtectedLayout = () => {
@@ -23,15 +20,7 @@ const ProtectedLayout = () => {
 export default ProtectedLayout;
 
 const ProtectedContent = () => {
-  const { route, user } = useAuthenticator((context) => [context.route]);
-  // const { setParsed, setContributions, setInviteArray } = useGlobalContext();
-  // // useHandleNotifications();
-  // useDataStoreObservers({
-  //   currentUser: user,
-  //   setContributions,
-  //   setParsed,
-  //   setInviteArray,
-  // });
+  const { route } = useAuthenticator((context) => [context.route]);
 
   useEffect(() => {
     const loadSignupData = async () => {

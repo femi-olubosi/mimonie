@@ -5,7 +5,7 @@ import Button from '@/components/Button';
 import { router } from 'expo-router';
 
 export const modalSteps = [
-  { key: 'invite', label: 'Invite Friends', path: '/(protected)/contact' },
+  // { key: 'invite', label: 'Invite Friends', path: '/(protected)/contact' },
   { key: 'bvn', label: 'BVN Verification', path: '/(protected)/bvn' },
   { key: 'kyc', label: 'KYC Verification', path: '/(protected)/smile_id' },
   { key: 'card', label: 'Add Card', path: '/(protected)/cards' },

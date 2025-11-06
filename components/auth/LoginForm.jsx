@@ -96,6 +96,7 @@ const LoginForm = (props) => {
       const user = await fetchCurrUser(setCurrentUser);
 
       const profile = await getUser(user.userId);
+      setUserProfile(profile);
 
       if (!profile?.name) {
         router.replace('/(protected)/complete_profile');

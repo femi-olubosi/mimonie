@@ -37,6 +37,8 @@ import useUserVerificationSteps from '@/hooks/useUserVerificationSteps';
 import { Button } from 'react-native';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
 import { signOut } from 'aws-amplify/auth';
+import { useOneSignalSetup } from '@/hooks/useOneSignalSetup';
+import { OneSignal } from 'react-native-onesignal';
 
 export default function HomeScreen() {
   const {
@@ -62,13 +64,21 @@ export default function HomeScreen() {
 
   const { user } = useAuthenticator((context) => [context.user]);
 
+  // useEffect(() => {
+  //   if (!userProfile) {
+  //     setIsLoading(true);
+  //   } else {
+  //     setIsLoading(false);
+  //   }
+  // }, [userProfile]);
+
   useEffect(() => {
-    if (!userProfile) {
-      setIsLoading(true);
-    } else {
-      setIsLoading(false);
-    }
-  }, [userProfile]);
+    const timer = setTimeout(() => {
+      OneSignal.InAppMessages.addTrigger('request_permission', 'true');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useUserVerificationSteps({
     currentUser: user,
@@ -77,6 +87,8 @@ export default function HomeScreen() {
     setShowUserVerificationModal,
     setHasShownModal,
   });
+
+  useOneSignalSetup(currentUser);
 
   usePushNotifications(user, userProfile);
 
