@@ -51,3 +51,6 @@ update_prod:
 # Push update to staging branch (internal testers)
 update_staging:
 	eas update --branch staging --message "Staging update"
+
+update_preview:
+	eas update --branch preview --message "Preview update"

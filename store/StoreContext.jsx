@@ -81,7 +81,6 @@ const StoreProvider = ({ children }) => {
   const fetchData = async (user) => {
     try {
       await Promise.all([
-        fetchUserProfile(setUserProfile, user),
         fetchUserContributions(user?.userId, setContributions, 50),
         fetchUserNotification(user?.userId, setNotifications, 20),
         listUserConnections(user?.userId, setParsed),
@@ -91,6 +90,12 @@ const StoreProvider = ({ children }) => {
       ]);
     } catch (error) {
       console.error('Failed to fetch data:', error);
+    }
+  };
+
+  const loadUserProfile = async (user) => {
+    if (!userProfile.email) {
+      await fetchUserProfile(setUserProfile, user);
     }
   };
 
@@ -181,6 +186,7 @@ const StoreProvider = ({ children }) => {
     };
 
     if (currentUser.userId) {
+      loadUserProfile(currentUser);
       pullData();
       fetchData(currentUser);
     }

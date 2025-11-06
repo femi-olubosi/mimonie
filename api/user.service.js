@@ -309,3 +309,20 @@ export const fetchProfile = async (currentUser) => {
     throw error;
   }
 };
+
+export const wakeUp = async (userId) => {
+  try {
+    const restOperation = get({
+      apiName: 'userInfo',
+      path: `/user-info/${userId}`,
+    });
+
+    const response = await restOperation?.response;
+    const profile = await response?.body?.json();
+
+    return profile?.data;
+  } catch (error) {
+    // console.log('GET call failed: ', JSON.parse(error.response.body));
+    throw error;
+  }
+};
