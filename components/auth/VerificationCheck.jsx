@@ -69,9 +69,11 @@ const VerificationCheck = () => {
       if (!confirmationResult) {
         throw new Error('No confirmation result available.');
       }
-
+      console.log(confirmationResult.pinId, pinString);
       // Attempt to verify OTP
       const res = await verifyOTP(confirmationResult?.pinId, pinString);
+      console.log('OTP verification response:', res);
+
       if (!res.verified) {
         throw new Error('OTP verification failed. Please try again.');
       }
@@ -79,11 +81,7 @@ const VerificationCheck = () => {
       // Success handling based on the confirmation type
       if (confirmationResult.type === 'phone_verification') {
         setUserProfile((prev) => ({ ...prev, phone_verified: true }));
-        await updateUserProfile(
-          { phone_verified: true },
-          currentUser,
-          userProfile
-        );
+        await updateUserProfile({ phone_verified: true }, currentUser);
         await updateAttributes({ 'custom:phone_verified': 'true' });
 
         // Show alert and navigate only after user taps 'OK'

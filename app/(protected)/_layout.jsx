@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
-import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react-native';
+import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react-native';
 import { router, Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
@@ -8,20 +8,64 @@ import { formFields } from '../../data/authFormField';
 import { StatusBar } from 'expo-status-bar';
 import UserInactivityProvider from '../../components/UserInactivityProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors } from '../../constants/Colors';
+import ForgotPassword from '../../components/auth/ForgotPassword';
+import ConfirmForgotPassword from '../../components/auth/ConfirmResetPassword';
 
 const ProtectedLayout = () => {
   return (
-    <Authenticator.Provider>
-      <ProtectedContent />
-    </Authenticator.Provider>
+    <ThemeProvider
+      theme={{
+        tokens: {
+          colors: {
+            primary: {
+              10: '#ffffff',
+              20: '#ffffff',
+              40: '#ffffff',
+              60: '#ffffff',
+              80: '#ffffff',
+              90: '#ffffff',
+              100: '#ffffff',
+            },
+            font: {
+              primary: '#FFFFFF',
+              secondary: '#FFFFFF',
+              tertiary: '#FFFFFF',
+            },
+            input: {
+              background: '#FFFFFF',
+              color: Colors.pri,
+              border: '#FFFFFF',
+              placeholder: '#87CEFA',
+            },
+            border: {
+              primary: '#FFFFFF',
+            },
+            button: {
+              primary: {
+                color: Colors.pri,
+                borderColor: '#FFFFFF',
+              },
+            },
+          },
+
+          radii: {
+            small: 8,
+            medium: 12,
+          },
+        },
+      }}
+    >
+      <Authenticator.Provider>
+        <ProtectedContent />
+      </Authenticator.Provider>
+    </ThemeProvider>
   );
 };
 
 export default ProtectedLayout;
 
 const ProtectedContent = () => {
-  const { route } = useAuthenticator((context) => [context.route]);
-
   useEffect(() => {
     const loadSignupData = async () => {
       try {
@@ -43,24 +87,23 @@ const ProtectedContent = () => {
   return (
     <>
       <StatusBar style="dark" />
-      {['forgotPassword', 'signIn', 'signUp'].includes(route) && (
-        <View
-          style={{
-            height: 60,
-            backgroundColor: 'white',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        ></View>
-      )}
       <Authenticator
         formFields={formFields}
+        Container={(props) => (
+          <Authenticator.Container {...props} style={styles.container} />
+        )}
         components={{
           SignIn: (props) => {
             return <LoginForm {...props} />;
           },
           SignUp: (props) => {
             return <SignUp {...props} />;
+          },
+          ForgotPassword: (props) => {
+            return <ForgotPassword {...props} />;
+          },
+          ConfirmResetPassword: (props) => {
+            return <ConfirmForgotPassword {...props} />;
           },
         }}
         services={{
@@ -74,11 +117,7 @@ const ProtectedContent = () => {
       >
         <UserInactivityProvider>
           <Stack>
-            <Stack.Screen
-              name="index"
-              options={{ headerShown: false }}
-              redirect
-            />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen
               name="personal_info"
@@ -148,13 +187,10 @@ const ProtectedContent = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#006EBD',
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: Colors.pri,
   },
   title: {
     fontSize: 32,
