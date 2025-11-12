@@ -21,9 +21,13 @@ const Options = ({ priText, setShowHelp, connect, pilot }) => {
         style={{ rowGap: 5, justifyContent: 'center', alignItems: 'center' }}
         onPress={() => setShowHelp(true)}
       >
-        <MaterialIcons name="support-agent" size={23} color="#555555" />
+        <MaterialCommunityIcons
+          name="file-document-outline"
+          size={23}
+          color="#555555"
+        />
         <Text style={{ fontSize: 14, fontFamily: 'im', color: priText }}>
-          Help
+          Payment
         </Text>
       </Pressable>
 

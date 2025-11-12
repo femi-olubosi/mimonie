@@ -1,0 +1,17 @@
+{
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "merchantId",
+      "environmentVariableName": "MERCHANT_ID"
+    },
+    {
+      "cloudFormationParameterName": "appId",
+      "environmentVariableName": "APP_ID"
+    },
+    {
+      "cloudFormationParameterName": "palmpayApiBaseUrl",
+      "environmentVariableName": "PALMPAY_API_BASE_URL"
+    }
+  ]
+}

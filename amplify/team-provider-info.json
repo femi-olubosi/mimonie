@@ -65,6 +65,13 @@
         "processNotifications": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
           "s3Key": "amplify-builds/processNotifications-532b6b4e325458385056-build.zip"
+        },
+        "palmpayHandler": {
+          "merchantId": "1250408111564911",
+          "appId": "L251022100419373284311",
+          "palmpayApiBaseUrl": "https://sandbox-openapi.palmpay.com",
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/palmpayHandler-56422b41547449486838-build.zip"
         }
       },
       "auth": {
@@ -76,7 +83,8 @@
         "userInfo": {},
         "callback": {},
         "verification": {},
-        "AdminQueries": {}
+        "AdminQueries": {},
+        "billers": {}
       },
       "storage": {
         "mimonieS3Storage": {},
