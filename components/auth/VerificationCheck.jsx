@@ -69,10 +69,8 @@ const VerificationCheck = () => {
       if (!confirmationResult) {
         throw new Error('No confirmation result available.');
       }
-      console.log(confirmationResult.pinId, pinString);
       // Attempt to verify OTP
       const res = await verifyOTP(confirmationResult?.pinId, pinString);
-      console.log('OTP verification response:', res);
 
       if (!res.verified) {
         throw new Error('OTP verification failed. Please try again.');
