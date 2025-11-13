@@ -1,5 +1,6 @@
 import {
   Alert,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -57,13 +58,13 @@ const SignUp = (props) => {
       const local_details = await AsyncStorage.getItem('local_details');
       const existing = local_details ? JSON.parse(local_details) : null;
 
-      if (existing && existing.email) {
-        Alert.alert(
-          'Error',
-          `Device already registered with ${existing.email}`
-        );
-        return;
-      }
+      // if (existing && existing.email) {
+      //   Alert.alert(
+      //     'Error',
+      //     `Device already registered with ${existing.email}`
+      //   );
+      //   return;
+      // }
 
       const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
 
@@ -113,9 +114,22 @@ const SignUp = (props) => {
   return (
     <Container>
       <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Image
+          source={require('../../assets/logo/mimonie-logo.png')}
+          style={{
+            width: 100,
+            height: 100,
+            resizeMode: 'contain',
+            marginBottom: 40,
+            borderRadius: 20,
+            alignSelf: 'center',
+          }}
+        />
         <View style={{ marginBottom: 50 }}>
           <Text style={styles.title}>Register</Text>
-          <Text style={{ textAlign: 'center' }}>Create your account</Text>
+          <Text style={{ textAlign: 'center', color: '#fff' }}>
+            Create your account
+          </Text>
         </View>
         <View
           style={[
@@ -169,7 +183,15 @@ const SignUp = (props) => {
             keyboardType="phone-pad"
           />
         </View>
-        <Text style={{ marginBottom: 20, marginLeft: 4, fontSize: 10 }}>
+        <Text
+          style={{
+            marginBottom: 20,
+            marginTop: 4,
+            marginLeft: 4,
+            fontSize: 12,
+            color: '#fff',
+          }}
+        >
           Your nigeria phone number. e.g (+234)
         </Text>
         <View
@@ -222,7 +244,7 @@ const SignUp = (props) => {
               },
             ]}
           >
-            <Text style={{}}>I agree with</Text>
+            <Text style={{ color: '#fff' }}>I agree with</Text>
             <Link href={'/terms_condition'}>
               <Text style={styles.signUp}>Terms & Conditions</Text>
             </Link>
@@ -230,7 +252,7 @@ const SignUp = (props) => {
         </View>
         <TouchableOpacity
           style={{
-            backgroundColor: '#006EBD',
+            backgroundColor: '#ffffff',
             height: 51,
             borderRadius: 8,
             justifyContent: 'center',
@@ -240,7 +262,7 @@ const SignUp = (props) => {
           onPress={handleSignUp}
           disabled={isLoading}
         >
-          <Text style={{ fontSize: 18, color: 'white', fontFamily: 'ir' }}>
+          <Text style={{ fontSize: 18, color: Colors.pri, fontFamily: 'ib' }}>
             {isLoading ? 'Loading...' : 'Sign Up'}
           </Text>
         </TouchableOpacity>
@@ -255,7 +277,7 @@ const SignUp = (props) => {
             },
           ]}
         >
-          <Text style={{}}>Already have an account?</Text>
+          <Text style={{ color: '#fff' }}>Already have an account?</Text>
           <Pressable onPress={toSignIn}>
             <Text style={styles.signUp}>Log In</Text>
           </Pressable>
@@ -273,13 +295,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     fontFamily: 'esb',
+    color: '#ffffff',
+    marginBottom: 6,
   },
   input: {
     width: '100%',
     height: 51,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#9095A1',
+    borderColor: '#ffffff',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     marginBottom: 20,
   },
@@ -295,7 +320,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   signUp: {
-    color: '#007aff',
+    color: '#fff',
     fontWeight: 'bold',
   },
   termsText: {

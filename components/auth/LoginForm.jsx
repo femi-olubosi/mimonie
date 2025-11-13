@@ -169,13 +169,18 @@ const LoginForm = (props) => {
   };
 
   return (
-    <KeyboardAvoidingView behavior="padding" enabled={false}>
+    <KeyboardAvoidingView
+      behavior="padding"
+      enabled={false}
+      style={{ flex: 1 }}
+    >
       <View style={styles.container}>
         <Image
-          source={require('../../assets/logo/mimonie.png')}
+          source={require('../../assets/logo/mimonie-logo.png')}
           style={{
-            width: 70,
-            height: 70,
+            width: 100,
+            height: 100,
+            resizeMode: 'contain',
             marginBottom: 40,
             borderRadius: 20,
             alignSelf: 'center',
@@ -224,13 +229,13 @@ const LoginForm = (props) => {
           </View>
         </View>
         <Pressable onPress={toForgotPassword}>
-          <Text style={{ color: 'gray', textAlign: 'right' }}>
+          <Text style={{ color: '#fff', textAlign: 'right' }}>
             Forgot Password
           </Text>
         </Pressable>
         <TouchableOpacity
           style={{
-            backgroundColor: Colors.pri,
+            backgroundColor: 'white',
             height: 51,
             borderRadius: 8,
             justifyContent: 'center',
@@ -241,7 +246,7 @@ const LoginForm = (props) => {
           onPress={handleSignIn}
           disabled={isLoading}
         >
-          <Text style={{ fontSize: 18, color: 'white', fontFamily: 'ir' }}>
+          <Text style={{ fontSize: 18, color: Colors.pri, fontFamily: 'ib' }}>
             {isLoading ? 'Loading...' : 'Log In'}
           </Text>
         </TouchableOpacity>
@@ -256,7 +261,7 @@ const LoginForm = (props) => {
             },
           ]}
         >
-          <Text style={{}}>Don't have an account?</Text>
+          <Text style={{ color: '#fff' }}>Don't have an account?</Text>
           <Pressable onPress={toSignUp}>
             <Text style={styles.signUp}>Sign up</Text>
           </Pressable>
@@ -278,13 +283,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 50,
     fontFamily: 'esb',
+    color: '#fff',
   },
   input: {
     width: '100%',
     height: 51,
     padding: 10,
     borderWidth: 1,
-    borderColor: '#9095A1',
+    borderColor: '#fff',
+    backgroundColor: '#fff',
     borderRadius: 8,
     marginBottom: 14,
   },
@@ -294,14 +301,14 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   signUp: {
-    color: '#007aff',
+    color: '#fff',
     fontWeight: 'bold',
   },
   label: {
     fontFamily: 'isb',
     fontSize: 18,
     marginBottom: 5,
-    color: '#424856',
+    color: '#fff',
   },
 });
 
