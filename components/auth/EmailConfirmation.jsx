@@ -22,12 +22,13 @@ import { useGlobalContext } from '@/store/StoreContext';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ModalComp } from '../ModalComp';
 import CompleteProfile from '../CompleteProfile';
-import { createUserProfile } from '../../api/user.service';
+import { createUserProfile, fetchCurrUser } from '../../api/user.service';
 import * as Device from 'expo-device';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const EmailConfirmation = () => {
-  const { emailVeri, setIsLoading, currentUser, noAuth } = useGlobalContext();
+  const { emailVeri, setIsLoading, currentUser, noAuth, setCurrentUser } =
+    useGlobalContext();
   const [code, setCode] = useState(0);
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
@@ -83,6 +84,7 @@ const EmailConfirmation = () => {
       if (isSignUpComplete) {
         await signIn({ username: email, password: password });
         await createUserProfile(userId, device, email, normalizedPhoneNumber);
+        await fetchCurrUser(setCurrentUser);
         await markEmailVerified();
         router.replace('/(protected)/complete_profile');
       } else {

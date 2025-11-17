@@ -6,7 +6,7 @@ import {
 import { downloadData, uploadData, getUrl } from 'aws-amplify/storage';
 import { UserProfile } from '@/src/models';
 import { DataStore } from 'aws-amplify/datastore';
-import { get } from 'aws-amplify/api';
+import { del, get } from 'aws-amplify/api';
 
 export const fetchCurrUser = async (setCurrentUser) => {
   try {
@@ -323,6 +323,25 @@ export const wakeUp = async (userId) => {
     return profile?.data;
   } catch (error) {
     // console.log('GET call failed: ', JSON.parse(error.response.body));
+    throw error;
+  }
+};
+
+export const deleteUserProfile = async (userProfile) => {
+  try {
+    const restOperation = del({
+      apiName: 'userInfo',
+      path: `/user-info/${userProfile.id}?email=${encodeURIComponent(
+        userProfile.email
+      )}`,
+    });
+
+    const response = await restOperation?.response;
+    const backendResponse = await response?.body?.json();
+
+    return backendResponse?.data;
+  } catch (error) {
+    console.log('DELETE call failed: ', error);
     throw error;
   }
 };
