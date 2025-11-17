@@ -16,7 +16,7 @@ import Options from '@/components/home/Options';
 import Advert from '@/components/home/Advert';
 import { ThemedView } from '@/components/ThemedView';
 import { useGlobalContext } from '@/store/StoreContext';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import {
@@ -34,11 +34,7 @@ import UserVerificationModal from '@/components/modals/UserVerificationModal';
 import Blog from '@/components/home/Blog';
 import usePushNotifications from '@/hooks/usePushNotification';
 import useUserVerificationSteps from '@/hooks/useUserVerificationSteps';
-import { Button } from 'react-native';
 import { useAuthenticator } from '@aws-amplify/ui-react-native';
-import { signOut } from 'aws-amplify/auth';
-import { useOneSignalSetup } from '@/hooks/useOneSignalSetup';
-import { OneSignal } from 'react-native-onesignal';
 
 export default function HomeScreen() {
   const {
@@ -72,14 +68,6 @@ export default function HomeScreen() {
   //   }
   // }, [userProfile]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      OneSignal.InAppMessages.addTrigger('request_permission', 'true');
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
   useUserVerificationSteps({
     currentUser: user,
     hasShownModal,
@@ -87,8 +75,6 @@ export default function HomeScreen() {
     setShowUserVerificationModal,
     setHasShownModal,
   });
-
-  useOneSignalSetup(currentUser);
 
   usePushNotifications(user, userProfile);
 

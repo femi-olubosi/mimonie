@@ -14,14 +14,7 @@
       "associatedDomains": ["applinks:mimonie.net"],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "LSMinimumSystemVersion": "12.0",
-        "UIBackgroundModes": ["remote-notification"]
-      },
-      "entitlements": {
-        "aps-environment": "production",
-        "com.apple.security.application-groups": [
-          "group.com.femiolubosi.mimonie.onesignal"
-        ]
+        "LSMinimumSystemVersion": "12.0"
       }
     },
     "android": {
@@ -55,15 +48,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "onesignal-expo-plugin",
-        {
-          "mode": "production",
-          "smallIcons": ["./assets/logo/mimonie_notification.png"],
-          "largeIcons": ["./assets/logo/mimonie_notification.png"],
-          "smallIconAccentColor": "#006EBD"
-        }
-      ],
       "expo-router",
       [
         "expo-splash-screen",

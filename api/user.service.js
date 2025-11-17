@@ -323,7 +323,8 @@ export const wakeUp = async (userId) => {
     return profile?.data;
   } catch (error) {
     // console.log('GET call failed: ', JSON.parse(error.response.body));
-    throw error;
+    // throw error;
+    return { success: false, message: 'User profile not found' };
   }
 };
 
