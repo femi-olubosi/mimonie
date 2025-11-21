@@ -377,7 +377,7 @@ const Account = () => {
                     setLoggingOut(true);
                     noAuth();
                     signOut();
-                    await DataStore.clear();
+                    // await DataStore.clear();
                     setTimeout(() => {
                       setLoggingOut(false);
                     }, 3000);

@@ -1,16 +1,21 @@
 import { View, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
-import { Authenticator, ThemeProvider } from '@aws-amplify/ui-react-native';
+import {
+  Authenticator,
+  ThemeProvider,
+  useAuthenticator,
+} from '@aws-amplify/ui-react-native';
 import { router, Stack } from 'expo-router';
 import LoginForm from '../../components/auth/LoginForm';
 import SignUp from '../../components/auth/SignUpForm';
 import { formFields } from '../../data/authFormField';
 import { StatusBar } from 'expo-status-bar';
 import UserInactivityProvider from '../../components/UserInactivityProvider';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors } from '../../constants/Colors';
 import ForgotPassword from '../../components/auth/ForgotPassword';
 import ConfirmForgotPassword from '../../components/auth/ConfirmResetPassword';
+import { fetchCurrUser } from '../../api/user.service';
+import { useGlobalContext } from '../../store/StoreContext';
 
 const ProtectedLayout = () => {
   return (
@@ -66,13 +71,15 @@ const ProtectedLayout = () => {
 export default ProtectedLayout;
 
 const ProtectedContent = () => {
+  const { route } = useAuthenticator((context) => [context.route]);
+  const { setCurrentUser } = useGlobalContext();
+
   useEffect(() => {
     const loadSignupData = async () => {
       try {
-        const data = await AsyncStorage.getItem('local_details');
+        const data = await fetchCurrUser(setCurrentUser);
         if (data) {
-          const signupData = JSON.parse(data);
-          if (!signupData.email_verified) {
+          if (!data.email_verified) {
             router.replace('/email_verify');
           }
         }
@@ -81,7 +88,9 @@ const ProtectedContent = () => {
       }
     };
 
-    loadSignupData();
+    if (route === 'authenticated') {
+      loadSignupData();
+    }
   }, []);
 
   return (

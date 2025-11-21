@@ -21,7 +21,7 @@ const useAuthHubListener = () => {
         await DataStore.start();
       }
       if (event === 'signedOut') {
-        await DataStore.clear();
+        // await DataStore.clear();
       }
     });
 

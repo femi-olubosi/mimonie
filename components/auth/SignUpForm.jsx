@@ -58,13 +58,13 @@ const SignUp = (props) => {
       const local_details = await AsyncStorage.getItem('local_details');
       const existing = local_details ? JSON.parse(local_details) : null;
 
-      // if (existing && existing.email) {
-      //   Alert.alert(
-      //     'Error',
-      //     `Device already registered with ${existing.email}`
-      //   );
-      //   return;
-      // }
+      if (existing && existing.email) {
+        Alert.alert(
+          'Error',
+          `Device already registered with ${existing.email}`
+        );
+        return;
+      }
 
       const phonExisting = await isPhoneNumberExist(normalizedPhoneNumber);
 

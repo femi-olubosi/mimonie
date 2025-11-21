@@ -61,6 +61,17 @@ const LoginForm = (props) => {
     try {
       await signOut();
 
+      const local_details = await AsyncStorage.getItem('local_details');
+      const existing = local_details ? JSON.parse(local_details) : null;
+
+      if (existing && existing.email !== email) {
+        Alert.alert(
+          'Error',
+          `Device already registered with ${existing.email}`
+        );
+        return;
+      }
+
       const { isSignedIn, nextStep } = await signIn({
         username: email,
         password,
