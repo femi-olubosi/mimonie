@@ -20,6 +20,11 @@ export type AmplifyDependentResourcesAttributes = {
       "GraphQLAPIIdOutput": "string",
       "GraphQLAPIKeyOutput": "string"
     },
+    "palmpay": {
+      "ApiId": "string",
+      "ApiName": "string",
+      "RootUrl": "string"
+    },
     "userInfo": {
       "ApiId": "string",
       "ApiName": "string",
@@ -75,6 +80,13 @@ export type AmplifyDependentResourcesAttributes = {
       "Region": "string"
     },
     "mimonief71364a4": {
+      "Arn": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
+    "palmpayHandler": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",

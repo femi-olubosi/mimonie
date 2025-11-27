@@ -1,0 +1,8 @@
+{
+  "httpMethod": "POST",
+  "path": "/easeId",
+  "headers": { "Content-Type": "application/json" },
+  "queryStringParameters": null,
+  "body": "{\"nin\":\"123\"}",
+  "isBase64Encoded": false
+}

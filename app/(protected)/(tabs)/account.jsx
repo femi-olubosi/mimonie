@@ -442,6 +442,12 @@ const menuItems = [
     extra: true,
   },
   {
+    title: 'Verify Identity (New)',
+    icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
+    route: '/(protected)/easeIdKYC',
+    extra: true,
+  },
+  {
     title: 'Cards management',
     icon: <AntDesign name="idcard" size={24} color="black" />,
     route: '/(protected)/cards',

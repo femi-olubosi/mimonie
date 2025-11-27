@@ -25,6 +25,11 @@
       "name": "AdminQueries",
       "endpoint": "https://23m9t3hyn4.execute-api.us-west-2.amazonaws.com/dev",
       "region": "us-west-2"
+    },
+    {
+      "name": "palmpay",
+      "endpoint": "https://n53775tzj4.execute-api.us-west-2.amazonaws.com/dev",
+      "region": "us-west-2"
     }
   ],
   "aws_appsync_graphqlEndpoint": "https://we5nakk36bcwhkp7zxlaju4rea.appsync-api.us-west-2.amazonaws.com/graphql",

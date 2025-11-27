@@ -65,6 +65,16 @@
         "processNotifications": {
           "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
           "s3Key": "amplify-builds/processNotifications-532b6b4e325458385056-build.zip"
+        },
+        "palmpayHandler": {
+          "deploymentBucketName": "amplify-mimonie-dev-b7338-deployment",
+          "s3Key": "amplify-builds/palmpayHandler-37346370356a32377071-build.zip",
+          "merchantId": "12345678",
+          "appId": "12345678",
+          "palmpayApiBaseUrl": "https://palmpay.com",
+          "easeIdAppId": "K6535956480",
+          "easeIdPrivateKey": "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCRfFKEL28bh9aoIBexWMSSkNkyf2KQNtjCLPht5OZ53CRhsPz7RLEvemExxbXdVVhosXrH4R8KqOauS3oNm4xSj1ry8yaqSidFIRNHEyyGsxhuCBxocoRkFn5Hwd7D+w8mULfAmPrkHpl+FCHhCCg6S+6i/aNK6Xo+DIGKDbEDR2p/7inoS6DCinbFeuv3zV8nAxkl/n7jQu4bnYnAsoivdjMAcwacQrxl5SzHNTU/BaCMp2Ih4RzRHpudpg7KNkCp9+Ayhf104NjGKJunNK+O1HLmgGaMCB7q16/VwB5iFS8LKKpG4O/BntQoSOKa4WamqvvzDUabFFR8U0DQGlV1AgMBAAECggEAdeECxwHcB7WHss/WAqdHFu5wXd8jEHCwLpzbacd3CzPY8qLCSCE/Y5XIHNjyY3TcXm+3aS65xRxXVM/pBA+NofNvoLxtDrtomDWVdhhOEpIYcEb4JZTsOmCTTzcBdU/91XC/gjkxyBYXDjXnwXqnhZyyrbPPVEpa9t2RNDelvl4nNOWZ6rIpqwXnl9wQ43xFa8RE5ZCpB+GSpvbUWzCg+/faEjSi75gfUbXLqCWwI6m5alr3aWcVL3aBU+6a/ghcD0x7ZE1d/n+yNZ2BaJZN03DZTL+r6r8htECidFat8Mx1hg4pC8VCaxeX7FtdGjVUR7O+HY8z5TQ9HFnbqRyeXQKBgQDrduoQ+asBWWbfLySr9ReH9uy6wcdBTrte/wFL+YA9eOjri/i1GAIXFbWAt+WLiY/I37O13ukxdDsn6Ij7pd0rVEaHfEOAs0hUwEG6qAUIqzM+kzClWKc0MaBunNFodV6DnVU7Xehe2vd+qkWD91nUaroIo3FWav56Ay2095gzAwKBgQCeLH/faBFtdF/AHR1OOtmgmDox+LgfUO+pQh7F8UAIZplIgXUVBsG6fiE7P6eO2+YZYDWU+XDilz+J+AAexaDJIEERID2vJptcjBTT5wx8S/8OW29gk3/dlGB+upZ8Jvzmg0G8vZmJ0Tbv4pKzXrUrtKxmyDqjeppaMDgy3B4wJwKBgDXistJLsLzQTuCIk2Xe4xG0ipx6uDTT5cFprkxKvvRSdUtibvpSkjfiOfVJIHj8dDFOMHxQlSFCLj+F0cN1Q9YkpTdgUrpjTQxIK0KiLPS86S9K0/ki/rDNIp/tt2amZYjNOrIpXYJHrhgIs3vt4VrhSc2sScWzGqWlkJI3j1ctAoGAdmqKMQ8QPQlqxcEGN5MHapuMteymq4tEYUsHDtnWPnPRPd7tcJhmYOAcsOau4tzuHwFQG//C62CgSQJJ1L/P58Ml81RX2dDlbxvQW/QV/NhIUs9RStQiXhi/RSEbmEb3/vs1M8AeOndO0bima3Lz34ybpTcx70HSXMLM0AbK8vECgYBRixjqJWHlCxFJHb5XopfN5yNK8tUQD+/HUkRQxHCwVH4yM6R1qZAAcasxiWCl8E3nL6IqQQUcXmJ6XwLsNlLpAW05zllsVvuaxHphikRAlLQjqjf08RaiqsKTt1as4E48sk/YfHfv92F1Ejlp6plN3oMnLZRUtyey0hLXOfy40g==",
+          "easeIdBaseUrl": "https://open-api.easeid.ai/api"
         }
       },
       "auth": {
@@ -76,7 +86,8 @@
         "userInfo": {},
         "callback": {},
         "verification": {},
-        "AdminQueries": {}
+        "AdminQueries": {},
+        "palmpay": {}
       },
       "storage": {
         "mimonieS3Storage": {},

@@ -166,6 +166,7 @@ const ProtectedContent = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="bvn" options={{ headerShown: false }} />
+            <Stack.Screen name="easeIdKYC" options={{ headerShown: false }} />
             <Stack.Screen
               name="login_verify"
               options={{ headerShown: false }}

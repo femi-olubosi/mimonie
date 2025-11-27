@@ -86,6 +86,20 @@
       "providerPlugin": "awscloudformation",
       "service": "AppSync"
     },
+    "palmpay": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    },
     "userInfo": {
       "dependsOn": [
         {
@@ -194,6 +208,11 @@
       "service": "Lambda"
     },
     "mimonief71364a4": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "palmpayHandler": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
@@ -419,6 +438,70 @@
         {
           "category": "function",
           "resourceName": "mimonief71364a4"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_appId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_easeIdAppId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_easeIdBaseUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_easeIdPrivateKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_merchantId": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_palmpayApiBaseUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
         }
       ]
     },
