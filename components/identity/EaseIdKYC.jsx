@@ -108,6 +108,8 @@ export default function EaseIdKYC() {
 
   const handleSelfieCapture = async (base64Image) => {
     setSelfieImage(base64Image);
+
+    // return;
     setCurrentStep(3);
     await performFaceComparison(base64Image);
   };
@@ -131,6 +133,7 @@ export default function EaseIdKYC() {
       const response = await restOperation.response;
       const res = await response.body.json();
 
+      console.log('data response', res);
       if (parseInt(res.data?.similarity) >= 60) {
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: true },

@@ -95,7 +95,7 @@ export default function HomeScreen() {
         }}
       >
         <ProfileView
-          name={userProfile?.name}
+          name={currentUser?.name}
           picture={profilePicture || currentUser?.picture}
           notifications={notifications}
           priText={priText}

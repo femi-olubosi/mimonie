@@ -29,6 +29,13 @@ const SelfieCamera = forwardRef(({ onCapture, loading }, ref) => {
         quality: 0.1,
       });
       setCapturedImage(photo.uri);
+
+      console.log(
+        'Approx size in KB:',
+        photo.base64 ? (photo.base64.length * 3) / 4 / 1024 : 0,
+        'KB'
+      );
+
       onCapture(photo.base64);
     }
   };

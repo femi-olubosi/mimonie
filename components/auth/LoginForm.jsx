@@ -106,15 +106,18 @@ const LoginForm = (props) => {
 
       const user = await fetchCurrUser(setCurrentUser);
 
-      const profile = await getUser(user.userId);
-      setUserProfile(profile);
+      // const profile = await getUser(user.userId);
+      // setUserProfile(profile);
 
-      if (!profile?.name) {
+      if (!user?.name) {
         router.replace('/(protected)/complete_profile');
         return;
       }
 
-      if (email !== 'admin@mountspiral.com' && !profile?.phone_verified) {
+      if (
+        email !== 'admin@mountspiral.com' &&
+        !user?.['custom:phone_verified']
+      ) {
         Alert.alert(
           'Phone Number is not verified',
           `Please verify your phone number to continue`,
@@ -127,7 +130,7 @@ const LoginForm = (props) => {
             {
               text: 'Okay',
               onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
+                const res = await sendOtp(user.phone_number);
                 setConfirmationResult({ ...res, type: 'phone_verification' });
                 router.replace('/(protected)/verification_check');
               },
