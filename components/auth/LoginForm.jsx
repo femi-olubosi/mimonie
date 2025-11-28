@@ -138,33 +138,33 @@ const LoginForm = (props) => {
         return;
       }
 
-      if (
-        !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
-        profile?.device_id &&
-        profile?.device_id !== Device.osInternalBuildId
-      ) {
-        Alert.alert(
-          'Device Mismatch',
-          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Register',
-              onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
-                setConfirmationResult({ ...res, type: 'device_registration' });
-                router.replace('/(protected)/verification_check');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
+      // if (
+      //   !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
+      //   profile?.device_id &&
+      //   profile?.device_id !== Device.osInternalBuildId
+      // ) {
+      //   Alert.alert(
+      //     'Device Mismatch',
+      //     `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
+      //     [
+      //       {
+      //         text: 'Cancel',
+      //         onPress: () => signOut(),
+      //         style: 'cancel',
+      //       },
+      //       {
+      //         text: 'Register',
+      //         onPress: async () => {
+      //           const res = await sendOtp(profile.phone_number);
+      //           setConfirmationResult({ ...res, type: 'device_registration' });
+      //           router.replace('/(protected)/verification_check');
+      //         },
+      //       },
+      //     ],
+      //     { cancelable: false }
+      //   );
+      //   return;
+      // }
 
       const file = await AsyncStorage.getItem('profilePicture');
       setProfilePicture(file);

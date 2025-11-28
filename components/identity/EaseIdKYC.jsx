@@ -178,56 +178,56 @@ export default function EaseIdKYC() {
     }
   };
 
-  const renderStepIndicator = () => (
-    <View style={styles.stepContainer}>
-      <View style={styles.steps}>
-        <View style={[styles.step, currentStep >= 1 && styles.stepActive]}>
-          <Text
-            style={[styles.stepText, currentStep >= 1 && styles.stepTextActive]}
-          >
-            1
-          </Text>
-        </View>
-        <View
-          style={[styles.stepLine, currentStep >= 2 && styles.stepLineActive]}
-        />
-        <View style={[styles.step, currentStep >= 2 && styles.stepActive]}>
-          <Text
-            style={[styles.stepText, currentStep >= 2 && styles.stepTextActive]}
-          >
-            2
-          </Text>
-        </View>
-        <View
-          style={[styles.stepLine, currentStep >= 3 && styles.stepLineActive]}
-        />
-        <View style={[styles.step, currentStep >= 3 && styles.stepActive]}>
-          <Text
-            style={[styles.stepText, currentStep >= 3 && styles.stepTextActive]}
-          >
-            3
-          </Text>
-        </View>
-      </View>
-      <View style={styles.stepLabels}>
-        <Text
-          style={[styles.stepLabel, currentStep >= 1 && styles.stepLabelActive]}
-        >
-          Enter NIN
-        </Text>
-        <Text
-          style={[styles.stepLabel, currentStep >= 2 && styles.stepLabelActive]}
-        >
-          Take Selfie
-        </Text>
-        <Text
-          style={[styles.stepLabel, currentStep >= 3 && styles.stepLabelActive]}
-        >
-          Verification
-        </Text>
-      </View>
-    </View>
-  );
+  // const renderStepIndicator = () => (
+  //   <View style={styles.stepContainer}>
+  //     <View style={styles.steps}>
+  //       <View style={[styles.step, currentStep >= 1 && styles.stepActive]}>
+  //         <Text
+  //           style={[styles.stepText, currentStep >= 1 && styles.stepTextActive]}
+  //         >
+  //           1
+  //         </Text>
+  //       </View>
+  //       <View
+  //         style={[styles.stepLine, currentStep >= 2 && styles.stepLineActive]}
+  //       />
+  //       <View style={[styles.step, currentStep >= 2 && styles.stepActive]}>
+  //         <Text
+  //           style={[styles.stepText, currentStep >= 2 && styles.stepTextActive]}
+  //         >
+  //           2
+  //         </Text>
+  //       </View>
+  //       <View
+  //         style={[styles.stepLine, currentStep >= 3 && styles.stepLineActive]}
+  //       />
+  //       <View style={[styles.step, currentStep >= 3 && styles.stepActive]}>
+  //         <Text
+  //           style={[styles.stepText, currentStep >= 3 && styles.stepTextActive]}
+  //         >
+  //           3
+  //         </Text>
+  //       </View>
+  //     </View>
+  //     <View style={styles.stepLabels}>
+  //       <Text
+  //         style={[styles.stepLabel, currentStep >= 1 && styles.stepLabelActive]}
+  //       >
+  //         Enter NIN
+  //       </Text>
+  //       <Text
+  //         style={[styles.stepLabel, currentStep >= 2 && styles.stepLabelActive]}
+  //       >
+  //         Take Selfie
+  //       </Text>
+  //       <Text
+  //         style={[styles.stepLabel, currentStep >= 3 && styles.stepLabelActive]}
+  //       >
+  //         Verification
+  //       </Text>
+  //     </View>
+  //   </View>
+  // );
 
   const renderNINStep = () => (
     <View style={styles.stepContent}>
@@ -326,7 +326,7 @@ export default function EaseIdKYC() {
       backIcon={!loading && currentStep === 1}
     >
       <View style={styles.container}>
-        {renderStepIndicator()}
+        {/* {renderStepIndicator()} */}
 
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selfieContainer: {
-    height: 300,
+    height: 500,
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 20,
