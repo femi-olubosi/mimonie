@@ -116,7 +116,7 @@ const LoginForm = (props) => {
 
       if (
         email !== 'admin@mountspiral.com' &&
-        !user?.['custom:phone_verified']
+        (!user?.['custom:phone_verified'] || !user?.phone_number_verified)
       ) {
         Alert.alert(
           'Phone Number is not verified',
