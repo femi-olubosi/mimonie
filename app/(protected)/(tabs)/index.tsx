@@ -60,15 +60,7 @@ export default function HomeScreen() {
 
   const { user } = useAuthenticator((context) => [context.user]);
 
-  // useEffect(() => {
-  //   if (!userProfile) {
-  //     setIsLoading(true);
-  //   } else {
-  //     setIsLoading(false);
-  //   }
-  // }, [userProfile]);
-
-  useUserVerificationSteps({
+  const profile = useUserVerificationSteps({
     currentUser: user,
     hasShownModal,
     setCompletedSteps,
@@ -78,7 +70,6 @@ export default function HomeScreen() {
 
   usePushNotifications(user, userProfile);
 
-  // // Refresh control handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setRefreshing(false);
@@ -95,7 +86,7 @@ export default function HomeScreen() {
         }}
       >
         <ProfileView
-          name={userProfile?.name}
+          name={currentUser?.name}
           picture={profilePicture || currentUser?.picture}
           notifications={notifications}
           priText={priText}
@@ -368,7 +359,7 @@ export default function HomeScreen() {
         <UserVerificationModal
           visible={showUserVerificationModal}
           onClose={() => setShowUserVerificationModal(false)}
-          userName={userProfile?.name}
+          userName={profile?.name}
           completedSteps={completedSteps}
         />
       </ThemedView>

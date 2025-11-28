@@ -1,0 +1,29 @@
+{
+  "lambdaLayers": [],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "merchantId",
+      "environmentVariableName": "MERCHANT_ID"
+    },
+    {
+      "cloudFormationParameterName": "appId",
+      "environmentVariableName": "APP_ID"
+    },
+    {
+      "cloudFormationParameterName": "palmpayApiBaseUrl",
+      "environmentVariableName": "PALMPAY_API_BASE_URL"
+    },
+    {
+      "cloudFormationParameterName": "easeIdAppId",
+      "environmentVariableName": "EASE_ID_APP_ID"
+    },
+    {
+      "cloudFormationParameterName": "easeIdPrivateKey",
+      "environmentVariableName": "EASE_ID_PRIVATE_KEY"
+    },
+    {
+      "cloudFormationParameterName": "easeIdBaseUrl",
+      "environmentVariableName": "EASE_ID_BASE_URL"
+    }
+  ]
+}

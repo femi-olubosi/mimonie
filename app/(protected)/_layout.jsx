@@ -16,6 +16,7 @@ import ForgotPassword from '../../components/auth/ForgotPassword';
 import ConfirmForgotPassword from '../../components/auth/ConfirmResetPassword';
 import { fetchCurrUser } from '../../api/user.service';
 import { useGlobalContext } from '../../store/StoreContext';
+import { sendOtp } from '../../api/token.service';
 
 const ProtectedLayout = () => {
   return (
@@ -72,16 +73,29 @@ export default ProtectedLayout;
 
 const ProtectedContent = () => {
   const { route } = useAuthenticator((context) => [context.route]);
-  const { setCurrentUser } = useGlobalContext();
+  const { setCurrentUser, setConfirmationResult } = useGlobalContext();
 
   useEffect(() => {
     const loadSignupData = async () => {
       try {
         const data = await fetchCurrUser(setCurrentUser);
-        if (data) {
-          if (!data.email_verified) {
-            router.replace('/email_verify');
-          }
+        if (!data) return;
+
+        if (!data.email_verified) {
+          return router.replace('/email_verify');
+        }
+
+        if (!data.name) {
+          return router.replace('/(protected)/complete_profile');
+        }
+
+        const phoneVerified =
+          data.phone_number_verified || data['custom:phone_verified'];
+
+        if (!phoneVerified) {
+          const res = await sendOtp(data?.phone_number);
+          setConfirmationResult({ ...res, type: 'phone_verification' });
+          router.replace('/(protected)/verification_check');
         }
       } catch (error) {
         console.error('Error reading signup_details:', error);
@@ -166,6 +180,7 @@ const ProtectedContent = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen name="bvn" options={{ headerShown: false }} />
+            <Stack.Screen name="easeIdKYC" options={{ headerShown: false }} />
             <Stack.Screen
               name="login_verify"
               options={{ headerShown: false }}

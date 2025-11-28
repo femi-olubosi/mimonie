@@ -7,7 +7,7 @@ export default function Completed() {
   const router = useRouter();
 
   const handleGoHome = () => {
-    router.push('/(protected)/(tabs)'); // Adjust the path to match your home route
+    router.push('/(protected)/(tabs)');
   };
 
   return (
@@ -16,7 +16,7 @@ export default function Completed() {
         <Image
           source={{
             uri: 'https://cdn-icons-png.flaticon.com/512/616/616489.png',
-          }} // Link to a thumbs-up icon
+          }}
           style={styles.icon}
         />
         <Text style={styles.title}>Success</Text>

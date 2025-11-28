@@ -28,6 +28,12 @@ build_dev_android:
 build_dev_ios:
 	eas build --platform ios --profile development-simulator
 
+build_preview_android:
+	eas build --platform android --profile preview
+
+build_preview_ios:
+	eas build --platform ios --profile preview
+
 # ========== Submit to Stores ==========
 # Submit staging build to Google Play internal track
 submit_staging_android:

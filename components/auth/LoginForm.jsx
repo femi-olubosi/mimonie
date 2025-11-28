@@ -106,15 +106,18 @@ const LoginForm = (props) => {
 
       const user = await fetchCurrUser(setCurrentUser);
 
-      const profile = await getUser(user.userId);
-      setUserProfile(profile);
+      // const profile = await getUser(user.userId);
+      // setUserProfile(profile);
 
-      if (!profile?.name) {
+      if (!user?.name) {
         router.replace('/(protected)/complete_profile');
         return;
       }
 
-      if (email !== 'admin@mountspiral.com' && !profile?.phone_verified) {
+      if (
+        email !== 'admin@mountspiral.com' &&
+        (!user?.['custom:phone_verified'] || !user?.phone_number_verified)
+      ) {
         Alert.alert(
           'Phone Number is not verified',
           `Please verify your phone number to continue`,
@@ -127,7 +130,7 @@ const LoginForm = (props) => {
             {
               text: 'Okay',
               onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
+                const res = await sendOtp(user.phone_number);
                 setConfirmationResult({ ...res, type: 'phone_verification' });
                 router.replace('/(protected)/verification_check');
               },
@@ -138,33 +141,33 @@ const LoginForm = (props) => {
         return;
       }
 
-      if (
-        !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
-        profile?.device_id &&
-        profile?.device_id !== Device.osInternalBuildId
-      ) {
-        Alert.alert(
-          'Device Mismatch',
-          `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => signOut(),
-              style: 'cancel',
-            },
-            {
-              text: 'Register',
-              onPress: async () => {
-                const res = await sendOtp(profile.phone_number);
-                setConfirmationResult({ ...res, type: 'device_registration' });
-                router.replace('/(protected)/verification_check');
-              },
-            },
-          ],
-          { cancelable: false }
-        );
-        return;
-      }
+      // if (
+      //   !['+2348139781147', '+2348039013901'].includes(profile?.phone_number) &&
+      //   profile?.device_id &&
+      //   profile?.device_id !== Device.osInternalBuildId
+      // ) {
+      //   Alert.alert(
+      //     'Device Mismatch',
+      //     `This user is already signed in on ${profile?.device_name}. Do you want to register this new device?`,
+      //     [
+      //       {
+      //         text: 'Cancel',
+      //         onPress: () => signOut(),
+      //         style: 'cancel',
+      //       },
+      //       {
+      //         text: 'Register',
+      //         onPress: async () => {
+      //           const res = await sendOtp(profile.phone_number);
+      //           setConfirmationResult({ ...res, type: 'device_registration' });
+      //           router.replace('/(protected)/verification_check');
+      //         },
+      //       },
+      //     ],
+      //     { cancelable: false }
+      //   );
+      //   return;
+      // }
 
       const file = await AsyncStorage.getItem('profilePicture');
       setProfilePicture(file);

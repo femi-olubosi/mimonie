@@ -1,6 +1,6 @@
-import { fetchProfile, fetchUserProfile } from '@/api/user.service';
+import { fetchProfile } from '@/api/user.service';
 import { modalSteps } from '@/components/modals/UserVerificationModal';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const useUserVerificationSteps = ({
   currentUser,
@@ -9,22 +9,25 @@ const useUserVerificationSteps = ({
   setShowUserVerificationModal,
   setHasShownModal,
 }) => {
+  const [profile, setProfile] = useState(null);
+
   useEffect(() => {
     if (hasShownModal) return;
 
     const checkSteps = async () => {
       try {
-        const profile = await fetchProfile(currentUser);
+        const fetchedProfile = await fetchProfile(currentUser);
+        setProfile(fetchedProfile);
 
-        if (profile?.name && profile?.phone_verified) {
+        if (fetchedProfile?.name && fetchedProfile?.phone_verified) {
           const steps = [
-            profile?.is_bvn_verified && 'bvn',
-            profile?.is_nin_verified && 'kyc',
-            profile?.auth_url && 'card',
+            fetchedProfile?.is_bvn_verified && 'bvn',
+            fetchedProfile?.is_nin_verified && 'kyc',
+            fetchedProfile?.auth_url && 'card',
           ].filter(Boolean);
 
           setCompletedSteps(steps);
-          setShowUserVerificationModal(steps?.length < modalSteps.length);
+          setShowUserVerificationModal(steps.length < modalSteps.length);
           setHasShownModal(true);
         }
       } catch (err) {
@@ -34,6 +37,8 @@ const useUserVerificationSteps = ({
 
     checkSteps();
   }, [currentUser, hasShownModal]);
+
+  return profile;
 };
 
 export default useUserVerificationSteps;

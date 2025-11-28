@@ -478,17 +478,6 @@ export default function UploadDocument() {
 
         <JobModal isLoading={loading} setLoading={setLoading} />
       </View>
-      {/* 
-      <SelectModal
-        visible={openBankModal}
-        onClose={() => setOpenBankModal(false)}
-        data={banks}
-        selectedItem={selectedBank}
-        onSelect={(item) => {
-          setSelectedBank(item);
-        }}
-        title="Select Bank"
-      /> */}
     </PageView>
   );
 }
