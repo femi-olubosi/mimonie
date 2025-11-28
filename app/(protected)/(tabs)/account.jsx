@@ -165,7 +165,16 @@ const Account = () => {
                   <TouchableOpacity
                     key={index}
                     style={styles.itemContainer}
-                    onPress={() => router.push(item.route)}
+                    onPress={() => {
+                      if (item.key === 'nin' && userProfile.is_nin_verified) {
+                        Alert.alert(
+                          'Verified',
+                          'Your identity is already verified'
+                        );
+                        return;
+                      }
+                      router.push(item.route);
+                    }}
                   >
                     <View
                       style={{
@@ -428,50 +437,58 @@ const menuItems = [
     title: 'Personal Information',
     icon: <Ionicons name="person-outline" size={24} color="black" />,
     route: '/(protected)/personal_info',
+    key: 'personal_information',
   },
-  {
-    title: 'Verify Identity',
-    icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
-    route: '/(protected)/smile_id',
-    extra: true,
-  },
+  // {
+  //   title: 'Verify Identity',
+  //   icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
+  //   route: '/(protected)/smile_id',
+  //   extra: true,
+  // },
   {
     title: 'Verify BVN',
     icon: <Ionicons name="document-text-outline" size={24} color="black" />,
     route: '/(protected)/bvn',
     extra: true,
+    key: 'bvn',
   },
   {
-    title: 'Verify Identity (New)',
+    title: 'Verify Identity',
     icon: <MaterialIcons name="perm-identity" size={24} color="black" />,
     route: '/(protected)/easeIdKYC',
     extra: true,
+    key: 'nin',
   },
   {
     title: 'Cards management',
     icon: <AntDesign name="idcard" size={24} color="black" />,
     route: '/(protected)/cards',
+    key: 'card',
   },
   {
     title: 'Contribution Invites',
     icon: <MaterialIcons name="insert-invitation" size={24} color="black" />,
     route: '/(protected)/my_invites',
     extra: true,
+    key: 'invite',
   },
   {
     title: 'Privacy & Security',
     icon: <MaterialIcons name="security" size={24} color="black" />,
     route: '/(protected)/privacy',
+    key: 'privacy',
   },
   {
     title: 'Support',
     icon: <MaterialIcons name="support-agent" size={24} color="black" />,
     route: '/(protected)/support',
+    key: 'support',
   },
   {
     title: 'Settings',
     icon: <AntDesign name="setting" size={24} color="black" />,
     route: '/(protected)/settings',
+    key: 'settings',
   },
   // {
   //   authorizedUser: [

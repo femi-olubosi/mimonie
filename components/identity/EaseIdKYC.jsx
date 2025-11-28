@@ -17,7 +17,9 @@ import { router } from 'expo-router';
 import { post } from 'aws-amplify/api';
 import JobModal from '../modals/JobModal';
 import SelfieCamera from './SelfieCamera';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const MAX_TRIES = 3;
 export default function EaseIdKYC() {
   const [ninNumber, setNinNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,13 +27,123 @@ export default function EaseIdKYC() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selfieImage, setSelfieImage] = useState(null);
   const [ninData, setNinData] = useState(null);
+  const [loadingSavedData, setLoadingSavedData] = useState(true);
+  const [nameMismatchCount, setNameMismatchCount] = useState(0);
 
   const [modalContent, setModalContent] = useState({
     title: '',
     message: '',
     status: '',
   });
-  const { currentUser, setUserProfile } = useGlobalContext();
+  const { currentUser, setUserProfile, userProfile } = useGlobalContext();
+
+  useEffect(() => {
+    loadSavedNINData();
+    loadNameMismatchCount();
+  }, []);
+
+  const loadSavedNINData = async () => {
+    try {
+      const savedNinData = await AsyncStorage.getItem('ninVerificationData');
+      if (savedNinData) {
+        const parsedData = JSON.parse(savedNinData);
+        setNinData(parsedData);
+        setNinNumber(parsedData.nin);
+        setCurrentStep(2);
+      }
+    } catch (error) {
+      console.error('Error loading saved NIN data:', error);
+    } finally {
+      setLoadingSavedData(false);
+    }
+  };
+
+  const loadNameMismatchCount = async () => {
+    try {
+      const count = await AsyncStorage.getItem('nameMismatchCount');
+      if (count) {
+        setNameMismatchCount(parseInt(count));
+      }
+    } catch (error) {
+      console.error('Error loading name mismatch count:', error);
+    }
+  };
+
+  const saveNameMismatchCount = async (count) => {
+    try {
+      await AsyncStorage.setItem('nameMismatchCount', count.toString());
+    } catch (error) {
+      console.error('Error saving name mismatch count:', error);
+    }
+  };
+
+  const clearNameMismatchCount = async () => {
+    try {
+      await AsyncStorage.removeItem('nameMismatchCount');
+    } catch (error) {
+      console.error('Error clearing name mismatch count:', error);
+    }
+  };
+
+  const saveNINData = async (data) => {
+    try {
+      await AsyncStorage.setItem('ninVerificationData', JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving NIN data:', error);
+    }
+  };
+
+  const clearNINData = async () => {
+    try {
+      await AsyncStorage.removeItem('ninVerificationData');
+    } catch (error) {
+      console.error('Error clearing NIN data:', error);
+    }
+  };
+
+  const calculateSimilarity = (str1, str2) => {
+    if (!str1 || !str2) return 0;
+
+    const cleanStr1 = str1.toLowerCase().replace(/[^a-z]/g, '');
+    const cleanStr2 = str2.toLowerCase().replace(/[^a-z]/g, '');
+
+    if (cleanStr1 === cleanStr2) return 100;
+
+    const set1 = new Set(cleanStr1);
+    const set2 = new Set(cleanStr2);
+    const intersection = new Set([...set1].filter((x) => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+
+    return (intersection.size / union.size) * 100;
+  };
+
+  const compareNamesWithNIN = (ninResponse) => {
+    if (!userProfile?.name) return false;
+
+    const userNames = userProfile.name.split(' ');
+    const userFirstName = userNames[0] || '';
+    const userLastName = userNames[1] || userNames[0] || '';
+
+    const ninFirstName = ninResponse.firstName || '';
+    const ninLastName = ninResponse.surname || '';
+
+    const firstNameSimilarity = calculateSimilarity(
+      userFirstName,
+      ninFirstName
+    );
+    const lastNameSimilarity = calculateSimilarity(userLastName, ninLastName);
+
+    console.log('Name comparison:', {
+      userFirstName,
+      ninFirstName,
+      firstNameSimilarity,
+      userLastName,
+      ninLastName,
+      lastNameSimilarity,
+    });
+
+    return firstNameSimilarity >= 80 && lastNameSimilarity >= 80;
+  };
 
   const validateNIN = (nin) => {
     const ninRegex = /^\d{11}$/;
@@ -43,6 +155,17 @@ export default function EaseIdKYC() {
       setModalContent({
         title: 'Invalid NIN',
         message: 'Please enter a valid 11-digit NIN number.',
+        status: 'error',
+      });
+      setStatusModalVisible(true);
+      return;
+    }
+
+    if (nameMismatchCount >= MAX_TRIES) {
+      setModalContent({
+        title: 'Maximum Attempts Reached',
+        message:
+          'You have exceeded the maximum number of attempts for name verification. Please contact support for assistance.',
         status: 'error',
       });
       setStatusModalVisible(true);
@@ -65,7 +188,46 @@ export default function EaseIdKYC() {
       const res = await response.body.json();
 
       if (res.respCode === '00000000') {
-        setNinData(res.data);
+        const namesMatch = compareNamesWithNIN(res.data);
+
+        if (!namesMatch) {
+          const newCount = nameMismatchCount + 1;
+          setNameMismatchCount(newCount);
+          await saveNameMismatchCount(newCount);
+
+          if (newCount >= MAX_TRIES) {
+            setModalContent({
+              title: 'Name Verification Failed',
+              message:
+                'The name on your NIN does not match your profile information. You have reached the maximum number of attempts. Please contact support.',
+              status: 'error',
+              route: '(protected)/account',
+            });
+          } else {
+            setModalContent({
+              title: 'Name Mismatch',
+              message: `The name on your NIN does not match your profile information. Please ensure you're using your correct NIN. Attempts remaining: ${
+                MAX_TRIES - newCount
+              }`,
+              status: 'error',
+            });
+          }
+          setCurrentStep(1);
+          setStatusModalVisible(true);
+          return;
+        }
+
+        const ninDataToSave = {
+          ...res.data,
+          nin: ninNumber,
+          verifiedAt: new Date().toISOString(),
+        };
+        setNinData(ninDataToSave);
+        await saveNINData(ninDataToSave);
+
+        await clearNameMismatchCount();
+        setNameMismatchCount(0);
+
         setCurrentStep(2);
       } else {
         let errorMessage = 'NIN verification failed. Please try again.';
@@ -108,8 +270,6 @@ export default function EaseIdKYC() {
 
   const handleSelfieCapture = async (base64Image) => {
     setSelfieImage(base64Image);
-
-    // return;
     setCurrentStep(3);
     await performFaceComparison(base64Image);
   };
@@ -133,8 +293,10 @@ export default function EaseIdKYC() {
       const response = await restOperation.response;
       const res = await response.body.json();
 
-      console.log('data response', res);
       if (parseInt(res.data?.similarity) >= 60) {
+        await clearNINData();
+        await clearNameMismatchCount();
+
         await updateUserProfile(
           { verification_in_progress_id: false, is_nin_verified: true },
           currentUser
@@ -169,68 +331,35 @@ export default function EaseIdKYC() {
   };
 
   const closeStatusModal = () => {
+    // if (nameMismatchCount >= MAX_TRIES) {
+    //   setStatusModalVisible(false);
+    //   router.push('/(protected)/(tabs)');
+    // }
     if (modalContent.status === 'success') {
       setStatusModalVisible(false);
       router.push('/(protected)/(tabs)');
     } else {
       setStatusModalVisible(false);
-      // Reset to NIN step if failed
-      setCurrentStep(1);
-      setSelfieImage(null);
-      setNinData(null);
+
+      if (
+        modalContent.title === 'Name Mismatch' ||
+        modalContent.title === 'Name Verification Failed'
+      ) {
+        setCurrentStep(1);
+      } else {
+        setSelfieImage(null);
+        setCurrentStep(2);
+      }
     }
   };
 
-  // const renderStepIndicator = () => (
-  //   <View style={styles.stepContainer}>
-  //     <View style={styles.steps}>
-  //       <View style={[styles.step, currentStep >= 1 && styles.stepActive]}>
-  //         <Text
-  //           style={[styles.stepText, currentStep >= 1 && styles.stepTextActive]}
-  //         >
-  //           1
-  //         </Text>
-  //       </View>
-  //       <View
-  //         style={[styles.stepLine, currentStep >= 2 && styles.stepLineActive]}
-  //       />
-  //       <View style={[styles.step, currentStep >= 2 && styles.stepActive]}>
-  //         <Text
-  //           style={[styles.stepText, currentStep >= 2 && styles.stepTextActive]}
-  //         >
-  //           2
-  //         </Text>
-  //       </View>
-  //       <View
-  //         style={[styles.stepLine, currentStep >= 3 && styles.stepLineActive]}
-  //       />
-  //       <View style={[styles.step, currentStep >= 3 && styles.stepActive]}>
-  //         <Text
-  //           style={[styles.stepText, currentStep >= 3 && styles.stepTextActive]}
-  //         >
-  //           3
-  //         </Text>
-  //       </View>
-  //     </View>
-  //     <View style={styles.stepLabels}>
-  //       <Text
-  //         style={[styles.stepLabel, currentStep >= 1 && styles.stepLabelActive]}
-  //       >
-  //         Enter NIN
-  //       </Text>
-  //       <Text
-  //         style={[styles.stepLabel, currentStep >= 2 && styles.stepLabelActive]}
-  //       >
-  //         Take Selfie
-  //       </Text>
-  //       <Text
-  //         style={[styles.stepLabel, currentStep >= 3 && styles.stepLabelActive]}
-  //       >
-  //         Verification
-  //       </Text>
-  //     </View>
-  //   </View>
-  // );
+  const handleResetNIN = async () => {
+    await clearNINData();
+    setNinData(null);
+    setNinNumber('');
+    setSelfieImage(null);
+    setCurrentStep(1);
+  };
 
   const renderNINStep = () => (
     <View style={styles.stepContent}>
@@ -239,6 +368,19 @@ export default function EaseIdKYC() {
         Enter your 11-digit National Identity Number to begin the verification
         process
       </Text>
+
+      {nameMismatchCount > 0 && (
+        <View style={styles.warningCard}>
+          <Text style={styles.warningTitle}>⚠️ Name Verification Required</Text>
+          <Text style={styles.warningText}>
+            Attempts remaining: {MAX_TRIES - nameMismatchCount}
+          </Text>
+          <Text style={styles.warningText}>
+            Ensure the NIN belongs to you and matches your profile name:{' '}
+            {userProfile?.name}
+          </Text>
+        </View>
+      )}
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>National Identity Number (NIN)</Text>
@@ -250,7 +392,7 @@ export default function EaseIdKYC() {
           placeholderTextColor="#999"
           keyboardType="numeric"
           maxLength={11}
-          editable={!loading}
+          editable={!loading && nameMismatchCount < MAX_TRIES}
         />
         <Text style={styles.hint}>Must be exactly 11 digits</Text>
       </View>
@@ -260,6 +402,9 @@ export default function EaseIdKYC() {
         <Text style={styles.noteText}>
           • Your NIN will be verified with the National Identity Management
           Commission
+        </Text>
+        <Text style={styles.noteText}>
+          • The name on your NIN must match your profile information
         </Text>
         <Text style={styles.noteText}>
           • You'll need to take a selfie for face matching
@@ -272,13 +417,25 @@ export default function EaseIdKYC() {
       <TouchableOpacity
         style={[
           styles.primaryButton,
-          (!ninNumber || ninNumber.length !== 11) && styles.buttonDisabled,
+          (!ninNumber ||
+            ninNumber.length !== 11 ||
+            nameMismatchCount >= MAX_TRIES) &&
+            styles.buttonDisabled,
         ]}
         onPress={handleNINVerification}
-        disabled={!ninNumber || ninNumber.length !== 11 || loading}
+        disabled={
+          !ninNumber ||
+          ninNumber.length !== 11 ||
+          loading ||
+          nameMismatchCount >= MAX_TRIES
+        }
       >
         <Text style={styles.primaryButtonText}>
-          {loading ? 'VERIFYING...' : 'VERIFY NIN'}
+          {nameMismatchCount >= MAX_TRIES
+            ? 'MAX ATTEMPTS REACHED'
+            : loading
+            ? 'VERIFYING...'
+            : 'VERIFY NIN'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -286,10 +443,13 @@ export default function EaseIdKYC() {
 
   const renderSelfieStep = () => (
     <View style={styles.stepContent}>
-      <Text style={styles.title}>Take a Selfie</Text>
+      <View style={styles.headerSection}>
+        <Text style={styles.verifiedNin}>Verified NIN: {ninData?.nin}</Text>
+      </View>
+
       <Text style={styles.description}>
         We need to verify that it's really you. Please take a clear selfie for
-        face matching.
+        face matching with your verified NIN.
       </Text>
 
       <View style={styles.selfieContainer}>
@@ -329,16 +489,18 @@ export default function EaseIdKYC() {
       backIcon={!loading && currentStep === 1}
     >
       <View style={styles.container}>
-        {/* {renderStepIndicator()} */}
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {currentStep === 1 && renderNINStep()}
-          {currentStep === 2 && renderSelfieStep()}
-          {currentStep === 3 && renderProcessingStep()}
-        </ScrollView>
+        {loadingSavedData ? (
+          <ActivityIndicator color={Colors.pri} />
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {currentStep === 1 && renderNINStep()}
+            {currentStep === 2 && renderSelfieStep()}
+            {currentStep === 3 && renderProcessingStep()}
+          </ScrollView>
+        )}
 
         {/* Verification Status Modal */}
         <Modal
@@ -394,73 +556,38 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
   },
-  stepContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  steps: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  step: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  stepActive: {
-    backgroundColor: Colors.pri,
-  },
-  stepText: {
-    color: '#9CA3AF',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  stepTextActive: {
-    color: '#FFF',
-  },
-  stepLine: {
-    width: 90,
-    height: 2,
-    backgroundColor: '#E5E7EB',
-  },
-  stepLineActive: {
-    backgroundColor: Colors.pri,
-  },
-  stepLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '80%',
-  },
-  stepLabel: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    textAlign: 'center',
-  },
-  stepLabelActive: {
-    color: Colors.pri,
-    fontWeight: '600',
-  },
   stepContent: {
     flex: 1,
   },
-  iconContainer: {
+  headerSection: {
     alignItems: 'center',
+    marginBottom: 10,
+  },
+  verifiedNin: {
+    fontSize: 14,
+    color: '#10B981',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  warningCard: {
+    backgroundColor: '#FEF3F2',
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#FECDCA',
     marginBottom: 20,
   },
-  emoji: {
-    fontSize: 38,
+  warningTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#D92D20',
+    marginBottom: 8,
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#D92D20',
     marginBottom: 4,
-  },
-  emojiLarge: {
-    fontSize: 64,
-    marginBottom: 20,
+    lineHeight: 18,
   },
   title: {
     fontSize: 22,
@@ -556,6 +683,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  supportButton: {
+    backgroundColor: '#DC2626',
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  supportButtonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   selfieContainer: {
     height: 500,
     borderRadius: 12,
@@ -572,6 +711,10 @@ const styles = StyleSheet.create({
   loadingContainer: {
     alignItems: 'center',
   },
+  emojiLarge: {
+    fontSize: 64,
+    marginBottom: 20,
+  },
   processingTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -586,13 +729,6 @@ const styles = StyleSheet.create({
   },
   loadingDots: {
     flexDirection: 'row',
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.pri,
-    marginHorizontal: 4,
   },
   modalContainer: {
     flex: 1,
