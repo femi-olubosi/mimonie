@@ -19,7 +19,7 @@ import JobModal from '../modals/JobModal';
 import SelfieCamera from './SelfieCamera';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const MAX_TRIES = 3;
+const MAX_TRIES = 30;
 export default function EaseIdKYC() {
   const [ninNumber, setNinNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -343,7 +343,9 @@ export default function EaseIdKYC() {
 
       if (
         modalContent.title === 'Name Mismatch' ||
-        modalContent.title === 'Name Verification Failed'
+        modalContent.title === 'Name Verification Failed' ||
+        modalContent.title === 'Network Error' ||
+        modalContent.title === 'Verification Failed'
       ) {
         setCurrentStep(1);
       } else {
