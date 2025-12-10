@@ -3,7 +3,7 @@ on:
   push:
     branches:
     - preview
-    - dev
+    # - dev
 
 jobs:
   update:
