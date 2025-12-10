@@ -489,7 +489,15 @@
         }
       ]
     },
-    "AMPLIFY_function_palmpayHandler_palmpayApiBaseUrl": {
+    "AMPLIFY_function_palmpayHandler_palmPayBaseUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "palmpayHandler"
+        }
+      ]
+    },
+    "AMPLIFY_function_palmpayHandler_palmPayPrivateKey": {
       "usedBy": [
         {
           "category": "function",

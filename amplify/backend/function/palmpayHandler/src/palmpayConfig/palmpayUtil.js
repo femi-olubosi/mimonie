@@ -1,5 +1,5 @@
-const crypto = require("crypto");
-const md5 = require("md5");
+const crypto = require('crypto');
+const md5 = require('md5');
 
 /**
  * Sorts params alphabetically, removes null/undefined values,
@@ -13,13 +13,13 @@ function sortParams(body) {
     .sort()
     .filter(
       (key) =>
-        key !== "sign" &&
+        key !== 'sign' &&
         body[key] !== null &&
         body[key] !== undefined &&
-        body[key] !== ""
+        body[key] !== ''
     )
     .map((key) => `${key}=${body[key]}`)
-    .join("&");
+    .join('&');
 }
 
 /**
@@ -30,9 +30,9 @@ function sortParams(body) {
  */
 function buildDigest(body) {
   const sortedParameters = sortParams(body);
-  console.log("Soorted Parameters: ", sortedParameters);
+  console.log('Soorted Parameters: ', sortedParameters);
   const md5Hash = md5(sortedParameters).toUpperCase();
-  console.log("Message Digest: ", md5Hash);
+  console.log('Message Digest: ', md5Hash);
   return md5Hash;
 }
 
@@ -44,14 +44,14 @@ function buildDigest(body) {
  * @returns {string} Base64-encoded signature
  */
 function generateSignature(requestBody, privateKeyPEM) {
-  if (!privateKeyPEM) throw new Error("Private key is required");
+  if (!privateKeyPEM) throw new Error('Private key is required');
 
   const digest = buildDigest(requestBody);
-  const signer = crypto.createSign("RSA-SHA1");
+  const signer = crypto.createSign('RSA-SHA1');
   signer.update(digest);
   signer.end();
 
-  return signer.sign(privateKeyPEM, "base64");
+  return signer.sign(privateKeyPEM, 'base64');
 }
 
 /**
@@ -62,18 +62,18 @@ function generateSignature(requestBody, privateKeyPEM) {
  * @returns {boolean} True if signature is valid, false otherwise
  */
 function verifySignature(requestBody, publicKeyPEM) {
-  if (!publicKeyPEM) throw new Error("Public key is required");
+  if (!publicKeyPEM) throw new Error('Public key is required');
   if (!requestBody.sign)
-    throw new Error("Signature (`sign`) is missing from request body");
+    throw new Error('Signature (`sign`) is missing from request body');
 
   const digest = buildDigest(requestBody);
   const signature = decodeURIComponent(requestBody.sign);
 
-  const verifier = crypto.createVerify("RSA-SHA1");
+  const verifier = crypto.createVerify('RSA-SHA1');
   verifier.update(digest);
   verifier.end();
 
-  return verifier.verify(publicKeyPEM, signature, "base64");
+  return verifier.verify(publicKeyPEM, signature, 'base64');
 }
 
 module.exports = { sortParams, generateSignature, verifySignature };

@@ -16,15 +16,6 @@
     "s3Key": {
       "Type": "String"
     },
-    "merchantId": {
-      "Type": "String"
-    },
-    "appId": {
-      "Type": "String"
-    },
-    "palmpayApiBaseUrl": {
-      "Type": "String"
-    },
     "easeIdAppId": {
       "Type": "String"
     },
@@ -32,6 +23,18 @@
       "Type": "String"
     },
     "easeIdBaseUrl": {
+      "Type": "String"
+    },
+    "appId": {
+      "Type": "String"
+    },
+    "merchantId": {
+      "Type": "String"
+    },
+    "palmPayPrivateKey": {
+      "Type": "String"
+    },
+    "palmPayBaseUrl": {
       "Type": "String"
     }
   },
@@ -88,15 +91,6 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "MERCHANT_ID": {
-              "Ref": "merchantId"
-            },
-            "APP_ID": {
-              "Ref": "appId"
-            },
-            "PALMPAY_API_BASE_URL": {
-              "Ref": "palmpayApiBaseUrl"
-            },
             "EASE_ID_APP_ID": {
               "Ref": "easeIdAppId"
             },
@@ -105,6 +99,18 @@
             },
             "EASE_ID_BASE_URL": {
               "Ref": "easeIdBaseUrl"
+            },
+            "APP_ID": {
+              "Ref": "appId"
+            },
+            "MERCHANT_ID": {
+              "Ref": "merchantId"
+            },
+            "PALM_PAY_PRIVATE_KEY": {
+              "Ref": "palmPayPrivateKey"
+            },
+            "PALM_PAY_BASE_URL": {
+              "Ref": "palmPayBaseUrl"
             }
           }
         },

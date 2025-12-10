@@ -1,8 +1,8 @@
 {
-  "httpMethod": "POST",
-  "path": "/easeId",
+  "httpMethod": "GET",
+  "path": "/billers/item",
   "headers": { "Content-Type": "application/json" },
   "queryStringParameters": null,
-  "body": "{\"nin\":\"123\"}",
+  "body": null,
   "isBase64Encoded": false
 }

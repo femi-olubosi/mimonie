@@ -4,7 +4,7 @@ const easeIdController = {
   async inquireNIN(req, res) {
     try {
       const { nin } = req.body;
-
+      console.log('National Identification Number', nin);
       if (!nin) {
         return res.status(400).json({ error: 'nin is required' });
       }

@@ -11,25 +11,21 @@ const billerController = {
     }
   },
 
-  getBillerById: async (req, res) => {
-    try {
-      const { billerId } = req.params;
-      const biller = await billerService.fetchBillerById(billerId);
-      res.json(biller);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to fetch biller' });
-    }
-  },
+  getBillerItem: async (req, res) => {
+    const { billerId } = req.query;
 
-  getBillerItems: async (req, res) => {
+    if (!billerId) {
+      return res
+        .status(400)
+        .json({ error: 'billerId query parameter is required' });
+    }
+
     try {
-      const { billerId } = req.params;
-      const items = await billerService.fetchBillerItems(billerId);
-      res.json(items);
+      const billers = await billerService.fetchBillerItem(billerId);
+      res.json(billers);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Failed to fetch items' });
+      res.status(500).json({ error: 'Failed to fetch billers' });
     }
   },
 };
